@@ -90,75 +90,6 @@ class InstallCommand(InstallCommandBase):
                                         'tensorflow-plugins', 'include')
 
 
-class InstallHeaders(Command):
-  """Override how headers are copied.
-
-  The install_headers that comes with setuptools copies all files to
-  the same directory. But we need the files to be in a specific directory
-  hierarchy for -I <include_dir> to work correctly.
-  """
-  description = 'install C/C++ header files'
-
-  user_options = [
-      ('install-dir=', 'd', 'directory to install header files to'),
-      ('force', 'f', 'force installation (overwrite existing files)'),
-  ]
-
-  boolean_options = ['force']
-
-  def initialize_options(self):
-    self.install_dir = None
-    self.force = 0
-    self.outfiles = []
-
-  def finalize_options(self):
-    self.set_undefined_options('install', ('install_headers', 'install_dir'),
-                               ('force', 'force'))
-
-  def mkdir_and_copy_file(self, header):
-    install_dir = os.path.join(self.install_dir, os.path.dirname(header))
-    # Get rid of some extra intervening directories so we can have fewer
-    # directories for -I
-    install_dir = re.sub('/google/protobuf_archive/src', '', install_dir)
-
-    # Copy external code headers into tensorflow/include.
-    # A symlink would do, but the wheel file that gets created ignores
-    # symlink within the directory hierarchy.
-    # NOTE(keveman): Figure out how to customize bdist_wheel package so
-    # we can do the symlink.
-    external_header_locations = [
-        'tensorflow-plugins/include/external/eigen_archive/',
-        'tensorflow-plugins/include/external/com_google_absl/',
-        'tensorflow-plugins/include/external/com_google_protobuf',
-    ]
-    for location in external_header_locations:
-      if location in install_dir:
-        extra_dir = install_dir.replace(location, '')
-        if not os.path.exists(extra_dir):
-          self.mkpath(extra_dir)
-        self.copy_file(header, extra_dir)
-
-    if not os.path.exists(install_dir):
-      self.mkpath(install_dir)
-    return self.copy_file(header, install_dir)
-
-  def run(self):
-    hdrs = self.distribution.headers
-    if not hdrs:
-      return
-
-    self.mkpath(self.install_dir)
-    for header in hdrs:
-      (out, _) = self.mkdir_and_copy_file(header)
-      self.outfiles.append(out)
-
-  def get_inputs(self):
-    return self.distribution.headers or []
-
-  def get_outputs(self):
-    return self.outfiles
-
-
 def find_files(pattern, root):
   """Return all the files matching pattern below root dir."""
   for dirpath, _, files in os.walk(root):
@@ -172,12 +103,6 @@ so_lib_paths = [
 ]
 
 print(os.listdir('.'))
-matches = []
-for path in so_lib_paths:
-  matches.extend(['../' + x for x in find_files('*', path) if '.py' not in x])
-
-headers = (list(find_files('*.h', 'tensorflow-plugins/c_api/c')) +
-           list(find_files('*.h', 'tensorflow-plugins/c_api/src')))
 
 setup(
     name=project_name,
@@ -187,13 +112,12 @@ setup(
     url='https://github.com/tensorflow',
     download_url='https://github.com/tensorflow',
     author='Tensorflow',
-    author_email='packages@tensorflow.org',
+    author_email='askdirectml@microsoft.com',
     # Contained modules and scripts.
     packages=[_PLUGIN_LIB_PATH, _MY_PLUGIN_PATH],
     entry_points={
         'console_scripts': CONSOLE_SCRIPTS,
     },
-    headers=headers,
     install_requires=REQUIRED_PACKAGES,
     tests_require=REQUIRED_PACKAGES + TEST_PACKAGES,
     package_data={
@@ -203,23 +127,19 @@ setup(
     zip_safe=False,
     distclass=BinaryDistribution,
     cmdclass={
-        'install_headers': InstallHeaders,
         'install': InstallCommand,
     },
     # PyPI package information.
     classifiers=[
-        'Development Status :: 5 - Production/Stable',
+        'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'Intended Audience :: Education',
         'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: Apache Software License',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
+        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
@@ -227,6 +147,6 @@ setup(
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
-    license='Apache 2.0',
+    license='MIT',
     keywords='tensorflow tensor machine learning plugin',
 )
