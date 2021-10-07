@@ -1,0 +1,22 @@
+# Description:
+#   DirectML redistributable library
+
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])  # MIT license for headers
+
+cc_library(
+    name = "headers",
+    hdrs = glob(["directml/include/*.h"]),
+    includes = ["directml/include"],
+)
+
+filegroup(
+    name = "pip_files",
+    srcs = glob([
+        "directml/bin/**",
+    ]) + [
+        "directml/include/DirectMLConfig.h",
+    ],
+    visibility = ["//visibility:public"],
+)

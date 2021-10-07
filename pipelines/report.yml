@@ -1,0 +1,51 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+parameters:
+- name: emailTo
+  type: string
+  default: ''
+- name: buildMetadataArtifactName
+  type: string
+  default: build
+
+jobs:
+- job: report
+  timeoutInMinutes: 30
+  displayName: Report Results
+  condition: succeededOrFailed()
+  workspace:
+    clean: all
+  steps:
+  - checkout: self
+    fetchDepth: 1
+
+  - task: DownloadBuildArtifacts@0
+    displayName: Download Build Metadata
+    inputs:
+      buildType: current
+      downloadType: single
+      artifactName: ${{parameters.buildMetadataArtifactName}}
+
+  - task: PowerShell@2
+    name: createHtml
+    displayName: Create Report HTML
+    condition: succeededOrFailed()
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      targetType: filePath
+      filePath: pipelines/CreateReportEmail.ps1
+      arguments: >
+        -BuildArtifactsPath $(System.ArtifactsDirectory)/${{parameters.buildMetadataArtifactName}}
+        -PipelineRunID $(Build.BuildID)
+        -AccessToken $(System.AccessToken)
+        -OutputHtmlPath $(System.ArtifactsDirectory)/results.html
+        -EmailTo ${{parameters.emailTo}}
+  - task: PkgESSendMail@10
+    displayName: Send Email
+    inputs:
+      to: $(createHtml.emailTo)
+      subject: $(createHtml.emailSubject)
+      bodyFile: $(System.ArtifactsDirectory)/results.html
+      isHtml: true

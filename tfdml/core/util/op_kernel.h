@@ -1,0 +1,53 @@
+/* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
+Portions Copyright (c) Microsoft Corporation.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+#pragma once
+
+#include <string>
+
+#include "absl/types/span.h"
+#include "tfdml/core/util/attribute.h"
+#include "tfdml/core/util/resource_mgr.h"
+#include "tfdml/core/util/types.h"
+
+namespace tfdml {
+class OpKernel {
+ public:
+  OpKernel(const char* op_type_string, const char* op_name)
+      : op_type_string_(op_type_string), op_name_(op_name) {}
+
+  virtual ~OpKernel() = default;
+
+  const std::string& type_string() const { return op_type_string_; }
+  const std::string& name() const { return op_name_; }
+
+  virtual MemoryType input_memory_type(int index) const {
+    LogFatal(
+        "input_memory_type should only be called by DML kernels that inherit "
+        "directly from DmlKernelWrapperBase.");
+  }
+
+  virtual MemoryType output_memory_type(int index) const {
+    LogFatal(
+        "output_memory_type should only be called by DML kernels that inherit "
+        "directly from DmlKernelWrapperBase.");
+  }
+
+ private:
+  const std::string op_type_string_;
+  const std::string op_name_;
+};
+}  // namespace tfdml
