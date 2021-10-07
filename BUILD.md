@@ -1,8 +1,7 @@
-# Building TensorFlow-DirectML <!-- omit in toc -->
+# Building TensorFlow-DirectML-Plugin <!-- omit in toc -->
 
-This document contains instructions for producing private builds of tensorflow-directml.
+This document contains instructions for producing private builds of tensorflow-directml-plugin.
 
-- [DirectML Branch](#directml-branch)
 - [Developer Mode](#developer-mode)
 - [DirectX Development Files](#directx-development-files)
 - [Recommended Build Environment](#recommended-build-environment)
@@ -10,8 +9,7 @@ This document contains instructions for producing private builds of tensorflow-d
 - [CI/PyPI Builds](#cipypi-builds)
 - [Linux Wheels (Manylinux) and DirectX Libraries](#linux-wheels-manylinux-and-directx-libraries)
 - [Detailed Instructions: Windows](#detailed-instructions-windows)
-  - [Install Visual Studio 2017](#install-visual-studio-2017)
-  - [Install MSYS2](#install-msys2)
+  - [Install Visual Studio 2019](#install-visual-studio-2019)
   - [Install Bazel](#install-bazel)
   - [Install Miniconda](#install-miniconda)
   - [Create Conda Build Environment](#create-conda-build-environment)
@@ -36,7 +34,7 @@ dml_repository(
     name = "dml_redist",
     package = "Microsoft.AI.DirectML.Preview",
     version = "1.5.0-dev20210406",
-    source = "https://pkgs.dev.azure.com/ms/DirectML/_packaging/tensorflow-directml/nuget/v3/index.json",
+    source = "https://pkgs.dev.azure.com/ms/DirectML/_packaging/tensorflow-directml-plugin/nuget/v3/index.json",
     build_file = "//third_party/dml/redist:BUILD.bazel",
 )
 ```
@@ -62,26 +60,15 @@ The use of the redistributable DirectML library is governed by a separate licens
 We've tested the following build environments, and we recommend using a Python environment manager like [Miniconda](https://docs.conda.io/en/latest/miniconda.html) to sandbox your builds. It may be possible to build in other environments that we have not tested.
 
 - **Windows**
-  - Visual Studio 2017 (15.x)
+  - Visual Studio 2019 (16.x)
   - Windows 10 SDK 10.0.17763.0 or newer
-  - MSYS2 20190524 or newer with the *git*, *unzip*, and *patch* packages installed
   - Bazel 3.7.2
-  - Python 3.7 environment with the following packages installed:
-    - six
-    - numpy
-    - wheel
-    - keras_applications==1.0.6
-    - keras_preprocessing==1.0.5
+  - Python 3.7 environment
 
 - **Linux**
   - Any glibc-based distro (we've tested Ubuntu 18.04+) with gcc/g++ packages
   - Bazel 3.7.2
-  - Python 3.7 environment with the following packages installed:
-    - six
-    - numpy
-    - wheel
-    - keras_applications==1.0.6
-    - keras_preprocessing==1.0.5
+  - Python 3.7 environment
 
 # Build Script
 
@@ -105,9 +92,9 @@ You will need to build this repository from source if the manylinux wheels on Py
 
 These instructions use Miniconda to sandbox your build environment. This isn't strictly necessary, and there are other ways to do this (e.g. virtual machines, containers), but for the purpose of this walk-through you will use a Python virtual environment to build TFDML.
 
-## Install Visual Studio 2017
+## Install Visual Studio 2019
 
-TensorFlow 1.15 only builds with VS2017. [Download](https://my.visualstudio.com/Downloads?q=visual%20studio%202017&wt.mc_id=o~msft~vscom~older-downloads) and install the community, professional, or enterprise edition.
+tensorflow-plugin-directml builds with either VS2017 or VS2019, but VS2019 is recommended. [Download](https://my.visualstudio.com/Downloads?q=visual%20studio%202019&wt.mc_id=o~msft~vscom~older-downloads) and install the community, professional, or enterprise edition.
 
 Make sure you install the Windows 10 SDK as well, which should be version 10.0.17763.0 or newer.
 
@@ -203,6 +190,8 @@ These instructions use Miniconda to sandbox your build environment. This isn't s
 sudo apt install unzip gcc g++
 ```
 
+## Install Bazel
+
 ### Install Bazel using Bazelisk (recommended)
 
 A good habit when using Bazel is to use Bazelisk instead of manually installing the right version of Bazel. Bazelisk will automatically download and use the version of bazel from `.bazelversion`, so you don't have to worry about using the wrong version.
@@ -246,7 +235,7 @@ eval "$($HOME/miniconda3/bin/conda shell.bash hook)"
 
 After launching the prompt, create a new environment. The examples here use the name `tfdml`, but you can choose any name you like. The idea is to sandbox any packages and dependencies in this environment. This will create a separate copy of Python and its packages.
 
-**IMPORTANT**: make sure to use Python 3.7, 3.8 or 3.9. TensorFlow 1.15 is not supported on older versions of Python.
+**IMPORTANT**: make sure to use Python 3.7, 3.8 or 3.9. TensorFlow 2 is not supported on older versions of Python.
 
 ```
 (base) ~$ conda create --name tfdml python=3.7

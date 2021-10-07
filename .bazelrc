@@ -8,7 +8,7 @@ build:windows --copt=-DWIN32_LEAN_AND_MEAN
 build:windows --copt=-DNOGDI
 build:windows --copt=/WX
 build:windows --copt=/Zc:preprocessor
-build:windows --copt=/arch:AVX
+build:windows --action_env CC_OPT_FLAGS="/arch:AVX"
 build:windows:debug --linkopt /DEBUG:FASTLINK
 build:windows:debug --copt /Z7
 build:windows:debug --copt /FS
@@ -17,7 +17,6 @@ build:linux --action_env CC_OPT_FLAGS="-mavx"
 build:linux --repo_env=CC=clang
 build:linux --cxxopt=-std=c++17
 build:linux --copt=-Werror
-build:release:linux --copt=-march=native
 
 # Windows headers don't use standard-compliant macros (macro expansion producing 'defined' has undefined behavior)
 build:windows --copt=/wd5105

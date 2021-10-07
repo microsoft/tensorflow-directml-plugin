@@ -139,7 +139,7 @@ if ($Commits.Count -gt 0)
 
     foreach ($Commit in $Commits)
     {
-        $Url = "https://github.com/microsoft/tensorflow-directml/commit/$($Commit.id)"
+        $Url = "https://github.com/microsoft/tensorflow-directml-plugin/commit/$($Commit.id)"
         $Timestamp = ([datetime]$Commit.timestamp).ToString("yyyy-MM-dd HH:mm:ss")
 
         $Style = "padding:1px 3px; border-bottom:1px solid gray; border-left:1px solid gray"

@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 # Copyright (c) Microsoft Corporation. All Rights Reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
+# Use of this source code is governed by an MIT-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,10 +22,8 @@ from distutils.sysconfig import get_python_lib
 
 
 def clean(args):
-  expunge = "--expunge" if args.expunge else ""
-
   subprocess.run("{} --output_user_root={} clean {}".format(
-      args.bazel, args.build_output, expunge),
+      args.bazel, args.build_output, "--expunge"),
                  shell=True,
                  check=True)
 
@@ -132,11 +128,6 @@ def main():
                       "-x",
                       action="store_true",
                       help="Configure and build from scratch.")
-
-  parser.add_argument("--expunge",
-                      "-e",
-                      action="store_true",
-                      help="Delete the entire build tree.")
 
   parser.add_argument("--install",
                       "-i",
