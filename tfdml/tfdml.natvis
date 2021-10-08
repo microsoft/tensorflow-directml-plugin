@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="absl::InlinedVector&lt;*,*&gt;">
+      <DisplayString>{{ Count={storage_.metadata_.value >> 1} }}</DisplayString>
+      <Expand>
+          <Item Name="[Count]" ExcludeView="simple">storage_.metadata_.value &gt;&gt; 1</Item>
+          <ArrayItems Condition="(storage_.metadata_.value &amp; 1) == 0">
+              <Size>storage_.metadata_.value &gt;&gt; 1</Size>
+              <ValuePointer>(($T1 *)(&amp; storage_.data_.inlined.inlined_data[0]))</ValuePointer>
+          </ArrayItems>
+        <ArrayItems Condition="(storage_.metadata_.value &amp; 1) == 1">
+          <Size>storage_.metadata_.value &gt;&gt; 1</Size>
+          <ValuePointer>&amp; storage_.data_.allocated.allocated_data[0]</ValuePointer>
+        </ArrayItems>
+      </Expand>
+  </Type>
+</AutoVisualizer>

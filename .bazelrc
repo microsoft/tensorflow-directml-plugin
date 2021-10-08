@@ -1,0 +1,31 @@
+build --announce_rc
+build --verbose_failures
+build:debug --strip never
+build:debug -c dbg
+build:release --define with_default_optimizations=true
+build:windows --cxxopt=/std:c++17
+build:windows --copt=-DWIN32_LEAN_AND_MEAN
+build:windows --copt=-DNOGDI
+build:windows --copt=/WX
+build:windows --copt=/Zc:preprocessor
+build:windows --action_env CC_OPT_FLAGS="/arch:AVX"
+build:windows:debug --linkopt /DEBUG:FASTLINK
+build:windows:debug --copt /Z7
+build:windows:debug --copt /FS
+build:linux --action_env TF_DOWNLOAD_CLANG="1"
+build:linux --action_env CC_OPT_FLAGS="-mavx"
+build:linux --repo_env=CC=clang
+build:linux --cxxopt=-std=c++17
+build:linux --copt=-Werror
+
+# Windows headers don't use standard-compliant macros (macro expansion producing 'defined' has undefined behavior)
+build:windows --copt=/wd5105
+
+# The version of protobuf that TensorFlow uses doesn't do an ifndef before defining WIN32_LEAN_AND_MEAN
+build:windows --copt=/wd4005
+
+# 'TF_NewWhile' has C-linkage specified, but returns UDT 'TF_WhileParams' which is incompatible with C
+build:windows --copt=/wd4190
+
+# Abseil has a few of these instances
+build:linux --copt=-Wno-implicit-int-float-conversion

@@ -1,0 +1,7 @@
+# TODO: Switch to the official branch once the PR is merged
+# https://github.com/bazelbuild/buildtools/pull/1011
+load("@com_github_patricevignola_buildtools//buildifier:def.bzl", "buildifier")
+
+buildifier(
+    name = "buildifier",
+)

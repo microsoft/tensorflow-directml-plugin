@@ -59,7 +59,7 @@ The software may collect information about you and your use of the software and 
 
 ### Disabling Telemetry
 
-The official builds of tensorflow-directml (hosted on [PyPI](https://pypi.org/project/tensorflow-directml-plugin/)) have data collection enabled. This telemetry is enabled when building with `--config=dml_telemetry` (i.e. the `--telemetry` switch in `build.py`), but it is disabled by default for local builds.
+The official builds of tensorflow-directml-plugin (hosted on [PyPI](https://pypi.org/project/tensorflow-directml-plugin/)) have data collection enabled. This telemetry is enabled when building with `--config=dml_telemetry` (i.e. the `--telemetry` switch in `build.py`), but it is disabled by default for local builds.
 
 ## Trademarks Notice
 
