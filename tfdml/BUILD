@@ -14,13 +14,3 @@ config_setting(
     values = {"cpu": "k8"},
     visibility = ["//visibility:public"],
 )
-
-cc_library(
-    name = "core",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tfdml/core/device/dml:dml_device_impl",
-        "@tensorflow//:headers",
-    ],
-    alwayslink = True,
-)

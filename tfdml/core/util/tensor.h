@@ -46,6 +46,7 @@ class Tensor {
   void* raw_data() const;
   bool IsInitialized() const;
   const TF_Tensor* raw() const;
+  bool CopyFrom(const Tensor& other, const TensorShape& shape);
 
   template <typename T>
   T* base() {
