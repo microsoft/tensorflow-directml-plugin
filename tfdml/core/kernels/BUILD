@@ -18,7 +18,7 @@ cc_library(
     linkstatic = 1,
     visibility = ["//visibility:public"],
     deps = [
-        "//tfdml:core",
+        "//tfdml/core:dml_runtime",
     ],
     alwayslink = True,
 )

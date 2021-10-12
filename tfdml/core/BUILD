@@ -32,6 +32,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":plugin_device",
+        "//tfdml/core/kernels:dml_kernels",
         "@tensorflow//:headers",
     ],
     alwayslink = True,
