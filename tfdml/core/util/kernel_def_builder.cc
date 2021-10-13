@@ -15,25 +15,21 @@ limitations under the License.
 
 #include "tensorflow/c/kernels.h"
 
-namespace tfdml
-{
+namespace tfdml {
 
-KernelDefBuilder& KernelDefBuilder::Device(const char* device_type)
-{
-    device_type_ = device_type;
-    return *this;
+KernelDefBuilder& KernelDefBuilder::Device(const char* device_type) {
+  device_type_ = device_type;
+  return *this;
 }
 
-KernelDefBuilder& KernelDefBuilder::HostMemory(const char* arg_name)
-{
-    host_memory_attrs_.push_back(arg_name);
-    return *this;
+KernelDefBuilder& KernelDefBuilder::HostMemory(const char* arg_name) {
+  host_memory_arg_names_.push_back(arg_name);
+  return *this;
 }
 
-KernelDefBuilder& KernelDefBuilder::Priority(int32_t priority)
-{
-    priority_ = priority;
-    return *this;
+KernelDefBuilder& KernelDefBuilder::Priority(int32_t priority) {
+  priority_ = priority;
+  return *this;
 }
 
-} // namespace tfdml
+}  // namespace tfdml

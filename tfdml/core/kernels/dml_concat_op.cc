@@ -31,7 +31,6 @@ class ConcatInitHelper : public InitializationHelper {
 
   ConcatInitHelper(OpKernelContext* ctx,
                    std::shared_ptr<const Attributes> attr) {
-
     const char* axis_attribute_name = AxisArgName == NAME_IS_AXIS ? "axis"
                                       : AxisArgName == NAME_IS_CONCAT_DIM
                                           ? "concat_dim"
@@ -43,11 +42,12 @@ class ConcatInitHelper : public InitializationHelper {
     const Tensor concat_dim_tensor = ctx->input(axis_index);
 
     OP_REQUIRES(ctx, TensorShapeUtils::IsScalar(concat_dim_tensor.shape()),
-                  errors::InvalidArgument("axis must be scalar"));
-    
+                errors::InvalidArgument("axis must be scalar"));
+
     std::vector<Tensor> values;
     int values_begin = AxisArgName == NAME_IS_CONCAT_DIM ? 1 : 0;
-    int values_end = AxisArgName == NAME_IS_CONCAT_DIM ? num_inputs : num_inputs - 1;
+    int values_end =
+        AxisArgName == NAME_IS_CONCAT_DIM ? num_inputs : num_inputs - 1;
     for (int i = values_begin; i < values_end; ++i) {
       values.push_back(std::move(ctx->input(i)));
     }
@@ -278,28 +278,28 @@ struct ConcatV2HostInputIndices {
 // TODO: Enable cache once input indices are converted to tensor indices
 // TF2 #36789375
 template <AxisArgumentName AxisArgName, typename THostInputIndices>
-using DmlConcatWrapper = DmlKernelWrapper<DmlConcatKernel<AxisArgName, THostInputIndices>,
-                                          ConcatShapeHelper<AxisArgName>, DmlKernelCachePolicy::Never>;
+using DmlConcatWrapper =
+    DmlKernelWrapper<DmlConcatKernel<AxisArgName, THostInputIndices>,
+                     ConcatShapeHelper<AxisArgName>,
+                     DmlKernelCachePolicy::Never>;
 
-#define REGISTER_KERNEL(type)                                   \
-  REGISTER_KERNEL_BUILDER(Name("Concat")                        \
-                              .Device(DEVICE_DML)               \
-                              .TypeConstraint<type>("T")        \
-                              .HostMemory("concat_dim"),        \
-                          DmlConcatWrapper<NAME_IS_CONCAT_DIM, ConcatHostInputIndices>) \
-  REGISTER_KERNEL_BUILDER(Name("ConcatV2")                      \
-                              .Device(DEVICE_DML)               \
-                              .TypeConstraint<type>("T")        \
-                              .HostMemory("axis"),              \
-                          DmlConcatWrapper<NAME_IS_AXIS, ConcatV2HostInputIndices>)
+extern "C" void RegisterKernels_Concat() {
+  // TODO: add uint64 support
+  // TF2 #36692608
+  constexpr TF_DataType types[] = {TF_FLOAT, TF_HALF, TF_UINT8, TF_INT64,
+                                   TF_BOOL};
 
-// TODO: add uint64 support
-// TF2 #36692608
-TF_CALL_float(REGISTER_KERNEL);
-TF_CALL_half(REGISTER_KERNEL);
-TF_CALL_uint8(REGISTER_KERNEL);
-TF_CALL_int64(REGISTER_KERNEL);
-TF_CALL_bool(REGISTER_KERNEL);
-#undef REGISTER_KERNEL
+  for (auto& type : types) {
+    KernelBuilder<ops::Concat, DmlConcatWrapper<NAME_IS_CONCAT_DIM, ConcatHostInputIndices>>()
+        .TypeConstraint(ops::Concat::Attribute::T, type)
+        .HostMemory(ops::Concat::Argument::concat_dim)
+        .Register();
+
+    KernelBuilder<ops::ConcatV2, DmlConcatWrapper<NAME_IS_AXIS, ConcatHostInputIndices>>()
+        .TypeConstraint(ops::ConcatV2::Attribute::T, type)
+        .HostMemory(ops::ConcatV2::Argument::axis)
+        .Register();
+  }
+}
 
 }  // namespace tfdml

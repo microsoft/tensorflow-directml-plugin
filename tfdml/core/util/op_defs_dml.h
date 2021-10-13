@@ -11,13 +11,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/c/kernels.h"
-#include "tfdml/core/util/kernel_def_builder.h"
+#pragma once
 
-extern "C" void RegisterKernels_Concat();
-
-void TF_InitKernel() {
-    // do kernel registration here... gives us a chance to detect device capabilities and conditionally register support
-
-    RegisterKernels_Concat();
-}
+namespace tfdml::ops
+{
+// Placeholder for DirectML-specific op definitions.
+} // namespace tfdml::ops
