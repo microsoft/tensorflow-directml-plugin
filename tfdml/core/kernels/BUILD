@@ -7,6 +7,7 @@ cc_library(
     srcs = [
         "dml_addn_op.cc",
         "dml_assign_variable_op.cc",
+        "dml_concat_op.cc",
         "dml_gather_op.cc",
         "dml_kernel_wrapper.cc",
         "dml_ops_common.cc",
@@ -18,7 +19,7 @@ cc_library(
     linkstatic = 1,
     visibility = ["//visibility:public"],
     deps = [
-        "//tfdml:core",
+        "//tfdml/core:dml_runtime",
     ],
     alwayslink = True,
 )
