@@ -83,6 +83,24 @@ TF_Tensor* Tensor::shallow_copy(const Tensor& other) {
   return copy_tensor;
 }
 
+bool Tensor::CopyFrom(const Tensor& other, const TensorShape& shape) {
+  if (other.NumElements() != shape.num_elements()) return false;
+
+  auto new_tensor = MakeTensor(init_empty_tensor());
+
+  Status status;
+  TF_TensorBitcastFrom(other.tensor_.get(), other.dtype(), new_tensor.get(),
+                       shape.data(), shape.dims(), status.raw());
+
+  if (!status.ok()) {
+    return false;
+  }
+
+  tensor_ = std::move(new_tensor);
+
+  return true;
+}
+
 Tensor::Tensor() : Tensor(TF_FLOAT) {}
 
 Tensor::Tensor(TF_DataType data_type) {
