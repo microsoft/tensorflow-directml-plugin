@@ -186,7 +186,6 @@ class DmlGatherNdKernel : public DmlKernel {
 
     const TensorShape& params_shape = params.shape();
     const TensorShape& indices_shape = ctx->GetInputTensorShape(1);
-    const TensorShape& output_shape = ctx->GetOutputTensorShape(0);
 
     // Flatten the indices into a matrix
     int64_t last_indices_dim = indices_shape.dim_size(indices_shape.dims() - 1);
