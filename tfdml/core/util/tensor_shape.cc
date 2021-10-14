@@ -57,7 +57,18 @@ void TensorShape::AddDim(int64_t dim_size) {
   num_elements_ *= dim_size;
 }
 
-int64_t TensorShape::dim_size(int64_t dim_index) const {
+void TensorShape::InsertDim(int index, int64_t dim_size) {
+  assert(index <= dim_sizes_.size());
+  dim_sizes_.insert(dim_sizes_.begin() + index, dim_size);
+  num_elements_ *= dim_size;
+}
+
+void TensorShape::RemoveLastDims(int num_dims) {
+  assert(num_dims <= dim_sizes_.size());
+  dim_sizes_.resize(dim_sizes_.size() - num_dims);
+}
+
+int64_t TensorShape::dim_size(int dim_index) const {
   assert(dim_index < dim_sizes_.size());
   return dim_sizes_[dim_index];
 }
