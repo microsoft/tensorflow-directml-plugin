@@ -33,7 +33,9 @@ class TensorShape {
   TensorShape(absl::InlinedVector<int64_t, 5>&& dim_sizes);
 
   void AddDim(int64_t dim_size);
-  int64_t dim_size(int64_t dim_index) const;
+  void InsertDim(int index, int64_t dim_size);
+  void RemoveLastDims(int num_dims);
+  int64_t dim_size(int dim_index) const;
   int64_t dims() const;
   int64_t num_elements() const;
   int64_t* data();

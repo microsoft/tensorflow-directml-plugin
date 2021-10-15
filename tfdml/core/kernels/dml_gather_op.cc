@@ -55,9 +55,7 @@ class GatherInitializationHelper : public InitializationHelper {
       const Tensor handle_input = ctx->input(0);
 
       OP_REQUIRES_OK(
-          ctx, LookupResource(
-                   ctx, handle_input.base<tensorflow::ResourceHandleProto>()[0],
-                   &params_resource_));
+          ctx, LookupResource(ctx, HandleFromInput(ctx, 0), &params_resource_));
       params_resource_->mu()->lock_shared();
     }
 

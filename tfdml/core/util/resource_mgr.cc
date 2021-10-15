@@ -165,4 +165,9 @@ Status ResourceMgr::Cleanup(const std::string& container) {
   return Status::OK();
 }
 
+const tensorflow::ResourceHandleProto& HandleFromInput(OpKernelContext* ctx,
+                                                       int input) {
+  return ctx->input(input).base<tensorflow::ResourceHandleProto>()[0];
+}
+
 }  //  end namespace tfdml
