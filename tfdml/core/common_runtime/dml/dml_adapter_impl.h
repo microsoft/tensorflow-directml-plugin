@@ -17,16 +17,6 @@ limitations under the License.
 #include "tfdml/core/common_runtime/dml/dml_common.h"
 #include "tfdml/core/util/status.h"
 
-void foo()
-{
-    int a = 32;
-    switch (a)
-    {
-    case 12: ++a; break;
-    case 13: --a; break;
-    }
-}
-
 namespace tfdml
 {
 
