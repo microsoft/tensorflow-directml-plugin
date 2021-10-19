@@ -20,7 +20,8 @@ limitations under the License.
 #include "tfdml/core/common_runtime/dml/dml_kernel_context.h"
 #include "tfdml/core/common_runtime/dml/dml_kernel_key.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
 class DmlKernel;
 class DmlKernelConstruction;
@@ -44,135 +45,150 @@ class NoOpInitializationHelper;
 // lifetime on the GPU timeline, etc.
 //
 // This class is thread-safe.
-class DmlKernelManager {
- public:
-  // Can be overridden by the TF_DIRECTML_KERNEL_CACHE_SIZE environment variable
-  static constexpr size_t kDefaultMaxCacheSize = 1024;
+class DmlKernelManager
+{
+  public:
+    // Can be overridden by the TF_DIRECTML_KERNEL_CACHE_SIZE environment
+    // variable
+    static constexpr size_t kDefaultMaxCacheSize = 1024;
 
-  DmlKernelManager();
+    DmlKernelManager();
 
-  template <typename TKernel>
-  std::shared_ptr<TKernel> CreateCachedKernel(
-      DmlKernelConstruction* ctx, const DmlKernelKey& key,
-      const typename TKernel::InitHelper* init_helper) const {
-    static_assert(std::is_base_of<DmlKernel, TKernel>::value,
-                  "Kernel type does not inherit from DmlKernel");
+    template <typename TKernel>
+    std::shared_ptr<TKernel> CreateCachedKernel(
+        DmlKernelConstruction* ctx,
+        const DmlKernelKey& key,
+        const typename TKernel::InitHelper* init_helper) const
+    {
+        static_assert(
+            std::is_base_of<DmlKernel, TKernel>::value,
+            "Kernel type does not inherit from DmlKernel");
 
-    // Create a new kernel. Because this can potentially be
-    // slow, we don't hold the lock over the kernel creation.
-    auto kernel = std::make_shared<TKernel>(ctx, init_helper);
-    OnKernelCreation(&key, kernel.get());
+        // Create a new kernel. Because this can potentially be
+        // slow, we don't hold the lock over the kernel creation.
+        auto kernel = std::make_shared<TKernel>(ctx, init_helper);
+        OnKernelCreation(&key, kernel.get());
 
-    // Make a deep copy of the key so that we own the memory
-    auto key_copy = key.Clone();
+        // Make a deep copy of the key so that we own the memory
+        auto key_copy = key.Clone();
 
-    std::unique_lock<std::mutex> lock(mutex_);
+        std::unique_lock<std::mutex> lock(mutex_);
 
-    CacheEntry entry = {};
-    entry.kernel = kernel;
+        CacheEntry entry = {};
+        entry.kernel = kernel;
 
-    // Another thread may have already inserted an instance of this kernel
-    // into the cache while we weren't holding the lock. That's okay; in this
-    // case, the .emplace() is a no-op and the kernel will not be cached.
-    auto result = kernel_cache_.emplace(key_copy, std::move(entry));
+        // Another thread may have already inserted an instance of this kernel
+        // into the cache while we weren't holding the lock. That's okay; in
+        // this case, the .emplace() is a no-op and the kernel will not be
+        // cached.
+        auto result = kernel_cache_.emplace(key_copy, std::move(entry));
 
-    // Retrieve the iterator to the newly-inserted element, or the existing
-    // element if another thread beat us to it.
-    auto it = result.first;
+        // Retrieve the iterator to the newly-inserted element, or the existing
+        // element if another thread beat us to it.
+        auto it = result.first;
 
-    bool insertion_succeeded = result.second;
-    if (insertion_succeeded) {
-      // If this was a newly-inserted cache entry, also add an LRU entry
-      lru_list_.push_front(&it->first);
-      it->second.lru_iter = lru_list_.begin();
+        bool insertion_succeeded = result.second;
+        if (insertion_succeeded)
+        {
+            // If this was a newly-inserted cache entry, also add an LRU entry
+            lru_list_.push_front(&it->first);
+            it->second.lru_iter = lru_list_.begin();
+        }
+
+        // Update the LRU cache
+        OnRecentlyUsed(&it->first, &it->second);
+
+        if (insertion_succeeded)
+        {
+            TrimCache();
+        }
+
+        return kernel;
     }
 
-    // Update the LRU cache
-    OnRecentlyUsed(&it->first, &it->second);
+    template <typename TKernel>
+    std::shared_ptr<TKernel> TryGetCachedKernel(const DmlKernelKey& key) const
+    {
+        static_assert(
+            std::is_base_of<DmlKernel, TKernel>::value,
+            "Kernel type does not inherit from DmlKernel");
 
-    if (insertion_succeeded) {
-      TrimCache();
+        std::unique_lock<std::mutex> lock(mutex_);
+
+        auto it = kernel_cache_.find(key);
+
+        if (it == kernel_cache_.end())
+        {
+            return nullptr;
+        }
+
+        // Update the LRU cache
+        OnRecentlyUsed(&it->first, &it->second);
+
+        auto kernel = std::static_pointer_cast<TKernel>(it->second.kernel);
+        return kernel;
     }
 
-    return kernel;
-  }
+    // Ensures that a reference is maintained on a kernel at least until the
+    // given GPU event enters the signaled state.
+    void QueueReference(
+        std::shared_ptr<DmlKernel> kernel,
+        DmlGpuEvent gpu_event) const;
 
-  template <typename TKernel>
-  std::shared_ptr<TKernel> TryGetCachedKernel(const DmlKernelKey& key) const {
-    static_assert(std::is_base_of<DmlKernel, TKernel>::value,
-                  "Kernel type does not inherit from DmlKernel");
+    // Releases all shared_ptrs supplied to QueueReference which have had their
+    // GPU event signaled.
+    void ReleaseCompletedReferences() const;
 
-    std::unique_lock<std::mutex> lock(mutex_);
+    // Returns the number of cached kernels.
+    size_t GetCacheSize() const;
 
-    auto it = kernel_cache_.find(key);
+    // Frees all cached kernels which have completed execution on the GPU.
+    void ClearCache();
 
-    if (it == kernel_cache_.end()) {
-      return nullptr;
-    }
+  private:
+    // A non-owning pointer to the key for the kernel which is used to keep
+    // track of the least-recently-used kernel. This is a pointer into a
+    // kernel_cache_ element. This is okay because std::unordered_map is
+    // guaranteed never to invalidate pointers/references to elements.
+    using LruEntry = const DmlKernelKey*;
 
-    // Update the LRU cache
-    OnRecentlyUsed(&it->first, &it->second);
+    struct CacheEntry
+    {
+        std::shared_ptr<DmlKernel> kernel;
 
-    auto kernel = std::static_pointer_cast<TKernel>(it->second.kernel);
-    return kernel;
-  }
+        // An iterator into the lru_list_. The position of this iterator in the
+        // list indicates how recently used this cache entry is.
+        std::list<LruEntry>::iterator lru_iter;
+    };
 
-  // Ensures that a reference is maintained on a kernel at least until the given
-  // GPU event enters the signaled state.
-  void QueueReference(std::shared_ptr<DmlKernel> kernel,
-                      DmlGpuEvent gpu_event) const;
+    struct QueuedReference
+    {
+        std::shared_ptr<DmlKernel> kernel;
+        DmlGpuEvent gpu_event;
+    };
 
-  // Releases all shared_ptrs supplied to QueueReference which have had their
-  // GPU event signaled.
-  void ReleaseCompletedReferences() const;
+    // Trims the cache by least recently used until it's below the max cache
+    // size.
+    void TrimCache() const;
 
-  // Returns the number of cached kernels.
-  size_t GetCacheSize() const;
+    // Marks the cache entry as being recently used, for the purposes of the LRU
+    // cache. `key` and `entry` must be pointers into elements of the
+    // kernel_cache_ map.
+    void OnRecentlyUsed(const DmlKernelKey* key, CacheEntry* entry) const;
 
-  // Frees all cached kernels which have completed execution on the GPU.
-  void ClearCache();
+    void OnKernelCreation(const DmlKernelKey* key, DmlKernel* kernel) const;
 
- private:
-  // A non-owning pointer to the key for the kernel which is used to keep track
-  // of the least-recently-used kernel. This is a pointer into a kernel_cache_
-  // element. This is okay because std::unordered_map is guaranteed never to
-  // invalidate pointers/references to elements.
-  using LruEntry = const DmlKernelKey*;
+    mutable std::mutex mutex_;
+    const size_t max_cache_size_;
 
-  struct CacheEntry {
-    std::shared_ptr<DmlKernel> kernel;
+    // All of these members are protected by mutex_
 
-    // An iterator into the lru_list_. The position of this iterator in the list
-    // indicates how recently used this cache entry is.
-    std::list<LruEntry>::iterator lru_iter;
-  };
+    mutable absl::flat_hash_map<DmlKernelKey, CacheEntry> kernel_cache_;
 
-  struct QueuedReference {
-    std::shared_ptr<DmlKernel> kernel;
-    DmlGpuEvent gpu_event;
-  };
+    // Ordered by most-recently to least-recently used.
+    mutable std::list<LruEntry> lru_list_;
 
-  // Trims the cache by least recently used until it's below the max cache size.
-  void TrimCache() const;
-
-  // Marks the cache entry as being recently used, for the purposes of the LRU
-  // cache. `key` and `entry` must be pointers into elements of the
-  // kernel_cache_ map.
-  void OnRecentlyUsed(const DmlKernelKey* key, CacheEntry* entry) const;
-
-  void OnKernelCreation(const DmlKernelKey* key, DmlKernel* kernel) const;
-
-  mutable std::mutex mutex_;
-  const size_t max_cache_size_;
-
-  // All of these members are protected by mutex_
-
-  mutable absl::flat_hash_map<DmlKernelKey, CacheEntry> kernel_cache_;
-
-  // Ordered by most-recently to least-recently used.
-  mutable std::list<LruEntry> lru_list_;
-
-  mutable std::vector<QueuedReference> queued_references_;
+    mutable std::vector<QueuedReference> queued_references_;
 };
 
-}  // namespace tfdml
+} // namespace tfdml

@@ -15,15 +15,19 @@ limitations under the License.
 
 #include "tfdml/core/common_runtime/dml/dml_adapter_impl.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
 DmlAdapter::DmlAdapter(const DmlAdapterImpl& impl)
-    : impl_(std::make_shared<DmlAdapterImpl>(impl)) {}
+    : impl_(std::make_shared<DmlAdapterImpl>(impl))
+{
+}
 
 DmlAdapter::~DmlAdapter() = default;
 
-DriverVersion DmlAdapter::DriverVersion() const {
-  return impl_->DriverVersion();
+DriverVersion DmlAdapter::DriverVersion() const
+{
+    return impl_->DriverVersion();
 }
 
 VendorID DmlAdapter::VendorID() const { return impl_->VendorID(); }
@@ -31,48 +35,49 @@ uint32_t DmlAdapter::DeviceID() const { return impl_->DeviceID(); }
 const std::string& DmlAdapter::Name() const { return impl_->Name(); }
 bool DmlAdapter::IsComputeOnly() const { return impl_->IsComputeOnly(); }
 
-uint64_t DmlAdapter::GetTotalDedicatedMemory() const {
-  return impl_->GetTotalDedicatedMemory();
+uint64_t DmlAdapter::GetTotalDedicatedMemory() const
+{
+    return impl_->GetTotalDedicatedMemory();
 }
 
-uint64_t DmlAdapter::GetTotalSharedMemory() const {
-  return impl_->GetTotalSharedMemory();
+uint64_t DmlAdapter::GetTotalSharedMemory() const
+{
+    return impl_->GetTotalSharedMemory();
 }
 
-uint64_t DmlAdapter::QueryAvailableLocalMemory() const {
-  return impl_->QueryAvailableLocalMemory();
+uint64_t DmlAdapter::QueryAvailableLocalMemory() const
+{
+    return impl_->QueryAvailableLocalMemory();
 }
 
 bool DmlAdapter::IsUmaAdapter() const { return impl_->IsUmaAdapter(); }
 
-const char* GetVendorName(VendorID id) {
-  switch (id) {
-    case VendorID::kAmd:
-      return "AMD";
-    case VendorID::kNvidia:
-      return "NVIDIA";
-    case VendorID::kMicrosoft:
-      return "Microsoft";
-    case VendorID::kQualcomm:
-      return "Qualcomm";
-    case VendorID::kIntel:
-      return "Intel";
-    default:
-      return "Unknown";
-  }
+const char* GetVendorName(VendorID id)
+{
+    switch (id)
+    {
+    case VendorID::kAmd: return "AMD";
+    case VendorID::kNvidia: return "NVIDIA";
+    case VendorID::kMicrosoft: return "Microsoft";
+    case VendorID::kQualcomm: return "Qualcomm";
+    case VendorID::kIntel: return "Intel";
+    default: return "Unknown";
+    }
 }
 
-std::vector<DmlAdapter> EnumerateAdapters() {
-  auto impls = EnumerateAdapterImpls();
+std::vector<DmlAdapter> EnumerateAdapters()
+{
+    auto impls = EnumerateAdapterImpls();
 
-  std::vector<DmlAdapter> adapters;
-  adapters.reserve(impls.size());
+    std::vector<DmlAdapter> adapters;
+    adapters.reserve(impls.size());
 
-  for (auto&& impl : impls) {
-    adapters.push_back(DmlAdapter(std::move(impl)));
-  }
+    for (auto&& impl : impls)
+    {
+        adapters.push_back(DmlAdapter(std::move(impl)));
+    }
 
-  return adapters;
+    return adapters;
 }
 
-}  // namespace tfdml
+} // namespace tfdml

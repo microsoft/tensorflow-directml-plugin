@@ -21,26 +21,29 @@ limitations under the License.
 #include "absl/strings/str_cat.h"
 #include "tensorflow/c/tf_status.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
-class Status {
- public:
-  explicit Status();
-  explicit Status(TF_Code code, const char* message);
-  explicit Status(TF_Code code, const std::string& message);
-  explicit Status(TF_Code code, std::string&& message);
-  TF_Code code() const;
-  bool ok() const;
-  const char* error_message() const;
-  TF_Status* raw() const;
-  static Status OK();
-  void Update(const Status& new_status);
+class Status
+{
+  public:
+    explicit Status();
+    explicit Status(TF_Code code, const char* message);
+    explicit Status(TF_Code code, const std::string& message);
+    explicit Status(TF_Code code, std::string&& message);
+    TF_Code code() const;
+    bool ok() const;
+    const char* error_message() const;
+    TF_Status* raw() const;
+    static Status OK();
+    void Update(const Status& new_status);
 
- private:
-  std::shared_ptr<TF_Status> safe_status_;
+  private:
+    std::shared_ptr<TF_Status> safe_status_;
 };
 
-namespace errors {
+namespace errors
+{
 // Convenience functions for generating and using error
 // status.
 // Example usage:
@@ -48,14 +51,15 @@ namespace errors {
 //   if (errors::IsInvalidArgument(status)) { ... }
 //   switch (status.code()) { case error::INVALID_ARGUMENT: ... }
 
-#define DECLARE_ERROR(FUNC, CODE)                        \
-  template <typename... Args>                            \
-  ::tfdml::Status FUNC(Args... args) {                   \
-    return ::tfdml::Status(CODE, absl::StrCat(args...)); \
-  }                                                      \
-  inline bool Is##FUNC(const ::tfdml::Status& status) {  \
-    return status.code() == CODE;                        \
-  }
+#define DECLARE_ERROR(FUNC, CODE)                                              \
+    template <typename... Args>::tfdml::Status FUNC(Args... args)              \
+    {                                                                          \
+        return ::tfdml::Status(CODE, absl::StrCat(args...));                   \
+    }                                                                          \
+    inline bool Is##FUNC(const ::tfdml::Status& status)                        \
+    {                                                                          \
+        return status.code() == CODE;                                          \
+    }
 
 DECLARE_ERROR(Cancelled, TF_CANCELLED)
 DECLARE_ERROR(InvalidArgument, TF_INVALID_ARGUMENT)
@@ -75,6 +79,6 @@ DECLARE_ERROR(PermissionDenied, TF_PERMISSION_DENIED)
 DECLARE_ERROR(Unauthenticated, TF_UNAUTHENTICATED)
 
 #undef DECLARE_ERROR
-}  // namespace errors
+} // namespace errors
 
-}  // namespace tfdml
+} // namespace tfdml

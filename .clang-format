@@ -1,4 +1,26 @@
 # Run manually to reformat a file:
 # clang-format -i --style=file <file>
-BasedOnStyle: Google
+#
+# To reformat all files using cmd.exe:
+# for /r %t in (*.cc *.h) do clang-format.exe -i -style=file "%t"
+#
+BasedOnStyle: Microsoft
 DerivePointerAlignment: false
+PointerAlignment: Left
+UseTab: Never
+IndentWidth: 4
+ColumnLimit: 80
+AlignAfterOpenBracket: AlwaysBreak
+BinPackArguments: false
+BinPackParameters: false
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false
+BreakConstructorInitializers: BeforeColon
+AllowShortLambdasOnASingleLine: true
+AllowShortFunctionsOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+BreakBeforeBraces: Custom
+BraceWrapping:
+  BeforeLambdaBody: true

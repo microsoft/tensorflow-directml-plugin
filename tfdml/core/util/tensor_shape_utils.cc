@@ -21,43 +21,52 @@ limitations under the License.
 #include "tfdml/core/util/macros.h"
 #include "tfdml/core/util/tensor.h"
 
-namespace tfdml {
-TensorShape TensorShapeUtils::MakeShape(const Tensor& tensor) {
-  const TF_DataType dtype = tensor.dtype();
-  int64_t num_elements = tensor.NumElements();
-  absl::string_view raw_data = tensor.tensor_data();
+namespace tfdml
+{
+TensorShape TensorShapeUtils::MakeShape(const Tensor& tensor)
+{
+    const TF_DataType dtype = tensor.dtype();
+    int64_t num_elements = tensor.NumElements();
+    absl::string_view raw_data = tensor.tensor_data();
 
-  if (dtype == TF_INT32) {
-    const int32_t* int32_data =
-        reinterpret_cast<const int32_t*>(raw_data.data());
-    absl::InlinedVector<int64_t, 5> dim_sizes;
-    dim_sizes.reserve(num_elements);
+    if (dtype == TF_INT32)
+    {
+        const int32_t* int32_data =
+            reinterpret_cast<const int32_t*>(raw_data.data());
+        absl::InlinedVector<int64_t, 5> dim_sizes;
+        dim_sizes.reserve(num_elements);
 
-    for (int i = 0; i < num_elements; ++i) {
-      dim_sizes.push_back(int32_data[i]);
+        for (int i = 0; i < num_elements; ++i)
+        {
+            dim_sizes.push_back(int32_data[i]);
+        }
+
+        return TensorShape(std::move(dim_sizes));
     }
 
-    return TensorShape(std::move(dim_sizes));
-  }
-
-  CHECK(dtype == TF_INT64);
-  const int64_t* int64_data = reinterpret_cast<const int64_t*>(raw_data.data());
-  return TensorShape(absl::Span<const int64_t>(int64_data, num_elements));
+    CHECK(dtype == TF_INT64);
+    const int64_t* int64_data =
+        reinterpret_cast<const int64_t*>(raw_data.data());
+    return TensorShape(absl::Span<const int64_t>(int64_data, num_elements));
 }
 
-bool TensorShapeUtils::IsScalar(const TensorShape& shape) {
-  return shape.dims() == 0;
+bool TensorShapeUtils::IsScalar(const TensorShape& shape)
+{
+    return shape.dims() == 0;
 }
 
-bool TensorShapeUtils::IsVector(const TensorShape& shape) {
-  return shape.dims() == 1;
+bool TensorShapeUtils::IsVector(const TensorShape& shape)
+{
+    return shape.dims() == 1;
 }
 
-bool TensorShapeUtils::IsVectorOrHigher(const TensorShape& shape) {
-  return shape.dims() >= 1;
+bool TensorShapeUtils::IsVectorOrHigher(const TensorShape& shape)
+{
+    return shape.dims() >= 1;
 }
 
-bool TensorShapeUtils::IsMatrix(const TensorShape& shape) {
-  return shape.dims() == 2;
+bool TensorShapeUtils::IsMatrix(const TensorShape& shape)
+{
+    return shape.dims() == 2;
 }
-}  // namespace tfdml
+} // namespace tfdml

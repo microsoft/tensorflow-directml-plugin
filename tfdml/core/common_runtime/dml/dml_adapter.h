@@ -18,82 +18,94 @@ limitations under the License.
 #include <string>
 #include <vector>
 
-namespace tfdml {
+namespace tfdml
+{
 
-struct DriverVersion {
-  union {
-    struct {
-      uint16_t d;
-      uint16_t c;
-      uint16_t b;
-      uint16_t a;
-    } parts;
-    uint64_t value;
-  };
+struct DriverVersion
+{
+    union {
+        struct
+        {
+            uint16_t d;
+            uint16_t c;
+            uint16_t b;
+            uint16_t a;
+        } parts;
+        uint64_t value;
+    };
 
-  DriverVersion() = default;
+    DriverVersion() = default;
 
-  explicit DriverVersion(uint64_t value) : value(value) {}
+    explicit DriverVersion(uint64_t value) : value(value) {}
 
-  DriverVersion(uint16_t a, uint16_t b, uint16_t c, uint16_t d) {
-    parts.a = a;
-    parts.b = b;
-    parts.c = c;
-    parts.d = d;
-  }
+    DriverVersion(uint16_t a, uint16_t b, uint16_t c, uint16_t d)
+    {
+        parts.a = a;
+        parts.b = b;
+        parts.c = c;
+        parts.d = d;
+    }
 };
 
-inline bool operator==(DriverVersion lhs, DriverVersion rhs) {
-  return lhs.value == rhs.value;
+inline bool operator==(DriverVersion lhs, DriverVersion rhs)
+{
+    return lhs.value == rhs.value;
 }
-inline bool operator!=(DriverVersion lhs, DriverVersion rhs) {
-  return lhs.value != rhs.value;
+inline bool operator!=(DriverVersion lhs, DriverVersion rhs)
+{
+    return lhs.value != rhs.value;
 }
-inline bool operator<=(DriverVersion lhs, DriverVersion rhs) {
-  return lhs.value <= rhs.value;
+inline bool operator<=(DriverVersion lhs, DriverVersion rhs)
+{
+    return lhs.value <= rhs.value;
 }
-inline bool operator>=(DriverVersion lhs, DriverVersion rhs) {
-  return lhs.value >= rhs.value;
+inline bool operator>=(DriverVersion lhs, DriverVersion rhs)
+{
+    return lhs.value >= rhs.value;
 }
-inline bool operator<(DriverVersion lhs, DriverVersion rhs) {
-  return lhs.value < rhs.value;
+inline bool operator<(DriverVersion lhs, DriverVersion rhs)
+{
+    return lhs.value < rhs.value;
 }
-inline bool operator>(DriverVersion lhs, DriverVersion rhs) {
-  return lhs.value > rhs.value;
+inline bool operator>(DriverVersion lhs, DriverVersion rhs)
+{
+    return lhs.value > rhs.value;
 }
 
-enum class VendorID {
-  kAmd = 0x1002,
-  kNvidia = 0x10DE,
-  kMicrosoft = 0x1414,
-  kQualcomm = 0x4D4F4351,
-  kIntel = 0x8086,
+enum class VendorID
+{
+    kAmd = 0x1002,
+    kNvidia = 0x10DE,
+    kMicrosoft = 0x1414,
+    kQualcomm = 0x4D4F4351,
+    kIntel = 0x8086,
 };
 
 // Use a pimpl to firewall DML/D3D-specific headers from the rest of TF.
 class DmlAdapterImpl;
 
 // Represents a DXCore or DXGI adapter.
-class DmlAdapter {
- public:
-  explicit DmlAdapter(const DmlAdapterImpl& impl);
-  ~DmlAdapter();
+class DmlAdapter
+{
+  public:
+    explicit DmlAdapter(const DmlAdapterImpl& impl);
+    ~DmlAdapter();
 
-  const DmlAdapterImpl* Impl() const { return impl_.get(); }
+    const DmlAdapterImpl* Impl() const { return impl_.get(); }
 
-  DriverVersion DriverVersion() const;
-  VendorID VendorID() const;
-  uint32_t DeviceID() const;
-  const std::string& Name() const;
-  bool IsComputeOnly() const;
-  uint64_t GetTotalDedicatedMemory() const;
-  uint64_t GetTotalSharedMemory() const;
-  uint64_t QueryAvailableLocalMemory() const;
-  bool IsUmaAdapter() const;
+    DriverVersion DriverVersion() const;
+    VendorID VendorID() const;
+    uint32_t DeviceID() const;
+    const std::string& Name() const;
+    bool IsComputeOnly() const;
+    uint64_t GetTotalDedicatedMemory() const;
+    uint64_t GetTotalSharedMemory() const;
+    uint64_t QueryAvailableLocalMemory() const;
+    bool IsUmaAdapter() const;
 
- private:
-  // This object is immutable, so this is shared to allow copies.
-  std::shared_ptr<DmlAdapterImpl> impl_;
+  private:
+    // This object is immutable, so this is shared to allow copies.
+    std::shared_ptr<DmlAdapterImpl> impl_;
 };
 
 // Retrieves a (statically allocated) string name for the given VendorID, e.g.
@@ -103,4 +115,4 @@ const char* GetVendorName(VendorID id);
 // Retrieves a list of DML-compatible hardware adapters on the system.
 std::vector<DmlAdapter> EnumerateAdapters();
 
-}  // namespace tfdml
+} // namespace tfdml

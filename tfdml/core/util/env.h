@@ -19,14 +19,19 @@ limitations under the License.
 
 #include "tfdml/core/util/status.h"
 
-namespace tfdml {
-namespace env {
-std::string FormatLibraryFileName(const std::string& name,
-                                  const std::string& version);
+namespace tfdml
+{
+namespace env
+{
+std::string FormatLibraryFileName(
+    const std::string& name,
+    const std::string& version);
 
-Status GetSymbolFromLibrary(void* handle, const char* symbol_name,
-                            void** symbol);
+Status GetSymbolFromLibrary(
+    void* handle,
+    const char* symbol_name,
+    void** symbol);
 
 Status LoadDynamicLibrary(const char* library_filename, void** handle);
-}  // namespace env
-}  // namespace tfdml
+} // namespace env
+} // namespace tfdml

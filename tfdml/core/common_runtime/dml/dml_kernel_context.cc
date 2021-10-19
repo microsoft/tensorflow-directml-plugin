@@ -23,63 +23,77 @@ limitations under the License.
 
 using Microsoft::WRL::ComPtr;
 
-namespace tfdml {
+namespace tfdml
+{
 
 //
 // DmlKernelConstruction
 //
 
 DmlKernelConstruction::DmlKernelConstruction(
-    const DmlDevice* device, OpKernelContext* op_ctx,
+    const DmlDevice* device,
+    OpKernelContext* op_ctx,
     absl::Span<const TensorShape> output_shapes,
     std::shared_ptr<const InitializationHelper> init_helper)
     : device_(device),
       op_ctx_(op_ctx),
       output_shapes_(output_shapes),
-      init_helper_(init_helper) {}
-
-IDMLDevice* DmlKernelConstruction::GetDmlDevice() const {
-  return device_->GetDmlDevice();
-}
-ID3D12Device* DmlKernelConstruction::GetD3D12Device() const {
-  return device_->GetD3D12Device();
+      init_helper_(init_helper)
+{
 }
 
-OpKernelContext* DmlKernelConstruction::GetOpKernelContext() const {
-  return op_ctx_;
+IDMLDevice* DmlKernelConstruction::GetDmlDevice() const
+{
+    return device_->GetDmlDevice();
+}
+ID3D12Device* DmlKernelConstruction::GetD3D12Device() const
+{
+    return device_->GetD3D12Device();
 }
 
-DMLDeviceContext* DmlKernelConstruction::GetDmlDeviceContext() const {
-  return device_->GetDeviceContext();
+OpKernelContext* DmlKernelConstruction::GetOpKernelContext() const
+{
+    return op_ctx_;
 }
 
-std::shared_ptr<const InitializationHelper>
-DmlKernelConstruction::GetInitializationHelper() const {
-  return init_helper_;
+DMLDeviceContext* DmlKernelConstruction::GetDmlDeviceContext() const
+{
+    return device_->GetDeviceContext();
 }
 
-TF_DataType DmlKernelConstruction::GetInputDataType(uint32_t index) const {
-  return op_ctx_->input_dtype(index);
+std::shared_ptr<const InitializationHelper> DmlKernelConstruction::
+    GetInitializationHelper() const
+{
+    return init_helper_;
 }
 
-TensorShape DmlKernelConstruction::GetInputTensorShape(uint32_t index) const {
-  return op_ctx_->input(index).shape();
+TF_DataType DmlKernelConstruction::GetInputDataType(uint32_t index) const
+{
+    return op_ctx_->input_dtype(index);
 }
 
-Tensor DmlKernelConstruction::GetConstantInputTensor(uint32_t index) const {
-  CHECK(op_ctx_->input_memory_type(index) == HOST_MEMORY);
-  CHECK(op_ctx_->input_dtype(index) != TF_RESOURCE);
-
-  return op_ctx_->input(index);
+TensorShape DmlKernelConstruction::GetInputTensorShape(uint32_t index) const
+{
+    return op_ctx_->input(index).shape();
 }
 
-TF_DataType DmlKernelConstruction::GetOutputDataType(uint32_t index) const {
-  return op_ctx_->expected_output_dtype(index);
+Tensor DmlKernelConstruction::GetConstantInputTensor(uint32_t index) const
+{
+    CHECK(op_ctx_->input_memory_type(index) == HOST_MEMORY);
+    CHECK(op_ctx_->input_dtype(index) != TF_RESOURCE);
+
+    return op_ctx_->input(index);
+}
+
+TF_DataType DmlKernelConstruction::GetOutputDataType(uint32_t index) const
+{
+    return op_ctx_->expected_output_dtype(index);
 }
 
 const TensorShape& DmlKernelConstruction::GetOutputTensorShape(
-    uint32_t index) const {
-  return output_shapes_[index];
+    uint32_t index) const
+{
+    return output_shapes_[index];
 }
 
 //
@@ -87,35 +101,44 @@ const TensorShape& DmlKernelConstruction::GetOutputTensorShape(
 //
 
 DmlKernelContext::DmlKernelContext(
-    const DmlDevice* device, OpKernelContext* op_ctx,
+    const DmlDevice* device,
+    OpKernelContext* op_ctx,
     const InitializationHelper* init_helper,
     absl::Span<const TensorShape> output_shapes,
     absl::Span<const absl::optional<uint32_t>> output_refs_forwarding)
-    : device_(device), op_ctx_(op_ctx), init_helper_(init_helper) {
-  assert(output_shapes.size() == op_ctx_->num_outputs());
+    : device_(device),
+      op_ctx_(op_ctx),
+      init_helper_(init_helper)
+{
+    assert(output_shapes.size() == op_ctx_->num_outputs());
 
-  // Allocate output tensors
-  output_tensors_.reserve(output_shapes.size());
-  for (int i = 0; i < static_cast<int>(output_shapes.size()); ++i) {
-    auto status_or_tensor = op_ctx_->allocate_output(i, output_shapes[i]);
-    OP_REQUIRES_OK(op_ctx_, status_or_tensor.status());
-    output_tensors_.push_back(status_or_tensor.ConsumeValueOrDie());
-  }
+    // Allocate output tensors
+    output_tensors_.reserve(output_shapes.size());
+    for (int i = 0; i < static_cast<int>(output_shapes.size()); ++i)
+    {
+        auto status_or_tensor = op_ctx_->allocate_output(i, output_shapes[i]);
+        OP_REQUIRES_OK(op_ctx_, status_or_tensor.status());
+        output_tensors_.push_back(status_or_tensor.ConsumeValueOrDie());
+    }
 }
 
-IDMLDevice* DmlKernelContext::GetDmlDevice() const {
-  return device_->GetDmlDevice();
+IDMLDevice* DmlKernelContext::GetDmlDevice() const
+{
+    return device_->GetDmlDevice();
 }
-ID3D12Device* DmlKernelContext::GetD3D12Device() const {
-  return device_->GetD3D12Device();
-}
-
-OpKernelContext* DmlKernelContext::GetOpKernelContext() const {
-  return op_ctx_;
+ID3D12Device* DmlKernelContext::GetD3D12Device() const
+{
+    return device_->GetD3D12Device();
 }
 
-DMLDeviceContext* DmlKernelContext::GetDmlDeviceContext() const {
-  return device_->GetDeviceContext();
+OpKernelContext* DmlKernelContext::GetOpKernelContext() const
+{
+    return op_ctx_;
 }
 
-}  // namespace tfdml
+DMLDeviceContext* DmlKernelContext::GetDmlDeviceContext() const
+{
+    return device_->GetDeviceContext();
+}
+
+} // namespace tfdml

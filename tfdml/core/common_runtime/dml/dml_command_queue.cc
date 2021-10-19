@@ -13,32 +13,39 @@ limitations under the License.
 
 #include "dml_command_queue.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
 DmlCommandQueue::DmlCommandQueue(ID3D12CommandQueue* existing_queue)
-    : queue_(existing_queue), type_(existing_queue->GetDesc().Type) {
-  Microsoft::WRL::ComPtr<ID3D12Device> device;
-  DML_CHECK_SUCCEEDED(queue_->GetDevice(IID_PPV_ARGS(&device)));
+    : queue_(existing_queue),
+      type_(existing_queue->GetDesc().Type)
+{
+    Microsoft::WRL::ComPtr<ID3D12Device> device;
+    DML_CHECK_SUCCEEDED(queue_->GetDevice(IID_PPV_ARGS(&device)));
 
-  DML_CHECK_SUCCEEDED(
-      device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence_)));
+    DML_CHECK_SUCCEEDED(
+        device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence_)));
 }
 
 void DmlCommandQueue::ExecuteCommandLists(
-    absl::Span<ID3D12CommandList*> command_lists) {
-  queue_->ExecuteCommandLists(static_cast<uint32_t>(command_lists.size()),
-                              command_lists.data());
+    absl::Span<ID3D12CommandList*> command_lists)
+{
+    queue_->ExecuteCommandLists(
+        static_cast<uint32_t>(command_lists.size()),
+        command_lists.data());
 
-  ++last_fence_value_;
-  DML_CHECK_SUCCEEDED(queue_->Signal(fence_.Get(), last_fence_value_));
+    ++last_fence_value_;
+    DML_CHECK_SUCCEEDED(queue_->Signal(fence_.Get(), last_fence_value_));
 }
 
-DmlGpuEvent DmlCommandQueue::GetCurrentCompletionEvent() {
-  return DmlGpuEvent{last_fence_value_, fence_};
+DmlGpuEvent DmlCommandQueue::GetCurrentCompletionEvent()
+{
+    return DmlGpuEvent{last_fence_value_, fence_};
 }
 
-DmlGpuEvent DmlCommandQueue::GetNextCompletionEvent() {
-  return DmlGpuEvent{last_fence_value_ + 1, fence_};
+DmlGpuEvent DmlCommandQueue::GetNextCompletionEvent()
+{
+    return DmlGpuEvent{last_fence_value_ + 1, fence_};
 }
 
-}  // namespace tfdml
+} // namespace tfdml

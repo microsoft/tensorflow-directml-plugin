@@ -15,23 +15,41 @@ limitations under the License.
 
 #include "tensorflow/c/kernels.h"
 
-namespace tfdml {
+namespace tfdml
+{
 OpKernelConstruction::OpKernelConstruction(TF_OpKernelConstruction* context)
-    : context_(context) {}
-
-void OpKernelConstruction::CtxFailure(const char* file, int line,
-                                      const Status& s) {
-  TF_VLog(1, "OP_REQUIRES failed at %s:%d : %s", file, line, s.error_message());
-  status_.Update(s);
-  TF_OpKernelConstruction_Failure(context_, status_.raw());
+    : context_(context)
+{
 }
 
-void OpKernelConstruction::CtxFailureWithWarning(const char* file, int line,
-                                                 const Status& s) {
-  TF_Log(TF_WARNING, "OP_REQUIRES failed at %s:%d : %s", file, line,
-         s.error_message());
-  status_.Update(s);
-  TF_OpKernelConstruction_Failure(context_, status_.raw());
+void OpKernelConstruction::CtxFailure(
+    const char* file,
+    int line,
+    const Status& s)
+{
+    TF_VLog(
+        1,
+        "OP_REQUIRES failed at %s:%d : %s",
+        file,
+        line,
+        s.error_message());
+    status_.Update(s);
+    TF_OpKernelConstruction_Failure(context_, status_.raw());
 }
 
-}  // namespace tfdml
+void OpKernelConstruction::CtxFailureWithWarning(
+    const char* file,
+    int line,
+    const Status& s)
+{
+    TF_Log(
+        TF_WARNING,
+        "OP_REQUIRES failed at %s:%d : %s",
+        file,
+        line,
+        s.error_message());
+    status_.Update(s);
+    TF_OpKernelConstruction_Failure(context_, status_.raw());
+}
+
+} // namespace tfdml

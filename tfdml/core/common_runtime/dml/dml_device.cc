@@ -34,97 +34,125 @@ static const GUID PIX_EVAL_CAPTURABLE_WORK_GUID = {
     0x4993,
     {0x86, 0x08, 0xd7, 0x06, 0xa7, 0x3b, 0x91, 0xce}};
 
-namespace tfdml {
+namespace tfdml
+{
 
-DmlDevice::DmlDevice(const DmlDeviceState* state) : state_(state) {
-  device_context_ = absl::make_unique<DMLDeviceContext>(
-      state_->execution_context.get(), state_->event_queue.get(),
-      state_->upload_heap.get(), state_->readback_heap.get(),
-      state_->dml_allocator.get(), state_->descriptor_allocator.get());
+DmlDevice::DmlDevice(const DmlDeviceState* state) : state_(state)
+{
+    device_context_ = absl::make_unique<DMLDeviceContext>(
+        state_->execution_context.get(),
+        state_->event_queue.get(),
+        state_->upload_heap.get(),
+        state_->readback_heap.get(),
+        state_->dml_allocator.get(),
+        state_->descriptor_allocator.get());
 }
 
-Status DmlDevice::Sync() {
-  TF_VLog(2, "DirectML device: performing GPU sync.");
+Status DmlDevice::Sync()
+{
+    TF_VLog(2, "DirectML device: performing GPU sync.");
 
-  auto start_time = std::chrono::high_resolution_clock::now();
+    auto start_time = std::chrono::high_resolution_clock::now();
 
-  auto status_or_event = state_->execution_context->Flush();
-  TF_RETURN_IF_ERROR(status_or_event.status());
-  status_or_event.ConsumeValueOrDie().WaitForSignal();
-  auto end_time = std::chrono::high_resolution_clock::now();
+    auto status_or_event = state_->execution_context->Flush();
+    TF_RETURN_IF_ERROR(status_or_event.status());
+    status_or_event.ConsumeValueOrDie().WaitForSignal();
+    auto end_time = std::chrono::high_resolution_clock::now();
 
-  std::chrono::duration<double> wait_seconds = end_time - start_time;
-  TF_VLog(2, "DirectML device: GPU sync took %lf ms.",
-          wait_seconds.count() * 1e3);
+    std::chrono::duration<double> wait_seconds = end_time - start_time;
+    TF_VLog(
+        2,
+        "DirectML device: GPU sync took %lf ms.",
+        wait_seconds.count() * 1e3);
 
-  // Take the opportunity to free some memory if needed
-  state_->kernel_manager->ReleaseCompletedReferences();
-  return Status::OK();
+    // Take the opportunity to free some memory if needed
+    state_->kernel_manager->ReleaseCompletedReferences();
+    return Status::OK();
 }
 
-void DmlDevice::DebugOnSessionRunStart() {
-  DmlTracing::Instance().LogSessionRunStart();
-  if (state_->sharing_contract) {
-    state_->sharing_contract->BeginCapturableWork(
-        PIX_EVAL_CAPTURABLE_WORK_GUID);
-  }
+void DmlDevice::DebugOnSessionRunStart()
+{
+    DmlTracing::Instance().LogSessionRunStart();
+    if (state_->sharing_contract)
+    {
+        state_->sharing_contract->BeginCapturableWork(
+            PIX_EVAL_CAPTURABLE_WORK_GUID);
+    }
 }
 
-void DmlDevice::DebugOnSessionRunEnd() {
-  DmlTracing::Instance().LogSessionRunEnd();
-  if (state_->sharing_contract) {
-    state_->sharing_contract->EndCapturableWork(PIX_EVAL_CAPTURABLE_WORK_GUID);
-  }
+void DmlDevice::DebugOnSessionRunEnd()
+{
+    DmlTracing::Instance().LogSessionRunEnd();
+    if (state_->sharing_contract)
+    {
+        state_->sharing_contract->EndCapturableWork(
+            PIX_EVAL_CAPTURABLE_WORK_GUID);
+    }
 }
 
-Status DmlDevice::CopyCPUTensorToDevice(const Tensor* cpu_tensor,
-                                        Tensor* device_tensor) {
-  return device_context_->CopyCPUTensorToDevice(this, cpu_tensor,
-                                                device_tensor);
+Status DmlDevice::CopyCPUTensorToDevice(
+    const Tensor* cpu_tensor,
+    Tensor* device_tensor)
+{
+    return device_context_->CopyCPUTensorToDevice(
+        this,
+        cpu_tensor,
+        device_tensor);
 }
 
-void DmlDevice::CopyTensorInSameDevice(const Tensor* input_tensor,
-                                       Tensor* output_tensor) {
-  // Forward to the device context where the real implementation lives
-  device_context_->CopyTensorInSameDevice(this, input_tensor, output_tensor);
+void DmlDevice::CopyTensorInSameDevice(
+    const Tensor* input_tensor,
+    Tensor* output_tensor)
+{
+    // Forward to the device context where the real implementation lives
+    device_context_->CopyTensorInSameDevice(this, input_tensor, output_tensor);
 }
 
-ID3D12Device* DmlDevice::GetD3D12Device() const {
-  return state_->d3d_device.Get();
+ID3D12Device* DmlDevice::GetD3D12Device() const
+{
+    return state_->d3d_device.Get();
 }
 
 IDMLDevice* DmlDevice::GetDmlDevice() const { return state_->dml_device.Get(); }
 
-DmlAllocator* DmlDevice::GetAllocator() const {
-  return state_->dml_allocator.get();
+DmlAllocator* DmlDevice::GetAllocator() const
+{
+    return state_->dml_allocator.get();
 }
 
-DmlDescriptorAllocator* DmlDevice::GetDescriptorAllocator() const {
-  return state_->descriptor_allocator.get();
+DmlDescriptorAllocator* DmlDevice::GetDescriptorAllocator() const
+{
+    return state_->descriptor_allocator.get();
 }
 
-DmlKernelManager* DmlDevice::GetKernelManager() const {
-  return state_->kernel_manager.get();
+DmlKernelManager* DmlDevice::GetKernelManager() const
+{
+    return state_->kernel_manager.get();
 }
 
-DmlExecutionContext* DmlDevice::GetExecutionContext() const {
-  return state_->execution_context.get();
+DmlExecutionContext* DmlDevice::GetExecutionContext() const
+{
+    return state_->execution_context.get();
 }
 
-DmlUploadHeap* DmlDevice::GetUploadHeap() const {
-  return state_->upload_heap.get();
+DmlUploadHeap* DmlDevice::GetUploadHeap() const
+{
+    return state_->upload_heap.get();
 }
 
-DmlReadbackHeap* DmlDevice::GetReadbackHeap() const {
-  return state_->readback_heap.get();
+DmlReadbackHeap* DmlDevice::GetReadbackHeap() const
+{
+    return state_->readback_heap.get();
 }
 
-DmlEventQueue* DmlDevice::GetEventQueue() const {
-  return state_->event_queue.get();
+DmlEventQueue* DmlDevice::GetEventQueue() const
+{
+    return state_->event_queue.get();
 }
 
-DMLDeviceContext* DmlDevice::GetDeviceContext() const {
-  return device_context_.get();
+DMLDeviceContext* DmlDevice::GetDeviceContext() const
+{
+    return device_context_.get();
 }
 
-}  // namespace tfdml
+} // namespace tfdml

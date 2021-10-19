@@ -23,70 +23,90 @@ limitations under the License.
 #include <dlfcn.h>
 #endif
 
-namespace tfdml {
-namespace env {
+namespace tfdml
+{
+namespace env
+{
 
-std::string FormatLibraryFileName(const std::string& name,
-                                  const std::string& version) {
-  std::string filename;
+std::string FormatLibraryFileName(
+    const std::string& name,
+    const std::string& version)
+{
+    std::string filename;
 #if _WIN32
-  if (version.empty()) {
-    filename = name + ".dll";
-  } else {
-    filename = name + version + ".dll";
-  }
+    if (version.empty())
+    {
+        filename = name + ".dll";
+    }
+    else
+    {
+        filename = name + version + ".dll";
+    }
 #else
-  if (version.empty()) {
-    filename = "lib" + name + ".so";
-  } else {
-    filename = "lib" + name + ".so" + "." + version;
-  }
+    if (version.empty())
+    {
+        filename = "lib" + name + ".so";
+    }
+    else
+    {
+        filename = "lib" + name + ".so" + "." + version;
+    }
 #endif
 
-  return filename;
+    return filename;
 }
 
-Status GetSymbolFromLibrary(void* handle, const char* symbol_name,
-                            void** symbol) {
+Status GetSymbolFromLibrary(
+    void* handle,
+    const char* symbol_name,
+    void** symbol)
+{
 #if _WIN32
-  FARPROC found_symbol;
+    FARPROC found_symbol;
 
-  found_symbol = GetProcAddress((HMODULE)handle, symbol_name);
-  if (found_symbol == NULL) {
-    return errors::NotFound(std::string(symbol_name) + " not found");
-  }
-  *symbol = (void**)found_symbol;
+    found_symbol = GetProcAddress((HMODULE)handle, symbol_name);
+    if (found_symbol == NULL)
+    {
+        return errors::NotFound(std::string(symbol_name) + " not found");
+    }
+    *symbol = (void**)found_symbol;
 #else
-  *symbol = dlsym(handle, symbol_name);
-  if (!*symbol) {
-    return errors::NotFound(dlerror());
-  }
+    *symbol = dlsym(handle, symbol_name);
+    if (!*symbol)
+    {
+        return errors::NotFound(dlerror());
+    }
 #endif
-  return Status::OK();
+    return Status::OK();
 }
 
-Status LoadDynamicLibrary(const char* library_filename, void** handle) {
+Status LoadDynamicLibrary(const char* library_filename, void** handle)
+{
 #if _WIN32
-  std::string file_name = library_filename;
-  std::replace(file_name.begin(), file_name.end(), '/', '\\');
+    std::string file_name = library_filename;
+    std::replace(file_name.begin(), file_name.end(), '/', '\\');
 
-  std::wstring ws_file_name(Utf8ToWideChar(file_name));
+    std::wstring ws_file_name(Utf8ToWideChar(file_name));
 
-  HMODULE hModule =
-      LoadLibraryExW(ws_file_name.c_str(), NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
-  if (!hModule) {
-    return errors::NotFound(file_name + " not found");
-  }
-  *handle = hModule;
+    HMODULE hModule = LoadLibraryExW(
+        ws_file_name.c_str(),
+        NULL,
+        LOAD_WITH_ALTERED_SEARCH_PATH);
+    if (!hModule)
+    {
+        return errors::NotFound(file_name + " not found");
+    }
+    *handle = hModule;
 #else
-  *handle = dlopen(library_filename, RTLD_NOW | RTLD_LOCAL);
-  if (!*handle) {
-    return errors::NotFound(dlerror());
-  }
+    *handle = dlopen(library_filename, RTLD_NOW | RTLD_LOCAL);
+    if (!*handle)
+    {
+        return errors::NotFound(dlerror());
+    }
 #endif
-  return Status::OK();
+    return Status::OK();
 }
 
-}  // namespace env
+} // namespace env
 
-}  // namespace tfdml
+} // namespace tfdml

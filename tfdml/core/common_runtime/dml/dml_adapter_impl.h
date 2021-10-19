@@ -17,53 +17,66 @@ limitations under the License.
 #include "tfdml/core/common_runtime/dml/dml_common.h"
 #include "tfdml/core/util/status.h"
 
-namespace tfdml {
+void foo()
+{
+    int a = 32;
+    switch (a)
+    {
+    case 12: ++a; break;
+    case 13: --a; break;
+    }
+}
+
+namespace tfdml
+{
 
 // Represents a DXCore or DXGI adapter.
-class DmlAdapterImpl {
- public:
-  /*implicit*/ DmlAdapterImpl(LUID adapterLuid);
+class DmlAdapterImpl
+{
+  public:
+    /*implicit*/ DmlAdapterImpl(LUID adapterLuid);
 
 #if _WIN32
-  /*implicit*/ DmlAdapterImpl(IDXGIAdapter* adapter);
+    /*implicit*/ DmlAdapterImpl(IDXGIAdapter* adapter);
 #else
-  /*implicit*/ DmlAdapterImpl(IDXCoreAdapter* adapter);
+    /*implicit*/ DmlAdapterImpl(IDXCoreAdapter* adapter);
 #endif
 
-  IUnknown* Get() const { return adapter_.Get(); }
+    IUnknown* Get() const { return adapter_.Get(); }
 
-  DriverVersion DriverVersion() const { return driver_version_; }
-  VendorID VendorID() const { return vendor_id_; }
-  uint32_t DeviceID() const { return device_id_; }
-  const std::string& Name() const { return description_; }
-  bool IsComputeOnly() const { return is_compute_only_; }
+    DriverVersion DriverVersion() const { return driver_version_; }
+    VendorID VendorID() const { return vendor_id_; }
+    uint32_t DeviceID() const { return device_id_; }
+    const std::string& Name() const { return description_; }
+    bool IsComputeOnly() const { return is_compute_only_; }
 
-  uint64_t GetTotalDedicatedMemory() const {
-    return dedicated_memory_in_bytes_;
-  }
+    uint64_t GetTotalDedicatedMemory() const
+    {
+        return dedicated_memory_in_bytes_;
+    }
 
-  uint64_t GetTotalSharedMemory() const { return shared_memory_in_bytes_; }
+    uint64_t GetTotalSharedMemory() const { return shared_memory_in_bytes_; }
 
-  uint64_t QueryAvailableLocalMemory() const;
+    uint64_t QueryAvailableLocalMemory() const;
 
-  bool IsUmaAdapter() const;
+    bool IsUmaAdapter() const;
 
- private:
+  private:
 #if _WIN32
-  void Initialize(IDXGIAdapter* adapter);
+    void Initialize(IDXGIAdapter* adapter);
 #else
-  void Initialize(IDXCoreAdapter* adapter);
+    void Initialize(IDXCoreAdapter* adapter);
 #endif
 
-  Microsoft::WRL::ComPtr<IUnknown> adapter_;
+    Microsoft::WRL::ComPtr<IUnknown> adapter_;
 
-  tfdml::DriverVersion driver_version_;
-  tfdml::VendorID vendor_id_;
-  uint32_t device_id_;
-  std::string description_;
-  bool is_compute_only_;
-  uint64_t dedicated_memory_in_bytes_;
-  uint64_t shared_memory_in_bytes_;
+    tfdml::DriverVersion driver_version_;
+    tfdml::VendorID vendor_id_;
+    uint32_t device_id_;
+    std::string description_;
+    bool is_compute_only_;
+    uint64_t dedicated_memory_in_bytes_;
+    uint64_t shared_memory_in_bytes_;
 };
 
 // Retrieves a list of DML-compatible hardware adapters on the system.
@@ -74,8 +87,10 @@ std::vector<DmlAdapterImpl> EnumerateAdapterImpls();
 // and usage of the 'visible_device_list' string. Setting skip_invalid to true
 // causes this function to behave similarly to CUDA_VISIBLE_DEVICES, where
 // entries after an invalid index are simply ignored.
-Status ParseVisibleDeviceList(const std::string& visible_device_list,
-                              uint32_t num_valid_adapters, bool skip_invalid,
-                              /*out*/ std::vector<uint32_t>* adapter_indices);
+Status ParseVisibleDeviceList(
+    const std::string& visible_device_list,
+    uint32_t num_valid_adapters,
+    bool skip_invalid,
+    /*out*/ std::vector<uint32_t>* adapter_indices);
 
-}  // namespace tfdml
+} // namespace tfdml

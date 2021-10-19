@@ -18,8 +18,10 @@ limitations under the License.
 
 #include "tfdml/core/util/statusor.h"
 
-namespace tfdml {
-namespace DmlDsoLoader {
+namespace tfdml
+{
+namespace DmlDsoLoader
+{
 // The following methods either load the DSO of interest and return a dlopen
 // handle or error status.
 StatusOr<void*> GetDirectMLDsoHandle();
@@ -29,11 +31,12 @@ StatusOr<void*> GetDxgiDsoHandle();
 StatusOr<void*> GetDxCoreDsoHandle();
 StatusOr<void*> GetPixDsoHandle();
 StatusOr<void*> GetKernel32DsoHandle();
-}  // namespace DmlDsoLoader
+} // namespace DmlDsoLoader
 
 // Wrapper around the DmlDsoLoader that prevents us from dlopen'ing any of the
 // DSOs more than once.
-namespace DmlCachedDsoLoader {
+namespace DmlCachedDsoLoader
+{
 // Cached versions of the corresponding DmlDsoLoader methods above.
 StatusOr<void*> GetDirectMLDsoHandle();
 StatusOr<void*> GetDirectMLDebugDsoHandle();
@@ -42,5 +45,5 @@ StatusOr<void*> GetDxgiDsoHandle();
 StatusOr<void*> GetDxCoreDsoHandle();
 StatusOr<void*> GetPixDsoHandle();
 StatusOr<void*> GetKernel32DsoHandle();
-}  // namespace DmlCachedDsoLoader
-}  // namespace tfdml
+} // namespace DmlCachedDsoLoader
+} // namespace tfdml
