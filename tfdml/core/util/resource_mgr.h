@@ -370,4 +370,7 @@ Status LookupResource(OpKernelContext* ctx,
   return Status::OK();
 }
 
+const tensorflow::ResourceHandleProto& HandleFromInput(OpKernelContext* ctx,
+                                                       int input);
+
 }  //  namespace tfdml
