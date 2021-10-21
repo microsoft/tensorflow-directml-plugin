@@ -121,6 +121,7 @@ class BaseBatchMatMulInitHelper : public InitializationHelper {
       in1_batches_shape.AddDim(in1_shape.dim_size(i));
     }
 
+    using tensorflow::BCast;
     BCast batches_bcast(BCast::FromShape(in0_batches_shape),
                         BCast::FromShape(in1_batches_shape));
 
