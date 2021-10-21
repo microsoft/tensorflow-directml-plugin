@@ -14,13 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/core/common_runtime/dml/dml_operator_helper.h"
-#include "tfdml/core/common_runtime/dml/dml_util.h"
 #include "tensorflow/core/framework/register_types.h"
-#include "tfdml/core/kernels/dml_kernel_wrapper.h"
-#include "tfdml/core/kernels/dml_ops_common.h"
 #include "tensorflow/core/kernels/fused_eigen_output_kernels.h"
 #include "tensorflow/core/util/matmul_bcast.h"
+#include "tfdml/core/util/macros.h"
+#include "tfdml/core/common_runtime/dml/dml_operator_helper.h"
+#include "tfdml/core/common_runtime/dml/dml_util.h"
+#include "tfdml/core/util/op_kernel_construction.h"
+#include "tfdml/core/kernels/dml_kernel_wrapper.h"
+#include "tfdml/core/kernels/dml_ops_common.h"
 
 namespace tfdml {
 
