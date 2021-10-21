@@ -14,19 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/core/common_runtime/dml/dml_operator_helper.h"
-#include "tensorflow/core/common_runtime/dml/dml_util.h"
+#include "tfdml/core/common_runtime/dml/dml_operator_helper.h"
+#include "tfdml/core/common_runtime/dml/dml_util.h"
 #include "tensorflow/core/framework/register_types.h"
-#include "tensorflow/core/kernels/dml_kernel_wrapper.h"
-#include "tensorflow/core/kernels/dml_ops_common.h"
+#include "tfdml/core/kernels/dml_kernel_wrapper.h"
+#include "tfdml/core/kernels/dml_ops_common.h"
 #include "tensorflow/core/kernels/fused_eigen_output_kernels.h"
 #include "tensorflow/core/util/matmul_bcast.h"
 
-namespace tensorflow {
+namespace tfdml {
 
 class MatMulInitHelper : public InitializationHelper {
  public:
-  struct Attributes {
+  struct Attributes : public BaseAttributes {
     explicit Attributes(OpKernelConstruction* ctx) {
       OP_REQUIRES_OK(ctx, ctx->GetAttr("transpose_a", &transpose_a));
       OP_REQUIRES_OK(ctx, ctx->GetAttr("transpose_b", &transpose_b));
@@ -79,14 +79,14 @@ class MatMulInitHelper : public InitializationHelper {
 
 class BaseBatchMatMulInitHelper : public InitializationHelper {
  public:
-  struct Attributes {
+  struct Attributes : public BaseAttributes {
     explicit Attributes(OpKernelConstruction* ctx) {
       OP_REQUIRES_OK(ctx, ctx->GetAttr("adj_x", &adj_x));
       OP_REQUIRES_OK(ctx, ctx->GetAttr("adj_y", &adj_y));
 
       named_attributes_ = {
-          {"adj_x", transpose_a},
-          {"adj_y", transpose_b},
+          {"adj_x", adj_x},
+          {"adj_y", adj_y},
       };
     }
 
