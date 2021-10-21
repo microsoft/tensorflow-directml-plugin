@@ -30,10 +30,20 @@ class MatMulInitHelper : public InitializationHelper {
     explicit Attributes(OpKernelConstruction* ctx) {
       OP_REQUIRES_OK(ctx, ctx->GetAttr("transpose_a", &transpose_a));
       OP_REQUIRES_OK(ctx, ctx->GetAttr("transpose_b", &transpose_b));
+
+      named_attributes_ = {
+          {"transpose_a", transpose_a},
+          {"transpose_b", transpose_b},
+      };
+    }
+
+    absl::Span<const NameAttributePair> GetNamedAttributes() const final {
+      return named_attributes_;
     }
 
     bool transpose_a;
     bool transpose_b;
+    absl::InlinedVector<NameAttributePair, 1> named_attributes_;
   };
 
   MatMulInitHelper(OpKernelContext* ctx, std::shared_ptr<const Attributes> attr)
@@ -73,10 +83,20 @@ class BaseBatchMatMulInitHelper : public InitializationHelper {
     explicit Attributes(OpKernelConstruction* ctx) {
       OP_REQUIRES_OK(ctx, ctx->GetAttr("adj_x", &adj_x));
       OP_REQUIRES_OK(ctx, ctx->GetAttr("adj_y", &adj_y));
+
+      named_attributes_ = {
+          {"adj_x", transpose_a},
+          {"adj_y", transpose_b},
+      };
+    }
+
+    absl::Span<const NameAttributePair> GetNamedAttributes() const final {
+      return named_attributes_;
     }
 
     bool adj_x;
     bool adj_y;
+    absl::InlinedVector<NameAttributePair, 1> named_attributes_;
   };
 
   BaseBatchMatMulInitHelper(
