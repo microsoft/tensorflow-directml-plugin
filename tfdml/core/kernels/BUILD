@@ -7,6 +7,7 @@ cc_library(
     srcs = [
         "dml_addn_op.cc",
         "dml_assign_variable_op.cc",
+        "dml_concat_op.cc",
         "dml_gather_nd_op.cc",
         "dml_gather_op.cc",
         "dml_kernel_wrapper.cc",
