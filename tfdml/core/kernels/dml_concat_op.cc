@@ -1,9 +1,12 @@
 /* Copyright 2020 The TensorFlow Authors. All Rights Reserved.
 Portions Copyright (c) Microsoft Corporation.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
+
     http://www.apache.org/licenses/LICENSE-2.0
+
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +18,7 @@ limitations under the License.
 #include "tfdml/core/common_runtime/dml/dml_util.h"
 #include "tfdml/core/kernels/dml_kernel_wrapper.h"
 #include "tfdml/core/kernels/dml_ops_common.h"
+#include "tfdml/core/util/kernel_def_builder.h"
 
 namespace tfdml {
 
@@ -27,15 +31,27 @@ class ConcatInitHelper : public InitializationHelper {
 
   ConcatInitHelper(OpKernelContext* ctx,
                    std::shared_ptr<const Attributes> attr) {
-    const Tensor concat_dim_tensor;
+
     const char* axis_attribute_name = AxisArgName == NAME_IS_AXIS ? "axis"
                                       : AxisArgName == NAME_IS_CONCAT_DIM
                                           ? "concat_dim"
                                           : "<invalid>";
-    OP_REQUIRES_OK(ctx, ctx->input(axis_attribute_name, &concat_dim_tensor));
 
-    OpInputList values;
-    OP_REQUIRES_OK(ctx, ctx->input_list("values", &values));
+    const int num_inputs = ctx->num_inputs();
+    int axis_index = AxisArgName == NAME_IS_CONCAT_DIM ? 0 : num_inputs - 1;
+
+    const Tensor concat_dim_tensor = ctx->input(axis_index);
+
+    OP_REQUIRES(ctx, TensorShapeUtils::IsScalar(concat_dim_tensor.shape()),
+                  errors::InvalidArgument("axis must be scalar"));
+    
+    std::vector<Tensor> values;
+    int values_begin = AxisArgName == NAME_IS_CONCAT_DIM ? 1 : 0;
+    int values_end = AxisArgName == NAME_IS_CONCAT_DIM ? num_inputs : num_inputs - 1;
+    for (int i = values_begin; i < values_end; ++i) {
+      values.push_back(std::move(ctx->input(i)));
+    }
+
     const int input_dims = values[0].dims();
     first_input_shape_ = values[0].shape();
 
@@ -49,11 +65,9 @@ class ConcatInitHelper : public InitializationHelper {
       CHECK(concat_dim_tensor.dtype() == TF_INT32);
     }
     if (concat_dim_tensor.dtype() == TF_INT32) {
-      concat_dim =
-          internal::SubtleMustCopy(concat_dim_tensor.scalar<int32_t>()());
+      concat_dim = concat_dim_tensor.base<int32_t>()[0];
     } else {
-      concat_dim =
-          internal::SubtleMustCopy(concat_dim_tensor.scalar<int64_t>()());
+      concat_dim = concat_dim_tensor.base<int64_t>()[0];
     }
 
     concat_axis_ = concat_dim < 0 ? concat_dim + input_dims : concat_dim;
@@ -141,10 +155,16 @@ class ConcatShapeHelper : public ShapeHelper {
   }
 };
 
-template <AxisArgumentName AxisArgName>
+template <AxisArgumentName AxisArgName, typename THostInputIndices>
 class DmlConcatKernel : public DmlKernel {
  public:
   using InitHelper = InitHelper<AxisArgName>;
+
+  // TODO: Remove this when/if the following PR gets merged
+  // https://github.com/tensorflow/tensorflow/pull/51759
+  static constexpr std::array<int, 1> host_input_indices =
+      THostInputIndices::host_input_indices;
+  static constexpr std::array<int, 0> host_output_indices = {};
 
   explicit DmlConcatKernel(DmlKernelConstruction* ctx,
                            const InitHelper* init_helper) {
@@ -245,8 +265,18 @@ class DmlConcatKernel : public DmlKernel {
   }
 };
 
-template <AxisArgumentName AxisArgName>
-using DmlConcatWrapper = DmlKernelWrapper<DmlConcatKernel<AxisArgName>,
+// TODO: Remove this when/if the following PR gets merged
+// https://github.com/tensorflow/tensorflow/pull/51759
+struct ConcatHostInputIndices {
+  static constexpr std::array<int, 1> host_input_indices = {0};
+};
+
+struct ConcatV2HostInputIndices {
+  static constexpr std::array<int, 1> host_input_indices = {-1};
+};
+
+template <AxisArgumentName AxisArgName, typename THostInputIndices>
+using DmlConcatWrapper = DmlKernelWrapper<DmlConcatKernel<AxisArgName, THostInputIndices>,
                                           ConcatShapeHelper<AxisArgName>>;
 
 #define REGISTER_KERNEL(type)                                   \
@@ -254,14 +284,14 @@ using DmlConcatWrapper = DmlKernelWrapper<DmlConcatKernel<AxisArgName>,
                               .Device(DEVICE_DML)               \
                               .TypeConstraint<type>("T")        \
                               .HostMemory("concat_dim"),        \
-                          DmlConcatWrapper<NAME_IS_CONCAT_DIM>) \
+                          DmlConcatWrapper<NAME_IS_CONCAT_DIM, ConcatHostInputIndices>) \
   REGISTER_KERNEL_BUILDER(Name("ConcatV2")                      \
                               .Device(DEVICE_DML)               \
                               .TypeConstraint<type>("T")        \
                               .HostMemory("axis"),              \
-                          DmlConcatWrapper<NAME_IS_AXIS>)
+                          DmlConcatWrapper<NAME_IS_AXIS, ConcatV2HostInputIndices>)
 
-// TODO(b/25387198): A special kernel exists for int32 (see concat_op.cc).
+//TODO: add uint64 support
 TF_CALL_float(REGISTER_KERNEL);
 TF_CALL_half(REGISTER_KERNEL);
 TF_CALL_uint8(REGISTER_KERNEL);
