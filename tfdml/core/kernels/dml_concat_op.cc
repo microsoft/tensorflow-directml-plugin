@@ -272,12 +272,14 @@ struct ConcatHostInputIndices {
 };
 
 struct ConcatV2HostInputIndices {
-  static constexpr std::array<int, 1> host_input_indices = {-1};
+  static constexpr std::array<int, 1> host_input_indices = {1};
 };
 
+// TODO: Enable cache once input indices are converted to tensor indices
+// TF2 #36789375
 template <AxisArgumentName AxisArgName, typename THostInputIndices>
 using DmlConcatWrapper = DmlKernelWrapper<DmlConcatKernel<AxisArgName, THostInputIndices>,
-                                          ConcatShapeHelper<AxisArgName>>;
+                                          ConcatShapeHelper<AxisArgName>, DmlKernelCachePolicy::Never>;
 
 #define REGISTER_KERNEL(type)                                   \
   REGISTER_KERNEL_BUILDER(Name("Concat")                        \
@@ -291,7 +293,8 @@ using DmlConcatWrapper = DmlKernelWrapper<DmlConcatKernel<AxisArgName, THostInpu
                               .HostMemory("axis"),              \
                           DmlConcatWrapper<NAME_IS_AXIS, ConcatV2HostInputIndices>)
 
-//TODO: add uint64 support
+// TODO: add uint64 support
+// TF2 #36692608
 TF_CALL_float(REGISTER_KERNEL);
 TF_CALL_half(REGISTER_KERNEL);
 TF_CALL_uint8(REGISTER_KERNEL);
