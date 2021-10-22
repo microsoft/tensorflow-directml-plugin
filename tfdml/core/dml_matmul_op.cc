@@ -14,9 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/core/framework/register_types.h"
-#include "tensorflow/core/kernels/fused_eigen_output_kernels.h"
-#include "tensorflow/core/util/matmul_bcast.h"
+// TODO: consider copying these into tfdml/core/util and pruning them:
+// #include "tensorflow/core/framework/register_types.h"
+// #include "tensorflow/core/kernels/fused_eigen_output_kernels.h"
+
+// TODO: integrate ComputeBatchIndices into tfdml bcast.h copy, a dependency of matmul_bcast.h
+#include "tfdml/core/util/matmul_bcast.h"
+#include "tfdml/core/util/kernel_def_builder.h"
 #include "tfdml/core/util/macros.h"
 #include "tfdml/core/common_runtime/dml/dml_operator_helper.h"
 #include "tfdml/core/common_runtime/dml/dml_util.h"
@@ -121,7 +125,6 @@ class BaseBatchMatMulInitHelper : public InitializationHelper {
       in1_batches_shape.AddDim(in1_shape.dim_size(i));
     }
 
-    using tensorflow::BCast;
     BCast batches_bcast(BCast::FromShape(in0_batches_shape),
                         BCast::FromShape(in1_batches_shape));
 
@@ -338,7 +341,8 @@ class DmlMatMulKernel : public DmlKernel {
   REGISTER_KERNEL_BUILDER(                                         \
       Name("MatMul").Device(DEVICE_DML).TypeConstraint<type>("T"), \
       DmlKernelWrapper<DmlMatMulKernel, MatMulShapeHelper>);
-TF_CALL_DML_FLOAT_TYPES(DML_REGISTER_KERNEL);
+TF_CALL_float(DML_REGISTER_KERNEL);
+TF_CALL_half(DML_REGISTER_KERNEL);
 #undef DML_REGISTER_KERNEL
 
 template <typename TInitHelper>
@@ -453,7 +457,8 @@ class DmlBatchMatMulKernel : public DmlKernel {
       Name("BatchMatMul").Device(DEVICE_DML).TypeConstraint<type>("T"), \
       DmlKernelWrapper<DmlBatchMatMulKernel<BatchMatMulInitHelper>,     \
                        BatchMatMulShapeHelper<BatchMatMulInitHelper>>);
-TF_CALL_DML_FLOAT_TYPES(DML_REGISTER_KERNEL);
+TF_CALL_float(DML_REGISTER_KERNEL);
+TF_CALL_half(DML_REGISTER_KERNEL);
 #undef DML_REGISTER_KERNEL
 
 #define DML_REGISTER_KERNEL(type)                                         \
@@ -461,9 +466,11 @@ TF_CALL_DML_FLOAT_TYPES(DML_REGISTER_KERNEL);
       Name("BatchMatMulV2").Device(DEVICE_DML).TypeConstraint<type>("T"), \
       DmlKernelWrapper<DmlBatchMatMulKernel<BatchMatMulV2InitHelper>,     \
                        BatchMatMulShapeHelper<BatchMatMulV2InitHelper>>);
-TF_CALL_DML_FLOAT_TYPES(DML_REGISTER_KERNEL);
+TF_CALL_float(DML_REGISTER_KERNEL);
+TF_CALL_half(DML_REGISTER_KERNEL);
 #undef DML_REGISTER_KERNEL
 
+/*
 class FusedMatMulInitHelper : public MatMulInitHelper {
  public:
   struct Attributes : public MatMulInitHelper::Attributes {
@@ -589,6 +596,7 @@ class DmlFusedMatMulKernel : public DmlKernel {
       DmlKernelWrapper<DmlFusedMatMulKernel, MatMulShapeHelper>);
 // _FusedMatMul only supports float32
 TF_CALL_float(DML_REGISTER_KERNEL);
+TF_CALL_half(DML_REGISTER_KERNEL);
 #undef DML_REGISTER_KERNEL
-
+*/
 }  // namespace tensorflow
