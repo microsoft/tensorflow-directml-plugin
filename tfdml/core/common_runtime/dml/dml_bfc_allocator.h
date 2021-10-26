@@ -15,7 +15,8 @@ limitations under the License.
 
 #include "dml_buffer_region.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
 class D3D12HeapAllocator;
 
@@ -23,15 +24,18 @@ class D3D12HeapAllocator;
 // when it determines that it needs to grow the allocated memory. Here,
 // DmlAllocator is basically a SubAllocator with additional functionalities like
 // CreateBufferRegion().
-class DmlAllocator {
- public:
-  DmlAllocator(D3D12HeapAllocator* heap_allocator, const std::string& name);
-  D3D12BufferRegion CreateBufferRegion(const void* ptr, uint64_t size_in_bytes);
-  void* Alloc(size_t num_bytes);
-  void Free(void* ptr, size_t num_bytes);
+class DmlAllocator
+{
+  public:
+    DmlAllocator(D3D12HeapAllocator* heap_allocator, const std::string& name);
+    D3D12BufferRegion CreateBufferRegion(
+        const void* ptr,
+        uint64_t size_in_bytes);
+    void* Alloc(size_t num_bytes);
+    void Free(void* ptr, size_t num_bytes);
 
- private:
-  D3D12HeapAllocator* heap_allocator_;
+  private:
+    D3D12HeapAllocator* heap_allocator_;
 };
 
-}  // namespace tfdml
+} // namespace tfdml

@@ -22,30 +22,41 @@ limitations under the License.
 
 struct SP_DeviceMemoryBase;
 
-namespace tfdml {
+namespace tfdml
+{
 
 class Tensor;
 class OpKernelContext;
 class DmlDevice;
 
-enum class DxCallErrorHandling { Silent, Warning, Fatal };
+enum class DxCallErrorHandling
+{
+    Silent,
+    Warning,
+    Fatal
+};
 
 // Calls D3D12CreateDevice after lazily loading the D3D12 module. Returns an
 // empty ComPtr if unsuccessful. By default this helper will log warnings if the
 // module is not found, and it will log nothing if the
 // call to D3D12CreateDevice itself fails.
 Microsoft::WRL::ComPtr<ID3D12Device> TryCreateD3d12Device(
-    IUnknown* adapter, D3D_FEATURE_LEVEL minimum_feature_level,
+    IUnknown* adapter,
+    D3D_FEATURE_LEVEL minimum_feature_level,
     DxCallErrorHandling call_error_handling = DxCallErrorHandling::Silent,
     DxCallErrorHandling module_error_handling = DxCallErrorHandling::Warning);
 
 // Calls D3D12CreateDevice after lazily loading the D3D12 module. The call must
 // succeed or a fatal message will be logged and the program will abort.
 inline Microsoft::WRL::ComPtr<ID3D12Device> CreateD3d12Device(
-    IUnknown* adapter, D3D_FEATURE_LEVEL minimum_feature_level) {
-  return TryCreateD3d12Device(adapter, minimum_feature_level,
-                              DxCallErrorHandling::Fatal,
-                              DxCallErrorHandling::Fatal);
+    IUnknown* adapter,
+    D3D_FEATURE_LEVEL minimum_feature_level)
+{
+    return TryCreateD3d12Device(
+        adapter,
+        minimum_feature_level,
+        DxCallErrorHandling::Fatal,
+        DxCallErrorHandling::Fatal);
 }
 
 #ifdef _WIN32
@@ -59,9 +70,11 @@ Microsoft::WRL::ComPtr<IDXGIFactory4> TryCreateDxgiFactory(
 
 // Calls CreateDXGIFactory after lazily loading the DXGI module. The call must
 // succeed or a fatal message will be logged and the program will abort.
-inline Microsoft::WRL::ComPtr<IDXGIFactory4> CreateDxgiFactory() {
-  return TryCreateDxgiFactory(DxCallErrorHandling::Fatal,
-                              DxCallErrorHandling::Fatal);
+inline Microsoft::WRL::ComPtr<IDXGIFactory4> CreateDxgiFactory()
+{
+    return TryCreateDxgiFactory(
+        DxCallErrorHandling::Fatal,
+        DxCallErrorHandling::Fatal);
 }
 #endif
 
@@ -78,9 +91,11 @@ Microsoft::WRL::ComPtr<IDXCoreAdapterFactory> TryCreateDxCoreAdapterFactory(
 // call must succeed or a fatal message will be logged and the program will
 // abort.
 inline Microsoft::WRL::ComPtr<IDXCoreAdapterFactory>
-CreateDxCoreAdapterFactory() {
-  return TryCreateDxCoreAdapterFactory(DxCallErrorHandling::Fatal,
-                                       DxCallErrorHandling::Fatal);
+CreateDxCoreAdapterFactory()
+{
+    return TryCreateDxCoreAdapterFactory(
+        DxCallErrorHandling::Fatal,
+        DxCallErrorHandling::Fatal);
 }
 #endif
 
@@ -89,7 +104,8 @@ CreateDxCoreAdapterFactory() {
 // module is not found, and it will log nothing if the
 // call to DMLCreateDevice itself fails.
 Microsoft::WRL::ComPtr<IDMLDevice> TryCreateDmlDevice(
-    ID3D12Device* d3d12_device, DML_CREATE_DEVICE_FLAGS dml_flags,
+    ID3D12Device* d3d12_device,
+    DML_CREATE_DEVICE_FLAGS dml_flags,
     DxCallErrorHandling call_error_handling = DxCallErrorHandling::Silent,
     DxCallErrorHandling module_error_handling = DxCallErrorHandling::Warning);
 
@@ -97,9 +113,14 @@ Microsoft::WRL::ComPtr<IDMLDevice> TryCreateDmlDevice(
 // call must succeed or a fatal message will be logged and the program will
 // abort.
 inline Microsoft::WRL::ComPtr<IDMLDevice> CreateDmlDevice(
-    ID3D12Device* d3d12_device, DML_CREATE_DEVICE_FLAGS dml_flags) {
-  return TryCreateDmlDevice(d3d12_device, dml_flags, DxCallErrorHandling::Fatal,
-                            DxCallErrorHandling::Fatal);
+    ID3D12Device* d3d12_device,
+    DML_CREATE_DEVICE_FLAGS dml_flags)
+{
+    return TryCreateDmlDevice(
+        d3d12_device,
+        dml_flags,
+        DxCallErrorHandling::Fatal,
+        DxCallErrorHandling::Fatal);
 }
 
 // Converts a DML tensor data type to a TF tensor data type and vice versa.
@@ -120,18 +141,20 @@ bool Is64BitUnsignedIntegerType(TF_DataType type);
 // logically represented as int64, whereas DML requires uint32.
 template <int dim_count = 4>
 absl::InlinedVector<uint32_t, dim_count> NarrowTensorShape(
-    const TensorShape& shape) {
-  CHECK(shape.dims() >= 0);  // No partial tensor shapes allowed
+    const TensorShape& shape)
+{
+    CHECK(shape.dims() >= 0); // No partial tensor shapes allowed
 
-  absl::InlinedVector<uint32_t, dim_count> narrowed_shape;
-  for (int i = 0; i < shape.dims(); ++i) {
-    int64_t dim = shape.dim_size(i);
+    absl::InlinedVector<uint32_t, dim_count> narrowed_shape;
+    for (int i = 0; i < shape.dims(); ++i)
+    {
+        int64_t dim = shape.dim_size(i);
 
-    CHECK(dim >= 0 && dim <= UINT32_MAX);
-    narrowed_shape.push_back(static_cast<uint32_t>(dim));
-  }
+        CHECK(dim >= 0 && dim <= UINT32_MAX);
+        narrowed_shape.push_back(static_cast<uint32_t>(dim));
+    }
 
-  return narrowed_shape;
+    return narrowed_shape;
 }
 
 // Retrieves the index in canonical DML order (NCHW/NCDHW) of the specified
@@ -152,11 +175,13 @@ dml::TensorPolicy GetDmlXTensorPolicy(TensorFormat format);
 // for int64 emulation.
 dml::TensorPolicy GetEmulatedInt64TensorPolicy();
 
-namespace dml_util {
+namespace dml_util
+{
 
-D3D12BufferRegion CreateBufferForDeviceMemory(const DmlDevice* device,
-                                              const SP_DeviceMemoryBase* data,
-                                              uint64_t size_in_bytes);
+D3D12BufferRegion CreateBufferForDeviceMemory(
+    const DmlDevice* device,
+    const SP_DeviceMemoryBase* data,
+    uint64_t size_in_bytes);
 
 // Calls D3D12BufferRegion::GetBufferBinding on each of the buffers and returns
 // the result.
@@ -164,16 +189,18 @@ absl::InlinedVector<absl::optional<DML_BUFFER_BINDING>, 8> GetBufferBindings(
     absl::Span<const D3D12BufferRegion> buffers);
 
 template <typename T, typename... TArgs>
-Microsoft::WRL::ComPtr<T> MakeOrAbort(TArgs&&... args) {
-  auto obj = Microsoft::WRL::Make<T>(std::forward<TArgs>(args)...);
+Microsoft::WRL::ComPtr<T> MakeOrAbort(TArgs&&... args)
+{
+    auto obj = Microsoft::WRL::Make<T>(std::forward<TArgs>(args)...);
 
-  if (!obj.Get()) {
-    DML_CHECK_SUCCEEDED(E_OUTOFMEMORY);
-  }
+    if (!obj.Get())
+    {
+        DML_CHECK_SUCCEEDED(E_OUTOFMEMORY);
+    }
 
-  return obj;
+    return obj;
 }
 
-}  // namespace dml_util
+} // namespace dml_util
 
-}  // namespace tfdml
+} // namespace tfdml

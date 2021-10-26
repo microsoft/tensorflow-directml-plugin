@@ -16,21 +16,24 @@ limitations under the License.
 #include "tfdml/core/util/resource_mgr.h"
 #include "tfdml/core/util/status.h"
 
-namespace tfdml {
+namespace tfdml
+{
 class Tensor;
 
-class Device {
- public:
-  Device();
-  virtual ~Device();
+class Device
+{
+  public:
+    Device();
+    virtual ~Device();
 
-  virtual Status CopyCPUTensorToDevice(const Tensor* cpu_tensor,
-                                       Tensor* device_tensor) = 0;
+    virtual Status CopyCPUTensorToDevice(
+        const Tensor* cpu_tensor,
+        Tensor* device_tensor) = 0;
 
-  // Returns the resource manager associated w/ this device.
-  virtual ResourceMgr* resource_manager() { return rmgr_; }
+    // Returns the resource manager associated w/ this device.
+    virtual ResourceMgr* resource_manager() { return rmgr_; }
 
- private:
-  ResourceMgr* rmgr_;
+  private:
+    ResourceMgr* rmgr_;
 };
-}  // namespace tfdml
+} // namespace tfdml

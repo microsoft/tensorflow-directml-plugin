@@ -18,7 +18,8 @@ limitations under the License.
 #include "absl/container/inlined_vector.h"
 #include "tfdml/core/util/tensor_shape.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
 // BCast is a helper for broadcasting binary tensor operation.
 // TensorFlow's broadcasting rule follows that of numpy (See
@@ -61,59 +62,63 @@ namespace tfdml {
 // broadcasting following the same rule.
 //
 // TODO(zhifengc): Adds support for n-ary (n >= 2).
-class BCast {
- public:
-  // A vector of int64 representing the shape of tensor. The 0-th
-  // element is the outer-most dimension and the last element is the
-  // inner-most dimension. Note that we do not use TensorShape since
-  // it's more convenient to manipulate Vec directly for this module.
-  typedef absl::InlinedVector<int64_t, 4> Vec;
+class BCast
+{
+  public:
+    // A vector of int64 representing the shape of tensor. The 0-th
+    // element is the outer-most dimension and the last element is the
+    // inner-most dimension. Note that we do not use TensorShape since
+    // it's more convenient to manipulate Vec directly for this module.
+    typedef absl::InlinedVector<int64_t, 4> Vec;
 
-  // Constructs all helper shapes, following the aforementioned rules.
-  //
-  // If "fewer_dims_optimization" is set to true (the default), the
-  // implementation tries to reduce intermediate dimensions needed to be more
-  // efficient.  This is transparent to the caller.
-  //
-  // If false, all intermediate shapes (except for grad_{x,y}_reduce_idx()) have
-  // the same number of dimensions as the larger of the two inputs.
-  BCast(const Vec& x, const Vec& y, const bool fewer_dims_optimization = true);
-  BCast(const BCast&) = delete;
-  void operator=(const BCast&) = delete;
-  ~BCast() {}
+    // Constructs all helper shapes, following the aforementioned rules.
+    //
+    // If "fewer_dims_optimization" is set to true (the default), the
+    // implementation tries to reduce intermediate dimensions needed to be more
+    // efficient.  This is transparent to the caller.
+    //
+    // If false, all intermediate shapes (except for grad_{x,y}_reduce_idx())
+    // have the same number of dimensions as the larger of the two inputs.
+    BCast(
+        const Vec& x,
+        const Vec& y,
+        const bool fewer_dims_optimization = true);
+    BCast(const BCast&) = delete;
+    void operator=(const BCast&) = delete;
+    ~BCast() {}
 
-  // Returns true iff two operands are compatible according to the
-  // broadcasting rule.
-  bool IsValid() const { return valid_; }
+    // Returns true iff two operands are compatible according to the
+    // broadcasting rule.
+    bool IsValid() const { return valid_; }
 
-  // If and only if IsValid(), the following fields can be used in
-  // implementing a broadcasted binary tensor operation according to
-  // the broadcasting rule.
-  const Vec& x_reshape() const { return x_reshape_; }
-  const Vec& x_bcast() const { return x_bcast_; }
-  const Vec& y_reshape() const { return y_reshape_; }
-  const Vec& y_bcast() const { return y_bcast_; }
-  const Vec& result_shape() const { return result_; }
-  const Vec& output_shape() const { return output_; }
-  const Vec& grad_x_reduce_idx() const { return grad_x_reduce_idx_; }
-  const Vec& grad_y_reduce_idx() const { return grad_y_reduce_idx_; }
+    // If and only if IsValid(), the following fields can be used in
+    // implementing a broadcasted binary tensor operation according to
+    // the broadcasting rule.
+    const Vec& x_reshape() const { return x_reshape_; }
+    const Vec& x_bcast() const { return x_bcast_; }
+    const Vec& y_reshape() const { return y_reshape_; }
+    const Vec& y_bcast() const { return y_bcast_; }
+    const Vec& result_shape() const { return result_; }
+    const Vec& output_shape() const { return output_; }
+    const Vec& grad_x_reduce_idx() const { return grad_x_reduce_idx_; }
+    const Vec& grad_y_reduce_idx() const { return grad_y_reduce_idx_; }
 
-  // Static helpers.
-  static Vec FromShape(const TensorShape& shape);
-  static TensorShape ToShape(const BCast::Vec& vec);
+    // Static helpers.
+    static Vec FromShape(const TensorShape& shape);
+    static TensorShape ToShape(const BCast::Vec& vec);
 
- private:
-  bool valid_ = true;
-  Vec x_reshape_;
-  Vec x_bcast_;
-  Vec y_reshape_;
-  Vec y_bcast_;
-  Vec result_;
-  Vec output_;
-  Vec grad_x_reduce_idx_;
-  Vec grad_y_reduce_idx_;
+  private:
+    bool valid_ = true;
+    Vec x_reshape_;
+    Vec x_bcast_;
+    Vec y_reshape_;
+    Vec y_bcast_;
+    Vec result_;
+    Vec output_;
+    Vec grad_x_reduce_idx_;
+    Vec grad_y_reduce_idx_;
 
-  static void Reverse(Vec* shape);
+    static void Reverse(Vec* shape);
 };
 
-}  // namespace tfdml
+} // namespace tfdml

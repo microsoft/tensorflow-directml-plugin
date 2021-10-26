@@ -19,47 +19,50 @@ limitations under the License.
 #include "absl/container/inlined_vector.h"
 #include "absl/types/span.h"
 
-namespace tensorflow {
+namespace tensorflow
+{
 class TensorShapeProto;
 }
 
-namespace tfdml {
-class TensorShape {
- public:
-  TensorShape() = default;
-  TensorShape(const tensorflow::TensorShapeProto& proto);
-  TensorShape(std::initializer_list<int64_t> dim_sizes);
-  TensorShape(absl::Span<const int64_t> dim_sizes);
-  TensorShape(absl::InlinedVector<int64_t, 5>&& dim_sizes);
+namespace tfdml
+{
+class TensorShape
+{
+  public:
+    TensorShape() = default;
+    TensorShape(const tensorflow::TensorShapeProto& proto);
+    TensorShape(std::initializer_list<int64_t> dim_sizes);
+    TensorShape(absl::Span<const int64_t> dim_sizes);
+    TensorShape(absl::InlinedVector<int64_t, 5>&& dim_sizes);
 
-  void AddDim(int64_t dim_size);
-  void InsertDim(int index, int64_t dim_size);
-  void RemoveLastDims(int num_dims);
-  int64_t dim_size(int dim_index) const;
-  int64_t dims() const;
-  int64_t num_elements() const;
-  int64_t* data();
-  const int64_t* data() const;
-  std::string DebugString() const;
-  void set_dim(int dim_index, int64_t dim);
+    void AddDim(int64_t dim_size);
+    void InsertDim(int index, int64_t dim_size);
+    void RemoveLastDims(int num_dims);
+    int64_t dim_size(int dim_index) const;
+    int64_t dims() const;
+    int64_t num_elements() const;
+    int64_t* data();
+    const int64_t* data() const;
+    std::string DebugString() const;
+    void set_dim(int dim_index, int64_t dim);
 
-  friend bool operator==(const TensorShape& a, const TensorShape& b);
-  friend bool operator!=(const TensorShape& a, const TensorShape& b);
+    friend bool operator==(const TensorShape& a, const TensorShape& b);
+    friend bool operator!=(const TensorShape& a, const TensorShape& b);
 
-  template <typename H>
-  friend H AbslHashValue(H h, const TensorShape& shape) {
-    auto result = H::combine(std::move(h), shape.dim_sizes_);
-    return result;
-  }
+    template <typename H> friend H AbslHashValue(H h, const TensorShape& shape)
+    {
+        auto result = H::combine(std::move(h), shape.dim_sizes_);
+        return result;
+    }
 
- private:
-  absl::InlinedVector<int64_t, 5> dim_sizes_;
-  int64_t num_elements_;
+  private:
+    absl::InlinedVector<int64_t, 5> dim_sizes_;
+    int64_t num_elements_;
 
-  void UpdateNumElements();
+    void UpdateNumElements();
 };
 
 bool operator==(const TensorShape& a, const TensorShape& b);
 bool operator!=(const TensorShape& a, const TensorShape& b);
 
-}  // namespace tfdml
+} // namespace tfdml

@@ -20,31 +20,38 @@ limitations under the License.
 #include "tfdml/core/util/resource_mgr.h"
 #include "tfdml/core/util/types.h"
 
-namespace tfdml {
-class OpKernel {
- public:
-  OpKernel(const char* op_type_string, const char* op_name)
-      : op_type_string_(op_type_string), op_name_(op_name) {}
+namespace tfdml
+{
+class OpKernel
+{
+  public:
+    OpKernel(const char* op_type_string, const char* op_name)
+        : op_type_string_(op_type_string),
+          op_name_(op_name)
+    {
+    }
 
-  virtual ~OpKernel() = default;
+    virtual ~OpKernel() = default;
 
-  const std::string& type_string() const { return op_type_string_; }
-  const std::string& name() const { return op_name_; }
+    const std::string& type_string() const { return op_type_string_; }
+    const std::string& name() const { return op_name_; }
 
-  virtual MemoryType input_memory_type(int index) const {
-    LogFatal(
-        "input_memory_type should only be called by DML kernels that inherit "
-        "directly from DmlKernelWrapperBase.");
-  }
+    virtual MemoryType input_memory_type(int index) const
+    {
+        LogFatal("input_memory_type should only be called by DML kernels that "
+                 "inherit "
+                 "directly from DmlKernelWrapperBase.");
+    }
 
-  virtual MemoryType output_memory_type(int index) const {
-    LogFatal(
-        "output_memory_type should only be called by DML kernels that inherit "
-        "directly from DmlKernelWrapperBase.");
-  }
+    virtual MemoryType output_memory_type(int index) const
+    {
+        LogFatal("output_memory_type should only be called by DML kernels that "
+                 "inherit "
+                 "directly from DmlKernelWrapperBase.");
+    }
 
- private:
-  const std::string op_type_string_;
-  const std::string op_name_;
+  private:
+    const std::string op_type_string_;
+    const std::string op_name_;
 };
-}  // namespace tfdml
+} // namespace tfdml

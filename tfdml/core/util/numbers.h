@@ -17,9 +17,11 @@ limitations under the License.
 
 #include <string>
 
-namespace tfdml {
-namespace strings {
+namespace tfdml
+{
+namespace strings
+{
 std::string HumanReadableNumBytes(int64_t num_bytes);
 
-}  // namespace strings
-}  // namespace tfdml
+} // namespace strings
+} // namespace tfdml

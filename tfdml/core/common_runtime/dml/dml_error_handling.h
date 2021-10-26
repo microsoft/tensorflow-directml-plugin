@@ -21,21 +21,28 @@ limitations under the License.
 #include "winadapter.h"
 #endif
 
-namespace tfdml {
-namespace dml_util {
-[[noreturn]] void HandleFailedHr(HRESULT hr, const char* expression,
-                                 const char* file, int line);
+namespace tfdml
+{
+namespace dml_util
+{
+[[noreturn]] void HandleFailedHr(
+    HRESULT hr,
+    const char* expression,
+    const char* file,
+    int line);
 
 bool HrIsOutOfMemory(HRESULT hr);
 absl::string_view StringifyDeviceRemovedReason(HRESULT reason);
 
-}  // namespace dml_util
-}  // namespace tfdml
+} // namespace dml_util
+} // namespace tfdml
 
-#define DML_CHECK_SUCCEEDED(x)                                      \
-  do {                                                              \
-    HRESULT _hr = (x);                                              \
-    if (FAILED(_hr)) {                                              \
-      tfdml::dml_util::HandleFailedHr(_hr, #x, __FILE__, __LINE__); \
-    }                                                               \
-  } while (0)
+#define DML_CHECK_SUCCEEDED(x)                                                 \
+    do                                                                         \
+    {                                                                          \
+        HRESULT _hr = (x);                                                     \
+        if (FAILED(_hr))                                                       \
+        {                                                                      \
+            tfdml::dml_util::HandleFailedHr(_hr, #x, __FILE__, __LINE__);      \
+        }                                                                      \
+    } while (0)

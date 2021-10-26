@@ -17,25 +17,32 @@ limitations under the License.
 
 #include "tfdml/core/util/status.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
 // Returns a boolean into "value" from the environmental variable
 // "env_var_name". If it is unset, the default value is used. A string "0" or a
 // case insensitive "false" is interpreted as false. A string "1" or a case
 // insensitive "true" is interpreted as true. Otherwise, an error status is
 // returned.
-Status ReadBoolFromEnvVar(absl::string_view env_var_name, bool default_val,
-                          bool* value);
+Status ReadBoolFromEnvVar(
+    absl::string_view env_var_name,
+    bool default_val,
+    bool* value);
 
 // Returns an int64 into "value" from the environmental variable "env_var_name".
 // If it is unset, the default value is used.
 // If the string cannot be parsed into int64, an error status is returned.
-Status ReadInt64FromEnvVar(absl::string_view env_var_name, int64_t default_val,
-                           int64_t* value);
+Status ReadInt64FromEnvVar(
+    absl::string_view env_var_name,
+    int64_t default_val,
+    int64_t* value);
 
 // Returns a string into "value" from the environmental variable "env_var_name".
 // If it is unset, the default value is used.
-Status ReadStringFromEnvVar(absl::string_view env_var_name,
-                            absl::string_view default_val, std::string* value);
+Status ReadStringFromEnvVar(
+    absl::string_view env_var_name,
+    absl::string_view default_val,
+    std::string* value);
 
-}  // namespace tfdml
+} // namespace tfdml

@@ -17,18 +17,20 @@ limitations under the License.
 
 #include "tfdml/core/util/tensor_shape.h"
 
-namespace tfdml {
+namespace tfdml
+{
 class Tensor;
 
-class TensorShapeUtils {
- public:
-  // Makes a shape from a tensor. The datatype of the tensor must be int32 or
-  // int64
-  static TensorShape MakeShape(const Tensor& tensor);
+class TensorShapeUtils
+{
+  public:
+    // Makes a shape from a tensor. The datatype of the tensor must be int32 or
+    // int64
+    static TensorShape MakeShape(const Tensor& tensor);
 
-  static bool IsScalar(const TensorShape& shape);
-  static bool IsVector(const TensorShape& shape);
-  static bool IsVectorOrHigher(const TensorShape& shape);
-  static bool IsMatrix(const TensorShape& shape);
+    static bool IsScalar(const TensorShape& shape);
+    static bool IsVector(const TensorShape& shape);
+    static bool IsVectorOrHigher(const TensorShape& shape);
+    static bool IsMatrix(const TensorShape& shape);
 };
-}  // namespace tfdml
+} // namespace tfdml

@@ -17,7 +17,8 @@ limitations under the License.
 #include "dml_common.h"
 #include "tfdml/core/util/tensor.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
 class DmlAllocator;
 class OpKernelContext;
@@ -26,34 +27,37 @@ class OpKernelContext;
 // allocator. This is essentially a convenience wrapper over a device memory
 // allocation as well as the buffer region that spans it. When this object is
 // destructed, the device memory is freed to the allocator.
-class DmlBuffer {
- public:
-  explicit DmlBuffer(OpKernelContext* op_kernel_context,
-                     DmlAllocator* allocator, uint64_t size_in_bytes);
+class DmlBuffer
+{
+  public:
+    explicit DmlBuffer(
+        OpKernelContext* op_kernel_context,
+        DmlAllocator* allocator,
+        uint64_t size_in_bytes);
 
-  // Move-only
-  DmlBuffer(const DmlBuffer&) = delete;
-  DmlBuffer& operator=(const DmlBuffer&) = delete;
-  DmlBuffer(DmlBuffer&&) = default;
-  DmlBuffer& operator=(DmlBuffer&&) = default;
+    // Move-only
+    DmlBuffer(const DmlBuffer&) = delete;
+    DmlBuffer& operator=(const DmlBuffer&) = delete;
+    DmlBuffer(DmlBuffer&&) = default;
+    DmlBuffer& operator=(DmlBuffer&&) = default;
 
-  ID3D12Resource* ResourceInUavState() const;
-  ID3D12Resource* ResourceInCopySrcState() const;
-  ID3D12Resource* ResourceInCopyDstState() const;
-  uint64_t Offset() const;
-  uint64_t SizeInBytes() const;
-  const D3D12BufferRegion& Region() const { return buffer_region_; }
+    ID3D12Resource* ResourceInUavState() const;
+    ID3D12Resource* ResourceInCopySrcState() const;
+    ID3D12Resource* ResourceInCopyDstState() const;
+    uint64_t Offset() const;
+    uint64_t SizeInBytes() const;
+    const D3D12BufferRegion& Region() const { return buffer_region_; }
 
-  DML_BUFFER_BINDING GetBufferBinding() const;
+    DML_BUFFER_BINDING GetBufferBinding() const;
 
-  explicit operator bool() const { return !!buffer_region_; }
+    explicit operator bool() const { return !!buffer_region_; }
 
- private:
-  DmlAllocator* allocator_;  // weak; owned by the device state
-  D3D12BufferRegion buffer_region_;
+  private:
+    DmlAllocator* allocator_; // weak; owned by the device state
+    D3D12BufferRegion buffer_region_;
 
-  // Dummy tensor that holds the memory allocated by the BFC Allocator
-  Tensor tensor_;
+    // Dummy tensor that holds the memory allocated by the BFC Allocator
+    Tensor tensor_;
 };
 
-}  // namespace tfdml
+} // namespace tfdml

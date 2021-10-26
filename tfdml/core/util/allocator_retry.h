@@ -19,38 +19,44 @@ limitations under the License.
 #include <functional>
 #include <mutex>
 
-namespace tfdml {
+namespace tfdml
+{
 
 // A retrying wrapper for a memory allocator.
-class AllocatorRetry {
- public:
-  AllocatorRetry();
+class AllocatorRetry
+{
+  public:
+    AllocatorRetry();
 
-  // Call 'alloc_func' to obtain memory.  On first call,
-  // 'verbose_failure' will be false.  If return value is nullptr,
-  // then wait up to 'max_millis_to_wait' milliseconds, retrying each
-  // time a call to DeallocateRaw() is detected, until either a good
-  // pointer is returned or the deadline is exhausted.  If the
-  // deadline is exhausted, try one more time with 'verbose_failure'
-  // set to true.  The value returned is either the first good pointer
-  // obtained from 'alloc_func' or nullptr.
-  void* AllocateRaw(std::function<void*(size_t alignment, size_t num_bytes,
-                                        bool verbose_failure)>
-                        alloc_func,
-                    int max_millis_to_wait, size_t alignment, size_t bytes);
+    // Call 'alloc_func' to obtain memory.  On first call,
+    // 'verbose_failure' will be false.  If return value is nullptr,
+    // then wait up to 'max_millis_to_wait' milliseconds, retrying each
+    // time a call to DeallocateRaw() is detected, until either a good
+    // pointer is returned or the deadline is exhausted.  If the
+    // deadline is exhausted, try one more time with 'verbose_failure'
+    // set to true.  The value returned is either the first good pointer
+    // obtained from 'alloc_func' or nullptr.
+    void* AllocateRaw(
+        std::function<
+            void*(size_t alignment, size_t num_bytes, bool verbose_failure)>
+            alloc_func,
+        int max_millis_to_wait,
+        size_t alignment,
+        size_t bytes);
 
-  // Called to notify clients that some memory was returned.
-  void NotifyDealloc();
+    // Called to notify clients that some memory was returned.
+    void NotifyDealloc();
 
- private:
-  std::mutex mu_;
-  std::condition_variable memory_returned_;
+  private:
+    std::mutex mu_;
+    std::condition_variable memory_returned_;
 };
 
 // Implementation details below
-inline void AllocatorRetry::NotifyDealloc() {
-  std::unique_lock<std::mutex> l(mu_);
-  memory_returned_.notify_all();
+inline void AllocatorRetry::NotifyDealloc()
+{
+    std::unique_lock<std::mutex> l(mu_);
+    memory_returned_.notify_all();
 }
 
-}  // namespace tfdml
+} // namespace tfdml

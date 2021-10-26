@@ -17,42 +17,53 @@ limitations under the License.
 
 #include "tensorflow/c/tf_status.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
-void delete_status(TF_Status* s) {
-  if (s != nullptr) {
-    TF_DeleteStatus(s);
-  }
+void delete_status(TF_Status* s)
+{
+    if (s != nullptr)
+    {
+        TF_DeleteStatus(s);
+    }
 }
 
 Status::Status() : Status(TF_OK, "") {}
 
 Status::Status(TF_Code code, const char* message)
-    : safe_status_(TF_NewStatus(), delete_status) {
-  TF_SetStatus(safe_status_.get(), code, message);
+    : safe_status_(TF_NewStatus(), delete_status)
+{
+    TF_SetStatus(safe_status_.get(), code, message);
 }
 
 Status::Status(TF_Code code, const std::string& message)
-    : Status(code, message.c_str()) {}
+    : Status(code, message.c_str())
+{
+}
 
 Status::Status(TF_Code code, std::string&& message)
-    : Status(code, message.c_str()) {}
+    : Status(code, message.c_str())
+{
+}
 
 TF_Code Status::code() const { return TF_GetCode(safe_status_.get()); }
 bool Status::ok() const { return TF_GetCode(safe_status_.get()) == TF_OK; }
 
 TF_Status* Status::raw() const { return safe_status_.get(); }
 
-const char* Status::error_message() const {
-  return TF_Message(safe_status_.get());
+const char* Status::error_message() const
+{
+    return TF_Message(safe_status_.get());
 }
 
 Status Status::OK() { return Status(); }
 
-void Status::Update(const Status& new_status) {
-  if (ok()) {
-    *this = new_status;
-  }
+void Status::Update(const Status& new_status)
+{
+    if (ok())
+    {
+        *this = new_status;
+    }
 }
 
-}  // namespace tfdml
+} // namespace tfdml

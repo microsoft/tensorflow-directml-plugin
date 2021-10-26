@@ -16,64 +16,79 @@ limitations under the License.
 #include "tfdml/core/util/macros.h"
 #include "tfdml/core/util/status.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
-static D3D12_HEAP_PROPERTIES UploadHeapProps() {
-  return CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
+static D3D12_HEAP_PROPERTIES UploadHeapProps()
+{
+    return CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
 }
 
-DmlUploadHeap::DmlUploadHeap(ID3D12Device* device,
-                             DmlExecutionContext* execution_context)
-    : DmlPooledHeap(device, UploadHeapProps(),
-                    D3D12_RESOURCE_STATE_GENERIC_READ),
-      execution_context_(execution_context) {}
+DmlUploadHeap::DmlUploadHeap(
+    ID3D12Device* device,
+    DmlExecutionContext* execution_context)
+    : DmlPooledHeap(
+          device,
+          UploadHeapProps(),
+          D3D12_RESOURCE_STATE_GENERIC_READ),
+      execution_context_(execution_context)
+{
+}
 
 StatusOr<DmlGpuEvent> DmlUploadHeap::BeginUploadToGpu(
-    const D3D12BufferRegion& dst, absl::Span<const uint8_t> src) {
-  std::unique_lock<std::mutex> lock(mutex_);
-  TF_RETURN_IF_ERROR(execution_context_->GetCommandRecorderStatus());
+    const D3D12BufferRegion& dst,
+    absl::Span<const uint8_t> src)
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+    TF_RETURN_IF_ERROR(execution_context_->GetCommandRecorderStatus());
 
-  assert(!src.empty());
-  assert(dst.ResourceInUavState()->GetDesc().Dimension ==
-         D3D12_RESOURCE_DIMENSION_BUFFER);
+    assert(!src.empty());
+    assert(
+        dst.ResourceInUavState()->GetDesc().Dimension ==
+        D3D12_RESOURCE_DIMENSION_BUFFER);
 
-  InvariantChecker checker(this);
+    InvariantChecker checker(this);
 
-  ReclaimAllocations();
+    ReclaimAllocations();
 
-  // Allocate space from the upload heap
-  Chunk* chunk = nullptr;
-  uint64_t offset_in_chunk = 0;
-  TF_RETURN_IF_ERROR(Reserve(src.size(), &chunk, &offset_in_chunk));
+    // Allocate space from the upload heap
+    Chunk* chunk = nullptr;
+    uint64_t offset_in_chunk = 0;
+    TF_RETURN_IF_ERROR(Reserve(src.size(), &chunk, &offset_in_chunk));
 
-  assert(chunk != nullptr);
-  assert(offset_in_chunk + src.size() <= chunk->capacity_in_bytes);
+    assert(chunk != nullptr);
+    assert(offset_in_chunk + src.size() <= chunk->capacity_in_bytes);
 
-  // Map the upload heap and copy the source data into it at the specified
-  // offset
-  void* upload_heap_data = nullptr;
-  DML_CHECK_SUCCEEDED(chunk->resource->Map(0, nullptr, &upload_heap_data));
-  memcpy(static_cast<byte*>(upload_heap_data) + offset_in_chunk, src.data(),
-         src.size());
-  chunk->resource->Unmap(0, nullptr);
+    // Map the upload heap and copy the source data into it at the specified
+    // offset
+    void* upload_heap_data = nullptr;
+    DML_CHECK_SUCCEEDED(chunk->resource->Map(0, nullptr, &upload_heap_data));
+    memcpy(
+        static_cast<byte*>(upload_heap_data) + offset_in_chunk,
+        src.data(),
+        src.size());
+    chunk->resource->Unmap(0, nullptr);
 
-  // Allocations from the upload pool are only ever used as copy sources.
-  auto upload_resource = D3D12BufferRegion(offset_in_chunk,        // offset
-                                           src.size(),             // size,
-                                           nullptr,                // uav state
-                                           chunk->resource.Get(),  // copy src
-                                           nullptr                 // copy dst
-  );
+    // Allocations from the upload pool are only ever used as copy sources.
+    auto upload_resource = D3D12BufferRegion(
+        offset_in_chunk,       // offset
+        src.size(),            // size,
+        nullptr,               // uav state
+        chunk->resource.Get(), // copy src
+        nullptr                // copy dst
+    );
 
-  // Copy from the upload heap into the destination resource
-  DmlGpuEvent done_event =
-      execution_context_->CopyBufferRegion(dst, upload_resource);
+    // Copy from the upload heap into the destination resource
+    DmlGpuEvent done_event =
+        execution_context_->CopyBufferRegion(dst, upload_resource);
 
-  // Add an allocation entry to the chunk
-  chunk->allocations.push_back(Allocation{static_cast<uint64_t>(src.size()),
-                                          offset_in_chunk, done_event});
+    // Add an allocation entry to the chunk
+    chunk->allocations.push_back(Allocation{
+        static_cast<uint64_t>(src.size()),
+        offset_in_chunk,
+        done_event});
 
-  return done_event;
+    return done_event;
 }
 
-}  // namespace tfdml
+} // namespace tfdml

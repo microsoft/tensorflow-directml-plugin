@@ -21,82 +21,97 @@ limitations under the License.
 #include "tfdml/core/util/kernel_def_builder.h"
 #include "tfdml/core/util/macros.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
-class DmlAddNKernel : public DmlKernel {
- public:
-  using InitHelper = NoOpInitializationHelper;
+class DmlAddNKernel : public DmlKernel
+{
+  public:
+    using InitHelper = NoOpInitializationHelper;
 
-  // TODO: Remove this when/if the following PR gets merged
-  // https://github.com/tensorflow/tensorflow/pull/51759
-  static constexpr std::array<int, 0> host_input_indices = {};
-  static constexpr std::array<int, 0> host_output_indices = {};
+    // TODO: Remove this when/if the following PR gets merged
+    // https://github.com/tensorflow/tensorflow/pull/51759
+    static constexpr std::array<int, 0> host_input_indices = {};
+    static constexpr std::array<int, 0> host_output_indices = {};
 
-  explicit DmlAddNKernel(DmlKernelConstruction* ctx,
-                         const InitHelper* init_helper) {
-    // AddN doesn't support broadcasting, so we can simply collapse all
-    // dimensions into a single one to support more than 5D
-    TensorShape tensor_shape({ctx->GetOutputTensorShape(0).num_elements()});
+    explicit DmlAddNKernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        // AddN doesn't support broadcasting, so we can simply collapse all
+        // dimensions into a single one to support more than 5D
+        TensorShape tensor_shape({ctx->GetOutputTensorShape(0).num_elements()});
 
-    DmlKernelTensors tensors;
+        DmlKernelTensors tensors;
 
-    for (uint32_t i = 0; i < ctx->GetInputCount(); ++i) {
-      DmlTensorInfo input;
-      input.kernel_index = i;
-      input.desc = DmlTensorDesc::Create(ctx->GetInputDataType(i), tensor_shape,
-                                         tensor_shape);
+        for (uint32_t i = 0; i < ctx->GetInputCount(); ++i)
+        {
+            DmlTensorInfo input;
+            input.kernel_index = i;
+            input.desc = DmlTensorDesc::Create(
+                ctx->GetInputDataType(i),
+                tensor_shape,
+                tensor_shape);
 
-      tensors.inputs.push_back(std::move(input));
+            tensors.inputs.push_back(std::move(input));
+        }
+
+        DmlTensorInfo output;
+        output.kernel_index = 0;
+        output.desc = DmlTensorDesc::Create(
+            ctx->GetOutputDataType(0),
+            tensor_shape,
+            tensor_shape);
+
+        tensors.outputs = {output};
+
+        auto inputs = GetDmlTensorDescs(tensors.inputs);
+
+        if (ctx->GetInputCount() == 1)
+        {
+            auto outputs = GetDmlTensorDescs(tensors.outputs);
+
+            DML_ELEMENT_WISE_IDENTITY_OPERATOR_DESC identity_desc = {};
+            identity_desc.InputTensor = inputs.data();
+            identity_desc.OutputTensor = outputs.data();
+
+            DML_OPERATOR_DESC op_desc = {
+                DML_OPERATOR_ELEMENT_WISE_IDENTITY,
+                &identity_desc};
+            Initialize(ctx, std::move(tensors), op_desc);
+        }
+        else
+        {
+            auto scope = dml::Graph(ctx->GetDmlDevice());
+            auto result = dml::InputTensor(scope, 0, inputs[0]);
+
+            for (uint32_t i = 1; i < inputs.size(); ++i)
+            {
+                result += dml::InputTensor(scope, i, inputs[i]);
+            }
+
+            // TFDML #24881131
+            if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0)))
+            {
+                result = dml::ConvertInt32ToInt64(result);
+            }
+
+            Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+                scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+
+            Initialize(ctx, std::move(tensors), compiled_op.Get());
+        }
     }
-
-    DmlTensorInfo output;
-    output.kernel_index = 0;
-    output.desc = DmlTensorDesc::Create(ctx->GetOutputDataType(0), tensor_shape,
-                                        tensor_shape);
-
-    tensors.outputs = {output};
-
-    auto inputs = GetDmlTensorDescs(tensors.inputs);
-
-    if (ctx->GetInputCount() == 1) {
-      auto outputs = GetDmlTensorDescs(tensors.outputs);
-
-      DML_ELEMENT_WISE_IDENTITY_OPERATOR_DESC identity_desc = {};
-      identity_desc.InputTensor = inputs.data();
-      identity_desc.OutputTensor = outputs.data();
-
-      DML_OPERATOR_DESC op_desc = {DML_OPERATOR_ELEMENT_WISE_IDENTITY,
-                                   &identity_desc};
-      Initialize(ctx, std::move(tensors), op_desc);
-    } else {
-      auto scope = dml::Graph(ctx->GetDmlDevice());
-      auto result = dml::InputTensor(scope, 0, inputs[0]);
-
-      for (uint32_t i = 1; i < inputs.size(); ++i) {
-        result += dml::InputTensor(scope, i, inputs[i]);
-      }
-
-      // TFDML #24881131
-      if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0))) {
-        result = dml::ConvertInt32ToInt64(result);
-      }
-
-      Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
-          scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
-
-      Initialize(ctx, std::move(tensors), compiled_op.Get());
-    }
-  }
 };
 
-#define REGISTER_KERNEL(type)                                    \
-  REGISTER_KERNEL_BUILDER(                                       \
-      Name("AddN").Device(DEVICE_DML).TypeConstraint<type>("T"), \
-      DmlKernelWrapper<DmlAddNKernel, GetOutputShapeAsInputShapeHelper>)
+#define REGISTER_KERNEL(type)                                                  \
+    REGISTER_KERNEL_BUILDER(                                                   \
+        Name("AddN").Device(DEVICE_DML).TypeConstraint<type>("T"),             \
+        DmlKernelWrapper<DmlAddNKernel, GetOutputShapeAsInputShapeHelper>)
 
 TF_CALL_float(REGISTER_KERNEL);
 TF_CALL_half(REGISTER_KERNEL);
 TF_CALL_int64(REGISTER_KERNEL);
 #undef REGISTER_KERNEL
 
-}  // namespace tfdml
+} // namespace tfdml

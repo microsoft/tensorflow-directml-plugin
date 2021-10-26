@@ -15,118 +15,147 @@ limitations under the License.
 
 #include "tfdml/core/util/env_var.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
-static size_t GetMaxCacheSize() {
-  int64_t env_var = -1;
-  Status s = ReadInt64FromEnvVar("TF_DIRECTML_KERNEL_CACHE_SIZE", -1, &env_var);
+static size_t GetMaxCacheSize()
+{
+    int64_t env_var = -1;
+    Status s =
+        ReadInt64FromEnvVar("TF_DIRECTML_KERNEL_CACHE_SIZE", -1, &env_var);
 
-  if (s.ok() && env_var >= 0) {
-    return env_var;
-  }
+    if (s.ok() && env_var >= 0)
+    {
+        return env_var;
+    }
 
-  return DmlKernelManager::kDefaultMaxCacheSize;
+    return DmlKernelManager::kDefaultMaxCacheSize;
 }
 
 DmlKernelManager::DmlKernelManager() : max_cache_size_(GetMaxCacheSize()) {}
 
-void DmlKernelManager::TrimCache() const {
-  assert(lru_list_.size() == kernel_cache_.size());
+void DmlKernelManager::TrimCache() const
+{
+    assert(lru_list_.size() == kernel_cache_.size());
 
-  if (kernel_cache_.size() <= max_cache_size_) {
-    // The cache is within the maximum size; nothing to do
-    return;
-  }
-
-  // Find the least-recently used element
-  const DmlKernelKey* lru_key = lru_list_.back();
-
-  TF_VLog(3, "DmlKernelManager: evicting '%s' from cache, key=%#010x",
-          lru_key->op_type_name.c_str(), lru_key);
-
-  // Erase it from the LRU list and the cache
-  lru_list_.pop_back();
-  size_t elements_removed = kernel_cache_.erase(*lru_key);
-
-  assert(elements_removed == 1);
-}
-
-void DmlKernelManager::OnRecentlyUsed(const DmlKernelKey* key,
-                                      CacheEntry* entry) const {
-  if (entry->lru_iter == lru_list_.begin()) {
-    return;  // This entry is already the most-recently used
-  }
-
-  // Remove it from the LRU list and re-insert it at the beginning (the list is
-  // ordered from most-recently to least-recently used)
-  lru_list_.erase(entry->lru_iter);
-  lru_list_.push_front(key);
-  entry->lru_iter = lru_list_.begin();
-}
-
-void DmlKernelManager::OnKernelCreation(const DmlKernelKey* key,
-                                        DmlKernel* kernel) const {
-  TF_VLog(
-      3,
-      "DmlKernelManager: instantating '%s' kernel, key=%#010x, kernel=%#010x",
-      key->op_type_name.c_str(), key, kernel);
-}
-
-void DmlKernelManager::QueueReference(std::shared_ptr<DmlKernel> kernel,
-                                      DmlGpuEvent gpu_event) const {
-  std::unique_lock<std::mutex> lock(mutex_);
-
-  QueuedReference ref = {};
-  ref.kernel = std::move(kernel);
-  ref.gpu_event = std::move(gpu_event);
-  queued_references_.push_back(std::move(ref));
-}
-
-void DmlKernelManager::ReleaseCompletedReferences() const {
-  std::unique_lock<std::mutex> lock(mutex_);
-
-  std::vector<QueuedReference> references_to_free;
-
-  // Search the `queued_references_` for references that can be freed, and move
-  // them into `references_to_free`. While searching for freeable references,
-  // this loop also compacts the elements of `queued_references_` such that all
-  // remaining valid objects are at the beginning of the vector. The invalid,
-  // moved-from objects at the end are then erase()'d after the loop.
-  auto dst = queued_references_.begin();
-  for (auto it = dst; it != queued_references_.end(); ++it) {
-    if (it->gpu_event.IsSignaled()) {
-      // Move this reference into references_to_free
-      references_to_free.push_back(std::move(*it));
-    } else {
-      // Compact the queued_references_ vector
-      if (it != dst) {
-        *dst = std::move(*it);
-      }
-      ++dst;
+    if (kernel_cache_.size() <= max_cache_size_)
+    {
+        // The cache is within the maximum size; nothing to do
+        return;
     }
-  }
 
-  queued_references_.erase(dst, queued_references_.end());
-  lock.unlock();
+    // Find the least-recently used element
+    const DmlKernelKey* lru_key = lru_list_.back();
 
-  TF_VLog(2, "DmlKernelManager: cleared %llu references.",
-          references_to_free.size());
+    TF_VLog(
+        3,
+        "DmlKernelManager: evicting '%s' from cache, key=%#010x",
+        lru_key->op_type_name.c_str(),
+        lru_key);
 
-  // Clearing this vector releases the references. This is done outside the
-  // lock because kernel destructors are invoked when the reference count
-  // reaches zero, and we don't want to hold locks over arbitrary code.
-  references_to_free.clear();
+    // Erase it from the LRU list and the cache
+    lru_list_.pop_back();
+    size_t elements_removed = kernel_cache_.erase(*lru_key);
+
+    assert(elements_removed == 1);
 }
 
-size_t DmlKernelManager::GetCacheSize() const {
-  std::unique_lock<std::mutex> lock(mutex_);
-  return kernel_cache_.size();
+void DmlKernelManager::OnRecentlyUsed(
+    const DmlKernelKey* key,
+    CacheEntry* entry) const
+{
+    if (entry->lru_iter == lru_list_.begin())
+    {
+        return; // This entry is already the most-recently used
+    }
+
+    // Remove it from the LRU list and re-insert it at the beginning (the list
+    // is ordered from most-recently to least-recently used)
+    lru_list_.erase(entry->lru_iter);
+    lru_list_.push_front(key);
+    entry->lru_iter = lru_list_.begin();
 }
 
-void DmlKernelManager::ClearCache() {
-  std::unique_lock<std::mutex> lock(mutex_);
-  lru_list_.clear();
-  kernel_cache_.clear();
+void DmlKernelManager::OnKernelCreation(
+    const DmlKernelKey* key,
+    DmlKernel* kernel) const
+{
+    TF_VLog(
+        3,
+        "DmlKernelManager: instantating '%s' kernel, key=%#010x, kernel=%#010x",
+        key->op_type_name.c_str(),
+        key,
+        kernel);
 }
 
-}  // namespace tfdml
+void DmlKernelManager::QueueReference(
+    std::shared_ptr<DmlKernel> kernel,
+    DmlGpuEvent gpu_event) const
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+
+    QueuedReference ref = {};
+    ref.kernel = std::move(kernel);
+    ref.gpu_event = std::move(gpu_event);
+    queued_references_.push_back(std::move(ref));
+}
+
+void DmlKernelManager::ReleaseCompletedReferences() const
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+
+    std::vector<QueuedReference> references_to_free;
+
+    // Search the `queued_references_` for references that can be freed, and
+    // move them into `references_to_free`. While searching for freeable
+    // references, this loop also compacts the elements of `queued_references_`
+    // such that all remaining valid objects are at the beginning of the vector.
+    // The invalid, moved-from objects at the end are then erase()'d after the
+    // loop.
+    auto dst = queued_references_.begin();
+    for (auto it = dst; it != queued_references_.end(); ++it)
+    {
+        if (it->gpu_event.IsSignaled())
+        {
+            // Move this reference into references_to_free
+            references_to_free.push_back(std::move(*it));
+        }
+        else
+        {
+            // Compact the queued_references_ vector
+            if (it != dst)
+            {
+                *dst = std::move(*it);
+            }
+            ++dst;
+        }
+    }
+
+    queued_references_.erase(dst, queued_references_.end());
+    lock.unlock();
+
+    TF_VLog(
+        2,
+        "DmlKernelManager: cleared %llu references.",
+        references_to_free.size());
+
+    // Clearing this vector releases the references. This is done outside the
+    // lock because kernel destructors are invoked when the reference count
+    // reaches zero, and we don't want to hold locks over arbitrary code.
+    references_to_free.clear();
+}
+
+size_t DmlKernelManager::GetCacheSize() const
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+    return kernel_cache_.size();
+}
+
+void DmlKernelManager::ClearCache()
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+    lru_list_.clear();
+    kernel_cache_.clear();
+}
+
+} // namespace tfdml

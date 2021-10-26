@@ -20,14 +20,15 @@ limitations under the License.
 using PrimitiveAttribute =
     absl::variant<int32_t, int64_t, float, bool, std::string>;
 
-using Attribute = absl::variant<PrimitiveAttribute,
-                                absl::InlinedVector<PrimitiveAttribute, 4>>;
+using Attribute = absl::
+    variant<PrimitiveAttribute, absl::InlinedVector<PrimitiveAttribute, 4>>;
 
 using NameAttributePair = std::pair<std::string, Attribute>;
 
 // TODO: Remove this when/if the following PR gets merged
 // https://github.com/tensorflow/tensorflow/pull/52157
-struct BaseAttributes {
-  virtual ~BaseAttributes() = default;
-  virtual absl::Span<const NameAttributePair> GetNamedAttributes() const = 0;
+struct BaseAttributes
+{
+    virtual ~BaseAttributes() = default;
+    virtual absl::Span<const NameAttributePair> GetNamedAttributes() const = 0;
 };

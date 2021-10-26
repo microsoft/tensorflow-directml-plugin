@@ -19,24 +19,32 @@ limitations under the License.
 #include "dml_heap_allocator.h"
 #include "tfdml/core/util/env_var.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
-DmlAllocator::DmlAllocator(D3D12HeapAllocator* heap_allocator,
-                           const std::string& name)
-    : heap_allocator_(heap_allocator) {}
-
-D3D12BufferRegion DmlAllocator::CreateBufferRegion(const void* ptr,
-                                                   uint64_t size_in_bytes) {
-  return heap_allocator_->CreateBufferRegion(ptr, size_in_bytes);
+DmlAllocator::DmlAllocator(
+    D3D12HeapAllocator* heap_allocator,
+    const std::string& name)
+    : heap_allocator_(heap_allocator)
+{
 }
 
-void* DmlAllocator::Alloc(size_t num_bytes) {
-  void* p = heap_allocator_->Alloc(num_bytes);
-  return p;
+D3D12BufferRegion DmlAllocator::CreateBufferRegion(
+    const void* ptr,
+    uint64_t size_in_bytes)
+{
+    return heap_allocator_->CreateBufferRegion(ptr, size_in_bytes);
 }
 
-void DmlAllocator::Free(void* ptr, size_t num_bytes) {
-  heap_allocator_->Free(ptr, num_bytes);
+void* DmlAllocator::Alloc(size_t num_bytes)
+{
+    void* p = heap_allocator_->Alloc(num_bytes);
+    return p;
 }
 
-}  // namespace tfdml
+void DmlAllocator::Free(void* ptr, size_t num_bytes)
+{
+    heap_allocator_->Free(ptr, num_bytes);
+}
+
+} // namespace tfdml

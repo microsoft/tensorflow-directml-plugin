@@ -17,7 +17,8 @@ limitations under the License.
 #include "dml_adapter_impl.h"
 #include "dml_common.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
 class DmlAdapter;
 class DmlExecutionContext;
@@ -36,27 +37,28 @@ class GPUOptions;
 // Typically one of these state objects exists for each physical D3D adapter,
 // but multiple TF DmlDevice instances can share this state. All objects owned
 // by this state object are thread-safe.
-struct DmlDeviceState {
- public:
-  static std::unique_ptr<DmlDeviceState> Create(const DmlAdapter& adapter);
+struct DmlDeviceState
+{
+  public:
+    static std::unique_ptr<DmlDeviceState> Create(const DmlAdapter& adapter);
 
-  DmlDeviceState();
-  ~DmlDeviceState();
+    DmlDeviceState();
+    ~DmlDeviceState();
 
-  std::unique_ptr<DmlAdapter> adapter;
-  Microsoft::WRL::ComPtr<ID3D12Device> d3d_device;
-  Microsoft::WRL::ComPtr<ID3D12CommandQueue> command_queue;
-  Microsoft::WRL::ComPtr<ID3D12SharingContract> sharing_contract;
-  Microsoft::WRL::ComPtr<IDMLDevice> dml_device;
-  std::unique_ptr<DmlExecutionContext> execution_context;
-  std::unique_ptr<DmlEventQueue> event_queue;
-  std::unique_ptr<D3D12HeapAllocator> heap_allocator;
-  std::unique_ptr<DmlAllocator> dml_allocator;
-  std::unique_ptr<D3D12DescriptorHeapAllocator> descriptor_heap_allocator;
-  std::unique_ptr<DmlDescriptorAllocator> descriptor_allocator;
-  std::unique_ptr<DmlUploadHeap> upload_heap;
-  std::unique_ptr<DmlReadbackHeap> readback_heap;
-  std::unique_ptr<DmlKernelManager> kernel_manager;
+    std::unique_ptr<DmlAdapter> adapter;
+    Microsoft::WRL::ComPtr<ID3D12Device> d3d_device;
+    Microsoft::WRL::ComPtr<ID3D12CommandQueue> command_queue;
+    Microsoft::WRL::ComPtr<ID3D12SharingContract> sharing_contract;
+    Microsoft::WRL::ComPtr<IDMLDevice> dml_device;
+    std::unique_ptr<DmlExecutionContext> execution_context;
+    std::unique_ptr<DmlEventQueue> event_queue;
+    std::unique_ptr<D3D12HeapAllocator> heap_allocator;
+    std::unique_ptr<DmlAllocator> dml_allocator;
+    std::unique_ptr<D3D12DescriptorHeapAllocator> descriptor_heap_allocator;
+    std::unique_ptr<DmlDescriptorAllocator> descriptor_allocator;
+    std::unique_ptr<DmlUploadHeap> upload_heap;
+    std::unique_ptr<DmlReadbackHeap> readback_heap;
+    std::unique_ptr<DmlKernelManager> kernel_manager;
 };
 
-}  // namespace tfdml
+} // namespace tfdml

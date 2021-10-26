@@ -35,47 +35,55 @@ limitations under the License.
 // it's inconvient to use in the 'default' block of switch statements or in
 // functions that should return a value
 template <typename... TArgs>
-TFDML_ATTRIBUTE_NORETURN void LogFatal(const char* fmt, TArgs... args) {
-  TF_Log(TF_FATAL, fmt, args...);
-  abort();
+TFDML_ATTRIBUTE_NORETURN void LogFatal(const char* fmt, TArgs... args)
+{
+    TF_Log(TF_FATAL, fmt, args...);
+    abort();
 }
 
-#define CHECK(condition) \
-  if (!(condition)) LogFatal("Check failed: " #condition);
+#define CHECK(condition)                                                       \
+    if (!(condition))                                                          \
+        LogFatal("Check failed: " #condition);
 
 #define TF_CHECK_OK(val) CHECK(val.ok())
 
 // For propagating errors when calling a function.
-#define TF_RETURN_IF_ERROR(...)              \
-  do {                                       \
-    ::tfdml::Status _status = (__VA_ARGS__); \
-    if (!_status.ok()) return _status;       \
-  } while (0)
+#define TF_RETURN_IF_ERROR(...)                                                \
+    do                                                                         \
+    {                                                                          \
+        ::tfdml::Status _status = (__VA_ARGS__);                               \
+        if (!_status.ok())                                                     \
+            return _status;                                                    \
+    } while (0)
 
 // The TF_ARRAYSIZE(arr) macro returns the # of elements in an array arr.
 //
 // The expression TF_ARRAYSIZE(a) is a compile-time constant of type
 // size_t.
-#define TF_ARRAYSIZE(a)         \
-  ((sizeof(a) / sizeof(*(a))) / \
-   static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
+#define TF_ARRAYSIZE(a)                                                        \
+    ((sizeof(a) / sizeof(*(a))) /                                              \
+     static_cast<size_t>(!(sizeof(a) % sizeof(*(a)))))
 
-#define OP_REQUIRES(CTX, EXP, STATUS)                  \
-  do {                                                 \
-    if (!(EXP)) {                                      \
-      (CTX)->CtxFailure(__FILE__, __LINE__, (STATUS)); \
-      return;                                          \
-    }                                                  \
-  } while (0)
+#define OP_REQUIRES(CTX, EXP, STATUS)                                          \
+    do                                                                         \
+    {                                                                          \
+        if (!(EXP))                                                            \
+        {                                                                      \
+            (CTX)->CtxFailure(__FILE__, __LINE__, (STATUS));                   \
+            return;                                                            \
+        }                                                                      \
+    } while (0)
 
-#define OP_REQUIRES_OK(CTX, ...)                            \
-  do {                                                      \
-    ::tfdml::Status _s(__VA_ARGS__);                        \
-    if (!_s.ok()) {                                         \
-      (CTX)->CtxFailureWithWarning(__FILE__, __LINE__, _s); \
-      return;                                               \
-    }                                                       \
-  } while (0)
+#define OP_REQUIRES_OK(CTX, ...)                                               \
+    do                                                                         \
+    {                                                                          \
+        ::tfdml::Status _s(__VA_ARGS__);                                       \
+        if (!_s.ok())                                                          \
+        {                                                                      \
+            (CTX)->CtxFailureWithWarning(__FILE__, __LINE__, _s);              \
+            return;                                                            \
+        }                                                                      \
+    } while (0)
 
 #define TF_CALL_int64(m) m(int64_t)
 #define TF_CALL_int32(m) m(int32_t)

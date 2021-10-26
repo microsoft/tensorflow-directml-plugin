@@ -24,7 +24,8 @@ limitations under the License.
 #include "tfdml/core/util/resource_mgr.h"
 #include "tfdml/core/util/tensor.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
 // Resource stored by variables in the resource manager (new, resource-style
 // version).
@@ -63,70 +64,79 @@ namespace tfdml {
 // mutex as desired. To access the variable in dense mode grab the mutex either
 // directly or via `MaybeLockVariableInputMutexesInOrder` on all variables being
 // modified and then call `PrepareToUpdateVariable` on them in any order.
-class Var : public ResourceBase {
- public:
-  explicit Var(TF_DataType dtype) : tensor_(dtype) {}
+class Var : public ResourceBase
+{
+  public:
+    explicit Var(TF_DataType dtype) : tensor_(dtype) {}
 
-  // When locking multiple variables, the locks must be acquired in order of
-  // increasing mu() address.
-  // TODO(ebrevdo): Use LockSet instead of exposing mu.
-  std::shared_mutex* mu() { return &mu_; }
-  Tensor* tensor() { return &tensor_; }
+    // When locking multiple variables, the locks must be acquired in order of
+    // increasing mu() address.
+    // TODO(ebrevdo): Use LockSet instead of exposing mu.
+    std::shared_mutex* mu() { return &mu_; }
+    Tensor* tensor() { return &tensor_; }
 
-  std::string DebugString() const override {
-    return absl::StrCat(DataTypeString(tensor_.dtype()), "/",
-                        tensor_.shape().DebugString());
-  }
+    std::string DebugString() const override
+    {
+        return absl::StrCat(
+            DataTypeString(tensor_.dtype()),
+            "/",
+            tensor_.shape().DebugString());
+    }
 
-  // Only used in the resource variable path. In resource variables,
-  // tensor.IsInitialized() can be true (i.e. have memory allocated to it) while
-  // there is not a good value there due to a race condition, and it's possible
-  // to stumble upon this during variable.initialized_value(). So it's best to
-  // just store directly whether the variable is initialized.
-  bool is_initialized = false;  // GUARDED_BY(mu_) but annotalysis doesn't like
-                                // it.
+    // Only used in the resource variable path. In resource variables,
+    // tensor.IsInitialized() can be true (i.e. have memory allocated to it)
+    // while there is not a good value there due to a race condition, and it's
+    // possible to stumble upon this during variable.initialized_value(). So
+    // it's best to just store directly whether the variable is initialized.
+    bool is_initialized = false; // GUARDED_BY(mu_) but annotalysis doesn't like
+                                 // it.
 
-  // Also fake-guarded by mu_. Should be set to True whenever any sparse
-  // operation uses the variable. Once this is true no tensor is allowed to
-  // alias the memory of the variable, and we always copy the variable on
-  // reads. This allows sparse operations to happen with only a shared lock if
-  // so desired.
-  std::atomic<bool> copy_on_read_mode{false};
+    // Also fake-guarded by mu_. Should be set to True whenever any sparse
+    // operation uses the variable. Once this is true no tensor is allowed to
+    // alias the memory of the variable, and we always copy the variable on
+    // reads. This allows sparse operations to happen with only a shared lock if
+    // so desired.
+    std::atomic<bool> copy_on_read_mode{false};
 
- private:
-  std::shared_mutex mu_;
-  Tensor tensor_;
+  private:
+    std::shared_mutex mu_;
+    Tensor tensor_;
 
-  ~Var() override {}
-  Var(const Var&) = delete;
-  void operator=(const Var&) = delete;
+    ~Var() override {}
+    Var(const Var&) = delete;
+    void operator=(const Var&) = delete;
 };
 
 // Does unlock and unref automatically when going out of scope, and also
 // supports early manual release.
-class SCOPED_LOCKABLE ScopedUnlockUnrefVar {
- public:
-  explicit ScopedUnlockUnrefVar(Var* var) : var_(var) {
-    if (var_) {
-      var_->mu()->lock();
+class SCOPED_LOCKABLE ScopedUnlockUnrefVar
+{
+  public:
+    explicit ScopedUnlockUnrefVar(Var* var) : var_(var)
+    {
+        if (var_)
+        {
+            var_->mu()->lock();
+        }
     }
-  }
-  void Release() UNLOCK_FUNCTION() {
-    if (var_) {
-      var_->mu()->unlock();
-      var_->Unref();
-      var_ = nullptr;
+    void Release() UNLOCK_FUNCTION()
+    {
+        if (var_)
+        {
+            var_->mu()->unlock();
+            var_->Unref();
+            var_ = nullptr;
+        }
     }
-  }
-  ~ScopedUnlockUnrefVar() UNLOCK_FUNCTION() { Release(); }
+    ~ScopedUnlockUnrefVar() UNLOCK_FUNCTION() { Release(); }
 
- private:
-  Var* var_;
+  private:
+    Var* var_;
 
-  ScopedUnlockUnrefVar(const ScopedUnlockUnrefVar&) = delete;
-  ScopedUnlockUnrefVar(ScopedUnlockUnrefVar&&) = delete;
-  ScopedUnlockUnrefVar& operator=(const ScopedUnlockUnrefVar&) = delete;
-  ScopedUnlockUnrefVar& operator=(ScopedUnlockUnrefVar&&) = delete;
+    ScopedUnlockUnrefVar(const ScopedUnlockUnrefVar&) = delete;
+    ScopedUnlockUnrefVar(ScopedUnlockUnrefVar&&) = delete;
+    ScopedUnlockUnrefVar& operator=(const ScopedUnlockUnrefVar&) = delete;
+    ScopedUnlockUnrefVar& operator=(ScopedUnlockUnrefVar&&) = delete;
 };
 
-}  //  namespace tfdml
+} //  namespace tfdml
