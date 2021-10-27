@@ -14,12 +14,15 @@ limitations under the License.
 #include "tensorflow/c/kernels.h"
 #include "tfdml/core/util/kernel_def_builder.h"
 
-extern "C" void RegisterKernels_Concat();
+extern "C"
+{
+    void RegisterConcatKernels();
+}
 
 void TF_InitKernel()
 {
-    // do kernel registration here... gives us a chance to detect device
-    // capabilities and conditionally register support
+    // NOTE: we could add logic here to conditionally register kernels based on D3D12
+    // adapter capabilities (for example).
 
-    RegisterKernels_Concat();
+    RegisterConcatKernels();
 }

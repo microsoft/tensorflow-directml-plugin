@@ -348,7 +348,7 @@ using DmlConcatWrapper = DmlKernelWrapper<
     ConcatShapeHelper<AxisArgName>,
     DmlKernelCachePolicy::Never>;
 
-extern "C" void RegisterKernels_Concat()
+extern "C" void RegisterConcatKernels()
 {
     // TODO: add uint64 support
     // TF2 #36692608
