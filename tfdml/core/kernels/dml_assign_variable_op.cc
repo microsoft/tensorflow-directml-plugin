@@ -101,21 +101,24 @@ class DmlAssignVariableOp : public OpKernel
     bool relax_constraints_;
 };
 
-#define REGISTER_DML_KERNEL(type)                                              \
-    REGISTER_KERNEL_BUILDER(                                                   \
-        Name("AssignVariableOp")                                               \
-            .Device(DEVICE_DML)                                                \
-            .TypeConstraint<type>("dtype")                                     \
-            .HostMemory("resource"),                                           \
-        DmlAssignVariableOp);
-// We deliberately register the same types here that CUDA does.
-TF_CALL_bool(REGISTER_DML_KERNEL);
-TF_CALL_complex64(REGISTER_DML_KERNEL);
-TF_CALL_complex128(REGISTER_DML_KERNEL);
-TF_CALL_half(REGISTER_DML_KERNEL);
-TF_CALL_float(REGISTER_DML_KERNEL);
-TF_CALL_double(REGISTER_DML_KERNEL);
-TF_CALL_int64(REGISTER_DML_KERNEL);
-#undef REGISTER_DML_KERNEL
+void RegisterKernels_AssignVariableOp()
+{
+    // We deliberately register the same types here that CUDA does.
+    for (auto& type :
+         {TF_BOOL,
+          TF_COMPLEX64,
+          TF_COMPLEX128,
+          TF_HALF,
+          TF_FLOAT,
+          TF_DOUBLE,
+          TF_INT64})
+    {
+        using Op = ops::AssignVariableOp;
+        KernelBuilder<Op, DmlAssignVariableOp>()
+            .TypeConstraint(Op::Attribute::dtype, type)
+            .HostMemory(Op::Argument::resource)
+            .Register();
+    }
+}
 
 } // namespace tfdml

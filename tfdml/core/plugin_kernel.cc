@@ -14,9 +14,13 @@ limitations under the License.
 #include "tensorflow/c/kernels.h"
 #include "tfdml/core/util/kernel_def_builder.h"
 
-extern "C"
+namespace tfdml
 {
-    void RegisterConcatKernels();
+    void RegisterKernels_AddN();
+    void RegisterKernels_AssignVariableOp();
+    void RegisterKernels_Concat();
+    void RegisterKernels_Gather();
+    void RegisterKernels_GatherNd();
 }
 
 void TF_InitKernel()
@@ -24,5 +28,9 @@ void TF_InitKernel()
     // NOTE: we could add logic here to conditionally register kernels based on D3D12
     // adapter capabilities (for example).
 
-    RegisterConcatKernels();
+    tfdml::RegisterKernels_AddN();
+    tfdml::RegisterKernels_AssignVariableOp();
+    tfdml::RegisterKernels_Concat();
+    tfdml::RegisterKernels_Gather();
+    tfdml::RegisterKernels_GatherNd();
 }

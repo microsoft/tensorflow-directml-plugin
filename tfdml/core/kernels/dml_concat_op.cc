@@ -348,14 +348,11 @@ using DmlConcatWrapper = DmlKernelWrapper<
     ConcatShapeHelper<AxisArgName>,
     DmlKernelCachePolicy::Never>;
 
-extern "C" void RegisterConcatKernels()
+void RegisterKernels_Concat()
 {
     // TODO: add uint64 support
     // TF2 #36692608
-    constexpr TF_DataType types[] =
-        {TF_FLOAT, TF_HALF, TF_UINT8, TF_INT64, TF_BOOL};
-
-    for (auto& type : types)
+    for (auto& type : {TF_FLOAT, TF_HALF, TF_UINT8, TF_INT64, TF_BOOL})
     {
         KernelBuilder<
             ops::Concat,
