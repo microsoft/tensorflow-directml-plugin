@@ -123,15 +123,6 @@ class DmlKernelWrapper : public DmlKernelWrapperBase
         // device memory, and no way to map the tensor name to its index.
         // TODO: Remove this when/if the following PR gets merged
         // https://github.com/tensorflow/tensorflow/pull/51759
-
-        // TODO:
-        // - Get args and mask from the kernel def builder and pass it into
-        // constructor for this class.
-        //   Both can be determined using the macros.
-
-        // input_memory_types_ = tfdml_op_metadata::GetMemoryTypes(args, mask);
-        // output_memory_types_ = tfdml_op_metadata::GetMemoryTypes(args, mask);
-
         for (int host_input_index : TKernel::host_input_indices)
         {
             if (host_input_index >= input_memory_types_.size())
