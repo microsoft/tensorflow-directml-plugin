@@ -16,8 +16,10 @@ limitations under the License.
 
 extern "C" void RegisterKernels_Concat();
 
-void TF_InitKernel() {
-    // do kernel registration here... gives us a chance to detect device capabilities and conditionally register support
+void TF_InitKernel()
+{
+    // do kernel registration here... gives us a chance to detect device
+    // capabilities and conditionally register support
 
     RegisterKernels_Concat();
 }

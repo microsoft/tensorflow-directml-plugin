@@ -30,127 +30,152 @@ limitations under the License.
 struct TF_OpKernelConstruction;
 struct TF_OpKernelContext;
 
-namespace tfdml {
+namespace tfdml
+{
 
 class KernelDefBuilder;
 
-struct InitOnStartupMarker {
-  InitOnStartupMarker(KernelDefBuilder& kernel_def_builder) {}
+struct InitOnStartupMarker
+{
+    InitOnStartupMarker(KernelDefBuilder& kernel_def_builder) {}
 };
 
 #define REGISTER_KERNEL_BUILDER_UNIQ(ctr, op_name, kernel_builder, ...)        \
-  constexpr char const op_type_string##ctr[] = op_name;                        \
-  static ::tfdml::InitOnStartupMarker const registrar__body__##ctr##__object = \
-      ::tfdml::InitOnStartupMarker(                                            \
-          kernel_builder.Build<__VA_ARGS__, op_type_string##ctr>());
+    constexpr char const op_type_string##ctr[] = op_name;                      \
+    static ::tfdml::InitOnStartupMarker const                                  \
+        registrar__body__##ctr##__object = ::tfdml::InitOnStartupMarker(       \
+            kernel_builder.Build<__VA_ARGS__, op_type_string##ctr>());
 
 #define REGISTER_KERNEL_BUILDER_UNIQ_HELPER(ctr, op_name, kernel_builder, ...) \
-  REGISTER_KERNEL_BUILDER_UNIQ(ctr, op_name, kernel_builder, __VA_ARGS__)
+    REGISTER_KERNEL_BUILDER_UNIQ(ctr, op_name, kernel_builder, __VA_ARGS__)
 
-#define REGISTER_KERNEL_BUILDER_IMPL(op_name, kernel_builder, ...)          \
-  REGISTER_KERNEL_BUILDER_UNIQ_HELPER(__COUNTER__, op_name, kernel_builder, \
-                                      __VA_ARGS__)
+#define REGISTER_KERNEL_BUILDER_IMPL(op_name, kernel_builder, ...)             \
+    REGISTER_KERNEL_BUILDER_UNIQ_HELPER(                                       \
+        __COUNTER__,                                                           \
+        op_name,                                                               \
+        kernel_builder,                                                        \
+        __VA_ARGS__)
 
 #define TF_EXTRACT_KERNEL_NAME_Name(name_str) name_str, Name(name_str)
 #define TF_EXTRACT_KERNEL_NAME_IMPL(m, ...) m(__VA_ARGS__)
-#define TF_EXTRACT_KERNEL_NAME(m, kernel_builder, ...)                    \
-  TF_EXTRACT_KERNEL_NAME_IMPL(m, TF_EXTRACT_KERNEL_NAME_##kernel_builder, \
-                              __VA_ARGS__)
+#define TF_EXTRACT_KERNEL_NAME(m, kernel_builder, ...)                         \
+    TF_EXTRACT_KERNEL_NAME_IMPL(                                               \
+        m,                                                                     \
+        TF_EXTRACT_KERNEL_NAME_##kernel_builder,                               \
+        __VA_ARGS__)
 
-#define REGISTER_KERNEL_BUILDER(kernel_builder, ...)                   \
-  TF_EXTRACT_KERNEL_NAME(REGISTER_KERNEL_BUILDER_IMPL, kernel_builder, \
-                         __VA_ARGS__)
+#define REGISTER_KERNEL_BUILDER(kernel_builder, ...)                           \
+    TF_EXTRACT_KERNEL_NAME(                                                    \
+        REGISTER_KERNEL_BUILDER_IMPL,                                          \
+        kernel_builder,                                                        \
+        __VA_ARGS__)
 
 // Forward declare proto so that kernels don't need to depend on it
 class KernelDef;
 
 // Builder class passed to the REGISTER_KERNEL_BUILDER() macro.
-class KernelDefBuilder {
- public:
-  KernelDefBuilder() = default;
+class KernelDefBuilder
+{
+  public:
+    KernelDefBuilder() = default;
 
-  // Required: specify the type of device this kernel supports.
-  // Returns *this.
-  KernelDefBuilder& Device(const char* device_type);
-  //  KernelDefBuilder& Device(DeviceType device_type);
+    // Required: specify the type of device this kernel supports.
+    // Returns *this.
+    KernelDefBuilder& Device(const char* device_type);
+    //  KernelDefBuilder& Device(DeviceType device_type);
 
-  template <typename T>
-  KernelDefBuilder& TypeConstraint(const char* attr_name) {
-    type_constraints_.emplace_back(attr_name, DataTypeToEnum<T>());
-    return *this;
-  }
-
-  KernelDefBuilder& HostMemory(const char* arg_name);
-
-  // Specify that this kernel requires a particular value for the
-  // "_kernel" attr.  May only be specified once.  Returns *this.
-  KernelDefBuilder& Label(const char* label);
-
-  // Specify a priority number for this kernel.
-  KernelDefBuilder& Priority(int32_t priority);
-
-  template <typename TKernel, auto& op_type_string>
-  KernelDefBuilder& Build() {
-    // TODO: determine masks and select function based on masks...
-
-    auto* builder = TF_NewKernelBuilder(
-        op_type_string, device_type_, &CreateKernel<TKernel, op_type_string>,
-        &ComputeKernel<TKernel>, &DeleteKernel<TKernel>);
-    CHECK(builder != nullptr);
-
-    Status status;
-    for (const auto& type_constraint : type_constraints_) {
-      TF_KernelBuilder_TypeConstraint(builder, type_constraint.first.c_str(),
-                                      type_constraint.second, status.raw());
-      CHECK(status.ok());
+    template <typename T>
+    KernelDefBuilder& TypeConstraint(const char* attr_name)
+    {
+        type_constraints_.emplace_back(attr_name, DataTypeToEnum<T>());
+        return *this;
     }
 
-    for (const std::string& host_memory_arg : host_memory_arg_names_) {
-      TF_KernelBuilder_HostMemory(builder, host_memory_arg.c_str());
+    KernelDefBuilder& HostMemory(const char* arg_name);
+
+    // Specify that this kernel requires a particular value for the
+    // "_kernel" attr.  May only be specified once.  Returns *this.
+    KernelDefBuilder& Label(const char* label);
+
+    // Specify a priority number for this kernel.
+    KernelDefBuilder& Priority(int32_t priority);
+
+    template <typename TKernel, auto& op_type_string> KernelDefBuilder& Build()
+    {
+        // TODO: determine masks and select function based on masks...
+
+        auto* builder = TF_NewKernelBuilder(
+            op_type_string,
+            device_type_,
+            &CreateKernel<TKernel, op_type_string>,
+            &ComputeKernel<TKernel>,
+            &DeleteKernel<TKernel>);
+        CHECK(builder != nullptr);
+
+        Status status;
+        for (const auto& type_constraint : type_constraints_)
+        {
+            TF_KernelBuilder_TypeConstraint(
+                builder,
+                type_constraint.first.c_str(),
+                type_constraint.second,
+                status.raw());
+            CHECK(status.ok());
+        }
+
+        for (const std::string& host_memory_arg : host_memory_arg_names_)
+        {
+            TF_KernelBuilder_HostMemory(builder, host_memory_arg.c_str());
+        }
+
+        if (priority_)
+        {
+            TF_KernelBuilder_Priority(builder, *priority_);
+        }
+
+        TF_RegisterKernelBuilder(op_type_string, builder, status.raw());
+        CHECK(status.ok());
+
+        return *this;
     }
 
-    if (priority_) {
-      TF_KernelBuilder_Priority(builder, *priority_);
+  private:
+    KernelDefBuilder(const KernelDefBuilder&) = delete;
+    void operator=(const KernelDefBuilder&) = delete;
+    const char* device_type_;
+    absl::InlinedVector<std::string, 4> host_memory_arg_names_;
+    absl::InlinedVector<std::pair<std::string, TF_DataType>, 4>
+        type_constraints_;
+    absl::optional<int32_t> priority_;
+
+    template <typename TKernel, auto& op_type_string>
+    static void* CreateKernel(TF_OpKernelConstruction* raw_ctx)
+    {
+        TF_StringView name_string_view =
+            TF_OpKernelConstruction_GetName(raw_ctx);
+        OpKernelConstruction ctx(raw_ctx);
+        return new TKernel(&ctx, op_type_string, name_string_view.data);
     }
 
-    TF_RegisterKernelBuilder(op_type_string, builder, status.raw());
-    CHECK(status.ok());
+    template <typename TKernel>
+    static void ComputeKernel(void* kernel, TF_OpKernelContext* raw_ctx)
+    {
+        TKernel* concrete_kernel = static_cast<TKernel*>(kernel);
+        OpKernelContext ctx(raw_ctx, concrete_kernel);
+        concrete_kernel->Compute(&ctx);
+    }
 
-    return *this;
-  }
-
- private:
-  KernelDefBuilder(const KernelDefBuilder&) = delete;
-  void operator=(const KernelDefBuilder&) = delete;
-  const char* device_type_;
-  absl::InlinedVector<std::string, 4> host_memory_arg_names_;
-  absl::InlinedVector<std::pair<std::string, TF_DataType>, 4> type_constraints_;
-  absl::optional<int32_t> priority_;
-
-  template <typename TKernel, auto& op_type_string>
-  static void* CreateKernel(TF_OpKernelConstruction* raw_ctx) {
-    TF_StringView name_string_view = TF_OpKernelConstruction_GetName(raw_ctx);
-    OpKernelConstruction ctx(raw_ctx);
-    return new TKernel(&ctx, op_type_string, name_string_view.data);
-  }
-
-  template <typename TKernel>
-  static void ComputeKernel(void* kernel, TF_OpKernelContext* raw_ctx) {
-    TKernel* concrete_kernel = static_cast<TKernel*>(kernel);
-    OpKernelContext ctx(raw_ctx, concrete_kernel);
-    concrete_kernel->Compute(&ctx);
-  }
-
-  template <typename TKernel>
-  static void DeleteKernel(void* kernel) {
-    TKernel* concrete_kernel = static_cast<TKernel*>(kernel);
-    delete concrete_kernel;
-  }
+    template <typename TKernel> static void DeleteKernel(void* kernel)
+    {
+        TKernel* concrete_kernel = static_cast<TKernel*>(kernel);
+        delete concrete_kernel;
+    }
 };
 
-class Name : public KernelDefBuilder {
- public:
-  explicit Name(const char* op) {}
+class Name : public KernelDefBuilder
+{
+  public:
+    explicit Name(const char* op) {}
 };
 
 // --------------------
@@ -159,85 +184,105 @@ class Name : public KernelDefBuilder {
 // --------------------
 // --------------------
 
-template <typename OpDef, typename Kernel>
-class KernelBuilder {
-  using Argument = typename OpDef::Argument;
-  using Attribute = typename OpDef::Attribute;
+template <typename OpDef, typename Kernel> class KernelBuilder
+{
+    using Argument = typename OpDef::Argument;
+    using Attribute = typename OpDef::Attribute;
 
- public:
-  KernelBuilder() = default;
+  public:
+    KernelBuilder() = default;
 
-  KernelBuilder<OpDef, Kernel>& TypeConstraint(Attribute attr,
-                                                TF_DataType data_type) {
-    type_constraints_.emplace_back(attr, data_type);
-    return *this;
-  }
-
-  template <typename T>
-  KernelBuilder<OpDef, Kernel>& TypeConstraint(Attribute attr) {
-    return TypeConstraint(attr, DataTypeToEnum<T>());
-  }
-
-  KernelBuilder<OpDef, Kernel>& HostMemory(Argument arg) {
-    host_memory_args_.push_back(arg);
-    return *this;
-  }
-
-  KernelBuilder<OpDef, Kernel>& Priority(int32_t priority) {
-    priority_ = priority;
-    return *this;
-  }
-
-  void Register() {
-    auto* builder = TF_NewKernelBuilder(
-        OpDef::name, DEVICE_DML, &CreateKernel,
-        &ComputeKernel, &DeleteKernel);
-    CHECK(builder != nullptr);
-
-    Status status;
-    for (const auto& type_constraint : type_constraints_) {
-      const auto& attr_desc = GetAttributeDesc<OpDef>(type_constraint.first);
-      TF_KernelBuilder_TypeConstraint(builder, attr_desc.name,
-                                      type_constraint.second, status.raw());
-      CHECK(status.ok());
+    KernelBuilder<OpDef, Kernel>& TypeConstraint(
+        Attribute attr,
+        TF_DataType data_type)
+    {
+        type_constraints_.emplace_back(attr, data_type);
+        return *this;
     }
 
-    for (const auto& arg : host_memory_args_) {
-      const auto& arg_desc = GetArgumentDesc<OpDef>(arg);
-      TF_KernelBuilder_HostMemory(builder, arg_desc.name);
+    template <typename T>
+    KernelBuilder<OpDef, Kernel>& TypeConstraint(Attribute attr)
+    {
+        return TypeConstraint(attr, DataTypeToEnum<T>());
     }
 
-    if (priority_) {
-      TF_KernelBuilder_Priority(builder, *priority_);
+    KernelBuilder<OpDef, Kernel>& HostMemory(Argument arg)
+    {
+        host_memory_args_.push_back(arg);
+        return *this;
     }
 
-    TF_RegisterKernelBuilder(OpDef::name, builder, status.raw());
-    CHECK(status.ok());
-  }
+    KernelBuilder<OpDef, Kernel>& Priority(int32_t priority)
+    {
+        priority_ = priority;
+        return *this;
+    }
 
- private:
-  KernelBuilder(const KernelBuilder&) = delete;
-  void operator=(const KernelBuilder&) = delete;
-  absl::InlinedVector<Argument, 4> host_memory_args_;
-  absl::InlinedVector<std::pair<Attribute, TF_DataType>, 4> type_constraints_;
-  absl::optional<int32_t> priority_;
+    void Register()
+    {
+        auto* builder = TF_NewKernelBuilder(
+            OpDef::name,
+            DEVICE_DML,
+            &CreateKernel,
+            &ComputeKernel,
+            &DeleteKernel);
+        CHECK(builder != nullptr);
 
-  static void* CreateKernel(TF_OpKernelConstruction* raw_ctx) {
-    TF_StringView name_string_view = TF_OpKernelConstruction_GetName(raw_ctx);
-    OpKernelConstruction ctx(raw_ctx);
-    return new Kernel(&ctx, OpDef::name, name_string_view.data);
-  }
+        Status status;
+        for (const auto& type_constraint : type_constraints_)
+        {
+            const auto& attr_desc =
+                GetAttributeDesc<OpDef>(type_constraint.first);
+            TF_KernelBuilder_TypeConstraint(
+                builder,
+                attr_desc.name,
+                type_constraint.second,
+                status.raw());
+            CHECK(status.ok());
+        }
 
-  static void ComputeKernel(void* kernel, TF_OpKernelContext* raw_ctx) {
-    Kernel* concrete_kernel = static_cast<Kernel*>(kernel);
-    OpKernelContext ctx(raw_ctx, concrete_kernel);
-    concrete_kernel->Compute(&ctx);
-  }
+        for (const auto& arg : host_memory_args_)
+        {
+            const auto& arg_desc = GetArgumentDesc<OpDef>(arg);
+            TF_KernelBuilder_HostMemory(builder, arg_desc.name);
+        }
 
-  static void DeleteKernel(void* kernel) {
-    Kernel* concrete_kernel = static_cast<Kernel*>(kernel);
-    delete concrete_kernel;
-  }
+        if (priority_)
+        {
+            TF_KernelBuilder_Priority(builder, *priority_);
+        }
+
+        TF_RegisterKernelBuilder(OpDef::name, builder, status.raw());
+        CHECK(status.ok());
+    }
+
+  private:
+    KernelBuilder(const KernelBuilder&) = delete;
+    void operator=(const KernelBuilder&) = delete;
+    absl::InlinedVector<Argument, 4> host_memory_args_;
+    absl::InlinedVector<std::pair<Attribute, TF_DataType>, 4> type_constraints_;
+    absl::optional<int32_t> priority_;
+
+    static void* CreateKernel(TF_OpKernelConstruction* raw_ctx)
+    {
+        TF_StringView name_string_view =
+            TF_OpKernelConstruction_GetName(raw_ctx);
+        OpKernelConstruction ctx(raw_ctx);
+        return new Kernel(&ctx, OpDef::name, name_string_view.data);
+    }
+
+    static void ComputeKernel(void* kernel, TF_OpKernelContext* raw_ctx)
+    {
+        Kernel* concrete_kernel = static_cast<Kernel*>(kernel);
+        OpKernelContext ctx(raw_ctx, concrete_kernel);
+        concrete_kernel->Compute(&ctx);
+    }
+
+    static void DeleteKernel(void* kernel)
+    {
+        Kernel* concrete_kernel = static_cast<Kernel*>(kernel);
+        delete concrete_kernel;
+    }
 };
 
-}  // namespace tfdml
+} // namespace tfdml

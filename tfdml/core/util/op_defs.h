@@ -26,14 +26,16 @@ struct ArgumentDesc
 {
     enum class TensorCount
     {
-        Single, // argument maps to a single tensor
-        SequenceAttrInt, // argument maps to a list of tensors with the same type
-        SequenceAttrList, // argument maps to a list of tensors with different types
+        Single,           // argument maps to a single tensor
+        SequenceAttrInt,  // argument maps to a list of tensors with the same
+                          // type
+        SequenceAttrList, // argument maps to a list of tensors with different
+                          // types
     };
 
     const char* name;
     TensorCount tensor_count;
-    const char* sequence_attr_name = nullptr; // name of attribute that indicates count of tensors
+    const char* sequence_attr_name = nullptr;
 };
 
 struct AttributeDesc
@@ -46,7 +48,8 @@ template <typename OpDef>
 constexpr const ArgumentDesc& GetArgumentDesc(typename OpDef::Argument arg)
 {
     auto arg_index = std::underlying_type_t<typename OpDef::Argument>(arg);
-    static_assert(std::is_same_v<decltype(arg_index), int>, 
+    static_assert(
+        std::is_same_v<decltype(arg_index), int>,
         "OpDef::Argument enum should have an underlying type of int");
 
     return OpDef::argument_descs[arg_index];
@@ -57,7 +60,8 @@ template <typename OpDef>
 constexpr const AttributeDesc& GetAttributeDesc(typename OpDef::Attribute attr)
 {
     auto attr_index = std::underlying_type_t<typename OpDef::Attribute>(attr);
-    static_assert(std::is_same_v<decltype(attr_index), int>, 
+    static_assert(
+        std::is_same_v<decltype(attr_index), int>,
         "OpDef::Argument enum should have an underlying type of int");
 
     return OpDef::attribute_descs[attr_index];
@@ -68,14 +72,16 @@ template <typename OpDef>
 constexpr uint32_t GetArgumentType(typename OpDef::Argument arg)
 {
     auto arg_index = std::underlying_type_t<Arg>(arg);
-    static_assert(std::is_same_v<decltype(arg_index), int>, 
+    static_assert(
+        std::is_same_v<decltype(arg_index), int>,
         "Op::Argument enum should have an underlying type of int");
 
-    return arg_index < OpDef::input_arg_count ? ArgumentType::Input : ArgumentType::Output;
+    return arg_index < OpDef::input_arg_count ? ArgumentType::Input
+                                              : ArgumentType::Output;
 }
 
 } // namespace tfdml
 
-#include <array>
 #include "op_defs_core.h"
 #include "op_defs_dml.h"
+#include <array>

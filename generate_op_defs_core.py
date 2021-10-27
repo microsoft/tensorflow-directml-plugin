@@ -120,6 +120,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+// clang-format off
+
 // This file is generated. Do not edit it directly. See generate_op_defs_core.py.
 #pragma once
 
