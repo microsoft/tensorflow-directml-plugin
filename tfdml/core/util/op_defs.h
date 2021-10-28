@@ -71,7 +71,7 @@ constexpr const AttributeDesc& GetAttributeDesc(typename OpDef::Attribute attr)
 template <typename OpDef>
 constexpr uint32_t GetArgumentType(typename OpDef::Argument arg)
 {
-    auto arg_index = std::underlying_type_t<Arg>(arg);
+    auto arg_index = std::underlying_type_t<typename OpDef::Argument>(arg);
     static_assert(
         std::is_same_v<decltype(arg_index), int>,
         "Op::Argument enum should have an underlying type of int");
