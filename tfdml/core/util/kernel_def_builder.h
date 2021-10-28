@@ -33,9 +33,6 @@ struct TF_OpKernelContext;
 namespace tfdml
 {
 
-// Forward declare proto so that kernels don't need to depend on it
-class KernelDef;
-
 template <typename OpDef, typename Kernel> class KernelBuilder
 {
     using Argument = typename OpDef::Argument;

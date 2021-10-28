@@ -69,7 +69,7 @@ struct DmlInputTensorKey
     }
 };
 
-// Uniquely identifes a DML kernel instance. This is used for caching of
+// Uniquely identifies a DML kernel instance. This is used for caching of
 // kernels, since DML kernels are immutable once constructed.
 struct DmlKernelKey
 {
