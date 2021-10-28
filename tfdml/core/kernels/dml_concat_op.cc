@@ -39,11 +39,6 @@ class ConcatInitHelper : public InitializationHelper
         OpKernelContext* ctx,
         std::shared_ptr<const Attributes> attr)
     {
-        const char* axis_attribute_name = AxisArgName == NAME_IS_AXIS ? "axis"
-                                          : AxisArgName == NAME_IS_CONCAT_DIM
-                                              ? "concat_dim"
-                                              : "<invalid>";
-
         const int num_inputs = ctx->num_inputs();
         int axis_index = AxisArgName == NAME_IS_CONCAT_DIM ? 0 : num_inputs - 1;
 
@@ -60,7 +55,8 @@ class ConcatInitHelper : public InitializationHelper
             AxisArgName == NAME_IS_CONCAT_DIM ? num_inputs : num_inputs - 1;
         for (int i = values_begin; i < values_end; ++i)
         {
-            values.push_back(std::move(ctx->input(i)));
+            auto input = ctx->input(i);
+            values.push_back(std::move(input));
         }
 
         const int input_dims = values[0].dims();
@@ -236,7 +232,6 @@ class DmlConcatKernel : public DmlKernel
         }
 
         DmlKernelTensors tensors;
-        const TensorShape& first_input_shape = ctx->GetInputTensorShape(0);
 
         int64_t concat_axis = init_helper->GetConcatAxis();
 

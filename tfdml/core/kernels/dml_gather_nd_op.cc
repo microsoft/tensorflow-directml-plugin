@@ -443,7 +443,7 @@ template <typename TIndex> void RegisterGatherNd(TF_DataType param_type)
     using Op = ops::GatherNd;
     KernelBuilder<Op, DmlGatherNdWrapper<TIndex, GatherNdHostInputIndices>>()
         .TypeConstraint(Op::Attribute::Tparams, param_type)
-        .TypeConstraint<TIndex>(Op::Attribute::Tindices)
+        .template TypeConstraint<TIndex>(Op::Attribute::Tindices)
         .Register();
 }
 
@@ -452,7 +452,7 @@ template <typename TIndex> void RegisterResourceGatherNd(TF_DataType param_type)
     using Op = ops::ResourceGatherNd;
     KernelBuilder<Op, DmlGatherNdWrapper<TIndex, GatherNdHostInputIndices>>()
         .TypeConstraint(Op::Attribute::dtype, param_type)
-        .TypeConstraint<TIndex>(Op::Attribute::Tindices)
+        .template TypeConstraint<TIndex>(Op::Attribute::Tindices)
         .Register();
 }
 
