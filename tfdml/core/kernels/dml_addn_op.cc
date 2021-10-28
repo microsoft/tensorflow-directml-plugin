@@ -104,14 +104,16 @@ class DmlAddNKernel : public DmlKernel
     }
 };
 
-#define REGISTER_KERNEL(type)                                                  \
-    REGISTER_KERNEL_BUILDER(                                                   \
-        Name("AddN").Device(DEVICE_DML).TypeConstraint<type>("T"),             \
-        DmlKernelWrapper<DmlAddNKernel, GetOutputShapeAsInputShapeHelper>)
-
-TF_CALL_float(REGISTER_KERNEL);
-TF_CALL_half(REGISTER_KERNEL);
-TF_CALL_int64(REGISTER_KERNEL);
-#undef REGISTER_KERNEL
+void RegisterKernels_AddN()
+{
+    for (auto& type : {TF_FLOAT, TF_HALF, TF_INT64})
+    {
+        KernelBuilder<
+            ops::AddN,
+            DmlKernelWrapper<DmlAddNKernel, GetOutputShapeAsInputShapeHelper>>()
+            .TypeConstraint(ops::AddN::Attribute::T, type)
+            .Register();
+    }
+}
 
 } // namespace tfdml

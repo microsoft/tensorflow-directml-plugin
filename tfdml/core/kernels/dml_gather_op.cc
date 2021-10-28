@@ -483,61 +483,50 @@ using DmlResourceGatherWrapper = DmlKernelWrapper<
     GatherShapeHelper<TIndex>,
     DmlKernelCachePolicy::Never>;
 
-#define DML_REGISTER_KERNELS(type)                                             \
-    REGISTER_KERNEL_BUILDER(                                                   \
-        Name("Gather")                                                         \
-            .Device(DEVICE_DML)                                                \
-            .TypeConstraint<type>("Tparams")                                   \
-            .TypeConstraint<int32_t>("Tindices"),                              \
-        DmlGatherWrapper<int32_t, GatherHostInputIndices>)                     \
-    REGISTER_KERNEL_BUILDER(                                                   \
-        Name("GatherV2")                                                       \
-            .Device(DEVICE_DML)                                                \
-            .TypeConstraint<type>("Tparams")                                   \
-            .TypeConstraint<int32_t>("Tindices")                               \
-            .HostMemory("axis"),                                               \
-        DmlGatherWrapper<int32_t, GatherV2HostInputIndices>)                   \
-    REGISTER_KERNEL_BUILDER(                                                   \
-        Name("Gather")                                                         \
-            .Device(DEVICE_DML)                                                \
-            .TypeConstraint<type>("Tparams")                                   \
-            .TypeConstraint<int64_t>("Tindices"),                              \
-        DmlGatherWrapper<int64_t, GatherHostInputIndices>)                     \
-    REGISTER_KERNEL_BUILDER(                                                   \
-        Name("GatherV2")                                                       \
-            .Device(DEVICE_DML)                                                \
-            .TypeConstraint<type>("Tparams")                                   \
-            .TypeConstraint<int64_t>("Tindices")                               \
-            .HostMemory("axis"),                                               \
-        DmlGatherWrapper<int64_t, GatherV2HostInputIndices>)
+template <typename TIndex> void RegisterGather(TF_DataType param_type)
+{
+    using Op = ops::Gather;
+    KernelBuilder<Op, DmlGatherWrapper<TIndex, GatherHostInputIndices>>()
+        .TypeConstraint(Op::Attribute::Tparams, param_type)
+        .TypeConstraint<TIndex>(Op::Attribute::Tindices)
+        .Register();
+}
 
-TF_CALL_float(DML_REGISTER_KERNELS);
-TF_CALL_half(DML_REGISTER_KERNELS);
-TF_CALL_bool(DML_REGISTER_KERNELS);
-TF_CALL_int32(DML_REGISTER_KERNELS);
-TF_CALL_int64(DML_REGISTER_KERNELS);
-#undef DML_REGISTER_KERNELS
+template <typename TIndex> void RegisterGatherV2(TF_DataType param_type)
+{
+    using Op = ops::GatherV2;
+    KernelBuilder<Op, DmlGatherWrapper<TIndex, GatherHostInputIndices>>()
+        .TypeConstraint(Op::Attribute::Tparams, param_type)
+        .TypeConstraint<TIndex>(Op::Attribute::Tindices)
+        .HostMemory(Op::Argument::axis)
+        .Register();
+}
 
-#define DML_REGISTER_KERNELS(type)                                             \
-    REGISTER_KERNEL_BUILDER(                                                   \
-        Name("ResourceGather")                                                 \
-            .Device(DEVICE_DML)                                                \
-            .HostMemory("resource")                                            \
-            .TypeConstraint<type>("dtype")                                     \
-            .TypeConstraint<int32_t>("Tindices"),                              \
-        DmlResourceGatherWrapper<int32_t>)                                     \
-    REGISTER_KERNEL_BUILDER(                                                   \
-        Name("ResourceGather")                                                 \
-            .Device(DEVICE_DML)                                                \
-            .HostMemory("resource")                                            \
-            .TypeConstraint<type>("dtype")                                     \
-            .TypeConstraint<int64_t>("Tindices"),                              \
-        DmlResourceGatherWrapper<int64_t>)
+template <typename TIndex> void RegisterResourceGather(TF_DataType param_type)
+{
+    using Op = ops::ResourceGather;
+    KernelBuilder<Op, DmlGatherWrapper<TIndex, GatherHostInputIndices>>()
+        .TypeConstraint(Op::Attribute::dtype, param_type)
+        .TypeConstraint<TIndex>(Op::Attribute::Tindices)
+        .HostMemory(Op::Argument::resource)
+        .Register();
+}
 
-TF_CALL_float(DML_REGISTER_KERNELS);
-TF_CALL_half(DML_REGISTER_KERNELS);
-TF_CALL_bool(DML_REGISTER_KERNELS);
-TF_CALL_int64(DML_REGISTER_KERNELS);
-#undef DML_REGISTER_KERNELS
+void RegisterKernels_Gather()
+{
+    for (auto& param_type : {TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64})
+    {
+        RegisterGather<int32_t>(param_type);
+        RegisterGather<int64_t>(param_type);
+        RegisterGatherV2<int32_t>(param_type);
+        RegisterGatherV2<int64_t>(param_type);
+    }
+
+    for (auto& param_type : {TF_FLOAT, TF_HALF, TF_BOOL, TF_INT64})
+    {
+        RegisterResourceGather<int32_t>(param_type);
+        RegisterResourceGather<int64_t>(param_type);
+    }
+}
 
 } // namespace tfdml

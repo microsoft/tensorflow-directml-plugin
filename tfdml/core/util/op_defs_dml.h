@@ -11,29 +11,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "kernel_def_builder.h"
+#pragma once
 
-#include "tensorflow/c/kernels.h"
-
-namespace tfdml
+namespace tfdml::ops
 {
-
-KernelDefBuilder& KernelDefBuilder::Device(const char* device_type)
-{
-    device_type_ = device_type;
-    return *this;
-}
-
-KernelDefBuilder& KernelDefBuilder::HostMemory(const char* arg_name)
-{
-    host_memory_attrs_.push_back(arg_name);
-    return *this;
-}
-
-KernelDefBuilder& KernelDefBuilder::Priority(int32_t priority)
-{
-    priority_ = priority;
-    return *this;
-}
-
-} // namespace tfdml
+// Placeholder for DirectML-specific op definitions.
+} // namespace tfdml::ops
