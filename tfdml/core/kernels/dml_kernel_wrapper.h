@@ -123,27 +123,27 @@ class DmlKernelWrapper : public DmlKernelWrapperBase
         // device memory, and no way to map the tensor name to its index.
         // TODO: Remove this when/if the following PR gets merged
         // https://github.com/tensorflow/tensorflow/pull/51759
-        for (int host_input_index : TKernel::host_input_indices)
-        {
-            if (host_input_index >= input_memory_types_.size())
-            {
-                input_memory_types_.resize(host_input_index + 1, DEVICE_MEMORY);
-            }
+        // for (int host_input_index : TKernel::host_input_indices)
+        // {
+        //     if (host_input_index >= input_memory_types_.size())
+        //     {
+        //         input_memory_types_.resize(host_input_index + 1, DEVICE_MEMORY);
+        //     }
 
-            input_memory_types_[host_input_index] = HOST_MEMORY;
-        }
+        //     input_memory_types_[host_input_index] = HOST_MEMORY;
+        // }
 
-        for (int host_output_index : TKernel::host_output_indices)
-        {
-            if (host_output_index >= output_memory_types_.size())
-            {
-                output_memory_types_.resize(
-                    host_output_index + 1,
-                    DEVICE_MEMORY);
-            }
+        // for (int host_output_index : TKernel::host_output_indices)
+        // {
+        //     if (host_output_index >= output_memory_types_.size())
+        //     {
+        //         output_memory_types_.resize(
+        //             host_output_index + 1,
+        //             DEVICE_MEMORY);
+        //     }
 
-            output_memory_types_[host_output_index] = HOST_MEMORY;
-        }
+        //     output_memory_types_[host_output_index] = HOST_MEMORY;
+        // }
     }
 
   protected:

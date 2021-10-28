@@ -217,17 +217,10 @@ template <typename TIndex> class GatherNdShapeHelper : public ShapeHelper
     }
 };
 
-template <typename TIndex, typename THostInputIndices>
-class DmlGatherNdKernel : public DmlKernel
+template <typename TIndex> class DmlGatherNdKernel : public DmlKernel
 {
   public:
     using InitHelper = GatherNdInitHelper<TIndex>;
-
-    // TODO: Remove this when/if the following PR gets merged
-    // https://github.com/tensorflow/tensorflow/pull/51759
-    static constexpr auto host_input_indices =
-        THostInputIndices::host_input_indices;
-    static constexpr std::array<int, 0> host_output_indices = {};
 
     DmlGatherNdKernel(DmlKernelConstruction* ctx, const InitHelper* init_helper)
     {
@@ -421,27 +414,14 @@ class DmlGatherNdKernel : public DmlKernel
     }
 };
 
-// TODO: Remove this when/if the following PR gets merged
-// https://github.com/tensorflow/tensorflow/pull/51759
-struct GatherNdHostInputIndices
-{
-    static constexpr std::array<int, 0> host_input_indices = {};
-};
-
-struct ResourceGatherNdHostInputIndices
-{
-    static constexpr std::array<int, 1> host_input_indices = {0};
-};
-
-template <typename TIndex, typename THostInputIndices>
-using DmlGatherNdWrapper = DmlKernelWrapper<
-    DmlGatherNdKernel<TIndex, THostInputIndices>,
-    GatherNdShapeHelper<TIndex>>;
+template <typename TIndex>
+using DmlGatherNdWrapper =
+    DmlKernelWrapper<DmlGatherNdKernel<TIndex>, GatherNdShapeHelper<TIndex>>;
 
 template <typename TIndex> void RegisterGatherNd(TF_DataType param_type)
 {
     using Op = ops::GatherNd;
-    KernelBuilder<Op, DmlGatherNdWrapper<TIndex, GatherNdHostInputIndices>>()
+    KernelBuilder<Op, DmlGatherNdWrapper<TIndex>>()
         .TypeConstraint(Op::Attribute::Tparams, param_type)
         .template TypeConstraint<TIndex>(Op::Attribute::Tindices)
         .Register();
@@ -450,7 +430,7 @@ template <typename TIndex> void RegisterGatherNd(TF_DataType param_type)
 template <typename TIndex> void RegisterResourceGatherNd(TF_DataType param_type)
 {
     using Op = ops::ResourceGatherNd;
-    KernelBuilder<Op, DmlGatherNdWrapper<TIndex, GatherNdHostInputIndices>>()
+    KernelBuilder<Op, DmlGatherNdWrapper<TIndex>>()
         .TypeConstraint(Op::Attribute::dtype, param_type)
         .template TypeConstraint<TIndex>(Op::Attribute::Tindices)
         .Register();
