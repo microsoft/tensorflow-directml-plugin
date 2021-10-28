@@ -438,34 +438,36 @@ using DmlGatherNdWrapper = DmlKernelWrapper<
     DmlGatherNdKernel<TIndex, THostInputIndices>,
     GatherNdShapeHelper<TIndex>>;
 
+template <typename TIndex> void RegisterGatherNd(TF_DataType param_type)
+{
+    using Op = ops::GatherNd;
+    KernelBuilder<Op, DmlGatherNdWrapper<TIndex, GatherNdHostInputIndices>>()
+        .TypeConstraint(Op::Attribute::Tparams, param_type)
+        .TypeConstraint<TIndex>(Op::Attribute::Tindices)
+        .Register();
+}
+
+template <typename TIndex> void RegisterResourceGatherNd(TF_DataType param_type)
+{
+    using Op = ops::ResourceGatherNd;
+    KernelBuilder<Op, DmlGatherNdWrapper<TIndex, GatherNdHostInputIndices>>()
+        .TypeConstraint(Op::Attribute::dtype, param_type)
+        .TypeConstraint<TIndex>(Op::Attribute::Tindices)
+        .Register();
+}
+
 void RegisterKernels_GatherNd()
 {
     for (auto& param_type : {TF_FLOAT, TF_HALF, TF_INT32, TF_INT64})
     {
-        for (auto& index_type : {TF_INT32, TF_INT64})
-        {
-            using Op = ops::GatherNd;
-            KernelBuilder<
-                Op,
-                DmlGatherNdWrapper<int32_t, GatherNdHostInputIndices>>()
-                .TypeConstraint(Op::Attribute::Tparams, param_type)
-                .TypeConstraint(Op::Attribute::Tindices, index_type)
-                .Register();
-        }
+        RegisterGatherNd<int32_t>(param_type);
+        RegisterGatherNd<int64_t>(param_type);
     }
 
     for (auto& param_type : {TF_FLOAT, TF_HALF})
     {
-        for (auto& index_type : {TF_INT32, TF_INT64})
-        {
-            using Op = ops::ResourceGatherNd;
-            KernelBuilder<
-                Op,
-                DmlGatherNdWrapper<int32_t, GatherNdHostInputIndices>>()
-                .TypeConstraint(Op::Attribute::dtype, param_type)
-                .TypeConstraint(Op::Attribute::Tindices, index_type)
-                .Register();
-        }
+        RegisterResourceGatherNd<int32_t>(param_type);
+        RegisterResourceGatherNd<int64_t>(param_type);
     }
 }
 

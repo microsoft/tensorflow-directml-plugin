@@ -12,7 +12,6 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tensorflow/c/kernels.h"
-#include "tfdml/core/util/kernel_def_builder.h"
 
 namespace tfdml
 {

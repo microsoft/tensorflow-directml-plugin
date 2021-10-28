@@ -483,39 +483,39 @@ using DmlResourceGatherWrapper = DmlKernelWrapper<
     GatherShapeHelper<TIndex>,
     DmlKernelCachePolicy::Never>;
 
+template <typename Op, typename TIndex>
+void RegisterGather(TF_DataType param_type)
+{
+    KernelBuilder<Op, DmlGatherWrapper<TIndex, GatherHostInputIndices>>()
+        .TypeConstraint(Op::Attribute::Tparams, param_type)
+        .TypeConstraint<TIndex>(Op::Attribute::Tindices)
+        .Register();
+}
+
+template <typename TIndex> void RegisterResourceGather(TF_DataType param_type)
+{
+    using Op = ops::ResourceGather;
+    KernelBuilder<Op, DmlGatherWrapper<TIndex, GatherHostInputIndices>>()
+        .TypeConstraint(Op::Attribute::dtype, param_type)
+        .TypeConstraint<TIndex>(Op::Attribute::Tindices)
+        .HostMemory(Op::Argument::resource)
+        .Register();
+}
+
 void RegisterKernels_Gather()
 {
-    for (auto& index_type : {TF_INT32, TF_INT64})
+    for (auto& param_type : {TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64})
     {
-        for (auto& param_type :
-             {TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64})
-        {
-            KernelBuilder<
-                ops::Gather,
-                DmlGatherWrapper<int32_t, GatherHostInputIndices>>()
-                .TypeConstraint(ops::Gather::Attribute::Tparams, param_type)
-                .TypeConstraint(ops::Gather::Attribute::Tindices, index_type)
-                .Register();
+        RegisterGather<ops::Gather, int32_t>(param_type);
+        RegisterGather<ops::Gather, int64_t>(param_type);
+        RegisterGather<ops::GatherV2, int32_t>(param_type);
+        RegisterGather<ops::GatherV2, int64_t>(param_type);
+    }
 
-            KernelBuilder<
-                ops::GatherV2,
-                DmlGatherWrapper<int32_t, GatherHostInputIndices>>()
-                .TypeConstraint(ops::GatherV2::Attribute::Tparams, param_type)
-                .TypeConstraint(ops::GatherV2::Attribute::Tindices, index_type)
-                .HostMemory(ops::GatherV2::Argument::axis)
-                .Register();
-        }
-
-        for (auto& param_type : {TF_FLOAT, TF_HALF, TF_BOOL, TF_INT64})
-        {
-            KernelBuilder<
-                ops::ResourceGather,
-                DmlGatherWrapper<int32_t, GatherHostInputIndices>>()
-                .TypeConstraint(ops::ResourceGather::Attribute::dtype, param_type)
-                .TypeConstraint(ops::ResourceGather::Attribute::Tindices, index_type)
-                .HostMemory(ops::ResourceGather::Argument::resource)
-                .Register();
-        }
+    for (auto& param_type : {TF_FLOAT, TF_HALF, TF_BOOL, TF_INT64})
+    {
+        RegisterResourceGather<int32_t>(param_type);
+        RegisterResourceGather<int64_t>(param_type);
     }
 }
 

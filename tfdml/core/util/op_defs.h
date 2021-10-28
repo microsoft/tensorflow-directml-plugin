@@ -84,4 +84,3 @@ constexpr uint32_t GetArgumentType(typename OpDef::Argument arg)
 
 #include "op_defs_core.h"
 #include "op_defs_dml.h"
-#include <array>
