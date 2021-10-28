@@ -179,13 +179,13 @@ static std::vector<DmlAdapter> FilterAdapters()
         return {};
     }
 
-    // TODO: Bug #36842799
     std::vector<DmlAdapter> adapters = EnumerateAdapters();
     adapters.erase(
         std::remove_if(
             adapters.begin(),
             adapters.end(),
-            [](const DmlAdapter& adapter) { return !SupportsDmlDevice(adapter); }),
+            [](const DmlAdapter& adapter)
+            { return !SupportsDmlDevice(adapter); }),
         adapters.end());
 
     return adapters;
