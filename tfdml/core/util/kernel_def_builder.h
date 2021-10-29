@@ -135,12 +135,12 @@ class KernelDefinition<
             &DeleteKernel);
         CHECK(builder != nullptr);
 
-        SetTypeConstraints<TypeConstraints...>();
+        SetTypeConstraints<TypeConstraints...>(builder);
 
         for (auto arg : std::initializer_list<Op::Argument>{HostArguments...})
         {
-            // const auto& arg_desc = GetArgumentDesc<OpDef>(arg);
-            // TF_KernelBuilder_HostMemory(builder, arg_desc.name);
+            const auto& arg_desc = GetArgumentDesc<Op>(arg);
+            TF_KernelBuilder_HostMemory(builder, arg_desc.name);
         }
 
         if (PriorityValue)
@@ -154,27 +154,23 @@ class KernelDefinition<
     }
 
   private:
-    template <typename T = void, typename... Ts>
-    static void SetTypeConstraints()
+    template <typename C = void, typename... Cs>
+    static void SetTypeConstraints(TF_KernelBuilder* builder)
     {
-        if constexpr (!std::is_same_v<T, void>)
+        if constexpr (!std::is_same_v<C, void>)
         {
-            // constexpr auto attr = T::Attribute;
-            // constexpr auto dtype = T::DataType;
-
-            // Status status;
-            // const auto& attr_desc =
-            //     GetAttributeDesc<OpDef>(type_constraint.first);
-            // TF_KernelBuilder_TypeConstraint(
-            //     builder,
-            //     attr_desc.name,
-            //     type_constraint.second,
-            //     status.raw());
-            // CHECK(status.ok());
+            Status status;
+            const auto& attr_desc = GetAttributeDesc<Op>(C::Attribute);
+            TF_KernelBuilder_TypeConstraint(
+                builder,
+                attr_desc.name,
+                C::DataType,
+                status.raw());
+            CHECK(status.ok());
         }
-        if constexpr (sizeof...(Ts) > 0)
+        if constexpr (sizeof...(Cs) > 0)
         {
-            SetTypeConstraints<Ts...>();
+            SetTypeConstraints<Cs...>(builder);
         }
     }
 
