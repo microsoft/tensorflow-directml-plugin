@@ -101,24 +101,30 @@ class DmlAssignVariableOp : public OpKernel
     bool relax_constraints_;
 };
 
+// Simple helper for registering a kernel with multiple data types.
+// template <typename K, typename Attr, TF_DataType... Ts> void RegisterWithTypesList()
+// {
+//     K::WithTypeConstraint<Attr, T>::Register();
+//     if constexpr (sizeof...(Ts) > 0)
+//     {
+//         RegisterWithTypesList<K, Ts...>();
+//     }
+// }
+
 void RegisterKernels_AssignVariableOp()
 {
+    using K = KernelRegistration<ops::AssignVariableOp, DmlAssignVariableOp>::
+        WithHostMemoryArgument<ops::AssignVariableOp::Argument::resource>;
+
     // We deliberately register the same types here that CUDA does.
-    for (auto& type :
-         {TF_BOOL,
-          TF_COMPLEX64,
-          TF_COMPLEX128,
-          TF_HALF,
-          TF_FLOAT,
-          TF_DOUBLE,
-          TF_INT64})
-    {
-        using Op = ops::AssignVariableOp;
-        KernelBuilder<Op, DmlAssignVariableOp>()
-            .TypeConstraint(Op::Attribute::dtype, type)
-            .HostMemory(Op::Argument::resource)
-            .Register();
-    }
+    constexpr auto T = ops::AssignVariableOp::Attribute::dtype;
+    K::WithTypeConstraint<T, TF_BOOL>::Register();
+    K::WithTypeConstraint<T, TF_COMPLEX64>::Register();
+    K::WithTypeConstraint<T, TF_COMPLEX128>::Register();
+    K::WithTypeConstraint<T, TF_HALF>::Register();
+    K::WithTypeConstraint<T, TF_FLOAT>::Register();
+    K::WithTypeConstraint<T, TF_DOUBLE>::Register();
+    K::WithTypeConstraint<T, TF_INT64>::Register();
 }
 
 } // namespace tfdml

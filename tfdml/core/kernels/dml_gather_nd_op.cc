@@ -414,41 +414,45 @@ template <typename TIndex> class DmlGatherNdKernel : public DmlKernel
     }
 };
 
-template <typename TIndex>
-using DmlGatherNdWrapper =
-    DmlKernelWrapper<DmlGatherNdKernel<TIndex>, GatherNdShapeHelper<TIndex>>;
+template <
+    typename Op,
+    typename Op::Attribute DataTypeAttr,
+    TF_DataType DataType,
+    typename TIndex>
+using K = typename KernelRegistration<
+    Op,
+    DmlKernelWrapper<DmlGatherNdKernel<TIndex>, GatherNdShapeHelper<TIndex>>> //
+    ::template WithTypeConstraint<DataTypeAttr, DataType>                     //
+    ::template WithTypeConstraint<
+        Op::Attribute::Tindices,
+        DataTypeToEnum<TIndex>()>;
 
-template <typename TIndex> void RegisterGatherNd(TF_DataType param_type)
+template <TF_DataType T, TF_DataType... Ts> void RegisterGatherNd()
 {
     using Op = ops::GatherNd;
-    KernelBuilder<Op, DmlGatherNdWrapper<TIndex>>()
-        .TypeConstraint(Op::Attribute::Tparams, param_type)
-        .template TypeConstraint<TIndex>(Op::Attribute::Tindices)
-        .Register();
+    K<Op, Op::Attribute::Tparams, T, int32_t>::Register();
+    K<Op, Op::Attribute::Tparams, T, int64_t>::Register();
+    if constexpr (sizeof...(Ts) > 0)
+    {
+        RegisterGatherNd<Ts...>();
+    }
 }
 
-template <typename TIndex> void RegisterResourceGatherNd(TF_DataType param_type)
+template <TF_DataType T, TF_DataType... Ts> void RegisterResourceGatherNd()
 {
     using Op = ops::ResourceGatherNd;
-    KernelBuilder<Op, DmlGatherNdWrapper<TIndex>>()
-        .TypeConstraint(Op::Attribute::dtype, param_type)
-        .template TypeConstraint<TIndex>(Op::Attribute::Tindices)
-        .Register();
+    K<Op, Op::Attribute::dtype, T, int32_t>::Register();
+    K<Op, Op::Attribute::dtype, T, int64_t>::Register();
+    if constexpr (sizeof...(Ts) > 0)
+    {
+        RegisterResourceGatherNd<Ts...>();
+    }
 }
 
 void RegisterKernels_GatherNd()
 {
-    for (auto& param_type : {TF_FLOAT, TF_HALF, TF_INT32, TF_INT64})
-    {
-        RegisterGatherNd<int32_t>(param_type);
-        RegisterGatherNd<int64_t>(param_type);
-    }
-
-    for (auto& param_type : {TF_FLOAT, TF_HALF})
-    {
-        RegisterResourceGatherNd<int32_t>(param_type);
-        RegisterResourceGatherNd<int64_t>(param_type);
-    }
+    RegisterGatherNd<TF_FLOAT, TF_HALF, TF_INT32, TF_INT64>();
+    RegisterResourceGatherNd<TF_FLOAT, TF_HALF>();
 }
 
 } // namespace tfdml

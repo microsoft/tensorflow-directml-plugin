@@ -111,43 +111,43 @@ template <> struct EnumToDataType<TF_COMPLEX128>
 
 template <typename T> TF_DataType DataTypeToEnum();
 
-template <> inline TF_DataType DataTypeToEnum<int64_t>() { return TF_INT64; }
-template <> inline TF_DataType DataTypeToEnum<int32_t>() { return TF_INT32; }
-template <> inline TF_DataType DataTypeToEnum<int16_t>() { return TF_INT16; }
-template <> inline TF_DataType DataTypeToEnum<int8_t>() { return TF_INT8; }
-template <> inline TF_DataType DataTypeToEnum<uint64_t>() { return TF_UINT64; }
-template <> inline TF_DataType DataTypeToEnum<uint32_t>() { return TF_UINT32; }
-template <> inline TF_DataType DataTypeToEnum<uint16_t>() { return TF_UINT16; }
-template <> inline TF_DataType DataTypeToEnum<uint8_t>() { return TF_UINT8; }
-template <> inline TF_DataType DataTypeToEnum<bool>() { return TF_BOOL; }
-template <> inline TF_DataType DataTypeToEnum<float>() { return TF_FLOAT; }
-template <> inline TF_DataType DataTypeToEnum<double>() { return TF_DOUBLE; }
-template <> inline TF_DataType DataTypeToEnum<Eigen::half>() { return TF_HALF; }
-template <> inline TF_DataType DataTypeToEnum<Eigen::bfloat16>()
+template <> constexpr inline TF_DataType DataTypeToEnum<int64_t>() { return TF_INT64; }
+template <> constexpr inline TF_DataType DataTypeToEnum<int32_t>() { return TF_INT32; }
+template <> constexpr inline TF_DataType DataTypeToEnum<int16_t>() { return TF_INT16; }
+template <> constexpr inline TF_DataType DataTypeToEnum<int8_t>() { return TF_INT8; }
+template <> constexpr inline TF_DataType DataTypeToEnum<uint64_t>() { return TF_UINT64; }
+template <> constexpr inline TF_DataType DataTypeToEnum<uint32_t>() { return TF_UINT32; }
+template <> constexpr inline TF_DataType DataTypeToEnum<uint16_t>() { return TF_UINT16; }
+template <> constexpr inline TF_DataType DataTypeToEnum<uint8_t>() { return TF_UINT8; }
+template <> constexpr inline TF_DataType DataTypeToEnum<bool>() { return TF_BOOL; }
+template <> constexpr inline TF_DataType DataTypeToEnum<float>() { return TF_FLOAT; }
+template <> constexpr inline TF_DataType DataTypeToEnum<double>() { return TF_DOUBLE; }
+template <> constexpr inline TF_DataType DataTypeToEnum<Eigen::half>() { return TF_HALF; }
+template <> constexpr inline TF_DataType DataTypeToEnum<Eigen::bfloat16>()
 {
     return TF_BFLOAT16;
 }
-template <> inline TF_DataType DataTypeToEnum<Eigen::QInt8>()
+template <> constexpr inline TF_DataType DataTypeToEnum<Eigen::QInt8>()
 {
     return TF_QINT8;
 }
-template <> inline TF_DataType DataTypeToEnum<Eigen::QInt16>()
+template <> constexpr inline TF_DataType DataTypeToEnum<Eigen::QInt16>()
 {
     return TF_QINT16;
 }
-template <> inline TF_DataType DataTypeToEnum<Eigen::QUInt16>()
+template <> constexpr inline TF_DataType DataTypeToEnum<Eigen::QUInt16>()
 {
     return TF_QUINT16;
 }
-template <> inline TF_DataType DataTypeToEnum<Eigen::QInt32>()
+template <> constexpr inline TF_DataType DataTypeToEnum<Eigen::QInt32>()
 {
     return TF_QINT32;
 }
-template <> inline TF_DataType DataTypeToEnum<std::complex<float>>()
+template <> constexpr inline TF_DataType DataTypeToEnum<std::complex<float>>()
 {
     return TF_COMPLEX64;
 }
-template <> inline TF_DataType DataTypeToEnum<std::complex<double>>()
+template <> constexpr inline TF_DataType DataTypeToEnum<std::complex<double>>()
 {
     return TF_COMPLEX128;
 }

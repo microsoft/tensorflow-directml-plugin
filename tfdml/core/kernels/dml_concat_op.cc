@@ -324,22 +324,35 @@ using DmlConcatWrapper = DmlKernelWrapper<
     ConcatShapeHelper<AxisArgName>,
     DmlKernelCachePolicy::Never>;
 
-void RegisterKernels_Concat()
+// todo: remove axisargumentname it's redundant now...
+template <
+    typename Op,
+    AxisArgumentName AxisArgName,
+    typename Op::Argument AxisArg>
+void RegisterConcat()
 {
+    using K = KernelRegistration<Op, DmlConcatWrapper<AxisArgName>>::
+        WithHostMemoryArgument<AxisArg>;
+
     // TODO: add uint64 support
     // TF2 #36692608
-    for (auto& type : {TF_FLOAT, TF_HALF, TF_UINT8, TF_INT64, TF_BOOL})
-    {
-        KernelBuilder<ops::Concat, DmlConcatWrapper<NAME_IS_CONCAT_DIM>>()
-            .TypeConstraint(ops::Concat::Attribute::T, type)
-            .HostMemory(ops::Concat::Argument::concat_dim)
-            .Register();
+    K::WithTypeConstraint<Op::Attribute::T, TF_FLOAT>::Register();
+    K::WithTypeConstraint<Op::Attribute::T, TF_HALF>::Register();
+    K::WithTypeConstraint<Op::Attribute::T, TF_UINT8>::Register();
+    K::WithTypeConstraint<Op::Attribute::T, TF_INT64>::Register();
+    K::WithTypeConstraint<Op::Attribute::T, TF_BOOL>::Register();
+}
 
-        KernelBuilder<ops::ConcatV2, DmlConcatWrapper<NAME_IS_AXIS>>()
-            .TypeConstraint(ops::ConcatV2::Attribute::T, type)
-            .HostMemory(ops::ConcatV2::Argument::axis)
-            .Register();
-    }
+void RegisterKernels_Concat()
+{
+    RegisterConcat<
+        ops::Concat,
+        NAME_IS_CONCAT_DIM,
+        ops::Concat::Argument::concat_dim>();
+    RegisterConcat<
+        ops::ConcatV2,
+        NAME_IS_AXIS,
+        ops::ConcatV2::Argument::axis>();
 }
 
 } // namespace tfdml
