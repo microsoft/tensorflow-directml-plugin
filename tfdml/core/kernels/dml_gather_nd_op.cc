@@ -414,18 +414,12 @@ template <typename TIndex> class DmlGatherNdKernel : public DmlKernel
     }
 };
 
-template <
-    typename Op,
-    typename Op::Attribute DataTypeAttr,
-    TF_DataType DataType,
-    typename TIndex>
-using K = typename KernelRegistration<
-    Op,
-    DmlKernelWrapper<DmlGatherNdKernel<TIndex>, GatherNdShapeHelper<TIndex>>> //
-    ::template WithTypeConstraint<DataTypeAttr, DataType>                     //
-    ::template WithTypeConstraint<
-        Op::Attribute::Tindices,
-        DataTypeToEnum<TIndex>()>;
+// clang-format off
+template <typename Op, typename Op::Attribute DataTypeAttr, TF_DataType DataType, typename TIndex>
+using K = typename KernelDefinition<Op, DmlKernelWrapper<DmlGatherNdKernel<TIndex>, GatherNdShapeHelper<TIndex>>> 
+    ::template WithTypeConstraint<DataTypeAttr, DataType>                     
+    ::template WithTypeConstraint<Op::Attribute::Tindices, DataTypeToEnum<TIndex>()>;
+// clang-format on
 
 template <TF_DataType T, TF_DataType... Ts> void RegisterGatherNd()
 {
@@ -433,9 +427,7 @@ template <TF_DataType T, TF_DataType... Ts> void RegisterGatherNd()
     K<Op, Op::Attribute::Tparams, T, int32_t>::Register();
     K<Op, Op::Attribute::Tparams, T, int64_t>::Register();
     if constexpr (sizeof...(Ts) > 0)
-    {
         RegisterGatherNd<Ts...>();
-    }
 }
 
 template <TF_DataType T, TF_DataType... Ts> void RegisterResourceGatherNd()
@@ -444,9 +436,7 @@ template <TF_DataType T, TF_DataType... Ts> void RegisterResourceGatherNd()
     K<Op, Op::Attribute::dtype, T, int32_t>::Register();
     K<Op, Op::Attribute::dtype, T, int64_t>::Register();
     if constexpr (sizeof...(Ts) > 0)
-    {
         RegisterResourceGatherNd<Ts...>();
-    }
 }
 
 void RegisterKernels_GatherNd()

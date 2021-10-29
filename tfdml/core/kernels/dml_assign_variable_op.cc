@@ -101,19 +101,9 @@ class DmlAssignVariableOp : public OpKernel
     bool relax_constraints_;
 };
 
-// Simple helper for registering a kernel with multiple data types.
-// template <typename K, typename Attr, TF_DataType... Ts> void RegisterWithTypesList()
-// {
-//     K::WithTypeConstraint<Attr, T>::Register();
-//     if constexpr (sizeof...(Ts) > 0)
-//     {
-//         RegisterWithTypesList<K, Ts...>();
-//     }
-// }
-
 void RegisterKernels_AssignVariableOp()
 {
-    using K = KernelRegistration<ops::AssignVariableOp, DmlAssignVariableOp>::
+    using K = KernelDefinition<ops::AssignVariableOp, DmlAssignVariableOp>::
         WithHostMemoryArgument<ops::AssignVariableOp::Argument::resource>;
 
     // We deliberately register the same types here that CUDA does.

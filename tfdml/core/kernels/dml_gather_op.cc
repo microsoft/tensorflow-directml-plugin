@@ -448,60 +448,53 @@ template <typename TIndex> class DmlGatherKernel : public DmlKernel
     }
 };
 
-template <typename TIndex>
-using DmlGatherWrapper =
-    DmlKernelWrapper<DmlGatherKernel<TIndex>, GatherShapeHelper<TIndex>>;
+// clang-format off
+template <typename Op, typename Op::Attribute DataTypeAttr, TF_DataType DataType, typename TIndex>
+using K = typename KernelDefinition<Op, DmlKernelWrapper<DmlGatherKernel<TIndex>, GatherShapeHelper<TIndex>, DmlKernelCachePolicy::Never>>
+    ::template WithTypeConstraint<DataTypeAttr, DataType>
+    ::template WithTypeConstraint<Op::Attribute::Tindices, DataTypeToEnum<TIndex>()>;
+// clang-format on
 
-template <typename TIndex>
-using DmlResourceGatherWrapper = DmlKernelWrapper<
-    DmlGatherKernel<TIndex>,
-    GatherShapeHelper<TIndex>,
-    DmlKernelCachePolicy::Never>;
-
-template <typename TIndex> void RegisterGather(TF_DataType param_type)
+template <
+    typename Op,
+    typename Op::Attribute DataTypeAttr,
+    TF_DataType T,
+    TF_DataType... Ts>
+void RegisterGather()
 {
-    using Op = ops::Gather;
-    KernelBuilder<Op, DmlGatherWrapper<TIndex>>()
-        .TypeConstraint(Op::Attribute::Tparams, param_type)
-        .template TypeConstraint<TIndex>(Op::Attribute::Tindices)
-        .Register();
-}
-
-template <typename TIndex> void RegisterGatherV2(TF_DataType param_type)
-{
-    using Op = ops::GatherV2;
-    KernelBuilder<Op, DmlGatherWrapper<TIndex>>()
-        .TypeConstraint(Op::Attribute::Tparams, param_type)
-        .template TypeConstraint<TIndex>(Op::Attribute::Tindices)
-        .HostMemory(Op::Argument::axis)
-        .Register();
-}
-
-template <typename TIndex> void RegisterResourceGather(TF_DataType param_type)
-{
-    using Op = ops::ResourceGather;
-    KernelBuilder<Op, DmlGatherWrapper<TIndex>>()
-        .TypeConstraint(Op::Attribute::dtype, param_type)
-        .template TypeConstraint<TIndex>(Op::Attribute::Tindices)
-        .HostMemory(Op::Argument::resource)
-        .Register();
+    K<Op, DataTypeAttr, T, int32_t>::Register();
+    K<Op, DataTypeAttr, T, int64_t>::Register();
+    if constexpr (sizeof...(Ts) > 0)
+        RegisterGather<Op, DataTypeAttr, Ts...>();
 }
 
 void RegisterKernels_Gather()
 {
-    for (auto& param_type : {TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64})
-    {
-        RegisterGather<int32_t>(param_type);
-        RegisterGather<int64_t>(param_type);
-        RegisterGatherV2<int32_t>(param_type);
-        RegisterGatherV2<int64_t>(param_type);
-    }
+    RegisterGather<
+        ops::Gather,
+        ops::Gather::Attribute::Tparams,
+        TF_FLOAT,
+        TF_HALF,
+        TF_BOOL,
+        TF_INT32,
+        TF_INT64>();
 
-    for (auto& param_type : {TF_FLOAT, TF_HALF, TF_BOOL, TF_INT64})
-    {
-        RegisterResourceGather<int32_t>(param_type);
-        RegisterResourceGather<int64_t>(param_type);
-    }
+    RegisterGather<
+        ops::GatherV2,
+        ops::GatherV2::Attribute::Tparams,
+        TF_FLOAT,
+        TF_HALF,
+        TF_BOOL,
+        TF_INT32,
+        TF_INT64>();
+
+    RegisterGather<
+        ops::ResourceGather,
+        ops::ResourceGather::Attribute::dtype,
+        TF_FLOAT,
+        TF_HALF,
+        TF_BOOL,
+        TF_INT64>();
 }
 
 } // namespace tfdml

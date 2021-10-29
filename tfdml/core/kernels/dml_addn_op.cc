@@ -101,13 +101,14 @@ class DmlAddNKernel : public DmlKernel
 
 void RegisterKernels_AddN()
 {
-    using K = KernelRegistration<
+    using K = KernelDefinition<
         ops::AddN,
         DmlKernelWrapper<DmlAddNKernel, GetOutputShapeAsInputShapeHelper>>;
 
-    K::WithTypeConstraint<ops::AddN::Attribute::T, TF_FLOAT>::Register();
-    K::WithTypeConstraint<ops::AddN::Attribute::T, TF_HALF>::Register();
-    K::WithTypeConstraint<ops::AddN::Attribute::T, TF_INT64>::Register();
+    constexpr auto T = ops::AddN::Attribute::T;
+    K::WithTypeConstraint<T, TF_FLOAT>::Register();
+    K::WithTypeConstraint<T, TF_HALF>::Register();
+    K::WithTypeConstraint<T, TF_INT64>::Register();
 }
 
 } // namespace tfdml

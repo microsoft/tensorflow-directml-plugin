@@ -64,7 +64,7 @@ struct OpTypeConstraintList;
 // read; you are encouraged to use the 'With*' helpers for extending the type.
 // For example:
 //
-// KernelRegistration<ops::AssignVariableOp, DmlAssignVariableOp>
+// KernelDefinition<ops::AssignVariableOp, DmlAssignVariableOp>
 //    ::WithTypeConstraint<ops::AssignVariableOp::Attribute::dtype, TF_FLOAT>
 //    ::WithHostMemoryArgument<ops::AssignVariableOp::Argument::resource>
 //    ::Register();
@@ -74,7 +74,7 @@ template <
     uint32_t Priority = 0,
     typename TypeConstraints = OpTypeConstraintList<Op>,
     typename HostArguments = OpArgumentList<Op>>
-struct KernelRegistration;
+struct KernelDefinition;
 
 // Specialized template necessary for having two parameter packs
 // (TypeConstraints and HostArguments).
@@ -84,7 +84,7 @@ template <
     uint32_t PriorityValue,
     typename... TypeConstraints,
     typename Op::Argument... HostArguments>
-class KernelRegistration<
+class KernelDefinition<
     Op,
     Kernel,
     PriorityValue,
@@ -92,9 +92,11 @@ class KernelRegistration<
     OpArgumentList<Op, HostArguments...>>
 {
   public:
+    using OpType = Op;
+
     // Sets the priority value.
     template <uint32_t Value>
-    using WithPriority = KernelRegistration<
+    using WithPriority = KernelDefinition<
         Op,
         Kernel,
         Value,
@@ -103,7 +105,7 @@ class KernelRegistration<
 
     // Extend the kernel registration type with an additional type constraint.
     template <typename Op::Attribute A, TF_DataType Type>
-    using WithTypeConstraint = KernelRegistration<
+    using WithTypeConstraint = KernelDefinition<
         Op,
         Kernel,
         PriorityValue,
@@ -116,7 +118,7 @@ class KernelRegistration<
     // Extend the kernel registration type with an additional host-memory
     // argument.
     template <typename Op::Argument HostArg>
-    using WithHostMemoryArgument = KernelRegistration<
+    using WithHostMemoryArgument = KernelDefinition<
         Op,
         Kernel,
         PriorityValue,
@@ -127,7 +129,8 @@ class KernelRegistration<
     {
         // SetTypeConstraints<TypeConstraints...>();
 
-        // for (auto arg : std::initializer_list<Op::Argument>{HostArguments...})
+        // for (auto arg :
+        // std::initializer_list<Op::Argument>{HostArguments...})
         // {
         // }
     }
@@ -248,5 +251,22 @@ template <typename OpDef, typename Kernel> class KernelBuilder
         delete concrete_kernel;
     }
 };
+
+// Helper for registering a kernel definition K once for each data type
+// constraint. This simple helper is intended for kernels that share the
+// same definition aside from a single data-type attribute.
+template <
+    typename K,
+    typename K::OpType::Attribute Attr,
+    TF_DataType T,
+    TF_DataType... Ts>
+void RegisterWithTypes()
+{
+    K::WithTypeConstraint<Attr, T>::Register();
+    if constexpr (sizeof...(Ts) > 0)
+    {
+        RegisterWithTypes<K, Attr, Ts...>();
+    }
+}
 
 } // namespace tfdml
