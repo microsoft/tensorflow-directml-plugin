@@ -455,46 +455,42 @@ using K = typename KernelDefinition<Op, DmlKernelWrapper<DmlGatherKernel<TIndex>
     ::template WithTypeConstraint<Op::Attribute::Tindices, DataTypeToEnum<TIndex>()>;
 // clang-format on
 
-template <
-    typename Op,
-    typename Op::Attribute DataTypeAttr,
-    TF_DataType T,
-    TF_DataType... Ts>
-void RegisterGather()
+template <TF_DataType T, TF_DataType... Ts> void RegisterGather()
 {
-    K<Op, DataTypeAttr, T, int32_t>::Register();
-    K<Op, DataTypeAttr, T, int64_t>::Register();
+    using Op = ops::Gather;
+    K<Op, Op::Attribute::Tparams, T, int32_t>::Register();
+    K<Op, Op::Attribute::Tparams, T, int64_t>::Register();
     if constexpr (sizeof...(Ts) > 0)
-        RegisterGather<Op, DataTypeAttr, Ts...>();
+        RegisterGather<Ts...>();
+}
+
+template <TF_DataType T, TF_DataType... Ts> void RegisterGatherV2()
+{
+    using Op = ops::GatherV2;
+    K<Op, Op::Attribute::Tparams, T, int32_t>::WithHostMemoryArgument<
+        Op::Argument::axis>::Register();
+    K<Op, Op::Attribute::Tparams, T, int64_t>::WithHostMemoryArgument<
+        Op::Argument::axis>::Register();
+    if constexpr (sizeof...(Ts) > 0)
+        RegisterGatherV2<Ts...>();
+}
+
+template <TF_DataType T, TF_DataType... Ts> void RegisterResourceGather()
+{
+    using Op = ops::ResourceGather;
+    K<Op, Op::Attribute::dtype, T, int32_t>::WithHostMemoryArgument<
+        Op::Argument::resource>::Register();
+    K<Op, Op::Attribute::dtype, T, int64_t>::WithHostMemoryArgument<
+        Op::Argument::resource>::Register();
+    if constexpr (sizeof...(Ts) > 0)
+        RegisterResourceGather<Ts...>();
 }
 
 void RegisterKernels_Gather()
 {
-    RegisterGather<
-        ops::Gather,
-        ops::Gather::Attribute::Tparams,
-        TF_FLOAT,
-        TF_HALF,
-        TF_BOOL,
-        TF_INT32,
-        TF_INT64>();
-
-    RegisterGather<
-        ops::GatherV2,
-        ops::GatherV2::Attribute::Tparams,
-        TF_FLOAT,
-        TF_HALF,
-        TF_BOOL,
-        TF_INT32,
-        TF_INT64>();
-
-    RegisterGather<
-        ops::ResourceGather,
-        ops::ResourceGather::Attribute::dtype,
-        TF_FLOAT,
-        TF_HALF,
-        TF_BOOL,
-        TF_INT64>();
+    RegisterGather<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64>();
+    RegisterGatherV2<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64>();
+    RegisterResourceGather<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT64>();
 }
 
 } // namespace tfdml
