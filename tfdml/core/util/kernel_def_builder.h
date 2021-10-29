@@ -127,85 +127,78 @@ class KernelDefinition<
 
     static void Register()
     {
-        // auto* builder = TF_NewKernelBuilder(
-        //     OpDef::name,
-        //     DEVICE_DML,
-        //     &CreateKernel,
-        //     &ComputeKernel,
-        //     &DeleteKernel);
-        // CHECK(builder != nullptr);
+        auto* builder = TF_NewKernelBuilder(
+            Op::name,
+            DEVICE_DML,
+            &CreateKernel,
+            &ComputeKernel,
+            &DeleteKernel);
+        CHECK(builder != nullptr);
 
-        // Status status;
-        // for (const auto& type_constraint : type_constraints_)
-        // {
-        //     const auto& attr_desc =
-        //         GetAttributeDesc<OpDef>(type_constraint.first);
-        //     TF_KernelBuilder_TypeConstraint(
-        //         builder,
-        //         attr_desc.name,
-        //         type_constraint.second,
-        //         status.raw());
-        //     CHECK(status.ok());
-        // }
+        SetTypeConstraints<TypeConstraints...>();
 
-        // for (const auto& arg : host_memory_args_)
-        // {
-        //     const auto& arg_desc = GetArgumentDesc<OpDef>(arg);
-        //     TF_KernelBuilder_HostMemory(builder, arg_desc.name);
-        // }
+        for (auto arg : std::initializer_list<Op::Argument>{HostArguments...})
+        {
+            // const auto& arg_desc = GetArgumentDesc<OpDef>(arg);
+            // TF_KernelBuilder_HostMemory(builder, arg_desc.name);
+        }
 
-        // if (priority_)
-        // {
-        //     TF_KernelBuilder_Priority(builder, *priority_);
-        // }
+        if (PriorityValue)
+        {
+            TF_KernelBuilder_Priority(builder, PriorityValue);
+        }
 
-        // TF_RegisterKernelBuilder(OpDef::name, builder, status.raw());
-        // CHECK(status.ok());
-
-
-        // SetTypeConstraints<TypeConstraints...>();
-
-        // for (auto arg :
-        // std::initializer_list<Op::Argument>{HostArguments...})
-        // {
-        // }
+        Status status;
+        TF_RegisterKernelBuilder(Op::name, builder, status.raw());
+        CHECK(status.ok());
     }
 
   private:
     template <typename T = void, typename... Ts>
     static void SetTypeConstraints()
     {
-        // if constexpr (!std::is_same_v<T, void>)
-        // {
-        //     constexpr auto attr = T::Attribute;
-        //     constexpr auto dtype = T::DataType;
-        // }
-        // if constexpr (sizeof...(Ts) > 0)
-        // {
-        //     SetTypeConstraints<Ts...>();
-        // }
+        if constexpr (!std::is_same_v<T, void>)
+        {
+            // constexpr auto attr = T::Attribute;
+            // constexpr auto dtype = T::DataType;
+
+            // Status status;
+            // const auto& attr_desc =
+            //     GetAttributeDesc<OpDef>(type_constraint.first);
+            // TF_KernelBuilder_TypeConstraint(
+            //     builder,
+            //     attr_desc.name,
+            //     type_constraint.second,
+            //     status.raw());
+            // CHECK(status.ok());
+        }
+        if constexpr (sizeof...(Ts) > 0)
+        {
+            SetTypeConstraints<Ts...>();
+        }
     }
 
-    // static void* CreateKernel(TF_OpKernelConstruction* raw_ctx)
-    // {
-    //     TF_StringView name_string_view =
-    //         TF_OpKernelConstruction_GetName(raw_ctx);
-    //     OpKernelConstruction ctx(raw_ctx);
-    //     return new Kernel(&ctx, OpDef::name, name_string_view.data);
-    // }
+    static void* CreateKernel(TF_OpKernelConstruction* raw_ctx)
+    {
+        // TODO: convert host args to tensor indices (can be constexpr)
+        TF_StringView name_string_view =
+            TF_OpKernelConstruction_GetName(raw_ctx);
+        OpKernelConstruction ctx(raw_ctx);
+        return new Kernel(&ctx, Op::name, name_string_view.data);
+    }
 
-    // static void ComputeKernel(void* kernel, TF_OpKernelContext* raw_ctx)
-    // {
-    //     Kernel* concrete_kernel = static_cast<Kernel*>(kernel);
-    //     OpKernelContext ctx(raw_ctx, concrete_kernel);
-    //     concrete_kernel->Compute(&ctx);
-    // }
+    static void ComputeKernel(void* kernel, TF_OpKernelContext* raw_ctx)
+    {
+        Kernel* concrete_kernel = static_cast<Kernel*>(kernel);
+        OpKernelContext ctx(raw_ctx, concrete_kernel);
+        concrete_kernel->Compute(&ctx);
+    }
 
-    // static void DeleteKernel(void* kernel)
-    // {
-    //     Kernel* concrete_kernel = static_cast<Kernel*>(kernel);
-    //     delete concrete_kernel;
-    // }
+    static void DeleteKernel(void* kernel)
+    {
+        Kernel* concrete_kernel = static_cast<Kernel*>(kernel);
+        delete concrete_kernel;
+    }
 };
 
 // Helper for registering a kernel definition K once for each data type
