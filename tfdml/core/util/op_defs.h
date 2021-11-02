@@ -43,39 +43,39 @@ struct AttributeDesc
     const char* name;
 };
 
+// Helper to safely convert an OpDef::Argument or OpDef::Attribute to an integer
+// index into their respective arrays. All OpDef enum classes must have an
+// underlying type of int, but this helper is preferred over static_cast in case
+// the codegen changes or a handwritten custom DML op def uses the wrong type by
+// mistake.
+template <typename E> constexpr int ConvertOpDefEnumToIndex(E enum_value)
+{
+    auto index = std::underlying_type_t<E>(enum_value);
+    static_assert(
+        std::is_same_v<decltype(index), int>,
+        "OpDef enums should have an underlying type of int");
+    return index;
+}
+
 // Helper to fetch an operator's argument desc by enum value.
 template <typename OpDef>
 constexpr const ArgumentDesc& GetArgumentDesc(typename OpDef::Argument arg)
 {
-    auto arg_index = std::underlying_type_t<typename OpDef::Argument>(arg);
-    static_assert(
-        std::is_same_v<decltype(arg_index), int>,
-        "OpDef::Argument enum should have an underlying type of int");
-
-    return OpDef::argument_descs[arg_index];
+    return OpDef::argument_descs[ConvertOpDefEnumToIndex(arg)];
 }
 
-// Helper to fetch an operator's argument desc by enum value.
+// Helper to fetch an operator's attribute desc by enum value.
 template <typename OpDef>
 constexpr const AttributeDesc& GetAttributeDesc(typename OpDef::Attribute attr)
 {
-    auto attr_index = std::underlying_type_t<typename OpDef::Attribute>(attr);
-    static_assert(
-        std::is_same_v<decltype(attr_index), int>,
-        "OpDef::Argument enum should have an underlying type of int");
-
-    return OpDef::attribute_descs[attr_index];
+    return OpDef::attribute_descs[ConvertOpDefEnumToIndex(attr)];
 }
 
 // Op definitions list input args followed by output args.
 template <typename OpDef>
-constexpr uint32_t GetArgumentType(typename OpDef::Argument arg)
+constexpr ArgumentType GetArgumentType(typename OpDef::Argument arg)
 {
-    auto arg_index = std::underlying_type_t<typename OpDef::Argument>(arg);
-    static_assert(
-        std::is_same_v<decltype(arg_index), int>,
-        "Op::Argument enum should have an underlying type of int");
-
+    auto arg_index = ConvertOpDefEnumToIndex(arg);
     return arg_index < OpDef::input_arg_count ? ArgumentType::Input
                                               : ArgumentType::Output;
 }

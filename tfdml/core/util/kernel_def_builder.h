@@ -48,6 +48,14 @@ struct OpTypeConstraint
 template <typename Op, typename... OpTypeConstraints>
 struct OpTypeConstraintList;
 
+struct NodeDef
+{
+    std::string op_name;
+    std::string op_type_string;
+    absl::InlinedVector<MemoryType, 4> input_memory_types;
+    absl::InlinedVector<MemoryType, 4> output_memory_types;
+};
+
 // Template for declaring a kernel registration type that statically defines the
 // following:
 // - Op : declares the operator definition that the kernel implements
@@ -174,9 +182,61 @@ class KernelDefinition<
         }
     }
 
+    // Each op argument may contain 1 or more tensors, which isn't known until
+    // runtime. This function converts argument data to tensor data.
+    NodeDef CreateNodeDef()
+    {
+        NodeDef node = {};
+        node.op_type_string = Op::name;
+
+        uint32_t arg_index = 0;
+        uint32_t tensor_index = 0;
+
+        uint32_t tensor_offsets[Op::argument_descs.size()];
+        uint32_t tensor_counts[Op::argument_descs.size()];
+
+        for (; arg_index < Op::input_arg_count; arg_index++)
+        {
+            uint32_t arg_tensor_count = 1; // TODO: unless attr based
+            tensor_counts[arg_index] = arg_tensor_count;
+            tensor_offsets[arg_index] = tensor_index;
+            tensor_index += arg_tensor_count;
+        }
+        node.input_tensor_memory_types.resize(
+            tensor_index,
+            MemoryType::DEVICE_MEMORY);
+
+        for (; arg_index < Op::input_arg_count + Op::output_arg_count;
+             arg_index++)
+        {
+            uint32_t arg_tensor_count = 1; // TODO: unless attr based
+            tensor_offsets[arg_index] = tensor_index;
+            tensor_counts[arg_index] = arg_tensor_count;
+            tensor_index += arg_tensor_count;
+        }
+        node.output_tensor_memory_types.resize(
+            tensor_index - node.input_tensor_memory_types.size(),
+            MemoryType::DEVICE_MEMORY);
+
+        for (auto arg : std::initializer_list<Op::Argument>{HostArgs...})
+        {
+            auto memory_types_start =
+                (GetArgumentType<Op>(arg) == ArgumentType::Input)
+                    ? node.input_tensor_memory_types.begin()
+                    : node.output_tensor_memory_types.begin();
+
+            uint32_t arg_index = ConvertOpDefEnumToIndex(arg);
+            std::fill_n(
+                memory_types_start + tensor_offsets[i],
+                tensor_counts[i],
+                MemoryType::HOST_MEMORY);
+        }
+
+        return node;
+    }
+
     static void* CreateKernel(TF_OpKernelConstruction* raw_ctx)
     {
-        // TODO: convert host args to tensor indices (can be constexpr)
         TF_StringView name_string_view =
             TF_OpKernelConstruction_GetName(raw_ctx);
         OpKernelConstruction ctx(raw_ctx);

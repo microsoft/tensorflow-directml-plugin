@@ -25,6 +25,7 @@ namespace tfdml
 class OpKernel
 {
   public:
+    // TODO: parameter OpDef, which is constructed from a statically declared opdef (just to avoid template propagation)
     OpKernel(const char* op_type_string, const char* op_name)
         : op_type_string_(op_type_string),
           op_name_(op_name)
