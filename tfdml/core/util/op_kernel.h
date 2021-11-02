@@ -34,18 +34,18 @@ class OpKernel
 
     const std::string_view type_string() const
     {
-        return node_def_.op_type_string;
+        return node_def_.GetOpTypeName();
     }
-    const std::string_view name() const { return node_def_.op_name; }
+    const std::string_view name() const { return node_def_.GetOpName(); }
 
     MemoryType input_memory_type(int index) const
     {
-        return node_def_.input_tensor_memory_types[index];
+        return node_def_.GetInputTensorMemoryType(index);
     }
 
     MemoryType output_memory_type(int index) const
     {
-        return node_def_.output_tensor_memory_types[index];
+        return node_def_.GetOutputTensorMemoryType(index);
     }
 
   private:

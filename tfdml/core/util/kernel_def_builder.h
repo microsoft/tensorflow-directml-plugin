@@ -34,249 +34,242 @@ struct TF_OpKernelContext;
 namespace tfdml
 {
 
-    // Type that contains zero or more op arguments.
-    template <typename Op, typename Op::Argument...>
-    struct OpArgumentList;
+// Type that contains zero or more op arguments.
+template <typename Op, typename Op::Argument...> struct OpArgumentList;
 
-    // Type that describes a data-type constraint imposed on an op attribute.
-    template <typename Op, typename Op::Attribute Attribute, TF_DataType DataType>
-    struct OpTypeConstraint
-    {
-        static constexpr typename Op::Attribute Attribute = Attribute;
-        static constexpr TF_DataType DataType = DataType;
-    };
+// Type that describes a data-type constraint imposed on an op attribute.
+template <typename Op, typename Op::Attribute Attribute, TF_DataType DataType>
+struct OpTypeConstraint
+{
+    static constexpr typename Op::Attribute Attribute = Attribute;
+    static constexpr TF_DataType DataType = DataType;
+};
 
-    // Type that contains zero or more type constraints.
-    template <typename Op, typename... OpTypeConstraints>
-    struct OpTypeConstraintList;
+// Type that contains zero or more type constraints.
+template <typename Op, typename... OpTypeConstraints>
+struct OpTypeConstraintList;
 
-    // Template for declaring a kernel registration type that statically defines the
-    // following:
-    // - Op : declares the operator definition that the kernel implements
-    // - Kernel : declares the type of the kernel class that implements the operator
-    // - Priority : declares an integer value that influences the kernel's selection
-    // at runtime
-    // - TypeConstraints : declares zero or more data-type constraints imposed on
-    // operator attributes
-    // - HostArguments : declares zero or more operator arguments that must reside
-    // in host memory
-    //
-    // At a minimum you must specify the Op and Kernel traits to form a valid kernel
-    // registration. Setting all of the traits together is possible but difficult to
-    // read; you are encouraged to use the 'With*' helpers for extending the type.
-    // For example:
-    //
-    // KernelDefinition<ops::AssignVariableOp, DmlAssignVariableOp>
-    //    ::WithTypeConstraint<ops::AssignVariableOp::Attribute::dtype, TF_FLOAT>
-    //    ::WithHostMemoryArgument<ops::AssignVariableOp::Argument::resource>
-    //    ::Register();
-    template <
-        typename Op,
-        typename Kernel,
-        uint32_t Priority = 0,
-        typename TypeConstraints = OpTypeConstraintList<Op>,
-        typename HostArguments = OpArgumentList<Op>>
-    struct KernelDefinition;
+// Template for declaring a kernel registration type that statically defines the
+// following:
+// - Op : declares the operator definition that the kernel implements
+// - Kernel : declares the type of the kernel class that implements the operator
+// - Priority : declares an integer value that influences the kernel's selection
+// at runtime
+// - TypeConstraints : declares zero or more data-type constraints imposed on
+// operator attributes
+// - HostArguments : declares zero or more operator arguments that must reside
+// in host memory
+//
+// At a minimum you must specify the Op and Kernel traits to form a valid kernel
+// registration. Setting all of the traits together is possible but difficult to
+// read; you are encouraged to use the 'With*' helpers for extending the type.
+// For example:
+//
+// KernelDefinition<ops::AssignVariableOp, DmlAssignVariableOp>
+//    ::WithTypeConstraint<ops::AssignVariableOp::Attribute::dtype, TF_FLOAT>
+//    ::WithHostMemoryArgument<ops::AssignVariableOp::Argument::resource>
+//    ::Register();
+template <
+    typename Op,
+    typename Kernel,
+    uint32_t Priority = 0,
+    typename TypeConstraints = OpTypeConstraintList<Op>,
+    typename HostArguments = OpArgumentList<Op>>
+struct KernelDefinition;
 
-    // Specialized template necessary for having two parameter packs
-    // (TypeConstraints and HostArguments).
-    template <
-        typename Op,
-        typename Kernel,
-        uint32_t PriorityValue,
-        typename... TypeConstraints,
-        typename Op::Argument... HostArguments>
-    class KernelDefinition<
+// Specialized template necessary for having two parameter packs
+// (TypeConstraints and HostArguments).
+template <
+    typename Op,
+    typename Kernel,
+    uint32_t PriorityValue,
+    typename... TypeConstraints,
+    typename Op::Argument... HostArguments>
+class KernelDefinition<
+    Op,
+    Kernel,
+    PriorityValue,
+    OpTypeConstraintList<Op, TypeConstraints...>,
+    OpArgumentList<Op, HostArguments...>>
+{
+  public:
+    using OpType = Op;
+
+    // Sets the priority value.
+    template <uint32_t Value>
+    using WithPriority = KernelDefinition<
+        Op,
+        Kernel,
+        Value,
+        OpTypeConstraintList<Op, TypeConstraints...>,
+        OpArgumentList<Op, HostArguments...>>;
+
+    // Extend the kernel registration type with an additional type constraint.
+    template <typename Op::Attribute A, TF_DataType Type>
+    using WithTypeConstraint = KernelDefinition<
+        Op,
+        Kernel,
+        PriorityValue,
+        OpTypeConstraintList<
+            Op,
+            TypeConstraints...,
+            OpTypeConstraint<Op, A, Type>>,
+        OpArgumentList<Op, HostArguments...>>;
+
+    // Extend the kernel registration type with an additional host-memory
+    // argument.
+    template <typename Op::Argument HostArg>
+    using WithHostMemoryArgument = KernelDefinition<
         Op,
         Kernel,
         PriorityValue,
         OpTypeConstraintList<Op, TypeConstraints...>,
-        OpArgumentList<Op, HostArguments...>>
+        OpArgumentList<Op, HostArguments..., HostArg>>;
+
+    static void Register()
     {
-    public:
-        using OpType = Op;
+        auto* builder = TF_NewKernelBuilder(
+            Op::name,
+            DEVICE_DML,
+            &CreateKernel,
+            &ComputeKernel,
+            &DeleteKernel);
+        CHECK(builder != nullptr);
 
-        // Sets the priority value.
-        template <uint32_t Value>
-        using WithPriority = KernelDefinition<
-            Op,
-            Kernel,
-            Value,
-            OpTypeConstraintList<Op, TypeConstraints...>,
-            OpArgumentList<Op, HostArguments...>>;
+        SetTypeConstraints<TypeConstraints...>(builder);
 
-        // Extend the kernel registration type with an additional type constraint.
-        template <typename Op::Attribute A, TF_DataType Type>
-        using WithTypeConstraint = KernelDefinition<
-            Op,
-            Kernel,
-            PriorityValue,
-            OpTypeConstraintList<
-                Op,
-                TypeConstraints...,
-                OpTypeConstraint<Op, A, Type>>,
-            OpArgumentList<Op, HostArguments...>>;
-
-        // Extend the kernel registration type with an additional host-memory
-        // argument.
-        template <typename Op::Argument HostArg>
-        using WithHostMemoryArgument = KernelDefinition<
-            Op,
-            Kernel,
-            PriorityValue,
-            OpTypeConstraintList<Op, TypeConstraints...>,
-            OpArgumentList<Op, HostArguments..., HostArg>>;
-
-        static void Register()
+        for (auto arg : std::initializer_list<Op::Argument>{HostArguments...})
         {
-            auto *builder = TF_NewKernelBuilder(
-                Op::name,
-                DEVICE_DML,
-                &CreateKernel,
-                &ComputeKernel,
-                &DeleteKernel);
-            CHECK(builder != nullptr);
+            const auto& arg_desc = GetArgumentDesc<Op>(arg);
+            TF_KernelBuilder_HostMemory(builder, arg_desc.name);
+        }
 
-            SetTypeConstraints<TypeConstraints...>(builder);
+        if (PriorityValue)
+        {
+            TF_KernelBuilder_Priority(builder, PriorityValue);
+        }
 
-            for (auto arg : std::initializer_list<Op::Argument>{HostArguments...})
-            {
-                const auto &arg_desc = GetArgumentDesc<Op>(arg);
-                TF_KernelBuilder_HostMemory(builder, arg_desc.name);
-            }
+        Status status;
+        TF_RegisterKernelBuilder(Op::name, builder, status.raw());
+        CHECK(status.ok());
+    }
 
-            if (PriorityValue)
-            {
-                TF_KernelBuilder_Priority(builder, PriorityValue);
-            }
-
+  private:
+    template <typename C = void, typename... Cs>
+    static void SetTypeConstraints(TF_KernelBuilder* builder)
+    {
+        if constexpr (!std::is_same_v<C, void>)
+        {
             Status status;
-            TF_RegisterKernelBuilder(Op::name, builder, status.raw());
+            const auto& attr_desc = GetAttributeDesc<Op>(C::Attribute);
+            TF_KernelBuilder_TypeConstraint(
+                builder,
+                attr_desc.name,
+                C::DataType,
+                status.raw());
             CHECK(status.ok());
         }
-
-    private:
-        template <typename C = void, typename... Cs>
-        static void SetTypeConstraints(TF_KernelBuilder *builder)
+        if constexpr (sizeof...(Cs) > 0)
         {
-            if constexpr (!std::is_same_v<C, void>)
-            {
-                Status status;
-                const auto &attr_desc = GetAttributeDesc<Op>(C::Attribute);
-                TF_KernelBuilder_TypeConstraint(
-                    builder,
-                    attr_desc.name,
-                    C::DataType,
-                    status.raw());
-                CHECK(status.ok());
-            }
-            if constexpr (sizeof...(Cs) > 0)
-            {
-                SetTypeConstraints<Cs...>(builder);
-            }
-        }
-
-        // Each op argument may contain 1 or more tensors, which isn't known until
-        // runtime. This function converts argument data to tensor data.
-        static NodeDef CreateNodeDef(TF_OpKernelConstruction *ctx)
-        {
-            TF_StringView name = TF_OpKernelConstruction_GetName(ctx);
-
-            NodeDef node = {};
-            node.op_name = std::string_view{name.data, name.len};
-            node.op_type_string = std::string_view{Op::name};
-
-            uint32_t arg_index = 0;
-            uint32_t tensor_index = 0;
-
-            uint32_t tensor_offsets[Op::argument_descs.size()];
-            uint32_t tensor_counts[Op::argument_descs.size()];
-
-            // Init all input tensors to DEVICE_MEMORY
-            for (; arg_index < Op::input_arg_count; arg_index++)
-            {
-                uint32_t arg_tensor_count = 1; // TODO: unless attr based
-                tensor_counts[arg_index] = arg_tensor_count;
-                tensor_offsets[arg_index] = tensor_index;
-                tensor_index += arg_tensor_count;
-            }
-            node.input_tensor_memory_types.resize(
-                tensor_index,
-                MemoryType::DEVICE_MEMORY);
-
-            // Init all output tensors to DEVICE_MEMORY
-            for (; arg_index < Op::input_arg_count + Op::output_arg_count;
-                 arg_index++)
-            {
-                uint32_t arg_tensor_count = 1; // TODO: unless attr based
-                tensor_offsets[arg_index] = tensor_index;
-                tensor_counts[arg_index] = arg_tensor_count;
-                tensor_index += arg_tensor_count;
-            }
-            node.output_tensor_memory_types.resize(
-                tensor_index - node.input_tensor_memory_types.size(),
-                MemoryType::DEVICE_MEMORY);
-
-            // Set input/output tensors that live in HOST_MEMORY
-            for (auto arg : std::initializer_list<Op::Argument>{HostArguments...})
-            {
-                auto memory_types_start =
-                    (GetArgumentType<Op>(arg) == ArgumentType::Input)
-                        ? node.input_tensor_memory_types.begin()
-                        : node.output_tensor_memory_types.begin();
-
-                uint32_t host_arg_index = ConvertOpDefEnumToIndex(arg);
-                std::fill_n(
-                    memory_types_start + tensor_offsets[host_arg_index],
-                    tensor_counts[host_arg_index],
-                    MemoryType::HOST_MEMORY);
-            }
-
-            return node;
-        }
-
-        static void *CreateKernel(TF_OpKernelConstruction *raw_ctx)
-        {
-            NodeDef node_def = NodeDef::Create(
-                raw_ctx,
-                Op::name,
-                GetInputArgumentDescs<Op>(),
-                GetOutputArgumentDescs<Op>(),
-                absl::Span<const AttributeDesc>(Op::attribute_descs.data(), Op::attribute_descs.size()));
-
-            OpKernelConstruction ctx(raw_ctx);
-            return new Kernel(&ctx, std::move(node_def));
-        }
-
-        static void ComputeKernel(void *kernel, TF_OpKernelContext *raw_ctx)
-        {
-            Kernel *concrete_kernel = static_cast<Kernel *>(kernel);
-            OpKernelContext ctx(raw_ctx, concrete_kernel);
-            concrete_kernel->Compute(&ctx);
-        }
-
-        static void DeleteKernel(void *kernel)
-        {
-            Kernel *concrete_kernel = static_cast<Kernel *>(kernel);
-            delete concrete_kernel;
-        }
-    };
-
-    // Helper for registering a kernel definition K once for each data type
-    // constraint. This simple helper is intended for kernels that share the
-    // same definition aside from a single data-type attribute.
-    template <
-        typename K,
-        typename K::OpType::Attribute Attr,
-        TF_DataType T,
-        TF_DataType... Ts>
-    void RegisterWithTypes()
-    {
-        K::WithTypeConstraint<Attr, T>::Register();
-        if constexpr (sizeof...(Ts) > 0)
-        {
-            RegisterWithTypes<K, Attr, Ts...>();
+            SetTypeConstraints<Cs...>(builder);
         }
     }
+
+    // Each op argument may contain 1 or more tensors, which isn't known until
+    // runtime. This function converts argument data to tensor data.
+    static NodeDef CreateNodeDef(TF_OpKernelConstruction* ctx)
+    {
+        TF_StringView name = TF_OpKernelConstruction_GetName(ctx);
+
+        NodeDef node = {};
+        node.op_name = std::string_view{name.data, name.len};
+        node.op_type_string = std::string_view{Op::name};
+
+        uint32_t arg_index = 0;
+        uint32_t tensor_index = 0;
+
+        uint32_t tensor_offsets[Op::argument_descs.size()];
+        uint32_t tensor_counts[Op::argument_descs.size()];
+
+        // Init all input tensors to DEVICE_MEMORY
+        for (; arg_index < Op::input_arg_count; arg_index++)
+        {
+            uint32_t arg_tensor_count = 1; // TODO: unless attr based
+            tensor_counts[arg_index] = arg_tensor_count;
+            tensor_offsets[arg_index] = tensor_index;
+            tensor_index += arg_tensor_count;
+        }
+        node.input_tensor_memory_types.resize(
+            tensor_index,
+            MemoryType::DEVICE_MEMORY);
+
+        // Init all output tensors to DEVICE_MEMORY
+        for (; arg_index < Op::input_arg_count + Op::output_arg_count;
+             arg_index++)
+        {
+            uint32_t arg_tensor_count = 1; // TODO: unless attr based
+            tensor_offsets[arg_index] = tensor_index;
+            tensor_counts[arg_index] = arg_tensor_count;
+            tensor_index += arg_tensor_count;
+        }
+        node.output_tensor_memory_types.resize(
+            tensor_index - node.input_tensor_memory_types.size(),
+            MemoryType::DEVICE_MEMORY);
+
+        // Set input/output tensors that live in HOST_MEMORY
+        for (auto arg : std::initializer_list<Op::Argument>{HostArguments...})
+        {
+            auto memory_types_start =
+                (GetArgumentType<Op>(arg) == ArgumentType::Input)
+                    ? node.input_tensor_memory_types.begin()
+                    : node.output_tensor_memory_types.begin();
+
+            uint32_t host_arg_index = ConvertOpDefEnumToIndex(arg);
+            std::fill_n(
+                memory_types_start + tensor_offsets[host_arg_index],
+                tensor_counts[host_arg_index],
+                MemoryType::HOST_MEMORY);
+        }
+
+        return node;
+    }
+
+    static void* CreateKernel(TF_OpKernelConstruction* raw_ctx)
+    {
+        NodeDef node_def = NodeDef::Create<Op, HostArguments...>(raw_ctx);
+        OpKernelConstruction ctx(raw_ctx);
+        return new Kernel(&ctx, std::move(node_def));
+    }
+
+    static void ComputeKernel(void* kernel, TF_OpKernelContext* raw_ctx)
+    {
+        Kernel* concrete_kernel = static_cast<Kernel*>(kernel);
+        OpKernelContext ctx(raw_ctx, concrete_kernel);
+        concrete_kernel->Compute(&ctx);
+    }
+
+    static void DeleteKernel(void* kernel)
+    {
+        Kernel* concrete_kernel = static_cast<Kernel*>(kernel);
+        delete concrete_kernel;
+    }
+};
+
+// Helper for registering a kernel definition K once for each data type
+// constraint. This simple helper is intended for kernels that share the
+// same definition aside from a single data-type attribute.
+template <
+    typename K,
+    typename K::OpType::Attribute Attr,
+    TF_DataType T,
+    TF_DataType... Ts>
+void RegisterWithTypes()
+{
+    K::WithTypeConstraint<Attr, T>::Register();
+    if constexpr (sizeof...(Ts) > 0)
+    {
+        RegisterWithTypes<K, Attr, Ts...>();
+    }
+}
 
 } // namespace tfdml
