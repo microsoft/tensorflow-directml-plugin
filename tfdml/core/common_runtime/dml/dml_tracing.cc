@@ -230,16 +230,16 @@ void DmlTracing::LogExecutionContextFlush()
 }
 
 void DmlTracing::LogKernelCompute(
-    const std::string& op_type,
-    const std::string& op_name)
+    const std::string_view op_type,
+    const std::string_view op_name)
 {
     if (trace_level_ >= All)
     {
         TraceLoggingWrite(
             g_providerHandle,
             "KernelCompute",
-            TraceLoggingString(op_type.c_str(), "Type"),
-            TraceLoggingString(op_name.c_str(), "Name"));
+            TraceLoggingString(op_type.data(), "Type"),
+            TraceLoggingString(op_name.data(), "Name"));
     }
 }
 

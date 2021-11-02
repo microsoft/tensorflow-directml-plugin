@@ -30,11 +30,8 @@ namespace tfdml
 class DmlAssignVariableOp : public OpKernel
 {
   public:
-    explicit DmlAssignVariableOp(
-        OpKernelConstruction* c,
-        const char* op_type_string,
-        const char* op_name)
-        : OpKernel(op_type_string, op_name)
+    explicit DmlAssignVariableOp(OpKernelConstruction* c, NodeDef node_def)
+        : OpKernel(std::move(node_def))
     {
         OP_REQUIRES_OK(c, c->GetAttr("dtype", &dtype_));
         if (!c->GetAttr(

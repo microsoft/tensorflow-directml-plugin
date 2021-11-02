@@ -241,14 +241,15 @@ void DmlKernel::Initialize(
     // Set the name of this compiled op, for debugging purposes. We use the name
     // of the op (e.g. "Conv2D") rather than the name of the node because this
     // kernel may be shared across many nodes.
-    std::string op_type_c =
-        ctx->GetOpKernelContext()->op_kernel().type_string();
-    std::wstring op_type = Utf8ToWideChar(op_type_c);
-    DML_CHECK_SUCCEEDED(compiled_op->SetName(op_type.c_str()));
-    DML_CHECK_SUCCEEDED(compiled_op->SetPrivateData(
-        DmlTracing::kPixEventNameId,
-        static_cast<UINT>(op_type_c.size()),
-        op_type_c.c_str()));
+    // TODO
+    // std::string op_type_c =
+    //     ctx->GetOpKernelContext()->op_kernel().type_string();
+    // std::wstring op_type = Utf8ToWideChar(op_type_c);
+    // DML_CHECK_SUCCEEDED(compiled_op->SetName(op_type.c_str()));
+    // DML_CHECK_SUCCEEDED(compiled_op->SetPrivateData(
+    //     DmlTracing::kPixEventNameId,
+    //     static_cast<UINT>(op_type_c.size()),
+    //     op_type_c.c_str()));
 #endif
 
     compiled_op_ = compiled_op;
@@ -269,7 +270,7 @@ void DmlKernel::Initialize(
             strings::HumanReadableNumBytes(
                 exec_binding_props.PersistentResourceSize)
                 .c_str(),
-            ctx->GetOpKernelContext()->op_kernel().type_string().c_str());
+            ctx->GetOpKernelContext()->op_kernel().type_string().data());
 
         CD3DX12_HEAP_PROPERTIES default_heap_properties =
             CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);

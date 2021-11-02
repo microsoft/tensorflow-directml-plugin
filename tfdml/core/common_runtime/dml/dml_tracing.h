@@ -38,8 +38,8 @@ class DmlTracing
     void LogExecutionContextFillBufferWithPattern();
     void LogExecutionContextFlush();
     void LogKernelCompute(
-        const std::string& op_type,
-        const std::string& op_name);
+        const std::string_view op_type,
+        const std::string_view op_name);
 
     // GPU timeline
     void LogExecuteOperatorStart(

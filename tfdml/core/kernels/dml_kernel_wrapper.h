@@ -45,8 +45,7 @@ class DmlKernelWrapperBase : public OpKernel
   public:
     explicit DmlKernelWrapperBase(
         DmlKernelCachePolicy cache_policy,
-        const char* op_type_string,
-        const char* op_name);
+        NodeDef node_def);
     virtual ~DmlKernelWrapperBase() = default;
 
     void Compute(OpKernelContext* raw_ctx);
@@ -111,39 +110,10 @@ class DmlKernelWrapper : public DmlKernelWrapperBase
   public:
     using Attributes = typename TKernel::InitHelper::Attributes;
 
-    explicit DmlKernelWrapper(
-        OpKernelConstruction* ctx,
-        const char* op_type_string,
-        const char* op_name)
-        : DmlKernelWrapperBase(cache_policy, op_type_string, op_name),
+    explicit DmlKernelWrapper(OpKernelConstruction* ctx, NodeDef node_def)
+        : DmlKernelWrapperBase(cache_policy, std::move(node_def)),
           attr_(std::make_shared<Attributes>(ctx))
     {
-        // This is a (hopefully) temporary workaround since the API doesn't
-        // expose any way to know whether a tensor is allocated with host or
-        // device memory, and no way to map the tensor name to its index.
-        // TODO: Remove this when/if the following PR gets merged
-        // https://github.com/tensorflow/tensorflow/pull/51759
-        // for (int host_input_index : TKernel::host_input_indices)
-        // {
-        //     if (host_input_index >= input_memory_types_.size())
-        //     {
-        //         input_memory_types_.resize(host_input_index + 1, DEVICE_MEMORY);
-        //     }
-
-        //     input_memory_types_[host_input_index] = HOST_MEMORY;
-        // }
-
-        // for (int host_output_index : TKernel::host_output_indices)
-        // {
-        //     if (host_output_index >= output_memory_types_.size())
-        //     {
-        //         output_memory_types_.resize(
-        //             host_output_index + 1,
-        //             DEVICE_MEMORY);
-        //     }
-
-        //     output_memory_types_[host_output_index] = HOST_MEMORY;
-        // }
     }
 
   protected:
@@ -208,29 +178,9 @@ class DmlKernelWrapper : public DmlKernelWrapperBase
         return attr_;
     }
 
-    MemoryType input_memory_type(int index) const final
-    {
-        if (index >= input_memory_types_.size())
-        {
-            return DEVICE_MEMORY;
-        }
-        return input_memory_types_[index];
-    }
-
-    MemoryType output_memory_type(int index) const final
-    {
-        if (index >= output_memory_types_.size())
-        {
-            return DEVICE_MEMORY;
-        }
-        return output_memory_types_[index];
-    }
-
   private:
     const std::shared_ptr<const Attributes> attr_;
     const TShapeHelper shape_helper_;
-    absl::InlinedVector<MemoryType, 4> input_memory_types_;
-    absl::InlinedVector<MemoryType, 1> output_memory_types_;
 };
 
 } // namespace tfdml

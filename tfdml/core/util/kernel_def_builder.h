@@ -22,6 +22,7 @@ limitations under the License.
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/c/tf_datatype.h"
 #include "tfdml/core/util/macros.h"
+#include "tfdml/core/util/node_def.h"
 #include "tfdml/core/util/op_defs.h"
 #include "tfdml/core/util/op_kernel_construction.h"
 #include "tfdml/core/util/op_kernel_context.h"
@@ -47,14 +48,6 @@ struct OpTypeConstraint
 // Type that contains zero or more type constraints.
 template <typename Op, typename... OpTypeConstraints>
 struct OpTypeConstraintList;
-
-struct NodeDef
-{
-    std::string op_name;
-    std::string op_type_string;
-    absl::InlinedVector<MemoryType, 4> input_memory_types;
-    absl::InlinedVector<MemoryType, 4> output_memory_types;
-};
 
 // Template for declaring a kernel registration type that statically defines the
 // following:
@@ -184,10 +177,11 @@ class KernelDefinition<
 
     // Each op argument may contain 1 or more tensors, which isn't known until
     // runtime. This function converts argument data to tensor data.
-    NodeDef CreateNodeDef()
+    static NodeDef CreateNodeDef(TF_StringView name)
     {
         NodeDef node = {};
-        node.op_type_string = Op::name;
+        node.op_name = std::string_view{name.data, name.len};
+        node.op_type_string = std::string_view{Op::name};
 
         uint32_t arg_index = 0;
         uint32_t tensor_index = 0;
@@ -195,6 +189,7 @@ class KernelDefinition<
         uint32_t tensor_offsets[Op::argument_descs.size()];
         uint32_t tensor_counts[Op::argument_descs.size()];
 
+        // Init all input tensors to DEVICE_MEMORY
         for (; arg_index < Op::input_arg_count; arg_index++)
         {
             uint32_t arg_tensor_count = 1; // TODO: unless attr based
@@ -206,6 +201,7 @@ class KernelDefinition<
             tensor_index,
             MemoryType::DEVICE_MEMORY);
 
+        // Init all output tensors to DEVICE_MEMORY
         for (; arg_index < Op::input_arg_count + Op::output_arg_count;
              arg_index++)
         {
@@ -218,17 +214,18 @@ class KernelDefinition<
             tensor_index - node.input_tensor_memory_types.size(),
             MemoryType::DEVICE_MEMORY);
 
-        for (auto arg : std::initializer_list<Op::Argument>{HostArgs...})
+        // Set input/output tensors that live in HOST_MEMORY
+        for (auto arg : std::initializer_list<Op::Argument>{HostArguments...})
         {
             auto memory_types_start =
                 (GetArgumentType<Op>(arg) == ArgumentType::Input)
                     ? node.input_tensor_memory_types.begin()
                     : node.output_tensor_memory_types.begin();
 
-            uint32_t arg_index = ConvertOpDefEnumToIndex(arg);
+            uint32_t host_arg_index = ConvertOpDefEnumToIndex(arg);
             std::fill_n(
-                memory_types_start + tensor_offsets[i],
-                tensor_counts[i],
+                memory_types_start + tensor_offsets[host_arg_index],
+                tensor_counts[host_arg_index],
                 MemoryType::HOST_MEMORY);
         }
 
@@ -239,8 +236,9 @@ class KernelDefinition<
     {
         TF_StringView name_string_view =
             TF_OpKernelConstruction_GetName(raw_ctx);
+        NodeDef node_def = CreateNodeDef(name_string_view);
         OpKernelConstruction ctx(raw_ctx);
-        return new Kernel(&ctx, Op::name, name_string_view.data);
+        return new Kernel(&ctx, node_def);
     }
 
     static void ComputeKernel(void* kernel, TF_OpKernelContext* raw_ctx)

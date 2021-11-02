@@ -17,6 +17,7 @@ limitations under the License.
 
 #include "absl/types/span.h"
 #include "tfdml/core/util/attribute.h"
+#include "tfdml/core/util/node_def.h"
 #include "tfdml/core/util/resource_mgr.h"
 #include "tfdml/core/util/types.h"
 
@@ -25,34 +26,29 @@ namespace tfdml
 class OpKernel
 {
   public:
-    // TODO: parameter OpDef, which is constructed from a statically declared opdef (just to avoid template propagation)
-    OpKernel(const char* op_type_string, const char* op_name)
-        : op_type_string_(op_type_string),
-          op_name_(op_name)
-    {
-    }
+    OpKernel(NodeDef node_def) : node_def_(std::move(node_def)) {}
 
     virtual ~OpKernel() = default;
 
-    const std::string& type_string() const { return op_type_string_; }
-    const std::string& name() const { return op_name_; }
+    const NodeDef& node_def() const { return node_def_; }
 
-    virtual MemoryType input_memory_type(int index) const
+    const std::string_view type_string() const
     {
-        LogFatal("input_memory_type should only be called by DML kernels that "
-                 "inherit "
-                 "directly from DmlKernelWrapperBase.");
+        return node_def_.op_type_string;
+    }
+    const std::string_view name() const { return node_def_.op_name; }
+
+    MemoryType input_memory_type(int index) const
+    {
+        return node_def_.input_tensor_memory_types[index];
     }
 
-    virtual MemoryType output_memory_type(int index) const
+    MemoryType output_memory_type(int index) const
     {
-        LogFatal("output_memory_type should only be called by DML kernels that "
-                 "inherit "
-                 "directly from DmlKernelWrapperBase.");
+        return node_def_.output_tensor_memory_types[index];
     }
 
   private:
-    const std::string op_type_string_;
-    const std::string op_name_;
+    const NodeDef node_def_;
 };
 } // namespace tfdml
