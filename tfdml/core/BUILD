@@ -48,6 +48,7 @@ cc_library(
         "util/device.cc",
         "util/env.cc",
         "util/env_var.cc",
+        "util/node_def.cc",
         "util/numbers.cc",
         "util/op_kernel_construction.cc",
         "util/op_kernel_context.cc",

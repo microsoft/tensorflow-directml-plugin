@@ -80,7 +80,28 @@ constexpr ArgumentType GetArgumentType(typename OpDef::Argument arg)
                                               : ArgumentType::Output;
 }
 
+template <typename OpDef>
+constexpr absl::Span<const ArgumentDesc> GetInputArgumentDescs()
+{
+    static_assert(OpDef::argument_descs.size() >= OpDef::input_arg_count);
+    return {OpDef::argument_descs.data(), OpDef::input_arg_count};
+}
+
+template <typename OpDef>
+constexpr absl::Span<const ArgumentDesc> GetOutputArgumentDescs()
+{
+    static_assert(
+        OpDef::argument_descs.size() ==
+        OpDef::input_arg_count + OpDef::output_arg_count);
+    return {
+        OpDef::argument_descs.data() + OpDef::input_arg_count,
+        OpDef::output_arg_count};
+}
+
 } // namespace tfdml
 
+// clang-format off
+#include <array>
 #include "op_defs_core.h"
 #include "op_defs_dml.h"
+// clang-format on

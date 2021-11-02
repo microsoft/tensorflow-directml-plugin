@@ -14,6 +14,8 @@ limitations under the License.
 #pragma once
 
 #include "absl/container/inlined_vector.h"
+#include "tensorflow/c/kernels.h"
+#include "tfdml/core/util/op_defs.h"
 #include "tfdml/core/util/types.h"
 
 namespace tfdml
@@ -25,6 +27,14 @@ struct NodeDef
     std::string_view op_type_string;
     absl::InlinedVector<MemoryType, 4> input_tensor_memory_types;
     absl::InlinedVector<MemoryType, 4> output_tensor_memory_types;
+    // TODO: attributes and values
+
+    static NodeDef Create(
+        TF_OpKernelConstruction* ctx,
+        std::string_view op_type_name,
+        absl::Span<const ArgumentDesc> input_arg_descs,
+        absl::Span<const ArgumentDesc> output_arg_descs,
+        absl::Span<const AttributeDesc> attribute_descs);
 };
 
 } // namespace tfdml
