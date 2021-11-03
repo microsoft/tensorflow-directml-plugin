@@ -15,6 +15,7 @@ limitations under the License.
 
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/core/framework/tensor.pb.h"
+#include "tfdml/core/util/op_defs.h"
 #include "tfdml/core/util/status.h"
 #include "tfdml/core/util/tensor.h"
 
@@ -26,6 +27,12 @@ class OpKernelConstruction
 {
   public:
     OpKernelConstruction(TF_OpKernelConstruction* context);
+
+    std::string_view GetName() const
+    {
+        auto name = TF_OpKernelConstruction_GetName(context_);
+        return {name.data, name.len};
+    }
 
     template <typename T> Status GetAttr(const char* attr_name, T* value) const;
 
@@ -313,6 +320,10 @@ class OpKernelConstruction
 
         return status;
     }
+
+    Status GetArgumentTensorCount(
+        const ArgumentDesc& arg_desc,
+        uint32_t* value) const;
 
     void CtxFailure(const char* file, int line, const Status& s);
     void CtxFailureWithWarning(const char* file, int line, const Status& s);

@@ -14,9 +14,9 @@ limitations under the License.
 #pragma once
 
 #include "absl/container/inlined_vector.h"
-#include "tensorflow/c/kernels.h"
 #include "tfdml/core/util/op_defs.h"
 #include "tfdml/core/util/types.h"
+#include "tfdml/core/util/op_kernel_construction.h"
 
 namespace tfdml
 {
@@ -42,25 +42,25 @@ class NodeDef
 
     // Combines data from an OpDef with runtime info to build a NodeDef.
     template <typename Op, typename Op::Argument... HostArguments>
-    static NodeDef Create(TF_OpKernelConstruction* ctx)
+    static NodeDef Create(const OpKernelConstruction& ctx)
     {
-        TF_StringView name = TF_OpKernelConstruction_GetName(ctx);
-
         NodeDef node = {};
-        node.op_name = std::string_view{name.data, name.len};
+        node.op_name = ctx.GetName();
         node.op_type_name = Op::name;
 
         // Calculate mapping from arguments to tensors. This has to be done at
         // runtime because some args have a variable number of tensors specified
         // by an attribute value.
+        uint32_t arg_index = 0;
         uint32_t total_tensor_count = 0;
         std::array<uint32_t, Op::argument_descs.size()> arg_tensor_offsets = {};
         std::array<uint32_t, Op::argument_descs.size()> arg_tensor_counts = {};
 
-        for (uint32_t arg_index = 0; arg_index < Op::argument_descs.size();
-             arg_index++)
+        for (const ArgumentDesc& arg_desc : Op::argument_descs)
         {
-            uint32_t arg_tensor_count = 1; // TODO: unless attr based
+            uint32_t arg_tensor_count = 0;
+            CHECK(ctx.GetArgumentTensorCount(arg_desc, &arg_tensor_count).ok());
+
             arg_tensor_counts[arg_index] = arg_tensor_count;
             arg_tensor_offsets[arg_index] = total_tensor_count;
             total_tensor_count += arg_tensor_count;
@@ -68,6 +68,7 @@ class NodeDef
             {
                 node.input_tensor_count += arg_tensor_count;
             }
+            arg_index++;
         }
 
         // Init all tensors to DEVICE_MEMORY.

@@ -236,8 +236,8 @@ class KernelDefinition<
 
     static void* CreateKernel(TF_OpKernelConstruction* raw_ctx)
     {
-        NodeDef node_def = NodeDef::Create<Op, HostArguments...>(raw_ctx);
         OpKernelConstruction ctx(raw_ctx);
+        NodeDef node_def = NodeDef::Create<Op, HostArguments...>(ctx);
         return new Kernel(&ctx, std::move(node_def));
     }
 
