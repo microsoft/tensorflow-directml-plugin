@@ -95,8 +95,7 @@ class NodeDef
     std::string_view op_name;
     std::string_view op_type_name;
 
-    // Memory types are stored as a contiguous list of inputs followed by
-    // outputs.
+    // Contiguous list of inputs types followed by output types.
     absl::InlinedVector<MemoryType, 8> tensor_memory_types;
     uint32_t input_tensor_count;
 };

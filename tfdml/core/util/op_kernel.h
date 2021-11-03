@@ -26,7 +26,7 @@ namespace tfdml
 class OpKernel
 {
   public:
-    OpKernel(NodeDef node_def) : node_def_(std::move(node_def)) {}
+    OpKernel(NodeDef&& node_def) : node_def_(std::move(node_def)) {}
 
     virtual ~OpKernel() = default;
 

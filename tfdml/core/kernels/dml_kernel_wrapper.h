@@ -45,7 +45,7 @@ class DmlKernelWrapperBase : public OpKernel
   public:
     explicit DmlKernelWrapperBase(
         DmlKernelCachePolicy cache_policy,
-        NodeDef node_def);
+        NodeDef&& node_def);
     virtual ~DmlKernelWrapperBase() = default;
 
     void Compute(OpKernelContext* raw_ctx);
@@ -110,7 +110,7 @@ class DmlKernelWrapper : public DmlKernelWrapperBase
   public:
     using Attributes = typename TKernel::InitHelper::Attributes;
 
-    explicit DmlKernelWrapper(OpKernelConstruction* ctx, NodeDef node_def)
+    explicit DmlKernelWrapper(OpKernelConstruction* ctx, NodeDef&& node_def)
         : DmlKernelWrapperBase(cache_policy, std::move(node_def)),
           attr_(std::make_shared<Attributes>(ctx))
     {
