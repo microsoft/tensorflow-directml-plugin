@@ -40,9 +40,30 @@ struct ArgumentDesc
     const char* sequence_attr_name = nullptr;
 };
 
+enum class AttributeType
+{
+    Type,
+    Int,
+    Float,
+    Bool,
+    String,
+    Shape,
+    Func,
+    Tensor,
+    ListType,
+    ListInt,
+    ListFloat,
+    ListBool,
+    ListString,
+    ListShape,
+    ListFunc,
+    ListTensor,
+};
+
 struct AttributeDesc
 {
     const char* name;
+    AttributeType type;
 };
 
 // Helper to safely convert an OpDef::Argument or OpDef::Attribute to an integer
