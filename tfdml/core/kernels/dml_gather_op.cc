@@ -449,8 +449,8 @@ template <typename TIndex> class DmlGatherKernel : public DmlKernel
 };
 
 // clang-format off
-template <typename Op, typename Op::Attribute DataTypeAttr, TF_DataType DataType, typename TIndex>
-using K = typename KernelDefinition<Op, DmlKernelWrapper<DmlGatherKernel<TIndex>, GatherShapeHelper<TIndex>, DmlKernelCachePolicy::Never>>
+template <typename Op, typename Op::Attribute DataTypeAttr, TF_DataType DataType, typename TIndex, DmlKernelCachePolicy CachePolicy = DmlKernelCachePolicy::Default>
+using K = typename KernelDefinition<Op, DmlKernelWrapper<DmlGatherKernel<TIndex>, GatherShapeHelper<TIndex>, CachePolicy>>
     ::template WithTypeConstraint<DataTypeAttr, DataType>
     ::template WithTypeConstraint<Op::Attribute::Tindices, DataTypeToEnum<TIndex>()>;
 // clang-format on
@@ -478,10 +478,10 @@ template <TF_DataType T, TF_DataType... Ts> void RegisterGatherV2()
 template <TF_DataType T, TF_DataType... Ts> void RegisterResourceGather()
 {
     using Op = ops::ResourceGather;
-    K<Op, Op::Attribute::dtype, T, int32_t>::WithHostMemoryArgument<
-        Op::Argument::resource>::Register();
-    K<Op, Op::Attribute::dtype, T, int64_t>::WithHostMemoryArgument<
-        Op::Argument::resource>::Register();
+    K<Op, Op::Attribute::dtype, T, int32_t, DmlKernelCachePolicy::Never>::
+        WithHostMemoryArgument<Op::Argument::resource>::Register();
+    K<Op, Op::Attribute::dtype, T, int64_t, DmlKernelCachePolicy::Never>::
+        WithHostMemoryArgument<Op::Argument::resource>::Register();
     if constexpr (sizeof...(Ts) > 0)
         RegisterResourceGather<Ts...>();
 }
