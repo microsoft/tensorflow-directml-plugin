@@ -43,6 +43,13 @@ struct OpTypeConstraint
 {
     static constexpr typename Op::Attribute Attribute = Attribute;
     static constexpr TF_DataType DataType = DataType;
+
+    static_assert(
+        Op::attribute_descs[ConvertOpDefEnumToIndex(Attribute)].type ==
+            AttributeType::Type,
+        "Type constraints are only valid on attributes with type "
+        "'AttributeType::Type'. Check that you are registering a "
+        "constraint on the intended attribute!");
 };
 
 // Type that contains zero or more type constraints.
