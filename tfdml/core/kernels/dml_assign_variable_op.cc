@@ -30,11 +30,8 @@ namespace tfdml
 class DmlAssignVariableOp : public OpKernel
 {
   public:
-    explicit DmlAssignVariableOp(
-        OpKernelConstruction* c,
-        const char* op_type_string,
-        const char* op_name)
-        : OpKernel(op_type_string, op_name)
+    explicit DmlAssignVariableOp(OpKernelConstruction* c, NodeDef&& node_def)
+        : OpKernel(std::move(node_def))
     {
         OP_REQUIRES_OK(c, c->GetAttr("dtype", &dtype_));
         if (!c->GetAttr(
@@ -103,22 +100,18 @@ class DmlAssignVariableOp : public OpKernel
 
 void RegisterKernels_AssignVariableOp()
 {
+    using K = KernelDefinition<ops::AssignVariableOp, DmlAssignVariableOp>::
+        WithHostMemoryArgument<ops::AssignVariableOp::Argument::resource>;
+
     // We deliberately register the same types here that CUDA does.
-    for (auto& type :
-         {TF_BOOL,
-          TF_COMPLEX64,
-          TF_COMPLEX128,
-          TF_HALF,
-          TF_FLOAT,
-          TF_DOUBLE,
-          TF_INT64})
-    {
-        using Op = ops::AssignVariableOp;
-        KernelBuilder<Op, DmlAssignVariableOp>()
-            .TypeConstraint(Op::Attribute::dtype, type)
-            .HostMemory(Op::Argument::resource)
-            .Register();
-    }
+    constexpr auto T = ops::AssignVariableOp::Attribute::dtype;
+    K::WithTypeConstraint<T, TF_BOOL>::Register();
+    K::WithTypeConstraint<T, TF_COMPLEX64>::Register();
+    K::WithTypeConstraint<T, TF_COMPLEX128>::Register();
+    K::WithTypeConstraint<T, TF_HALF>::Register();
+    K::WithTypeConstraint<T, TF_FLOAT>::Register();
+    K::WithTypeConstraint<T, TF_DOUBLE>::Register();
+    K::WithTypeConstraint<T, TF_INT64>::Register();
 }
 
 } // namespace tfdml

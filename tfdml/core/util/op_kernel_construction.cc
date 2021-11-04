@@ -52,4 +52,47 @@ void OpKernelConstruction::CtxFailureWithWarning(
     TF_OpKernelConstruction_Failure(context_, status_.raw());
 }
 
+Status OpKernelConstruction::GetArgumentTensorCount(
+    const ArgumentDesc& arg_desc,
+    uint32_t* tensor_count) const
+{
+    CHECK(tensor_count != nullptr);
+
+    switch (arg_desc.tensor_count)
+    {
+    case ArgumentDesc::TensorCount::Single: {
+        *tensor_count = 1;
+        return Status::OK();
+    }
+
+    case ArgumentDesc::TensorCount::SequenceAttrInt: {
+        int32_t value = 0;
+        auto status = GetAttr<int32_t>(arg_desc.sequence_attr_name, &value);
+        if (status.ok())
+        {
+            *tensor_count = static_cast<uint32_t>(value);
+        }
+        return status;
+    }
+
+    case ArgumentDesc::TensorCount::SequenceAttrList: {
+        Status status;
+        int32_t list_size;
+        int32_t size_in_bytes;
+        TF_OpKernelConstruction_GetAttrSize(
+            context_,
+            arg_desc.sequence_attr_name,
+            &list_size,
+            &size_in_bytes,
+            status.raw());
+        if (status.ok())
+        {
+            *tensor_count = static_cast<uint32_t>(list_size);
+        }
+        return status;
+    }
+    default: CHECK(false);
+    }
+}
+
 } // namespace tfdml

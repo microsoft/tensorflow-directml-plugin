@@ -29,11 +29,6 @@ class DmlAddNKernel : public DmlKernel
   public:
     using InitHelper = NoOpInitializationHelper;
 
-    // TODO: Remove this when/if the following PR gets merged
-    // https://github.com/tensorflow/tensorflow/pull/51759
-    static constexpr std::array<int, 0> host_input_indices = {};
-    static constexpr std::array<int, 0> host_output_indices = {};
-
     explicit DmlAddNKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
@@ -106,14 +101,14 @@ class DmlAddNKernel : public DmlKernel
 
 void RegisterKernels_AddN()
 {
-    for (auto& type : {TF_FLOAT, TF_HALF, TF_INT64})
-    {
-        KernelBuilder<
-            ops::AddN,
-            DmlKernelWrapper<DmlAddNKernel, GetOutputShapeAsInputShapeHelper>>()
-            .TypeConstraint(ops::AddN::Attribute::T, type)
-            .Register();
-    }
+    using K = KernelDefinition<
+        ops::AddN,
+        DmlKernelWrapper<DmlAddNKernel, GetOutputShapeAsInputShapeHelper>>;
+
+    constexpr auto T = ops::AddN::Attribute::T;
+    K::WithTypeConstraint<T, TF_FLOAT>::Register();
+    K::WithTypeConstraint<T, TF_HALF>::Register();
+    K::WithTypeConstraint<T, TF_INT64>::Register();
 }
 
 } // namespace tfdml

@@ -27,9 +27,8 @@ namespace tfdml
 
 DmlKernelWrapperBase::DmlKernelWrapperBase(
     DmlKernelCachePolicy cache_policy,
-    const char* op_type_string,
-    const char* op_name)
-    : OpKernel(op_type_string, op_name),
+    NodeDef&& node_def)
+    : OpKernel(std::move(node_def)),
       cache_policy_(cache_policy)
 {
 }

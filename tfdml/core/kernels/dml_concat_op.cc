@@ -195,17 +195,10 @@ class ConcatShapeHelper : public ShapeHelper
     }
 };
 
-template <AxisArgumentName AxisArgName, typename THostInputIndices>
-class DmlConcatKernel : public DmlKernel
+template <AxisArgumentName AxisArgName> class DmlConcatKernel : public DmlKernel
 {
   public:
     using InitHelper = InitHelper<AxisArgName>;
-
-    // TODO: Remove this when/if the following PR gets merged
-    // https://github.com/tensorflow/tensorflow/pull/51759
-    static constexpr std::array<int, 1> host_input_indices =
-        THostInputIndices::host_input_indices;
-    static constexpr std::array<int, 0> host_output_indices = {};
 
     explicit DmlConcatKernel(
         DmlKernelConstruction* ctx,
@@ -323,46 +316,44 @@ class DmlConcatKernel : public DmlKernel
     }
 };
 
-// TODO: Remove this when/if the following PR gets merged
-// https://github.com/tensorflow/tensorflow/pull/51759
-struct ConcatHostInputIndices
-{
-    static constexpr std::array<int, 1> host_input_indices = {0};
-};
-
-struct ConcatV2HostInputIndices
-{
-    static constexpr std::array<int, 1> host_input_indices = {1};
-};
-
 // TODO: Enable cache once input indices are converted to tensor indices
 // TF2 #36789375
-template <AxisArgumentName AxisArgName, typename THostInputIndices>
+template <AxisArgumentName AxisArgName>
 using DmlConcatWrapper = DmlKernelWrapper<
-    DmlConcatKernel<AxisArgName, THostInputIndices>,
+    DmlConcatKernel<AxisArgName>,
     ConcatShapeHelper<AxisArgName>,
     DmlKernelCachePolicy::Never>;
 
-void RegisterKernels_Concat()
+// todo: remove axisargumentname it's redundant now...
+template <
+    typename Op,
+    AxisArgumentName AxisArgName,
+    typename Op::Argument AxisArg>
+void RegisterConcat()
 {
+    using K = KernelDefinition<Op, DmlConcatWrapper<AxisArgName>>::
+        WithHostMemoryArgument<AxisArg>;
+
     // TODO: add uint64 support
     // TF2 #36692608
-    for (auto& type : {TF_FLOAT, TF_HALF, TF_UINT8, TF_INT64, TF_BOOL})
-    {
-        KernelBuilder<
-            ops::Concat,
-            DmlConcatWrapper<NAME_IS_CONCAT_DIM, ConcatHostInputIndices>>()
-            .TypeConstraint(ops::Concat::Attribute::T, type)
-            .HostMemory(ops::Concat::Argument::concat_dim)
-            .Register();
+    constexpr auto T = Op::Attribute::T;
+    K::WithTypeConstraint<T, TF_FLOAT>::Register();
+    K::WithTypeConstraint<T, TF_HALF>::Register();
+    K::WithTypeConstraint<T, TF_UINT8>::Register();
+    K::WithTypeConstraint<T, TF_INT64>::Register();
+    K::WithTypeConstraint<T, TF_BOOL>::Register();
+}
 
-        KernelBuilder<
-            ops::ConcatV2,
-            DmlConcatWrapper<NAME_IS_AXIS, ConcatHostInputIndices>>()
-            .TypeConstraint(ops::ConcatV2::Attribute::T, type)
-            .HostMemory(ops::ConcatV2::Argument::axis)
-            .Register();
-    }
+void RegisterKernels_Concat()
+{
+    RegisterConcat<
+        ops::Concat,
+        NAME_IS_CONCAT_DIM,
+        ops::Concat::Argument::concat_dim>();
+    RegisterConcat<
+        ops::ConcatV2,
+        NAME_IS_AXIS,
+        ops::ConcatV2::Argument::axis>();
 }
 
 } // namespace tfdml

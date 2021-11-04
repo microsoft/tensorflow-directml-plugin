@@ -22,6 +22,7 @@ limitations under the License.
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/c/tf_datatype.h"
 #include "tfdml/core/util/macros.h"
+#include "tfdml/core/util/node_def.h"
 #include "tfdml/core/util/op_defs.h"
 #include "tfdml/core/util/op_kernel_construction.h"
 #include "tfdml/core/util/op_kernel_context.h"
@@ -33,94 +34,152 @@ struct TF_OpKernelContext;
 namespace tfdml
 {
 
-// Forward declare proto so that kernels don't need to depend on it
-class KernelDef;
+// Type that contains zero or more op arguments.
+template <typename Op, typename Op::Argument...> struct OpArgumentList;
 
-template <typename OpDef, typename Kernel> class KernelBuilder
+// Type that describes a data-type constraint imposed on an op attribute.
+template <typename Op, typename Op::Attribute Attribute, TF_DataType DataType>
+struct OpTypeConstraint
 {
-    using Argument = typename OpDef::Argument;
-    using Attribute = typename OpDef::Attribute;
+    static constexpr typename Op::Attribute Attribute = Attribute;
+    static constexpr TF_DataType DataType = DataType;
+};
 
+// Type that contains zero or more type constraints.
+template <typename Op, typename... OpTypeConstraints>
+struct OpTypeConstraintList;
+
+// Template for declaring a kernel registration type that statically defines the
+// following:
+// - Op : declares the operator definition that the kernel implements
+// - Kernel : declares the type of the kernel class that implements the operator
+// - Priority : declares an integer value that influences the kernel's selection
+// at runtime
+// - TypeConstraints : declares zero or more data-type constraints imposed on
+// operator attributes
+// - HostArguments : declares zero or more operator arguments that must reside
+// in host memory
+//
+// At a minimum you must specify the Op and Kernel traits to form a valid kernel
+// registration. Setting all of the traits together is possible but difficult to
+// read; you are encouraged to use the 'With*' helpers for extending the type.
+// For example:
+//
+// KernelDefinition<ops::AssignVariableOp, DmlAssignVariableOp>
+//    ::WithTypeConstraint<ops::AssignVariableOp::Attribute::dtype, TF_FLOAT>
+//    ::WithHostMemoryArgument<ops::AssignVariableOp::Argument::resource>
+//    ::Register();
+template <
+    typename Op,
+    typename Kernel,
+    uint32_t Priority = 0,
+    typename TypeConstraints = OpTypeConstraintList<Op>,
+    typename HostArguments = OpArgumentList<Op>>
+struct KernelDefinition;
+
+// Specialized template necessary for having two parameter packs
+// (TypeConstraints and HostArguments).
+template <
+    typename Op,
+    typename Kernel,
+    uint32_t PriorityValue,
+    typename... TypeConstraints,
+    typename Op::Argument... HostArguments>
+class KernelDefinition<
+    Op,
+    Kernel,
+    PriorityValue,
+    OpTypeConstraintList<Op, TypeConstraints...>,
+    OpArgumentList<Op, HostArguments...>>
+{
   public:
-    KernelBuilder() = default;
+    using OpType = Op;
 
-    KernelBuilder<OpDef, Kernel>& TypeConstraint(
-        Attribute attr,
-        TF_DataType data_type)
-    {
-        type_constraints_.emplace_back(attr, data_type);
-        return *this;
-    }
+    // Sets the priority value.
+    template <uint32_t Value>
+    using WithPriority = KernelDefinition<
+        Op,
+        Kernel,
+        Value,
+        OpTypeConstraintList<Op, TypeConstraints...>,
+        OpArgumentList<Op, HostArguments...>>;
 
-    template <typename T>
-    KernelBuilder<OpDef, Kernel>& TypeConstraint(Attribute attr)
-    {
-        return TypeConstraint(attr, DataTypeToEnum<T>());
-    }
+    // Extend the kernel registration type with an additional type constraint.
+    template <typename Op::Attribute A, TF_DataType Type>
+    using WithTypeConstraint = KernelDefinition<
+        Op,
+        Kernel,
+        PriorityValue,
+        OpTypeConstraintList<
+            Op,
+            TypeConstraints...,
+            OpTypeConstraint<Op, A, Type>>,
+        OpArgumentList<Op, HostArguments...>>;
 
-    KernelBuilder<OpDef, Kernel>& HostMemory(Argument arg)
-    {
-        host_memory_args_.push_back(arg);
-        return *this;
-    }
+    // Extend the kernel registration type with an additional host-memory
+    // argument.
+    template <typename Op::Argument HostArg>
+    using WithHostMemoryArgument = KernelDefinition<
+        Op,
+        Kernel,
+        PriorityValue,
+        OpTypeConstraintList<Op, TypeConstraints...>,
+        OpArgumentList<Op, HostArguments..., HostArg>>;
 
-    KernelBuilder<OpDef, Kernel>& Priority(int32_t priority)
-    {
-        priority_ = priority;
-        return *this;
-    }
-
-    void Register()
+    static void Register()
     {
         auto* builder = TF_NewKernelBuilder(
-            OpDef::name,
+            Op::name,
             DEVICE_DML,
             &CreateKernel,
             &ComputeKernel,
             &DeleteKernel);
         CHECK(builder != nullptr);
 
-        Status status;
-        for (const auto& type_constraint : type_constraints_)
-        {
-            const auto& attr_desc =
-                GetAttributeDesc<OpDef>(type_constraint.first);
-            TF_KernelBuilder_TypeConstraint(
-                builder,
-                attr_desc.name,
-                type_constraint.second,
-                status.raw());
-            CHECK(status.ok());
-        }
+        SetTypeConstraints<TypeConstraints...>(builder);
 
-        for (const auto& arg : host_memory_args_)
+        for (auto arg : std::initializer_list<Op::Argument>{HostArguments...})
         {
-            const auto& arg_desc = GetArgumentDesc<OpDef>(arg);
+            const auto& arg_desc = GetArgumentDesc<Op>(arg);
             TF_KernelBuilder_HostMemory(builder, arg_desc.name);
         }
 
-        if (priority_)
+        if (PriorityValue)
         {
-            TF_KernelBuilder_Priority(builder, *priority_);
+            TF_KernelBuilder_Priority(builder, PriorityValue);
         }
 
-        TF_RegisterKernelBuilder(OpDef::name, builder, status.raw());
+        Status status;
+        TF_RegisterKernelBuilder(Op::name, builder, status.raw());
         CHECK(status.ok());
     }
 
   private:
-    KernelBuilder(const KernelBuilder&) = delete;
-    void operator=(const KernelBuilder&) = delete;
-    absl::InlinedVector<Argument, 4> host_memory_args_;
-    absl::InlinedVector<std::pair<Attribute, TF_DataType>, 4> type_constraints_;
-    absl::optional<int32_t> priority_;
+    template <typename C = void, typename... Cs>
+    static void SetTypeConstraints(TF_KernelBuilder* builder)
+    {
+        if constexpr (!std::is_same_v<C, void>)
+        {
+            Status status;
+            const auto& attr_desc = GetAttributeDesc<Op>(C::Attribute);
+            TF_KernelBuilder_TypeConstraint(
+                builder,
+                attr_desc.name,
+                C::DataType,
+                status.raw());
+            CHECK(status.ok());
+        }
+        if constexpr (sizeof...(Cs) > 0)
+        {
+            SetTypeConstraints<Cs...>(builder);
+        }
+    }
 
     static void* CreateKernel(TF_OpKernelConstruction* raw_ctx)
     {
-        TF_StringView name_string_view =
-            TF_OpKernelConstruction_GetName(raw_ctx);
         OpKernelConstruction ctx(raw_ctx);
-        return new Kernel(&ctx, OpDef::name, name_string_view.data);
+        NodeDef node_def = NodeDef::Create<Op, HostArguments...>(ctx);
+        return new Kernel(&ctx, std::move(node_def));
     }
 
     static void ComputeKernel(void* kernel, TF_OpKernelContext* raw_ctx)
@@ -136,5 +195,22 @@ template <typename OpDef, typename Kernel> class KernelBuilder
         delete concrete_kernel;
     }
 };
+
+// Helper for registering a kernel definition K once for each data type
+// constraint. This simple helper is intended for kernels that share the
+// same definition aside from a single data-type attribute.
+template <
+    typename K,
+    typename K::OpType::Attribute Attr,
+    TF_DataType T,
+    TF_DataType... Ts>
+void RegisterWithTypes()
+{
+    K::WithTypeConstraint<Attr, T>::Register();
+    if constexpr (sizeof...(Ts) > 0)
+    {
+        RegisterWithTypes<K, Attr, Ts...>();
+    }
+}
 
 } // namespace tfdml

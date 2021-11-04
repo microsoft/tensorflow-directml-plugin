@@ -347,17 +347,10 @@ SimpleGather SimplifyGather(
     return desc;
 }
 
-template <typename TIndex, typename THostInputIndices>
-class DmlGatherKernel : public DmlKernel
+template <typename TIndex> class DmlGatherKernel : public DmlKernel
 {
   public:
     using InitHelper = GatherInitializationHelper<TIndex>;
-
-    // TODO: Remove this when/if the following PR gets merged
-    // https://github.com/tensorflow/tensorflow/pull/51759
-    static constexpr auto host_input_indices =
-        THostInputIndices::host_input_indices;
-    static constexpr std::array<int, 0> host_output_indices = {};
 
     explicit DmlGatherKernel(
         DmlKernelConstruction* ctx,
@@ -455,78 +448,49 @@ class DmlGatherKernel : public DmlKernel
     }
 };
 
-// TODO: Remove this when/if the following PR gets merged
-// https://github.com/tensorflow/tensorflow/pull/51759
-struct GatherHostInputIndices
-{
-    static constexpr std::array<int, 0> host_input_indices = {};
-};
+// clang-format off
+template <typename Op, typename Op::Attribute DataTypeAttr, TF_DataType DataType, typename TIndex, DmlKernelCachePolicy CachePolicy = DmlKernelCachePolicy::Default>
+using K = typename KernelDefinition<Op, DmlKernelWrapper<DmlGatherKernel<TIndex>, GatherShapeHelper<TIndex>, CachePolicy>>
+    ::template WithTypeConstraint<DataTypeAttr, DataType>
+    ::template WithTypeConstraint<Op::Attribute::Tindices, DataTypeToEnum<TIndex>()>;
+// clang-format on
 
-struct GatherV2HostInputIndices
-{
-    static constexpr std::array<int, 1> host_input_indices = {2};
-};
-
-struct ResourceGatherHostInputIndices
-{
-    static constexpr std::array<int, 1> host_input_indices = {0};
-};
-
-template <typename TIndex, typename THostInputIndices>
-using DmlGatherWrapper = DmlKernelWrapper<
-    DmlGatherKernel<TIndex, THostInputIndices>,
-    GatherShapeHelper<TIndex>>;
-
-template <typename TIndex>
-using DmlResourceGatherWrapper = DmlKernelWrapper<
-    DmlGatherKernel<TIndex, ResourceGatherHostInputIndices>,
-    GatherShapeHelper<TIndex>,
-    DmlKernelCachePolicy::Never>;
-
-template <typename TIndex> void RegisterGather(TF_DataType param_type)
+template <TF_DataType T, TF_DataType... Ts> void RegisterGather()
 {
     using Op = ops::Gather;
-    KernelBuilder<Op, DmlGatherWrapper<TIndex, GatherHostInputIndices>>()
-        .TypeConstraint(Op::Attribute::Tparams, param_type)
-        .template TypeConstraint<TIndex>(Op::Attribute::Tindices)
-        .Register();
+    K<Op, Op::Attribute::Tparams, T, int32_t>::Register();
+    K<Op, Op::Attribute::Tparams, T, int64_t>::Register();
+    if constexpr (sizeof...(Ts) > 0)
+        RegisterGather<Ts...>();
 }
 
-template <typename TIndex> void RegisterGatherV2(TF_DataType param_type)
+template <TF_DataType T, TF_DataType... Ts> void RegisterGatherV2()
 {
     using Op = ops::GatherV2;
-    KernelBuilder<Op, DmlGatherWrapper<TIndex, GatherHostInputIndices>>()
-        .TypeConstraint(Op::Attribute::Tparams, param_type)
-        .template TypeConstraint<TIndex>(Op::Attribute::Tindices)
-        .HostMemory(Op::Argument::axis)
-        .Register();
+    K<Op, Op::Attribute::Tparams, T, int32_t>::WithHostMemoryArgument<
+        Op::Argument::axis>::Register();
+    K<Op, Op::Attribute::Tparams, T, int64_t>::WithHostMemoryArgument<
+        Op::Argument::axis>::Register();
+    if constexpr (sizeof...(Ts) > 0)
+        RegisterGatherV2<Ts...>();
 }
 
-template <typename TIndex> void RegisterResourceGather(TF_DataType param_type)
+template <TF_DataType T, TF_DataType... Ts> void RegisterResourceGather()
 {
     using Op = ops::ResourceGather;
-    KernelBuilder<Op, DmlGatherWrapper<TIndex, GatherHostInputIndices>>()
-        .TypeConstraint(Op::Attribute::dtype, param_type)
-        .template TypeConstraint<TIndex>(Op::Attribute::Tindices)
-        .HostMemory(Op::Argument::resource)
-        .Register();
+    K<Op, Op::Attribute::dtype, T, int32_t, DmlKernelCachePolicy::Never>::
+        WithHostMemoryArgument<Op::Argument::resource>::Register();
+    K<Op, Op::Attribute::dtype, T, int64_t, DmlKernelCachePolicy::Never>::
+        WithHostMemoryArgument<Op::Argument::resource>::Register();
+    if constexpr (sizeof...(Ts) > 0)
+        RegisterResourceGather<Ts...>();
 }
 
 void RegisterKernels_Gather()
 {
-    for (auto& param_type : {TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64})
-    {
-        RegisterGather<int32_t>(param_type);
-        RegisterGather<int64_t>(param_type);
-        RegisterGatherV2<int32_t>(param_type);
-        RegisterGatherV2<int64_t>(param_type);
-    }
-
-    for (auto& param_type : {TF_FLOAT, TF_HALF, TF_BOOL, TF_INT64})
-    {
-        RegisterResourceGather<int32_t>(param_type);
-        RegisterResourceGather<int64_t>(param_type);
-    }
+    RegisterGather<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64>();
+    RegisterGatherV2<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64>();
+    RegisterResourceGather<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT64>();
 }
 
 } // namespace tfdml

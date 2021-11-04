@@ -69,6 +69,7 @@ cc_library(
         "util/env_var.h",
         "util/kernel_def_builder.h",
         "util/macros.h",
+        "util/node_def.h",
         "util/numbers.h",
         "util/op_defs_core.h",
         "util/op_defs_dml.h",

@@ -217,17 +217,10 @@ template <typename TIndex> class GatherNdShapeHelper : public ShapeHelper
     }
 };
 
-template <typename TIndex, typename THostInputIndices>
-class DmlGatherNdKernel : public DmlKernel
+template <typename TIndex> class DmlGatherNdKernel : public DmlKernel
 {
   public:
     using InitHelper = GatherNdInitHelper<TIndex>;
-
-    // TODO: Remove this when/if the following PR gets merged
-    // https://github.com/tensorflow/tensorflow/pull/51759
-    static constexpr auto host_input_indices =
-        THostInputIndices::host_input_indices;
-    static constexpr std::array<int, 0> host_output_indices = {};
 
     DmlGatherNdKernel(DmlKernelConstruction* ctx, const InitHelper* init_helper)
     {
@@ -421,54 +414,37 @@ class DmlGatherNdKernel : public DmlKernel
     }
 };
 
-// TODO: Remove this when/if the following PR gets merged
-// https://github.com/tensorflow/tensorflow/pull/51759
-struct GatherNdHostInputIndices
-{
-    static constexpr std::array<int, 0> host_input_indices = {};
-};
+// clang-format off
+template <typename Op, typename Op::Attribute DataTypeAttr, TF_DataType DataType, typename TIndex>
+using K = typename KernelDefinition<Op, DmlKernelWrapper<DmlGatherNdKernel<TIndex>, GatherNdShapeHelper<TIndex>>> 
+    ::template WithTypeConstraint<DataTypeAttr, DataType>                     
+    ::template WithTypeConstraint<Op::Attribute::Tindices, DataTypeToEnum<TIndex>()>;
+// clang-format on
 
-struct ResourceGatherNdHostInputIndices
-{
-    static constexpr std::array<int, 1> host_input_indices = {0};
-};
-
-template <typename TIndex, typename THostInputIndices>
-using DmlGatherNdWrapper = DmlKernelWrapper<
-    DmlGatherNdKernel<TIndex, THostInputIndices>,
-    GatherNdShapeHelper<TIndex>>;
-
-template <typename TIndex> void RegisterGatherNd(TF_DataType param_type)
+template <TF_DataType T, TF_DataType... Ts> void RegisterGatherNd()
 {
     using Op = ops::GatherNd;
-    KernelBuilder<Op, DmlGatherNdWrapper<TIndex, GatherNdHostInputIndices>>()
-        .TypeConstraint(Op::Attribute::Tparams, param_type)
-        .template TypeConstraint<TIndex>(Op::Attribute::Tindices)
-        .Register();
+    K<Op, Op::Attribute::Tparams, T, int32_t>::Register();
+    K<Op, Op::Attribute::Tparams, T, int64_t>::Register();
+    if constexpr (sizeof...(Ts) > 0)
+        RegisterGatherNd<Ts...>();
 }
 
-template <typename TIndex> void RegisterResourceGatherNd(TF_DataType param_type)
+template <TF_DataType T, TF_DataType... Ts> void RegisterResourceGatherNd()
 {
     using Op = ops::ResourceGatherNd;
-    KernelBuilder<Op, DmlGatherNdWrapper<TIndex, GatherNdHostInputIndices>>()
-        .TypeConstraint(Op::Attribute::dtype, param_type)
-        .template TypeConstraint<TIndex>(Op::Attribute::Tindices)
-        .Register();
+    K<Op, Op::Attribute::dtype, T, int32_t>::WithHostMemoryArgument<
+        Op::Argument::resource>::Register();
+    K<Op, Op::Attribute::dtype, T, int64_t>::WithHostMemoryArgument<
+        Op::Argument::resource>::Register();
+    if constexpr (sizeof...(Ts) > 0)
+        RegisterResourceGatherNd<Ts...>();
 }
 
 void RegisterKernels_GatherNd()
 {
-    for (auto& param_type : {TF_FLOAT, TF_HALF, TF_INT32, TF_INT64})
-    {
-        RegisterGatherNd<int32_t>(param_type);
-        RegisterGatherNd<int64_t>(param_type);
-    }
-
-    for (auto& param_type : {TF_FLOAT, TF_HALF})
-    {
-        RegisterResourceGatherNd<int32_t>(param_type);
-        RegisterResourceGatherNd<int64_t>(param_type);
-    }
+    RegisterGatherNd<TF_FLOAT, TF_HALF, TF_INT32, TF_INT64>();
+    RegisterResourceGatherNd<TF_FLOAT, TF_HALF>();
 }
 
 } // namespace tfdml
