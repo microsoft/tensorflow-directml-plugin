@@ -14,9 +14,10 @@ limitations under the License.
 #pragma once
 
 #include "absl/container/inlined_vector.h"
+#include "absl/types/variant.h"
 #include "tfdml/core/util/op_defs.h"
-#include "tfdml/core/util/types.h"
 #include "tfdml/core/util/op_kernel_construction.h"
+#include "tfdml/core/util/types.h"
 
 namespace tfdml
 {
@@ -38,6 +39,11 @@ class NodeDef
         uint32_t output_tensor_index) const
     {
         return tensor_memory_types[output_tensor_index + input_tensor_count];
+    }
+
+    inline absl::Span<const AttributeValue> GetAttributeValues() const
+    {
+        return attribute_values;
     }
 
     // Combines data from an OpDef with runtime info to build a NodeDef.
@@ -88,6 +94,16 @@ class NodeDef
                 MemoryType::HOST_MEMORY);
         }
 
+        // Fetch attribute values.
+        node.attribute_values.resize(Op::attribute_descs.size(), std::nullopt);
+        for (size_t i = 0; i < node.attribute_values.size(); i++)
+        {
+            CHECK(ctx.GetAttributeValue(
+                         Op::attribute_descs[i],
+                         &node.attribute_values[i])
+                      .ok());
+        }
+
         return node;
     }
 
@@ -98,6 +114,10 @@ class NodeDef
     // Contiguous list of inputs types followed by output types.
     absl::InlinedVector<MemoryType, 8> tensor_memory_types;
     uint32_t input_tensor_count;
+
+    // Stores attribute values by index. The index of an attribute matches its
+    // order in the OpDef::Attribute enum.
+    std::vector<AttributeValue> attribute_values;
 };
 
 } // namespace tfdml

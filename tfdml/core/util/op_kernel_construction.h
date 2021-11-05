@@ -15,6 +15,7 @@ limitations under the License.
 
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/core/framework/tensor.pb.h"
+#include "tfdml/core/util/attribute.h"
 #include "tfdml/core/util/op_defs.h"
 #include "tfdml/core/util/status.h"
 #include "tfdml/core/util/tensor.h"
@@ -128,6 +129,40 @@ class OpKernelConstruction
             attr_name,
             value->data(),
             size_in_bytes,
+            status.raw());
+
+        return status;
+    }
+
+    template <>
+    Status GetAttr<std::vector<TF_DataType>>(
+        const char* attr_name,
+        std::vector<TF_DataType>* value) const
+    {
+        CHECK(value != nullptr);
+        Status attr_size_status;
+        int32_t list_size;
+        int32_t size_in_bytes;
+        TF_OpKernelConstruction_GetAttrSize(
+            context_,
+            attr_name,
+            &list_size,
+            &size_in_bytes,
+            attr_size_status.raw());
+
+        if (!attr_size_status.ok())
+        {
+            return attr_size_status;
+        }
+
+        value->resize(list_size);
+
+        Status status;
+        TF_OpKernelConstruction_GetAttrTypeList(
+            context_,
+            attr_name,
+            value->data(),
+            list_size,
             status.raw());
 
         return status;
@@ -321,9 +356,13 @@ class OpKernelConstruction
         return status;
     }
 
-    Status GetArgumentTensorCount(
-        const ArgumentDesc& arg_desc,
-        uint32_t* value) const;
+    // Returns the number of tensors that map to the given op argument.
+    Status GetArgumentTensorCount(const ArgumentDesc& arg_desc, uint32_t* value)
+        const;
+
+    Status GetAttributeValue(
+        const AttributeDesc& attr_desc,
+        AttributeValue* value) const;
 
     void CtxFailure(const char* file, int line, const Status& s);
     void CtxFailureWithWarning(const char* file, int line, const Status& s);

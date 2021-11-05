@@ -14,8 +14,27 @@ limitations under the License.
 #pragma once
 
 #include "absl/container/inlined_vector.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "absl/types/variant.h"
+#include "tfdml/core/util/types.h"
+
+namespace tfdml
+{
+using AttributeValue = std::variant<
+    std::nullopt_t,
+    TF_DataType,
+    int64_t,
+    float,
+    bool,
+    std::string,
+    std::vector<TF_DataType>,
+    std::vector<int64_t>,
+    std::vector<float>,
+    std::vector<bool>,
+    std::vector<std::string>>;
+
+} // namespace tfdml
 
 using PrimitiveAttribute =
     absl::variant<int32_t, int64_t, float, bool, std::string>;

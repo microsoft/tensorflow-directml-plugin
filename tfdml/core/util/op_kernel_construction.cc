@@ -95,4 +95,59 @@ Status OpKernelConstruction::GetArgumentTensorCount(
     }
 }
 
+template <typename T>
+Status GetValue(
+    const OpKernelConstruction& ctx,
+    const char* attr_name,
+    AttributeValue* value)
+{
+    T primitive_value;
+    auto status = ctx.GetAttr<T>(attr_name, &primitive_value);
+    if (status.ok())
+    {
+        *value = primitive_value;
+    }
+    return status;
+}
+
+Status OpKernelConstruction::GetAttributeValue(
+    const AttributeDesc& attr_desc,
+    AttributeValue* value) const
+{
+    CHECK(value != nullptr);
+
+    switch (attr_desc.type)
+    {
+    case AttributeType::Type:
+        return GetValue<TF_DataType>(*this, attr_desc.name, value);
+    case AttributeType::Int:
+        return GetValue<int64_t>(*this, attr_desc.name, value);
+    case AttributeType::Float:
+        return GetValue<float>(*this, attr_desc.name, value);
+    case AttributeType::Bool:
+        return GetValue<bool>(*this, attr_desc.name, value);
+    case AttributeType::String:
+        return GetValue<std::string>(*this, attr_desc.name, value);
+    case AttributeType::ListType:
+        return GetValue<std::vector<TF_DataType>>(*this, attr_desc.name, value);
+    case AttributeType::ListInt:
+        return GetValue<std::vector<int64_t>>(*this, attr_desc.name, value);
+    case AttributeType::ListFloat:
+        return GetValue<std::vector<float>>(*this, attr_desc.name, value);
+    case AttributeType::ListBool:
+        return GetValue<std::vector<bool>>(*this, attr_desc.name, value);
+    case AttributeType::ListString:
+        return GetValue<std::vector<std::string>>(*this, attr_desc.name, value);
+        // case AttributeType::Shape:
+        // case AttributeType::Func:
+        // case AttributeType::Tensor:
+        // case AttributeType::ListShape:
+        // case AttributeType::ListFunc:
+        // case AttributeType::ListTensor:
+    }
+
+    *value = std::nullopt;
+    return Status::OK();
+}
+
 } // namespace tfdml
