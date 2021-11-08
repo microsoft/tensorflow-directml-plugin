@@ -29,7 +29,11 @@ template <typename TIndex>
 class GatherNdInitHelper : public InitializationHelper
 {
   public:
-    explicit GatherNdInitHelper(OpKernelContext* ctx)
+    using Attributes = EmptyAttributes;
+
+    explicit GatherNdInitHelper(
+        OpKernelContext* ctx,
+        std::shared_ptr<const Attributes> attr)
     {
         if (ctx->input(0).dtype() == TF_RESOURCE)
         {
