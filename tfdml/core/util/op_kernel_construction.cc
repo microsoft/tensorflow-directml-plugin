@@ -105,7 +105,7 @@ Status GetValue(
     auto status = ctx.GetAttr<T>(attr_name, &primitive_value);
     if (status.ok())
     {
-        *value = primitive_value;
+        *value = std::move(primitive_value);
     }
     return status;
 }
@@ -138,6 +138,8 @@ Status OpKernelConstruction::GetAttributeValue(
         return GetValue<std::vector<bool>>(*this, attr_desc.name, value);
     case AttributeType::ListString:
         return GetValue<std::vector<std::string>>(*this, attr_desc.name, value);
+        // These attribute types cannot be retrieved with the C API
+        // (#36968411):
         // case AttributeType::Shape:
         // case AttributeType::Func:
         // case AttributeType::Tensor:
