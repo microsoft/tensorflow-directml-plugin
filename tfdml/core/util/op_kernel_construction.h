@@ -360,9 +360,7 @@ class OpKernelConstruction
     Status GetArgumentTensorCount(const ArgumentDesc& arg_desc, uint32_t* value)
         const;
 
-    Status GetAttributeValue(
-        const AttributeDesc& attr_desc,
-        AttributeValue* value) const;
+    AttributeValue TryGetAttributeValue(const AttributeDesc& attr_desc) const;
 
     void CtxFailure(const char* file, int line, const Status& s);
     void CtxFailureWithWarning(const char* file, int line, const Status& s);

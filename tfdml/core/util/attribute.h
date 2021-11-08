@@ -21,8 +21,7 @@ limitations under the License.
 
 namespace tfdml
 {
-using AttributeValue = absl::variant<
-    absl::nullopt_t,
+using AttributeValue = absl::optional<absl::variant<
     TF_DataType,
     int64_t,
     float,
@@ -32,6 +31,6 @@ using AttributeValue = absl::variant<
     std::vector<int64_t>,
     std::vector<float>,
     std::vector<bool>,
-    std::vector<std::string>>;
+    std::vector<std::string>>>;
 
 } // namespace tfdml

@@ -96,48 +96,41 @@ Status OpKernelConstruction::GetArgumentTensorCount(
 }
 
 template <typename T>
-Status GetValue(
+AttributeValue TryGetValue(
     const OpKernelConstruction& ctx,
-    const char* attr_name,
-    AttributeValue* value)
+    const char* attr_name)
 {
-    T primitive_value;
-    auto status = ctx.GetAttr<T>(attr_name, &primitive_value);
-    if (status.ok())
+    T value;
+    auto status = ctx.GetAttr<T>(attr_name, &value);
+    if (!status.ok())
     {
-        *value = std::move(primitive_value);
+        return absl::nullopt;
     }
-    return status;
+    return value;
 }
 
-Status OpKernelConstruction::GetAttributeValue(
-    const AttributeDesc& attr_desc,
-    AttributeValue* value) const
+AttributeValue OpKernelConstruction::TryGetAttributeValue(
+    const AttributeDesc& attr_desc) const
 {
-    CHECK(value != nullptr);
-
     switch (attr_desc.type)
     {
     case AttributeType::Type:
-        return GetValue<TF_DataType>(*this, attr_desc.name, value);
-    case AttributeType::Int:
-        return GetValue<int64_t>(*this, attr_desc.name, value);
-    case AttributeType::Float:
-        return GetValue<float>(*this, attr_desc.name, value);
-    case AttributeType::Bool:
-        return GetValue<bool>(*this, attr_desc.name, value);
+        return TryGetValue<TF_DataType>(*this, attr_desc.name);
+    case AttributeType::Int: return TryGetValue<int64_t>(*this, attr_desc.name);
+    case AttributeType::Float: return TryGetValue<float>(*this, attr_desc.name);
+    case AttributeType::Bool: return TryGetValue<bool>(*this, attr_desc.name);
     case AttributeType::String:
-        return GetValue<std::string>(*this, attr_desc.name, value);
+        return TryGetValue<std::string>(*this, attr_desc.name);
     case AttributeType::ListType:
-        return GetValue<std::vector<TF_DataType>>(*this, attr_desc.name, value);
+        return TryGetValue<std::vector<TF_DataType>>(*this, attr_desc.name);
     case AttributeType::ListInt:
-        return GetValue<std::vector<int64_t>>(*this, attr_desc.name, value);
+        return TryGetValue<std::vector<int64_t>>(*this, attr_desc.name);
     case AttributeType::ListFloat:
-        return GetValue<std::vector<float>>(*this, attr_desc.name, value);
+        return TryGetValue<std::vector<float>>(*this, attr_desc.name);
     case AttributeType::ListBool:
-        return GetValue<std::vector<bool>>(*this, attr_desc.name, value);
+        return TryGetValue<std::vector<bool>>(*this, attr_desc.name);
     case AttributeType::ListString:
-        return GetValue<std::vector<std::string>>(*this, attr_desc.name, value);
+        return TryGetValue<std::vector<std::string>>(*this, attr_desc.name);
         // These attribute types cannot be retrieved with the C API
         // (#36968411):
         // case AttributeType::Shape:
@@ -148,8 +141,7 @@ Status OpKernelConstruction::GetAttributeValue(
         // case AttributeType::ListTensor:
     }
 
-    *value = absl::nullopt;
-    return Status::OK();
+    return absl::nullopt;
 }
 
 } // namespace tfdml

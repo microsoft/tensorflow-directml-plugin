@@ -62,11 +62,11 @@ bool DmlKernelKey::operator==(const DmlKernelKey& other) const
     // The named attributes should always be in the same order since they're
     // returned from the same kernel function that builds them in a
     // deterministic way
-    // if (this->node_def->GetAttributeValues() !=
-    //     other.node_def->GetAttributeValues())
-    // {
-    //     return false;
-    // }
+    if (this->node_def->GetAttributeValues() !=
+        other.node_def->GetAttributeValues())
+    {
+        return false;
+    }
 
     if (this->input_tensors != other.input_tensors)
     {

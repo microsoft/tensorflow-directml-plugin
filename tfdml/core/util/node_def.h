@@ -95,13 +95,11 @@ class NodeDef
         }
 
         // Fetch attribute values.
-        node.attribute_values.resize(Op::attribute_descs.size(), absl::nullopt);
+        node.attribute_values.resize(Op::attribute_descs.size());
         for (size_t i = 0; i < node.attribute_values.size(); i++)
         {
-            CHECK(ctx.GetAttributeValue(
-                         Op::attribute_descs[i],
-                         &node.attribute_values[i])
-                      .ok());
+            node.attribute_values[i] =
+                ctx.TryGetAttributeValue(Op::attribute_descs[i]);
         }
 
         return node;
@@ -117,7 +115,7 @@ class NodeDef
 
     // Stores attribute values by index. The index of an attribute matches its
     // order in the OpDef::Attribute enum.
-    std::vector<AttributeValue> attribute_values;
+    absl::InlinedVector<AttributeValue, 4> attribute_values;
 };
 
 } // namespace tfdml

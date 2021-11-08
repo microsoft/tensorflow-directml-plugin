@@ -89,7 +89,7 @@ struct DmlKernelKey
             return H::combine(
                 std::move(h),
                 kernel_key.op_type_name,
-                // kernel_key.node_def->GetAttributeValues(),
+                kernel_key.node_def->GetAttributeValues(),
                 kernel_key.input_tensors);
         }
 
