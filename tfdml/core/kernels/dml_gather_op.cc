@@ -31,7 +31,7 @@ template <typename Index>
 class GatherInitializationHelper : public InitializationHelper
 {
   public:
-    struct Attributes : public BaseAttributes
+    struct Attributes
     {
         explicit Attributes(OpKernelConstruction* ctx)
         {
@@ -40,19 +40,9 @@ class GatherInitializationHelper : public InitializationHelper
             {
                 batch_dims = 0;
             }
-
-            named_attributes_ = {
-                {"batch_dims", batch_dims},
-            };
-        }
-
-        absl::Span<const NameAttributePair> GetNamedAttributes() const final
-        {
-            return named_attributes_;
         }
 
         int32_t batch_dims;
-        absl::InlinedVector<NameAttributePair, 1> named_attributes_;
     };
 
     GatherInitializationHelper(

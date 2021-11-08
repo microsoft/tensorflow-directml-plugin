@@ -27,7 +27,7 @@ namespace tfdml
 
 DmlKernelWrapperBase::DmlKernelWrapperBase(
     DmlKernelCachePolicy cache_policy,
-    NodeDef&& node_def)
+    std::shared_ptr<const NodeDef> node_def)
     : OpKernel(std::move(node_def)),
       cache_policy_(cache_policy)
 {
@@ -228,7 +228,7 @@ DmlKernelKey DmlKernelWrapperBase::CreateKernelKey(OpKernelContext* ctx) const
 {
     DmlKernelKey key = {};
     key.op_type_name = this->type_string();
-    key.attributes = this->GetAttributes();
+    key.node_def = this->node_def();
 
     for (int i = 0; i < ctx->num_inputs(); ++i)
     {

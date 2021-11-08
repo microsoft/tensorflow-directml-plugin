@@ -95,7 +95,7 @@ class NodeDef
         }
 
         // Fetch attribute values.
-        node.attribute_values.resize(Op::attribute_descs.size(), std::nullopt);
+        node.attribute_values.resize(Op::attribute_descs.size(), absl::nullopt);
         for (size_t i = 0; i < node.attribute_values.size(); i++)
         {
             CHECK(ctx.GetAttributeValue(

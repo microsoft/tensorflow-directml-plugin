@@ -186,7 +186,7 @@ class KernelDefinition<
     {
         OpKernelConstruction ctx(raw_ctx);
         NodeDef node_def = NodeDef::Create<Op, HostArguments...>(ctx);
-        return new Kernel(&ctx, std::move(node_def));
+        return new Kernel(&ctx, std::make_shared<const NodeDef>(std::move(node_def)));
     }
 
     static void ComputeKernel(void* kernel, TF_OpKernelContext* raw_ctx)

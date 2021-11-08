@@ -148,7 +148,7 @@ Status OpKernelConstruction::GetAttributeValue(
         // case AttributeType::ListTensor:
     }
 
-    *value = std::nullopt;
+    *value = absl::nullopt;
     return Status::OK();
 }
 

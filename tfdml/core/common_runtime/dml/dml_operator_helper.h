@@ -37,13 +37,8 @@ class ShapeHelper
 class InitializationHelper
 {
   public:
-    struct EmptyAttributes : public BaseAttributes
+    struct EmptyAttributes
     {
-        absl::Span<const NameAttributePair> GetNamedAttributes() const final
-        {
-            return {};
-        }
-
         explicit EmptyAttributes(OpKernelConstruction* ctx) {}
     };
 
