@@ -133,15 +133,15 @@ AttributeValue OpKernelConstruction::TryGetAttributeValue(
         return TryGetValue<std::vector<std::string>>(*this, attr_desc.name);
         // These attribute types cannot be retrieved with the C API
         // (#36968411):
-        // case AttributeType::Shape:
-        // case AttributeType::Func:
-        // case AttributeType::Tensor:
-        // case AttributeType::ListShape:
-        // case AttributeType::ListFunc:
-        // case AttributeType::ListTensor:
+    case AttributeType::Shape:
+    case AttributeType::Func:
+    case AttributeType::Tensor:
+    case AttributeType::ListShape:
+    case AttributeType::ListFunc:
+    case AttributeType::ListTensor:
+    default:
+        return absl::nullopt;
     }
-
-    return absl::nullopt;
 }
 
 } // namespace tfdml

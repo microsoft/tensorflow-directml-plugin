@@ -433,9 +433,9 @@ template <TF_DataType T, TF_DataType... Ts> void RegisterGatherNd()
 template <TF_DataType T, TF_DataType... Ts> void RegisterResourceGatherNd()
 {
     using Op = ops::ResourceGatherNd;
-    K<Op, Op::Attribute::dtype, T, int32_t>::WithHostMemoryArgument<
+    K<Op, Op::Attribute::dtype, T, int32_t>::template WithHostMemoryArgument<
         Op::Argument::resource>::Register();
-    K<Op, Op::Attribute::dtype, T, int64_t>::WithHostMemoryArgument<
+    K<Op, Op::Attribute::dtype, T, int64_t>::template WithHostMemoryArgument<
         Op::Argument::resource>::Register();
     if constexpr (sizeof...(Ts) > 0)
         RegisterResourceGatherNd<Ts...>();

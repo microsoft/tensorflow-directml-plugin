@@ -84,7 +84,8 @@ class NodeDef
 
         // Set tensors belonging to arguments in HostArguments to
         // HOST_MEMORY.
-        for (auto arg : std::initializer_list<Op::Argument>{HostArguments...})
+        for (auto arg :
+             std::initializer_list<typename Op::Argument>{HostArguments...})
         {
             auto arg_index = ConvertOpDefEnumToIndex(arg);
             std::fill_n(

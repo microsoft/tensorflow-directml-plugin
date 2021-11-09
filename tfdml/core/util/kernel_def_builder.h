@@ -41,8 +41,8 @@ template <typename Op, typename Op::Argument...> struct OpArgumentList;
 template <typename Op, typename Op::Attribute Attribute, TF_DataType DataType>
 struct OpTypeConstraint
 {
-    static constexpr typename Op::Attribute Attribute = Attribute;
-    static constexpr TF_DataType DataType = DataType;
+    static constexpr typename Op::Attribute AttributeValue = Attribute;
+    static constexpr TF_DataType DataTypeValue = DataType;
 
     static_assert(
         Op::attribute_descs[ConvertOpDefEnumToIndex(Attribute)].type ==
@@ -82,7 +82,7 @@ template <
     uint32_t Priority = 0,
     typename TypeConstraints = OpTypeConstraintList<Op>,
     typename HostArguments = OpArgumentList<Op>>
-struct KernelDefinition;
+class KernelDefinition;
 
 // Specialized template necessary for having two parameter packs
 // (TypeConstraints and HostArguments).
@@ -145,7 +145,8 @@ class KernelDefinition<
 
         SetTypeConstraints<TypeConstraints...>(builder);
 
-        for (auto arg : std::initializer_list<Op::Argument>{HostArguments...})
+        for (auto arg :
+             std::initializer_list<typename Op::Argument>{HostArguments...})
         {
             const auto& arg_desc = GetArgumentDesc<Op>(arg);
             TF_KernelBuilder_HostMemory(builder, arg_desc.name);
@@ -168,11 +169,11 @@ class KernelDefinition<
         if constexpr (!std::is_same_v<C, void>)
         {
             Status status;
-            const auto& attr_desc = GetAttributeDesc<Op>(C::Attribute);
+            const auto& attr_desc = GetAttributeDesc<Op>(C::AttributeValue);
             TF_KernelBuilder_TypeConstraint(
                 builder,
                 attr_desc.name,
-                C::DataType,
+                C::DataTypeValue,
                 status.raw());
             CHECK(status.ok());
         }
@@ -186,7 +187,9 @@ class KernelDefinition<
     {
         OpKernelConstruction ctx(raw_ctx);
         NodeDef node_def = NodeDef::Create<Op, HostArguments...>(ctx);
-        return new Kernel(&ctx, std::make_shared<const NodeDef>(std::move(node_def)));
+        return new Kernel(
+            &ctx,
+            std::make_shared<const NodeDef>(std::move(node_def)));
     }
 
     static void ComputeKernel(void* kernel, TF_OpKernelContext* raw_ctx)
@@ -213,7 +216,7 @@ template <
     TF_DataType... Ts>
 void RegisterWithTypes()
 {
-    K::WithTypeConstraint<Attr, T>::Register();
+    K::template WithTypeConstraint<Attr, T>::Register();
     if constexpr (sizeof...(Ts) > 0)
     {
         RegisterWithTypes<K, Attr, Ts...>();
