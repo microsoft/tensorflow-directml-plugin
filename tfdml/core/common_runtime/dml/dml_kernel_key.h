@@ -18,6 +18,7 @@ limitations under the License.
 #include "tensorflow/c/tf_datatype.h"
 #include "tfdml/core/common_runtime/dml/dml_common.h"
 #include "tfdml/core/util/attribute.h"
+#include "tfdml/core/util/node_def.h"
 #include "tfdml/core/util/tensor.h"
 
 namespace tfdml
@@ -40,10 +41,10 @@ struct TensorShapeAndType
 };
 
 // Used to identify/hash an input tensor for a DML kernel. A DML kernel may
-// choose to register certain input tensors as requiring to be stored in host
-// memory. (This is achieved by using .HostMemory("input_name") during
-// REGISTER_KERNEL_BUILDER). Such tensors are known as constant CPU input
-// tensors, otherwise they're just regular input tensors.
+// choose to register certain arguments as requiring to be stored in host
+// memory. (This is achieved by using ::WithHostMemoryArgument<...> in a kernel
+// definition). Such arguments' tensors are known as constant CPU input tensors,
+// otherwise they're just regular input tensors.
 //
 // Since constant CPU inputs are provided during construction of DML kernels,
 // the contents of the tensor (as well as its shape and type) forms part of the
@@ -74,7 +75,7 @@ struct DmlInputTensorKey
 struct DmlKernelKey
 {
     std::string op_type_name; // e.g. "Conv2D"
-    std::shared_ptr<const BaseAttributes> attributes;
+    std::shared_ptr<const NodeDef> node_def;
     absl::InlinedVector<DmlInputTensorKey, 6> input_tensors;
 
     DmlKernelKey Clone() const; // Performs a deep copy
@@ -83,12 +84,12 @@ struct DmlKernelKey
     template <typename H>
     friend H AbslHashValue(H h, const DmlKernelKey& kernel_key)
     {
-        if (kernel_key.attributes)
+        if (kernel_key.node_def)
         {
             return H::combine(
                 std::move(h),
                 kernel_key.op_type_name,
-                kernel_key.attributes->GetNamedAttributes(),
+                kernel_key.node_def->GetAttributeValues(),
                 kernel_key.input_tensors);
         }
 

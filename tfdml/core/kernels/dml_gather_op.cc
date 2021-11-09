@@ -31,7 +31,7 @@ template <typename Index>
 class GatherInitializationHelper : public InitializationHelper
 {
   public:
-    struct Attributes : public BaseAttributes
+    struct Attributes
     {
         explicit Attributes(OpKernelConstruction* ctx)
         {
@@ -40,19 +40,9 @@ class GatherInitializationHelper : public InitializationHelper
             {
                 batch_dims = 0;
             }
-
-            named_attributes_ = {
-                {"batch_dims", batch_dims},
-            };
-        }
-
-        absl::Span<const NameAttributePair> GetNamedAttributes() const final
-        {
-            return named_attributes_;
         }
 
         int32_t batch_dims;
-        absl::InlinedVector<NameAttributePair, 1> named_attributes_;
     };
 
     GatherInitializationHelper(
@@ -467,9 +457,9 @@ template <TF_DataType T, TF_DataType... Ts> void RegisterGather()
 template <TF_DataType T, TF_DataType... Ts> void RegisterGatherV2()
 {
     using Op = ops::GatherV2;
-    K<Op, Op::Attribute::Tparams, T, int32_t>::WithHostMemoryArgument<
+    K<Op, Op::Attribute::Tparams, T, int32_t>::template WithHostMemoryArgument<
         Op::Argument::axis>::Register();
-    K<Op, Op::Attribute::Tparams, T, int64_t>::WithHostMemoryArgument<
+    K<Op, Op::Attribute::Tparams, T, int64_t>::template WithHostMemoryArgument<
         Op::Argument::axis>::Register();
     if constexpr (sizeof...(Ts) > 0)
         RegisterGatherV2<Ts...>();
@@ -479,9 +469,9 @@ template <TF_DataType T, TF_DataType... Ts> void RegisterResourceGather()
 {
     using Op = ops::ResourceGather;
     K<Op, Op::Attribute::dtype, T, int32_t, DmlKernelCachePolicy::Never>::
-        WithHostMemoryArgument<Op::Argument::resource>::Register();
+        template WithHostMemoryArgument<Op::Argument::resource>::Register();
     K<Op, Op::Attribute::dtype, T, int64_t, DmlKernelCachePolicy::Never>::
-        WithHostMemoryArgument<Op::Argument::resource>::Register();
+        template WithHostMemoryArgument<Op::Argument::resource>::Register();
     if constexpr (sizeof...(Ts) > 0)
         RegisterResourceGather<Ts...>();
 }

@@ -26,29 +26,32 @@ namespace tfdml
 class OpKernel
 {
   public:
-    OpKernel(NodeDef&& node_def) : node_def_(std::move(node_def)) {}
+    OpKernel(std::shared_ptr<const NodeDef> node_def)
+        : node_def_(std::move(node_def))
+    {
+    }
 
     virtual ~OpKernel() = default;
 
-    const NodeDef& node_def() const { return node_def_; }
+    std::shared_ptr<const NodeDef> node_def() const { return node_def_; }
 
     const std::string_view type_string() const
     {
-        return node_def_.GetOpTypeName();
+        return node_def_->GetOpTypeName();
     }
-    const std::string_view name() const { return node_def_.GetOpName(); }
+    const std::string_view name() const { return node_def_->GetOpName(); }
 
     MemoryType input_memory_type(int index) const
     {
-        return node_def_.GetInputTensorMemoryType(index);
+        return node_def_->GetInputTensorMemoryType(index);
     }
 
     MemoryType output_memory_type(int index) const
     {
-        return node_def_.GetOutputTensorMemoryType(index);
+        return node_def_->GetOutputTensorMemoryType(index);
     }
 
   private:
-    const NodeDef node_def_;
+    std::shared_ptr<const NodeDef> node_def_;
 };
 } // namespace tfdml

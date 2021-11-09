@@ -45,12 +45,10 @@ class DmlKernelWrapperBase : public OpKernel
   public:
     explicit DmlKernelWrapperBase(
         DmlKernelCachePolicy cache_policy,
-        NodeDef&& node_def);
+        std::shared_ptr<const NodeDef> node_def);
     virtual ~DmlKernelWrapperBase() = default;
 
     void Compute(OpKernelContext* raw_ctx);
-
-    virtual std::shared_ptr<const BaseAttributes> GetAttributes() const = 0;
 
   protected:
     virtual const ShapeHelper* GetShapeHelper() const = 0;
@@ -110,7 +108,9 @@ class DmlKernelWrapper : public DmlKernelWrapperBase
   public:
     using Attributes = typename TKernel::InitHelper::Attributes;
 
-    explicit DmlKernelWrapper(OpKernelConstruction* ctx, NodeDef&& node_def)
+    explicit DmlKernelWrapper(
+        OpKernelConstruction* ctx,
+        std::shared_ptr<const NodeDef> node_def)
         : DmlKernelWrapperBase(cache_policy, std::move(node_def)),
           attr_(std::make_shared<Attributes>(ctx))
     {
@@ -171,11 +171,6 @@ class DmlKernelWrapper : public DmlKernelWrapperBase
         DmlKernelContext* context) const final
     {
         return kernel->Compute(context);
-    }
-
-    std::shared_ptr<const BaseAttributes> GetAttributes() const
-    {
-        return attr_;
     }
 
   private:

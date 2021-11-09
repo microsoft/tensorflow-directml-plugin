@@ -95,4 +95,53 @@ Status OpKernelConstruction::GetArgumentTensorCount(
     }
 }
 
+template <typename T>
+AttributeValue TryGetValue(
+    const OpKernelConstruction& ctx,
+    const char* attr_name)
+{
+    T value;
+    auto status = ctx.GetAttr<T>(attr_name, &value);
+    if (!status.ok())
+    {
+        return absl::nullopt;
+    }
+    return value;
+}
+
+AttributeValue OpKernelConstruction::TryGetAttributeValue(
+    const AttributeDesc& attr_desc) const
+{
+    switch (attr_desc.type)
+    {
+    case AttributeType::Type:
+        return TryGetValue<TF_DataType>(*this, attr_desc.name);
+    case AttributeType::Int: return TryGetValue<int64_t>(*this, attr_desc.name);
+    case AttributeType::Float: return TryGetValue<float>(*this, attr_desc.name);
+    case AttributeType::Bool: return TryGetValue<bool>(*this, attr_desc.name);
+    case AttributeType::String:
+        return TryGetValue<std::string>(*this, attr_desc.name);
+    case AttributeType::ListType:
+        return TryGetValue<std::vector<TF_DataType>>(*this, attr_desc.name);
+    case AttributeType::ListInt:
+        return TryGetValue<std::vector<int64_t>>(*this, attr_desc.name);
+    case AttributeType::ListFloat:
+        return TryGetValue<std::vector<float>>(*this, attr_desc.name);
+    case AttributeType::ListBool:
+        return TryGetValue<std::vector<bool>>(*this, attr_desc.name);
+    case AttributeType::ListString:
+        return TryGetValue<std::vector<std::string>>(*this, attr_desc.name);
+        // These attribute types cannot be retrieved with the C API
+        // (#36968411):
+    case AttributeType::Shape:
+    case AttributeType::Func:
+    case AttributeType::Tensor:
+    case AttributeType::ListShape:
+    case AttributeType::ListFunc:
+    case AttributeType::ListTensor:
+    default:
+        return absl::nullopt;
+    }
+}
+
 } // namespace tfdml

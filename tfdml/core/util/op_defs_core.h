@@ -46,8 +46,8 @@ struct RiscBinaryArithmetic
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"op_type"},
-        AttributeDesc{"T"}
+        AttributeDesc{"op_type", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -107,7 +107,7 @@ struct Mod
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -140,9 +140,9 @@ struct RemoteCall
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"},
-        AttributeDesc{"f"}
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType},
+        AttributeDesc{"f", AttributeType::Func}
     };
 };
 
@@ -203,8 +203,8 @@ struct TensorMapInsert
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"key_dtype"},
-        AttributeDesc{"value_dtype"}
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type}
     };
 };
 
@@ -238,8 +238,8 @@ struct RpcClient
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"list_registered_methods"}
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"list_registered_methods", AttributeType::Bool}
     };
 };
 
@@ -276,9 +276,9 @@ struct ResourceApplyKerasMomentum
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"use_nesterov"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"use_nesterov", AttributeType::Bool}
     };
 };
 
@@ -332,7 +332,7 @@ struct IntAttr
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"foo"}
+        AttributeDesc{"foo", AttributeType::Int}
     };
 };
 
@@ -393,10 +393,10 @@ struct XlaSplitND
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"},
-        AttributeDesc{"num_splits"},
-        AttributeDesc{"paddings"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"num_splits", AttributeType::ListInt},
+        AttributeDesc{"paddings", AttributeType::ListInt}
     };
 };
 
@@ -425,7 +425,7 @@ struct RefExit
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -459,10 +459,10 @@ struct RpcServerRegister
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"f"},
-        AttributeDesc{"input_specs"},
-        AttributeDesc{"output_specs"}
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"input_specs", AttributeType::String},
+        AttributeDesc{"output_specs", AttributeType::String}
     };
 };
 
@@ -489,7 +489,7 @@ struct OpWithDefaultAttr
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"default_float"}
+        AttributeDesc{"default_float", AttributeType::Float}
     };
 };
 
@@ -519,8 +519,8 @@ struct DestroyTemporaryVariable
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"var_name"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"var_name", AttributeType::String}
     };
 };
 
@@ -555,7 +555,7 @@ struct RpcCall
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tin"}
+        AttributeDesc{"Tin", AttributeType::ListType}
     };
 };
 
@@ -617,9 +617,9 @@ struct _MklBatchMatMul
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"adj_x"},
-        AttributeDesc{"adj_y"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"adj_x", AttributeType::Bool},
+        AttributeDesc{"adj_y", AttributeType::Bool}
     };
 };
 
@@ -692,11 +692,11 @@ struct _MklFusedBatchNormGradV3
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -736,8 +736,8 @@ struct SparseReduceSumSparse
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"keep_dims"},
-        AttributeDesc{"T"}
+        AttributeDesc{"keep_dims", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -825,8 +825,8 @@ struct _ConfigureDistributedTPU
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"enable_whole_mesh_compilations"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"enable_whole_mesh_compilations", AttributeType::Bool}
     };
 };
 
@@ -861,9 +861,9 @@ struct GenerateVocabRemapping
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"new_vocab_offset"},
-        AttributeDesc{"num_new_vocab"},
-        AttributeDesc{"old_vocab_size"}
+        AttributeDesc{"new_vocab_offset", AttributeType::Int},
+        AttributeDesc{"num_new_vocab", AttributeType::Int},
+        AttributeDesc{"old_vocab_size", AttributeType::Int}
     };
 };
 
@@ -931,9 +931,9 @@ struct QuantizedConcatV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -971,10 +971,10 @@ struct ParallelBatchDataset
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"parallel_copy"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"deterministic"}
+        AttributeDesc{"parallel_copy", AttributeType::Bool},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"deterministic", AttributeType::String}
     };
 };
 
@@ -1018,8 +1018,8 @@ struct ResourceApplyAdaMax
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -1048,7 +1048,7 @@ struct RpcGetValue
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tout"}
+        AttributeDesc{"Tout", AttributeType::ListType}
     };
 };
 
@@ -1077,7 +1077,7 @@ struct MergeSummary
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"N"}
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -1106,7 +1106,7 @@ struct Unary
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -1166,10 +1166,10 @@ struct BlockLSTM
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"forget_bias"},
-        AttributeDesc{"cell_clip"},
-        AttributeDesc{"use_peephole"},
-        AttributeDesc{"T"}
+        AttributeDesc{"forget_bias", AttributeType::Float},
+        AttributeDesc{"cell_clip", AttributeType::Float},
+        AttributeDesc{"use_peephole", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -1198,7 +1198,7 @@ struct Log1p
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -1230,8 +1230,8 @@ struct TfLiteSubgraphExecute
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType}
     };
 };
 
@@ -1318,7 +1318,7 @@ struct BoostedTreesCreateQuantileStreamResource
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"max_elements"}
+        AttributeDesc{"max_elements", AttributeType::Int}
     };
 };
 
@@ -1429,8 +1429,8 @@ struct Imag
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -1460,8 +1460,8 @@ struct StackV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"elem_type"},
-        AttributeDesc{"stack_name"}
+        AttributeDesc{"elem_type", AttributeType::Type},
+        AttributeDesc{"stack_name", AttributeType::String}
     };
 };
 
@@ -1519,7 +1519,7 @@ struct Round
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -1554,9 +1554,9 @@ struct ScatterMin
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -1612,7 +1612,7 @@ struct BesselK1
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -1672,9 +1672,9 @@ struct Assign
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"validate_shape"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"validate_shape", AttributeType::Bool},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -1702,8 +1702,8 @@ struct StubResourceHandleOp
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -1735,8 +1735,8 @@ struct TensorListReserve
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"element_dtype"},
-        AttributeDesc{"shape_type"}
+        AttributeDesc{"element_dtype", AttributeType::Type},
+        AttributeDesc{"shape_type", AttributeType::Type}
     };
 };
 
@@ -1774,8 +1774,8 @@ struct _MklReshape
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tshape"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tshape", AttributeType::Type}
     };
 };
 
@@ -1837,13 +1837,13 @@ struct CollectiveGather
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"group_size"},
-        AttributeDesc{"group_key"},
-        AttributeDesc{"instance_key"},
-        AttributeDesc{"shape"},
-        AttributeDesc{"communication_hint"},
-        AttributeDesc{"timeout_seconds"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"group_size", AttributeType::Int},
+        AttributeDesc{"group_key", AttributeType::Int},
+        AttributeDesc{"instance_key", AttributeType::Int},
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"communication_hint", AttributeType::String},
+        AttributeDesc{"timeout_seconds", AttributeType::Float}
     };
 };
 
@@ -1877,12 +1877,12 @@ struct _XlaHostComputeMlir
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"Tinputs"},
-        AttributeDesc{"Toutputs"},
-        AttributeDesc{"send_key"},
-        AttributeDesc{"recv_key"},
-        AttributeDesc{"tpu_core"},
-        AttributeDesc{"host_mlir_module"}
+        AttributeDesc{"Tinputs", AttributeType::ListType},
+        AttributeDesc{"Toutputs", AttributeType::ListType},
+        AttributeDesc{"send_key", AttributeType::String},
+        AttributeDesc{"recv_key", AttributeType::String},
+        AttributeDesc{"tpu_core", AttributeType::Int},
+        AttributeDesc{"host_mlir_module", AttributeType::String}
     };
 };
 
@@ -1917,7 +1917,7 @@ struct WriteAudioSummary
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"max_outputs"}
+        AttributeDesc{"max_outputs", AttributeType::Int}
     };
 };
 
@@ -1951,8 +1951,8 @@ struct SetSize
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"validate_indices"},
-        AttributeDesc{"T"}
+        AttributeDesc{"validate_indices", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -1984,12 +1984,12 @@ struct _Recv
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"tensor_type"},
-        AttributeDesc{"tensor_name"},
-        AttributeDesc{"send_device"},
-        AttributeDesc{"send_device_incarnation"},
-        AttributeDesc{"recv_device"},
-        AttributeDesc{"client_terminated"}
+        AttributeDesc{"tensor_type", AttributeType::Type},
+        AttributeDesc{"tensor_name", AttributeType::String},
+        AttributeDesc{"send_device", AttributeType::String},
+        AttributeDesc{"send_device_incarnation", AttributeType::Int},
+        AttributeDesc{"recv_device", AttributeType::String},
+        AttributeDesc{"client_terminated", AttributeType::Bool}
     };
 };
 
@@ -2023,14 +2023,14 @@ struct RandomShuffleQueueV2
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"shapes"},
-        AttributeDesc{"capacity"},
-        AttributeDesc{"min_after_dequeue"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"min_after_dequeue", AttributeType::Int},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -2059,7 +2059,7 @@ struct NInTwice
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"N"}
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -2120,8 +2120,8 @@ struct ExperimentalLatencyStatsDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -2171,14 +2171,14 @@ struct _MklQuantizedDepthwiseConv2D
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -2205,7 +2205,7 @@ struct ListOutput
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::ListType}
     };
 };
 
@@ -2237,8 +2237,8 @@ struct ExperimentalMaxIntraOpParallelismDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -2272,8 +2272,8 @@ struct RiscSlice
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Index"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Index", AttributeType::Type}
     };
 };
 
@@ -2305,8 +2305,8 @@ struct _SwitchN
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_outs"},
-        AttributeDesc{"T"}
+        AttributeDesc{"num_outs", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -2339,7 +2339,7 @@ struct WriteScalarSummary
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -2374,7 +2374,7 @@ struct SparseDenseCwiseAdd
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -2434,7 +2434,7 @@ struct Div
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -2469,11 +2469,11 @@ struct Conv3D
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -2505,8 +2505,8 @@ struct Fill
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"index_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"index_type", AttributeType::Type}
     };
 };
 
@@ -2593,7 +2593,7 @@ struct Reciprocal
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -2633,8 +2633,8 @@ struct EditDistance
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"normalize"},
-        AttributeDesc{"T"}
+        AttributeDesc{"normalize", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -2727,7 +2727,7 @@ struct TestAttr
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -2757,8 +2757,8 @@ struct EncodePng
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"compression"},
-        AttributeDesc{"T"}
+        AttributeDesc{"compression", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -2865,13 +2865,13 @@ struct SampleDistortedBoundingBoxV2
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"aspect_ratio_range"},
-        AttributeDesc{"area_range"},
-        AttributeDesc{"max_attempts"},
-        AttributeDesc{"use_image_if_no_bounding_boxes"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"aspect_ratio_range", AttributeType::ListFloat},
+        AttributeDesc{"area_range", AttributeType::ListFloat},
+        AttributeDesc{"max_attempts", AttributeType::Int},
+        AttributeDesc{"use_image_if_no_bounding_boxes", AttributeType::Bool}
     };
 };
 
@@ -2930,8 +2930,8 @@ struct ThreadPoolDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -2960,7 +2960,7 @@ struct Softplus
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -2989,7 +2989,7 @@ struct StopGradient
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -3089,8 +3089,8 @@ struct ApplyProximalGradientDescent
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -3119,7 +3119,7 @@ struct ParseTensor
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"out_type"}
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -3149,8 +3149,8 @@ struct PreventGradient
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"message"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"message", AttributeType::String}
     };
 };
 
@@ -3180,8 +3180,8 @@ struct Bucketize
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"boundaries"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"boundaries", AttributeType::ListFloat}
     };
 };
 
@@ -3213,8 +3213,8 @@ struct DynamicStitch
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -3278,7 +3278,7 @@ struct CopyOp
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -3336,11 +3336,11 @@ struct ConditionalAccumulator
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"reduction_type"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"reduction_type", AttributeType::String}
     };
 };
 
@@ -3373,9 +3373,9 @@ struct XlaVariadicReduceV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"dimensions_to_reduce"},
-        AttributeDesc{"reducer"}
+        AttributeDesc{"T", AttributeType::ListType},
+        AttributeDesc{"dimensions_to_reduce", AttributeType::ListInt},
+        AttributeDesc{"reducer", AttributeType::Func}
     };
 };
 
@@ -3404,7 +3404,7 @@ struct Erfinv
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -3455,13 +3455,13 @@ struct QuantizedConv2DWithBias
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -3533,9 +3533,9 @@ struct ApplyFtrl
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"multiply_linear_by_lr"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"multiply_linear_by_lr", AttributeType::Bool}
     };
 };
 
@@ -3566,11 +3566,11 @@ struct PaddingFIFOQueue
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"shapes"},
-        AttributeDesc{"capacity"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -3598,8 +3598,8 @@ struct ListInput
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -3660,8 +3660,8 @@ struct CompositeTensorVariantToComponents
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"metadata"},
-        AttributeDesc{"Tcomponents"}
+        AttributeDesc{"metadata", AttributeType::String},
+        AttributeDesc{"Tcomponents", AttributeType::ListType}
     };
 };
 
@@ -3690,7 +3690,7 @@ struct RiscCeil
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -3727,7 +3727,7 @@ struct MatrixDiagV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -3763,10 +3763,10 @@ struct RiscCondition
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"func_true"},
-        AttributeDesc{"func_false"},
-        AttributeDesc{"SrcT"},
-        AttributeDesc{"DstT"}
+        AttributeDesc{"func_true", AttributeType::Func},
+        AttributeDesc{"func_false", AttributeType::Func},
+        AttributeDesc{"SrcT", AttributeType::Type},
+        AttributeDesc{"DstT", AttributeType::Type}
     };
 };
 
@@ -3874,16 +3874,16 @@ struct CudnnRNNV3
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"rnn_mode"},
-        AttributeDesc{"input_mode"},
-        AttributeDesc{"direction"},
-        AttributeDesc{"dropout"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"num_proj"},
-        AttributeDesc{"is_training"},
-        AttributeDesc{"time_major"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"rnn_mode", AttributeType::String},
+        AttributeDesc{"input_mode", AttributeType::String},
+        AttributeDesc{"direction", AttributeType::String},
+        AttributeDesc{"dropout", AttributeType::Float},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"num_proj", AttributeType::Int},
+        AttributeDesc{"is_training", AttributeType::Bool},
+        AttributeDesc{"time_major", AttributeType::Bool}
     };
 };
 
@@ -3910,7 +3910,7 @@ struct PolymorphicDefaultOut
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -3942,8 +3942,8 @@ struct All
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"keep_dims"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"keep_dims", AttributeType::Bool},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -4007,10 +4007,10 @@ struct QuantizedBatchNormWithGlobalNormalization
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"variance_epsilon"},
-        AttributeDesc{"scale_after_normalization"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"variance_epsilon", AttributeType::Float},
+        AttributeDesc{"scale_after_normalization", AttributeType::Bool}
     };
 };
 
@@ -4056,16 +4056,16 @@ struct CudnnRNNCanonicalToParamsV2
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_params_weights"},
-        AttributeDesc{"num_params_biases"},
-        AttributeDesc{"rnn_mode"},
-        AttributeDesc{"input_mode"},
-        AttributeDesc{"direction"},
-        AttributeDesc{"dropout"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"num_proj"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_params_weights", AttributeType::Int},
+        AttributeDesc{"num_params_biases", AttributeType::Int},
+        AttributeDesc{"rnn_mode", AttributeType::String},
+        AttributeDesc{"input_mode", AttributeType::String},
+        AttributeDesc{"direction", AttributeType::String},
+        AttributeDesc{"dropout", AttributeType::Float},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"num_proj", AttributeType::Int}
     };
 };
 
@@ -4126,10 +4126,10 @@ struct FakeQuantWithMinMaxArgs
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"min"},
-        AttributeDesc{"max"},
-        AttributeDesc{"num_bits"},
-        AttributeDesc{"narrow_range"}
+        AttributeDesc{"min", AttributeType::Float},
+        AttributeDesc{"max", AttributeType::Float},
+        AttributeDesc{"num_bits", AttributeType::Int},
+        AttributeDesc{"narrow_range", AttributeType::Bool}
     };
 };
 
@@ -4171,14 +4171,14 @@ struct SampleDistortedBoundingBox
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"min_object_covered"},
-        AttributeDesc{"aspect_ratio_range"},
-        AttributeDesc{"area_range"},
-        AttributeDesc{"max_attempts"},
-        AttributeDesc{"use_image_if_no_bounding_boxes"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"min_object_covered", AttributeType::Float},
+        AttributeDesc{"aspect_ratio_range", AttributeType::ListFloat},
+        AttributeDesc{"area_range", AttributeType::ListFloat},
+        AttributeDesc{"max_attempts", AttributeType::Int},
+        AttributeDesc{"use_image_if_no_bounding_boxes", AttributeType::Bool}
     };
 };
 
@@ -4212,10 +4212,10 @@ struct FlatMapDataset
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -4269,7 +4269,7 @@ struct OutT
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -4359,8 +4359,8 @@ struct Pad
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tpaddings"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tpaddings", AttributeType::Type}
     };
 };
 
@@ -4389,9 +4389,9 @@ struct XlaRecvFromHost
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"Toutput"},
-        AttributeDesc{"shape"},
-        AttributeDesc{"key"}
+        AttributeDesc{"Toutput", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"key", AttributeType::String}
     };
 };
 
@@ -4431,20 +4431,20 @@ struct DefaultAttrs
 
     static constexpr std::array<AttributeDesc, 14> attribute_descs
     {
-        AttributeDesc{"string_val"},
-        AttributeDesc{"string_list_val"},
-        AttributeDesc{"int_val"},
-        AttributeDesc{"int_list_val"},
-        AttributeDesc{"float_val"},
-        AttributeDesc{"float_list_val"},
-        AttributeDesc{"bool_val"},
-        AttributeDesc{"bool_list_val"},
-        AttributeDesc{"type_val"},
-        AttributeDesc{"type_list_val"},
-        AttributeDesc{"shape_val"},
-        AttributeDesc{"shape_list_val"},
-        AttributeDesc{"tensor_val"},
-        AttributeDesc{"tensor_list_val"}
+        AttributeDesc{"string_val", AttributeType::String},
+        AttributeDesc{"string_list_val", AttributeType::ListString},
+        AttributeDesc{"int_val", AttributeType::Int},
+        AttributeDesc{"int_list_val", AttributeType::ListInt},
+        AttributeDesc{"float_val", AttributeType::Float},
+        AttributeDesc{"float_list_val", AttributeType::ListFloat},
+        AttributeDesc{"bool_val", AttributeType::Bool},
+        AttributeDesc{"bool_list_val", AttributeType::ListBool},
+        AttributeDesc{"type_val", AttributeType::Type},
+        AttributeDesc{"type_list_val", AttributeType::ListType},
+        AttributeDesc{"shape_val", AttributeType::Shape},
+        AttributeDesc{"shape_list_val", AttributeType::ListShape},
+        AttributeDesc{"tensor_val", AttributeType::Tensor},
+        AttributeDesc{"tensor_list_val", AttributeType::ListTensor}
     };
 };
 
@@ -4531,7 +4531,7 @@ struct FloorDiv
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -4562,7 +4562,7 @@ struct Igammac
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -4629,8 +4629,8 @@ struct SkipDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -4660,8 +4660,8 @@ struct RiscReal
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -4755,15 +4755,15 @@ struct CudnnRNNBackpropV3
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"rnn_mode"},
-        AttributeDesc{"input_mode"},
-        AttributeDesc{"direction"},
-        AttributeDesc{"dropout"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"num_proj"},
-        AttributeDesc{"time_major"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"rnn_mode", AttributeType::String},
+        AttributeDesc{"input_mode", AttributeType::String},
+        AttributeDesc{"direction", AttributeType::String},
+        AttributeDesc{"dropout", AttributeType::Float},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"num_proj", AttributeType::Int},
+        AttributeDesc{"time_major", AttributeType::Bool}
     };
 };
 
@@ -4799,12 +4799,12 @@ struct OrderedMapStage
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"fake_dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"fake_dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -4833,7 +4833,7 @@ struct MatrixDiagPart
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -4894,10 +4894,10 @@ struct ChooseFastestDataset
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"num_experiments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"num_experiments", AttributeType::Int},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -4958,8 +4958,8 @@ struct TensorDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Toutput_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"Toutput_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -5077,7 +5077,7 @@ struct CrossReplicaSum
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -5107,8 +5107,8 @@ struct Size
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -5199,9 +5199,9 @@ struct StatelessRandomGammaV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tseed"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tseed", AttributeType::Type}
     };
 };
 
@@ -5267,15 +5267,15 @@ struct EncodeJpeg
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"format"},
-        AttributeDesc{"quality"},
-        AttributeDesc{"progressive"},
-        AttributeDesc{"optimize_size"},
-        AttributeDesc{"chroma_downsampling"},
-        AttributeDesc{"density_unit"},
-        AttributeDesc{"x_density"},
-        AttributeDesc{"y_density"},
-        AttributeDesc{"xmp_metadata"}
+        AttributeDesc{"format", AttributeType::String},
+        AttributeDesc{"quality", AttributeType::Int},
+        AttributeDesc{"progressive", AttributeType::Bool},
+        AttributeDesc{"optimize_size", AttributeType::Bool},
+        AttributeDesc{"chroma_downsampling", AttributeType::Bool},
+        AttributeDesc{"density_unit", AttributeType::String},
+        AttributeDesc{"x_density", AttributeType::Int},
+        AttributeDesc{"y_density", AttributeType::Int},
+        AttributeDesc{"xmp_metadata", AttributeType::String}
     };
 };
 
@@ -5316,11 +5316,11 @@ struct _MklAvgPoolGrad
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -5349,7 +5349,7 @@ struct Where
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -5412,8 +5412,8 @@ struct Split
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_split"},
-        AttributeDesc{"T"}
+        AttributeDesc{"num_split", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -5441,8 +5441,8 @@ struct StringListAttr
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"a"},
-        AttributeDesc{"b"}
+        AttributeDesc{"a", AttributeType::ListString},
+        AttributeDesc{"b", AttributeType::String}
     };
 };
 
@@ -5475,11 +5475,11 @@ struct StatelessWhile
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"cond"},
-        AttributeDesc{"body"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"parallel_iterations"}
+        AttributeDesc{"T", AttributeType::ListType},
+        AttributeDesc{"cond", AttributeType::Func},
+        AttributeDesc{"body", AttributeType::Func},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"parallel_iterations", AttributeType::Int}
     };
 };
 
@@ -5506,7 +5506,7 @@ struct FuncAttr
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"f"}
+        AttributeDesc{"f", AttributeType::Func}
     };
 };
 
@@ -5564,7 +5564,7 @@ struct FuncListAttr
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"f"}
+        AttributeDesc{"f", AttributeType::ListFunc}
     };
 };
 
@@ -5594,8 +5594,8 @@ struct LMDBDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -5623,8 +5623,8 @@ struct NPolymorphicRestrictIn
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -5684,7 +5684,7 @@ struct MulNoNan
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -5720,12 +5720,12 @@ struct DecodeProtoV2
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"message_type"},
-        AttributeDesc{"field_names"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"descriptor_source"},
-        AttributeDesc{"message_format"},
-        AttributeDesc{"sanitize"}
+        AttributeDesc{"message_type", AttributeType::String},
+        AttributeDesc{"field_names", AttributeType::ListString},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"descriptor_source", AttributeType::String},
+        AttributeDesc{"message_format", AttributeType::String},
+        AttributeDesc{"sanitize", AttributeType::Bool}
     };
 };
 
@@ -5755,8 +5755,8 @@ struct FilterByLastComponentDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -5791,11 +5791,11 @@ struct XlaDotV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"LhsT"},
-        AttributeDesc{"RhsT"},
-        AttributeDesc{"dimension_numbers"},
-        AttributeDesc{"precision_config"},
-        AttributeDesc{"preferred_element_type"}
+        AttributeDesc{"LhsT", AttributeType::Type},
+        AttributeDesc{"RhsT", AttributeType::Type},
+        AttributeDesc{"dimension_numbers", AttributeType::String},
+        AttributeDesc{"precision_config", AttributeType::String},
+        AttributeDesc{"preferred_element_type", AttributeType::Type}
     };
 };
 
@@ -5825,8 +5825,8 @@ struct OutfeedDequeueV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape}
     };
 };
 
@@ -5882,7 +5882,7 @@ struct Polymorphic
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -5913,9 +5913,9 @@ struct _XlaSendFromHost
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"Tinputs"},
-        AttributeDesc{"key"},
-        AttributeDesc{"device_ordinal"}
+        AttributeDesc{"Tinputs", AttributeType::ListType},
+        AttributeDesc{"key", AttributeType::String},
+        AttributeDesc{"device_ordinal", AttributeType::Int}
     };
 };
 
@@ -5947,8 +5947,8 @@ struct Tile
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tmultiples"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tmultiples", AttributeType::Type}
     };
 };
 
@@ -5980,10 +5980,10 @@ struct AssignVariableXlaConcatND
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"},
-        AttributeDesc{"num_concats"},
-        AttributeDesc{"paddings"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"num_concats", AttributeType::ListInt},
+        AttributeDesc{"paddings", AttributeType::ListInt}
     };
 };
 
@@ -6010,7 +6010,7 @@ struct PolymorphicOut
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -6045,13 +6045,13 @@ struct CollectiveBcastSend
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"group_size"},
-        AttributeDesc{"group_key"},
-        AttributeDesc{"instance_key"},
-        AttributeDesc{"shape"},
-        AttributeDesc{"communication_hint"},
-        AttributeDesc{"timeout_seconds"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"group_size", AttributeType::Int},
+        AttributeDesc{"group_key", AttributeType::Int},
+        AttributeDesc{"instance_key", AttributeType::Int},
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"communication_hint", AttributeType::String},
+        AttributeDesc{"timeout_seconds", AttributeType::Float}
     };
 };
 
@@ -6093,8 +6093,8 @@ struct _MklSlice
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Index"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Index", AttributeType::Type}
     };
 };
 
@@ -6125,7 +6125,7 @@ struct TPUReshardVariables
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"N"}
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -6156,7 +6156,7 @@ struct Binary
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -6187,9 +6187,9 @@ struct XlaWhile
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"cond"},
-        AttributeDesc{"body"}
+        AttributeDesc{"T", AttributeType::ListType},
+        AttributeDesc{"cond", AttributeType::Func},
+        AttributeDesc{"body", AttributeType::Func}
     };
 };
 
@@ -6253,9 +6253,9 @@ struct BatchDatasetV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"parallel_copy"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"parallel_copy", AttributeType::Bool},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -6284,7 +6284,7 @@ struct Restrict
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -6315,7 +6315,7 @@ struct CholeskyGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -6342,7 +6342,7 @@ struct TypeList
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::ListType}
     };
 };
 
@@ -6371,7 +6371,7 @@ struct TypeListTwice
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::ListType}
     };
 };
 
@@ -6403,8 +6403,8 @@ struct AudioSummary
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"sample_rate"},
-        AttributeDesc{"max_outputs"}
+        AttributeDesc{"sample_rate", AttributeType::Float},
+        AttributeDesc{"max_outputs", AttributeType::Int}
     };
 };
 
@@ -6431,7 +6431,7 @@ struct OutTypeList
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::ListType}
     };
 };
 
@@ -6467,8 +6467,8 @@ struct NonMaxSuppressionV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"T_threshold"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"T_threshold", AttributeType::Type}
     };
 };
 
@@ -6502,8 +6502,8 @@ struct Slice
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Index"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Index", AttributeType::Type}
     };
 };
 
@@ -6530,7 +6530,7 @@ struct TypeListRestrict
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::ListType}
     };
 };
 
@@ -6557,7 +6557,7 @@ struct OutTypeListRestrict
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"t"}
+        AttributeDesc{"t", AttributeType::ListType}
     };
 };
 
@@ -6627,13 +6627,13 @@ struct StridedSliceAssign
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Index"},
-        AttributeDesc{"begin_mask"},
-        AttributeDesc{"end_mask"},
-        AttributeDesc{"ellipsis_mask"},
-        AttributeDesc{"new_axis_mask"},
-        AttributeDesc{"shrink_axis_mask"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Index", AttributeType::Type},
+        AttributeDesc{"begin_mask", AttributeType::Int},
+        AttributeDesc{"end_mask", AttributeType::Int},
+        AttributeDesc{"ellipsis_mask", AttributeType::Int},
+        AttributeDesc{"new_axis_mask", AttributeType::Int},
+        AttributeDesc{"shrink_axis_mask", AttributeType::Int}
     };
 };
 
@@ -6666,9 +6666,9 @@ struct Min
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"keep_dims"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"keep_dims", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -6725,8 +6725,8 @@ struct InfeedDequeueTuple
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"shapes"}
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape}
     };
 };
 
@@ -6755,7 +6755,7 @@ struct StackPop
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"elem_type"}
+        AttributeDesc{"elem_type", AttributeType::Type}
     };
 };
 
@@ -6801,16 +6801,16 @@ struct CudnnRNNParamsToCanonicalV2
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_params_weights"},
-        AttributeDesc{"num_params_biases"},
-        AttributeDesc{"rnn_mode"},
-        AttributeDesc{"input_mode"},
-        AttributeDesc{"direction"},
-        AttributeDesc{"dropout"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"num_proj"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_params_weights", AttributeType::Int},
+        AttributeDesc{"num_params_biases", AttributeType::Int},
+        AttributeDesc{"rnn_mode", AttributeType::String},
+        AttributeDesc{"input_mode", AttributeType::String},
+        AttributeDesc{"direction", AttributeType::String},
+        AttributeDesc{"dropout", AttributeType::Float},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"num_proj", AttributeType::Int}
     };
 };
 
@@ -6841,9 +6841,9 @@ struct ParallelConcat
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"},
-        AttributeDesc{"shape"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape}
     };
 };
 
@@ -6870,7 +6870,7 @@ struct Attr
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::Int}
     };
 };
 
@@ -6920,12 +6920,12 @@ struct FusedBatchNormV2
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"exponential_avg_factor"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"exponential_avg_factor", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -6961,10 +6961,10 @@ struct GatherV2
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"batch_dims"},
-        AttributeDesc{"Tparams"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"Taxis"}
+        AttributeDesc{"batch_dims", AttributeType::Int},
+        AttributeDesc{"Tparams", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"Taxis", AttributeType::Type}
     };
 };
 
@@ -6991,7 +6991,7 @@ struct AttrFloat
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::Float}
     };
 };
 
@@ -7022,9 +7022,9 @@ struct _ArrayToList
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"},
-        AttributeDesc{"out_types"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"out_types", AttributeType::ListType}
     };
 };
 
@@ -7054,8 +7054,8 @@ struct UniqueDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -7099,8 +7099,8 @@ struct ApplyRMSProp
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -7129,7 +7129,7 @@ struct BesselY0
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -7156,7 +7156,7 @@ struct AttrBool
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::Bool}
     };
 };
 
@@ -7222,11 +7222,11 @@ struct StageClear
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -7255,7 +7255,7 @@ struct Asinh
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -7309,12 +7309,12 @@ struct ParseExampleV2
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"Tdense"},
-        AttributeDesc{"num_sparse"},
-        AttributeDesc{"sparse_types"},
-        AttributeDesc{"ragged_value_types"},
-        AttributeDesc{"ragged_split_types"},
-        AttributeDesc{"dense_shapes"}
+        AttributeDesc{"Tdense", AttributeType::ListType},
+        AttributeDesc{"num_sparse", AttributeType::Int},
+        AttributeDesc{"sparse_types", AttributeType::ListType},
+        AttributeDesc{"ragged_value_types", AttributeType::ListType},
+        AttributeDesc{"ragged_split_types", AttributeType::ListType},
+        AttributeDesc{"dense_shapes", AttributeType::ListShape}
     };
 };
 
@@ -7349,11 +7349,11 @@ struct MapPeek
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -7380,7 +7380,7 @@ struct AttrBoolList
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::ListBool}
     };
 };
 
@@ -7414,8 +7414,8 @@ struct TensorScatterMin
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -7442,7 +7442,7 @@ struct AttrMin
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::Int}
     };
 };
 
@@ -7475,11 +7475,11 @@ struct DebugIdentity
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"device_name"},
-        AttributeDesc{"tensor_name"},
-        AttributeDesc{"debug_urls"},
-        AttributeDesc{"gated_grpc"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"device_name", AttributeType::String},
+        AttributeDesc{"tensor_name", AttributeType::String},
+        AttributeDesc{"debug_urls", AttributeType::ListString},
+        AttributeDesc{"gated_grpc", AttributeType::Bool}
     };
 };
 
@@ -7523,8 +7523,8 @@ struct ApplyAdagradDA
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -7551,7 +7551,7 @@ struct AttrListMin
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::ListInt}
     };
 };
 
@@ -7582,7 +7582,7 @@ struct TensorListPushBack
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"element_dtype"}
+        AttributeDesc{"element_dtype", AttributeType::Type}
     };
 };
 
@@ -7613,7 +7613,7 @@ struct ResourceAccumulatorApplyGradient
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -7640,7 +7640,7 @@ struct AttrEnum
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::String}
     };
 };
 
@@ -7678,8 +7678,8 @@ struct WindowDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -7743,9 +7743,9 @@ struct SparseSegmentMean
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"Tsegmentids"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"Tsegmentids", AttributeType::Type}
     };
 };
 
@@ -7785,8 +7785,8 @@ struct ResourceApplyAddSign
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -7813,7 +7813,7 @@ struct AttrEnumList
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::ListString}
     };
 };
 
@@ -7871,7 +7871,7 @@ struct AttrShape
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::Shape}
     };
 };
 
@@ -7904,9 +7904,9 @@ struct ArgMax
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"output_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"output_type", AttributeType::Type}
     };
 };
 
@@ -7933,7 +7933,7 @@ struct AttrShapeList
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::ListShape}
     };
 };
 
@@ -7972,13 +7972,13 @@ struct ParallelMapDataset
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"use_inter_op_parallelism"},
-        AttributeDesc{"sloppy"},
-        AttributeDesc{"preserve_cardinality"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"use_inter_op_parallelism", AttributeType::Bool},
+        AttributeDesc{"sloppy", AttributeType::Bool},
+        AttributeDesc{"preserve_cardinality", AttributeType::Bool}
     };
 };
 
@@ -8005,7 +8005,7 @@ struct QueueClose
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"cancel_pending_enqueues"}
+        AttributeDesc{"cancel_pending_enqueues", AttributeType::Bool}
     };
 };
 
@@ -8038,7 +8038,7 @@ struct TensorListPopBack
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"element_dtype"}
+        AttributeDesc{"element_dtype", AttributeType::Type}
     };
 };
 
@@ -8065,7 +8065,7 @@ struct AttrPartialShape
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::Shape}
     };
 };
 
@@ -8096,7 +8096,7 @@ struct LeftShift
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -8127,9 +8127,9 @@ struct DecodeImage
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"channels"},
-        AttributeDesc{"dtype"},
-        AttributeDesc{"expand_animations"}
+        AttributeDesc{"channels", AttributeType::Int},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"expand_animations", AttributeType::Bool}
     };
 };
 
@@ -8166,7 +8166,7 @@ struct _MklSquaredDifference
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -8193,7 +8193,7 @@ struct AttrPartialShapeList
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::ListShape}
     };
 };
 
@@ -8225,8 +8225,8 @@ struct BiasAdd
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"data_format"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String}
     };
 };
 
@@ -8253,7 +8253,7 @@ struct AttrDefault
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::String}
     };
 };
 
@@ -8315,7 +8315,7 @@ struct AccumulatorApplyGradient
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -8342,7 +8342,7 @@ struct AttrListDefault
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::ListInt}
     };
 };
 
@@ -8420,8 +8420,8 @@ struct BlockLSTMGradV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"use_peephole"},
-        AttributeDesc{"T"}
+        AttributeDesc{"use_peephole", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -8450,7 +8450,7 @@ struct GuaranteeConst
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -8481,11 +8481,11 @@ struct MapIncompleteSize
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -8514,9 +8514,9 @@ struct XlaRecv
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"tensor_name"},
-        AttributeDesc{"shape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"tensor_name", AttributeType::String},
+        AttributeDesc{"shape", AttributeType::Shape}
     };
 };
 
@@ -8549,9 +8549,9 @@ struct Sum
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"keep_dims"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"keep_dims", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -8578,7 +8578,7 @@ struct AttrEmptyListDefault
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"a"}
+        AttributeDesc{"a", AttributeType::ListFloat}
     };
 };
 
@@ -8611,11 +8611,11 @@ struct ModelDataset
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"algorithm"},
-        AttributeDesc{"cpu_budget"},
-        AttributeDesc{"ram_budget"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"algorithm", AttributeType::Int},
+        AttributeDesc{"cpu_budget", AttributeType::Int},
+        AttributeDesc{"ram_budget", AttributeType::Int},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -8655,10 +8655,10 @@ struct CollectiveGatherV2
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"communication_hint"},
-        AttributeDesc{"timeout_seconds"},
-        AttributeDesc{"Nordering_token"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"communication_hint", AttributeType::String},
+        AttributeDesc{"timeout_seconds", AttributeType::Float},
+        AttributeDesc{"Nordering_token", AttributeType::Int}
     };
 };
 
@@ -8685,7 +8685,7 @@ struct ReservedAttr
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"range"}
+        AttributeDesc{"range", AttributeType::Int}
     };
 };
 
@@ -8712,7 +8712,7 @@ struct AttrTypeDefault
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -8741,7 +8741,7 @@ struct Sqrt
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -8771,8 +8771,8 @@ struct AttrListTypeDefault
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -8830,7 +8830,7 @@ struct RealDiv
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -8857,7 +8857,7 @@ struct NIntsIn
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"N"}
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -8891,8 +8891,8 @@ struct RegisterDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"external_state_policy"},
-        AttributeDesc{"element_spec"}
+        AttributeDesc{"external_state_policy", AttributeType::Int},
+        AttributeDesc{"element_spec", AttributeType::String}
     };
 };
 
@@ -8921,7 +8921,7 @@ struct Ceil
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -8962,15 +8962,15 @@ struct EnqueueTPUEmbeddingSparseTensorBatch
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"T3"},
-        AttributeDesc{"N"},
-        AttributeDesc{"device_ordinal"},
-        AttributeDesc{"combiners"},
-        AttributeDesc{"table_ids"},
-        AttributeDesc{"max_sequence_lengths"},
-        AttributeDesc{"num_features"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"T3", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"device_ordinal", AttributeType::Int},
+        AttributeDesc{"combiners", AttributeType::ListString},
+        AttributeDesc{"table_ids", AttributeType::ListInt},
+        AttributeDesc{"max_sequence_lengths", AttributeType::ListInt},
+        AttributeDesc{"num_features", AttributeType::ListInt}
     };
 };
 
@@ -9002,8 +9002,8 @@ struct ResourceScatterAdd
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -9037,10 +9037,10 @@ struct ReverseSequence
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"seq_dim"},
-        AttributeDesc{"batch_dim"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tlen"}
+        AttributeDesc{"seq_dim", AttributeType::Int},
+        AttributeDesc{"batch_dim", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tlen", AttributeType::Type}
     };
 };
 
@@ -9068,8 +9068,8 @@ struct NPolymorphicIn
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -9099,8 +9099,8 @@ struct NInPolymorphicTwice
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -9133,7 +9133,7 @@ struct TensorArrayGradV3
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"source"}
+        AttributeDesc{"source", AttributeType::String}
     };
 };
 
@@ -9175,16 +9175,16 @@ struct _MklNativeFusedDepthwiseConv2dNative
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_args"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"fused_ops"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"leakyrelu_alpha"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"fused_ops", AttributeType::ListString},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"leakyrelu_alpha", AttributeType::Float}
     };
 };
 
@@ -9223,9 +9223,9 @@ struct _MklConcatV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -9262,13 +9262,13 @@ struct Conv2D
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -9299,9 +9299,9 @@ struct NInTwoTypeVariables
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"S"},
-        AttributeDesc{"T"},
-        AttributeDesc{"N"}
+        AttributeDesc{"S", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -9336,9 +9336,9 @@ struct BatchSvd
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"compute_uv"},
-        AttributeDesc{"full_matrices"},
-        AttributeDesc{"T"}
+        AttributeDesc{"compute_uv", AttributeType::Bool},
+        AttributeDesc{"full_matrices", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -9367,7 +9367,7 @@ struct IsNan
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -9398,9 +9398,9 @@ struct InPolymorphicTwice
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"},
-        AttributeDesc{"M"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"M", AttributeType::Int}
     };
 };
 
@@ -9427,7 +9427,7 @@ struct NIntsOut
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"N"}
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -9462,7 +9462,7 @@ struct SparseSliceGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -9494,8 +9494,8 @@ struct Reshape
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tshape"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tshape", AttributeType::Type}
     };
 };
 
@@ -9565,11 +9565,11 @@ struct ParallelInterleaveDatasetV3
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"deterministic"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"deterministic", AttributeType::String},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -9604,9 +9604,9 @@ struct Roll
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tshift"},
-        AttributeDesc{"Taxis"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tshift", AttributeType::Type},
+        AttributeDesc{"Taxis", AttributeType::Type}
     };
 };
 
@@ -9647,11 +9647,11 @@ struct MapAndBatchDataset
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"preserve_cardinality"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"preserve_cardinality", AttributeType::Bool}
     };
 };
 
@@ -9685,8 +9685,8 @@ struct ListDiff
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"out_idx"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"out_idx", AttributeType::Type}
     };
 };
 
@@ -9713,7 +9713,7 @@ struct NIntsOutDefault
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"N"}
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -9744,11 +9744,11 @@ struct FIFOQueue
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"shapes"},
-        AttributeDesc{"capacity"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -9777,7 +9777,7 @@ struct Snapshot
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -9805,8 +9805,8 @@ struct NPolymorphicOut
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -9845,11 +9845,11 @@ struct RaggedTensorToTensor
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindex"},
-        AttributeDesc{"Tshape"},
-        AttributeDesc{"num_row_partition_tensors"},
-        AttributeDesc{"row_partition_types"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindex", AttributeType::Type},
+        AttributeDesc{"Tshape", AttributeType::Type},
+        AttributeDesc{"num_row_partition_tensors", AttributeType::Int},
+        AttributeDesc{"row_partition_types", AttributeType::ListString}
     };
 };
 
@@ -9883,8 +9883,8 @@ struct MatrixBandPart
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindex"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindex", AttributeType::Type}
     };
 };
 
@@ -9912,8 +9912,8 @@ struct NPolymorphicOutDefault
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -9954,9 +9954,9 @@ struct QuantizedResizeBilinear
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"align_corners"},
-        AttributeDesc{"half_pixel_centers"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"align_corners", AttributeType::Bool},
+        AttributeDesc{"half_pixel_centers", AttributeType::Bool}
     };
 };
 
@@ -9984,8 +9984,8 @@ struct NPolymorphicRestrictOut
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -10043,7 +10043,7 @@ struct RefIn
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -10072,7 +10072,7 @@ struct TwoRefsIn
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -10106,8 +10106,8 @@ struct ShuffleDatasetV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -10141,8 +10141,8 @@ struct TensorArrayGatherV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"element_shape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"element_shape", AttributeType::Shape}
     };
 };
 
@@ -10200,8 +10200,8 @@ struct BoostedTreesCalculateBestFeatureSplitV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_features"},
-        AttributeDesc{"logits_dimension"}
+        AttributeDesc{"num_features", AttributeType::Int},
+        AttributeDesc{"logits_dimension", AttributeType::Int}
     };
 };
 
@@ -10228,7 +10228,7 @@ struct RefOut
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -10266,12 +10266,12 @@ struct LearnedUnigramCandidateSampler
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"num_true"},
-        AttributeDesc{"num_sampled"},
-        AttributeDesc{"unique"},
-        AttributeDesc{"range_max"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"}
+        AttributeDesc{"num_true", AttributeType::Int},
+        AttributeDesc{"num_sampled", AttributeType::Int},
+        AttributeDesc{"unique", AttributeType::Bool},
+        AttributeDesc{"range_max", AttributeType::Int},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int}
     };
 };
 
@@ -10298,7 +10298,7 @@ struct SimpleStruct
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"n_a"}
+        AttributeDesc{"n_a", AttributeType::Int}
     };
 };
 
@@ -10345,9 +10345,9 @@ struct SparseApplyRMSProp
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -10379,8 +10379,8 @@ struct ConcatenateDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -10415,9 +10415,9 @@ struct ShardDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"require_non_empty"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"require_non_empty", AttributeType::Bool},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -10446,7 +10446,7 @@ struct ExtractJpegShape
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"output_type"}
+        AttributeDesc{"output_type", AttributeType::Type}
     };
 };
 
@@ -10475,7 +10475,7 @@ struct MixedStruct
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"n_a"}
+        AttributeDesc{"n_a", AttributeType::Int}
     };
 };
 
@@ -10504,7 +10504,7 @@ struct IsFinite
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -10566,9 +10566,9 @@ struct ComplexStruct
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"n_a"},
-        AttributeDesc{"n_b"},
-        AttributeDesc{"t_c"}
+        AttributeDesc{"n_a", AttributeType::Int},
+        AttributeDesc{"n_b", AttributeType::Int},
+        AttributeDesc{"t_c", AttributeType::ListType}
     };
 };
 
@@ -10653,7 +10653,7 @@ struct DtypeWithDefaultOp
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -10682,7 +10682,7 @@ struct ToBool
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -10739,10 +10739,10 @@ struct _XlaAotOnlyVarHandleOp
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape}
     };
 };
 
@@ -10776,8 +10776,8 @@ struct FakeQuantWithMinMaxVars
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_bits"},
-        AttributeDesc{"narrow_range"}
+        AttributeDesc{"num_bits", AttributeType::Int},
+        AttributeDesc{"narrow_range", AttributeType::Bool}
     };
 };
 
@@ -10814,11 +10814,11 @@ struct XlaLaunch
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"Tconstants"},
-        AttributeDesc{"Targs"},
-        AttributeDesc{"Nresources"},
-        AttributeDesc{"Tresults"},
-        AttributeDesc{"function"}
+        AttributeDesc{"Tconstants", AttributeType::ListType},
+        AttributeDesc{"Targs", AttributeType::ListType},
+        AttributeDesc{"Nresources", AttributeType::Int},
+        AttributeDesc{"Tresults", AttributeType::ListType},
+        AttributeDesc{"function", AttributeType::Func}
     };
 };
 
@@ -10847,7 +10847,7 @@ struct XlaClusterOutput
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -10886,9 +10886,9 @@ struct BatchNormWithGlobalNormalization
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"variance_epsilon"},
-        AttributeDesc{"scale_after_normalization"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"variance_epsilon", AttributeType::Float},
+        AttributeDesc{"scale_after_normalization", AttributeType::Bool}
     };
 };
 
@@ -10938,10 +10938,10 @@ struct SparseApplyFtrlV2
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"multiply_linear_by_lr"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"multiply_linear_by_lr", AttributeType::Bool}
     };
 };
 
@@ -10975,10 +10975,10 @@ struct Cumsum
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"exclusive"},
-        AttributeDesc{"reverse"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"exclusive", AttributeType::Bool},
+        AttributeDesc{"reverse", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -11017,11 +11017,11 @@ struct _XlaCompile
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"Tconstants"},
-        AttributeDesc{"must_compile"},
-        AttributeDesc{"Targs"},
-        AttributeDesc{"Nresources"},
-        AttributeDesc{"function"}
+        AttributeDesc{"Tconstants", AttributeType::ListType},
+        AttributeDesc{"must_compile", AttributeType::Bool},
+        AttributeDesc{"Targs", AttributeType::ListType},
+        AttributeDesc{"Nresources", AttributeType::Int},
+        AttributeDesc{"function", AttributeType::Func}
     };
 };
 
@@ -11053,8 +11053,8 @@ struct _XlaRun
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Targs"},
-        AttributeDesc{"Tresults"}
+        AttributeDesc{"Targs", AttributeType::ListType},
+        AttributeDesc{"Tresults", AttributeType::ListType}
     };
 };
 
@@ -11085,9 +11085,9 @@ struct RandomShuffle
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"T"}
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -11118,7 +11118,7 @@ struct _XlaMerge
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -11150,8 +11150,8 @@ struct AssertCardinalityDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -11193,8 +11193,8 @@ struct Requantize
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -11223,7 +11223,7 @@ struct BatchSelfAdjointEig
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -11291,11 +11291,11 @@ struct RaggedCountSparseOutput
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"minlength"},
-        AttributeDesc{"maxlength"},
-        AttributeDesc{"binary_output"},
-        AttributeDesc{"output_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"minlength", AttributeType::Int},
+        AttributeDesc{"maxlength", AttributeType::Int},
+        AttributeDesc{"binary_output", AttributeType::Bool},
+        AttributeDesc{"output_type", AttributeType::Type}
     };
 };
 
@@ -11329,10 +11329,10 @@ struct XlaVariadicReduce
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"},
-        AttributeDesc{"dimensions_to_reduce"},
-        AttributeDesc{"reducer"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"dimensions_to_reduce", AttributeType::ListInt},
+        AttributeDesc{"reducer", AttributeType::Func}
     };
 };
 
@@ -11394,11 +11394,11 @@ struct OrderedMapPeek
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -11428,8 +11428,8 @@ struct Bitcast
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"type", AttributeType::Type}
     };
 };
 
@@ -11467,12 +11467,12 @@ struct LogUniformCandidateSampler
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"num_true"},
-        AttributeDesc{"num_sampled"},
-        AttributeDesc{"unique"},
-        AttributeDesc{"range_max"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"}
+        AttributeDesc{"num_true", AttributeType::Int},
+        AttributeDesc{"num_sampled", AttributeType::Int},
+        AttributeDesc{"unique", AttributeType::Bool},
+        AttributeDesc{"range_max", AttributeType::Int},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int}
     };
 };
 
@@ -11530,7 +11530,7 @@ struct Lgamma
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -11570,10 +11570,10 @@ struct CTCBeamSearchDecoder
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"beam_width"},
-        AttributeDesc{"top_paths"},
-        AttributeDesc{"merge_repeated"},
-        AttributeDesc{"T"}
+        AttributeDesc{"beam_width", AttributeType::Int},
+        AttributeDesc{"top_paths", AttributeType::Int},
+        AttributeDesc{"merge_repeated", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -11604,9 +11604,9 @@ struct Pack
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"},
-        AttributeDesc{"axis"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"axis", AttributeType::Int}
     };
 };
 
@@ -11643,17 +11643,17 @@ struct TPUReplicateMetadata
 
     static constexpr std::array<AttributeDesc, 11> attribute_descs
     {
-        AttributeDesc{"num_replicas"},
-        AttributeDesc{"num_cores_per_replica"},
-        AttributeDesc{"topology"},
-        AttributeDesc{"use_tpu"},
-        AttributeDesc{"device_assignment"},
-        AttributeDesc{"computation_shape"},
-        AttributeDesc{"host_compute_core"},
-        AttributeDesc{"padding_map"},
-        AttributeDesc{"step_marker_location"},
-        AttributeDesc{"allow_soft_placement"},
-        AttributeDesc{"use_spmd_for_xla_partitioning"}
+        AttributeDesc{"num_replicas", AttributeType::Int},
+        AttributeDesc{"num_cores_per_replica", AttributeType::Int},
+        AttributeDesc{"topology", AttributeType::String},
+        AttributeDesc{"use_tpu", AttributeType::Bool},
+        AttributeDesc{"device_assignment", AttributeType::ListInt},
+        AttributeDesc{"computation_shape", AttributeType::ListInt},
+        AttributeDesc{"host_compute_core", AttributeType::ListString},
+        AttributeDesc{"padding_map", AttributeType::ListString},
+        AttributeDesc{"step_marker_location", AttributeType::String},
+        AttributeDesc{"allow_soft_placement", AttributeType::Bool},
+        AttributeDesc{"use_spmd_for_xla_partitioning", AttributeType::Bool}
     };
 };
 
@@ -11693,10 +11693,10 @@ struct QuantizedMaxPool
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String}
     };
 };
 
@@ -11725,7 +11725,7 @@ struct DeepCopy
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -11776,13 +11776,13 @@ struct _MklMaxPoolGrad
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"workspace_enabled"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"workspace_enabled", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt}
     };
 };
 
@@ -11811,7 +11811,7 @@ struct RefNextIteration
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -11844,7 +11844,7 @@ struct InplaceUpdate
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -11873,7 +11873,7 @@ struct RefIdentity
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -11906,7 +11906,7 @@ struct InplaceAdd
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -11942,8 +11942,8 @@ struct SamplingDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -12045,13 +12045,13 @@ struct CudnnRNNBackpropV2
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"rnn_mode"},
-        AttributeDesc{"input_mode"},
-        AttributeDesc{"direction"},
-        AttributeDesc{"dropout"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"rnn_mode", AttributeType::String},
+        AttributeDesc{"input_mode", AttributeType::String},
+        AttributeDesc{"direction", AttributeType::String},
+        AttributeDesc{"dropout", AttributeType::Float},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int}
     };
 };
 
@@ -12082,9 +12082,9 @@ struct _NcclBroadcastRecv
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_devices"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_devices", AttributeType::Int},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -12117,7 +12117,7 @@ struct InplaceSub
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -12176,17 +12176,17 @@ struct _MklPadWithFusedConv2D
 
     static constexpr std::array<AttributeDesc, 11> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_args"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"fused_ops"},
-        AttributeDesc{"Tpaddings"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"leakyrelu_alpha"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"fused_ops", AttributeType::ListString},
+        AttributeDesc{"Tpaddings", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"leakyrelu_alpha", AttributeType::Float}
     };
 };
 
@@ -12221,11 +12221,11 @@ struct AvgPool3DGrad
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -12266,13 +12266,13 @@ struct StridedSlice
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Index"},
-        AttributeDesc{"begin_mask"},
-        AttributeDesc{"end_mask"},
-        AttributeDesc{"ellipsis_mask"},
-        AttributeDesc{"new_axis_mask"},
-        AttributeDesc{"shrink_axis_mask"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Index", AttributeType::Type},
+        AttributeDesc{"begin_mask", AttributeType::Int},
+        AttributeDesc{"end_mask", AttributeType::Int},
+        AttributeDesc{"ellipsis_mask", AttributeType::Int},
+        AttributeDesc{"new_axis_mask", AttributeType::Int},
+        AttributeDesc{"shrink_axis_mask", AttributeType::Int}
     };
 };
 
@@ -12302,8 +12302,8 @@ struct Empty
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"init"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"init", AttributeType::Bool}
     };
 };
 
@@ -12371,11 +12371,11 @@ struct OrderedMapUnstageNoKey
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -12406,9 +12406,9 @@ struct Unpack
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"num"},
-        AttributeDesc{"T"},
-        AttributeDesc{"axis"}
+        AttributeDesc{"num", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"axis", AttributeType::Int}
     };
 };
 
@@ -12441,9 +12441,9 @@ struct RiscSort
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"Index"},
-        AttributeDesc{"T"},
-        AttributeDesc{"direction"}
+        AttributeDesc{"Index", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"direction", AttributeType::String}
     };
 };
 
@@ -12474,7 +12474,7 @@ struct UnravelIndex
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -12506,8 +12506,8 @@ struct BroadcastTo
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -12539,8 +12539,8 @@ struct BytesProducedStatsDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -12608,13 +12608,13 @@ struct QuantizeAndDequantizeV4
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"signed_input"},
-        AttributeDesc{"num_bits"},
-        AttributeDesc{"range_given"},
-        AttributeDesc{"T"},
-        AttributeDesc{"round_mode"},
-        AttributeDesc{"narrow_range"},
-        AttributeDesc{"axis"}
+        AttributeDesc{"signed_input", AttributeType::Bool},
+        AttributeDesc{"num_bits", AttributeType::Int},
+        AttributeDesc{"range_given", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"round_mode", AttributeType::String},
+        AttributeDesc{"narrow_range", AttributeType::Bool},
+        AttributeDesc{"axis", AttributeType::Int}
     };
 };
 
@@ -12647,11 +12647,11 @@ struct RetrieveTPUEmbeddingFrequencyEstimatorParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -12683,8 +12683,8 @@ struct Concat
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -12713,9 +12713,9 @@ struct TFRecordReader
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"compression_type"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"compression_type", AttributeType::String}
     };
 };
 
@@ -12756,15 +12756,15 @@ struct _FusedDepthwiseConv2dNative
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_args"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"fused_ops"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"leakyrelu_alpha"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"fused_ops", AttributeType::ListString},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"leakyrelu_alpha", AttributeType::Float}
     };
 };
 
@@ -12797,9 +12797,9 @@ struct ConcatV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -12830,7 +12830,7 @@ struct ConcatOffset
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"N"}
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -12863,9 +12863,9 @@ struct _MklMatMul
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"T"}
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -12899,10 +12899,10 @@ struct CumulativeLogsumexp
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"exclusive"},
-        AttributeDesc{"reverse"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"exclusive", AttributeType::Bool},
+        AttributeDesc{"reverse", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -12936,12 +12936,12 @@ struct MaxPool
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"data_format"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String}
     };
 };
 
@@ -12976,7 +12976,7 @@ struct TensorArraySplit
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -13008,8 +13008,8 @@ struct BatchSelfAdjointEigV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"compute_v"},
-        AttributeDesc{"T"}
+        AttributeDesc{"compute_v", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -13038,7 +13038,7 @@ struct MatrixDeterminant
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -13069,9 +13069,9 @@ struct PrelinearizeTuple
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"shapes"},
-        AttributeDesc{"layouts"}
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"layouts", AttributeType::ListInt}
     };
 };
 
@@ -13106,9 +13106,9 @@ struct SplitV
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"num_split"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tlen"}
+        AttributeDesc{"num_split", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tlen", AttributeType::Type}
     };
 };
 
@@ -13141,9 +13141,9 @@ struct ResizeNearestNeighborGrad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"align_corners"},
-        AttributeDesc{"half_pixel_centers"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"align_corners", AttributeType::Bool},
+        AttributeDesc{"half_pixel_centers", AttributeType::Bool}
     };
 };
 
@@ -13175,8 +13175,8 @@ struct EmptyTensorList
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"element_dtype"},
-        AttributeDesc{"shape_type"}
+        AttributeDesc{"element_dtype", AttributeType::Type},
+        AttributeDesc{"shape_type", AttributeType::Type}
     };
 };
 
@@ -13204,8 +13204,8 @@ struct Const
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"value"},
-        AttributeDesc{"dtype"}
+        AttributeDesc{"value", AttributeType::Tensor},
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -13233,8 +13233,8 @@ struct HostConst
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"value"},
-        AttributeDesc{"dtype"}
+        AttributeDesc{"value", AttributeType::Tensor},
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -13264,8 +13264,8 @@ struct RiscSqueeze
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"squeeze_dims"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"squeeze_dims", AttributeType::ListInt}
     };
 };
 
@@ -13315,12 +13315,12 @@ struct QuantizedMatMulWithBiasAndRelu
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"Toutput"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"input_quant_mode"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"Toutput", AttributeType::Type},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"input_quant_mode", AttributeType::String}
     };
 };
 
@@ -13349,7 +13349,7 @@ struct BoostedTreesQuantileStreamResourceAddSummaries
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"num_features"}
+        AttributeDesc{"num_features", AttributeType::Int}
     };
 };
 
@@ -13378,7 +13378,7 @@ struct _EagerConst
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -13407,9 +13407,9 @@ struct ImmutableConst
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"},
-        AttributeDesc{"memory_region_name"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"memory_region_name", AttributeType::String}
     };
 };
 
@@ -13438,7 +13438,7 @@ struct ZerosLike
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -13467,7 +13467,7 @@ struct OnesLike
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -13500,11 +13500,11 @@ struct While
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"cond"},
-        AttributeDesc{"body"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"parallel_iterations"}
+        AttributeDesc{"T", AttributeType::ListType},
+        AttributeDesc{"cond", AttributeType::Func},
+        AttributeDesc{"body", AttributeType::Func},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"parallel_iterations", AttributeType::Int}
     };
 };
 
@@ -13534,8 +13534,8 @@ struct AddN
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -13564,7 +13564,7 @@ struct Rint
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -13593,7 +13593,7 @@ struct Diag
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -13623,8 +13623,8 @@ struct BatchMatrixInverse
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"adjoint"},
-        AttributeDesc{"T"}
+        AttributeDesc{"adjoint", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -13655,7 +13655,7 @@ struct RightShift
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -13705,12 +13705,12 @@ struct _MklConv2DBackpropFilterWithBias
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -13739,7 +13739,7 @@ struct Rank
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -13768,7 +13768,7 @@ struct DiagPart
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -13797,7 +13797,7 @@ struct MatrixDiag
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -13830,9 +13830,9 @@ struct ResizeNearestNeighbor
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"align_corners"},
-        AttributeDesc{"half_pixel_centers"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"align_corners", AttributeType::Bool},
+        AttributeDesc{"half_pixel_centers", AttributeType::Bool}
     };
 };
 
@@ -13860,8 +13860,8 @@ struct AnonymousIterator
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -13899,8 +13899,8 @@ struct MatrixDiagV3
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"align"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"align", AttributeType::String}
     };
 };
 
@@ -13946,14 +13946,14 @@ struct SparseCross
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"hashed_output"},
-        AttributeDesc{"num_buckets"},
-        AttributeDesc{"hash_key"},
-        AttributeDesc{"sparse_types"},
-        AttributeDesc{"dense_types"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"internal_type"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"hashed_output", AttributeType::Bool},
+        AttributeDesc{"num_buckets", AttributeType::Int},
+        AttributeDesc{"hash_key", AttributeType::Int},
+        AttributeDesc{"sparse_types", AttributeType::ListType},
+        AttributeDesc{"dense_types", AttributeType::ListType},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"internal_type", AttributeType::Type}
     };
 };
 
@@ -13985,8 +13985,8 @@ struct StackPush
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"swap_memory"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"swap_memory", AttributeType::Bool}
     };
 };
 
@@ -14017,7 +14017,7 @@ struct MatrixSetDiag
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -14060,9 +14060,9 @@ struct SparseCrossV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"sparse_types"},
-        AttributeDesc{"dense_types"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"sparse_types", AttributeType::ListType},
+        AttributeDesc{"dense_types", AttributeType::ListType}
     };
 };
 
@@ -14094,8 +14094,8 @@ struct StackPushV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"swap_memory"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"swap_memory", AttributeType::Bool}
     };
 };
 
@@ -14128,7 +14128,7 @@ struct MatrixSetDiagV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -14161,7 +14161,7 @@ struct BoostedTreesMakeQuantileSummaries
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"num_features"}
+        AttributeDesc{"num_features", AttributeType::Int}
     };
 };
 
@@ -14201,14 +14201,14 @@ struct ExperimentalParseExampleDataset
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"sparse_keys"},
-        AttributeDesc{"dense_keys"},
-        AttributeDesc{"sparse_types"},
-        AttributeDesc{"Tdense"},
-        AttributeDesc{"dense_shapes"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"sloppy"}
+        AttributeDesc{"sparse_keys", AttributeType::ListString},
+        AttributeDesc{"dense_keys", AttributeType::ListString},
+        AttributeDesc{"sparse_types", AttributeType::ListType},
+        AttributeDesc{"Tdense", AttributeType::ListType},
+        AttributeDesc{"dense_shapes", AttributeType::ListShape},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"sloppy", AttributeType::Bool}
     };
 };
 
@@ -14244,12 +14244,12 @@ struct _MklNativeConv3D
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -14283,8 +14283,8 @@ struct MatrixSetDiagV3
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"align"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"align", AttributeType::String}
     };
 };
 
@@ -14329,9 +14329,9 @@ struct ResourceSparseApplyRMSProp
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -14362,7 +14362,7 @@ struct ResourceAccumulatorTakeGradient
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -14399,9 +14399,9 @@ struct SparseSegmentSqrtNGrad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"Tsegmentids"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"Tsegmentids", AttributeType::Type}
     };
 };
 
@@ -14432,9 +14432,9 @@ struct TPUPartitionedOutput
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_splits"},
-        AttributeDesc{"partition_dim"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_splits", AttributeType::Int},
+        AttributeDesc{"partition_dim", AttributeType::Int}
     };
 };
 
@@ -14467,7 +14467,7 @@ struct MatrixDiagPartV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -14496,7 +14496,7 @@ struct BatchMatrixDiag
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -14530,8 +14530,8 @@ struct MatrixDiagPartV3
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"align"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"align", AttributeType::String}
     };
 };
 
@@ -14562,7 +14562,7 @@ struct Reverse
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -14594,8 +14594,8 @@ struct ReverseV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"T"}
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -14623,8 +14623,8 @@ struct _ParallelConcatStart
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"shape"},
-        AttributeDesc{"dtype"}
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -14657,7 +14657,7 @@ struct TensorListSetItem
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"element_dtype"}
+        AttributeDesc{"element_dtype", AttributeType::Type}
     };
 };
 
@@ -14686,7 +14686,7 @@ struct Identity
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -14732,22 +14732,22 @@ struct SnapshotDataset
 
     static constexpr std::array<AttributeDesc, 16> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"compression"},
-        AttributeDesc{"reader_path_prefix"},
-        AttributeDesc{"writer_path_prefix"},
-        AttributeDesc{"shard_size_bytes"},
-        AttributeDesc{"pending_snapshot_expiry_seconds"},
-        AttributeDesc{"num_reader_threads"},
-        AttributeDesc{"reader_buffer_size"},
-        AttributeDesc{"num_writer_threads"},
-        AttributeDesc{"writer_buffer_size"},
-        AttributeDesc{"shuffle_on_read"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"mode"},
-        AttributeDesc{"snapshot_name"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"compression", AttributeType::String},
+        AttributeDesc{"reader_path_prefix", AttributeType::String},
+        AttributeDesc{"writer_path_prefix", AttributeType::String},
+        AttributeDesc{"shard_size_bytes", AttributeType::Int},
+        AttributeDesc{"pending_snapshot_expiry_seconds", AttributeType::Int},
+        AttributeDesc{"num_reader_threads", AttributeType::Int},
+        AttributeDesc{"reader_buffer_size", AttributeType::Int},
+        AttributeDesc{"num_writer_threads", AttributeType::Int},
+        AttributeDesc{"writer_buffer_size", AttributeType::Int},
+        AttributeDesc{"shuffle_on_read", AttributeType::Bool},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"mode", AttributeType::String},
+        AttributeDesc{"snapshot_name", AttributeType::String}
     };
 };
 
@@ -14825,8 +14825,8 @@ struct BlockLSTMGrad
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"use_peephole"},
-        AttributeDesc{"T"}
+        AttributeDesc{"use_peephole", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -14855,7 +14855,7 @@ struct BatchMatrixDiagPart
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -14887,8 +14887,8 @@ struct _ParallelConcatUpdate
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"loc"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"loc", AttributeType::Int}
     };
 };
 
@@ -14932,14 +14932,14 @@ struct CudnnRNNParamsToCanonical
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_params"},
-        AttributeDesc{"rnn_mode"},
-        AttributeDesc{"input_mode"},
-        AttributeDesc{"direction"},
-        AttributeDesc{"dropout"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_params", AttributeType::Int},
+        AttributeDesc{"rnn_mode", AttributeType::String},
+        AttributeDesc{"input_mode", AttributeType::String},
+        AttributeDesc{"direction", AttributeType::String},
+        AttributeDesc{"dropout", AttributeType::Float},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int}
     };
 };
 
@@ -14988,11 +14988,11 @@ struct FusedBatchNorm
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"exponential_avg_factor"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"exponential_avg_factor", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -15025,9 +15025,9 @@ struct Gather
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"validate_indices"},
-        AttributeDesc{"Tparams"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"validate_indices", AttributeType::Bool},
+        AttributeDesc{"Tparams", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -15064,11 +15064,11 @@ struct LoadTPUEmbeddingCenteredRMSPropParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -15100,8 +15100,8 @@ struct GatherNd
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tparams"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"Tparams", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -15136,7 +15136,7 @@ struct TensorArraySplitV3
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -15168,8 +15168,8 @@ struct LookupTableImport
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"Tin", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -15201,8 +15201,8 @@ struct ResourceScatterDiv
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -15235,7 +15235,7 @@ struct _MklIdentity
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -15269,8 +15269,8 @@ struct BatchMatrixSolveLs
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"fast"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"fast", AttributeType::Bool}
     };
 };
 
@@ -15299,7 +15299,7 @@ struct IdentityN
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::ListType}
     };
 };
 
@@ -15334,11 +15334,11 @@ struct LoadDataset
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"compression"},
-        AttributeDesc{"reader_func"},
-        AttributeDesc{"Treader_func_args"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"compression", AttributeType::String},
+        AttributeDesc{"reader_func", AttributeType::Func},
+        AttributeDesc{"Treader_func_args", AttributeType::ListType}
     };
 };
 
@@ -15367,7 +15367,7 @@ struct DebugGradientIdentity
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -15399,8 +15399,8 @@ struct ExpandDims
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tdim"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tdim", AttributeType::Type}
     };
 };
 
@@ -15429,7 +15429,7 @@ struct DebugGradientRefIdentity
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -15459,8 +15459,8 @@ struct PlaceholderWithDefault
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape}
     };
 };
 
@@ -15492,8 +15492,8 @@ struct ApproximateEqual
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"tolerance"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"tolerance", AttributeType::Float}
     };
 };
 
@@ -15530,11 +15530,11 @@ struct AllCandidateSampler
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"num_true"},
-        AttributeDesc{"num_sampled"},
-        AttributeDesc{"unique"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"}
+        AttributeDesc{"num_true", AttributeType::Int},
+        AttributeDesc{"num_sampled", AttributeType::Int},
+        AttributeDesc{"unique", AttributeType::Bool},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int}
     };
 };
 
@@ -15568,8 +15568,8 @@ struct TensorScatterUpdate
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -15600,7 +15600,7 @@ struct ScalarSummary
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -15629,7 +15629,7 @@ struct Sigmoid
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -15660,7 +15660,7 @@ struct FloorMod
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -15716,14 +15716,14 @@ struct _MklNativeFusedBatchNormEx
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"exponential_avg_factor"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"num_side_inputs"},
-        AttributeDesc{"activation_mode"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"exponential_avg_factor", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"num_side_inputs", AttributeType::Int},
+        AttributeDesc{"activation_mode", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -15753,8 +15753,8 @@ struct CheckNumerics
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"message"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"message", AttributeType::String}
     };
 };
 
@@ -15790,8 +15790,8 @@ struct XlaBroadcastHelper
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -15821,8 +15821,8 @@ struct CheckNumericsV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"message"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"message", AttributeType::String}
     };
 };
 
@@ -15854,12 +15854,12 @@ struct Send
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"tensor_name"},
-        AttributeDesc{"send_device"},
-        AttributeDesc{"send_device_incarnation"},
-        AttributeDesc{"recv_device"},
-        AttributeDesc{"client_terminated"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"tensor_name", AttributeType::String},
+        AttributeDesc{"send_device", AttributeType::String},
+        AttributeDesc{"send_device_incarnation", AttributeType::Int},
+        AttributeDesc{"recv_device", AttributeType::String},
+        AttributeDesc{"client_terminated", AttributeType::Bool}
     };
 };
 
@@ -15888,7 +15888,7 @@ struct GetSessionHandle
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -15922,8 +15922,8 @@ struct StatefulUniform
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape_dtype"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape_dtype", AttributeType::Type}
     };
 };
 
@@ -15951,8 +15951,8 @@ struct StatsAggregatorHandleV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -15993,13 +15993,13 @@ struct ResourceStridedSliceAssign
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Index"},
-        AttributeDesc{"begin_mask"},
-        AttributeDesc{"end_mask"},
-        AttributeDesc{"ellipsis_mask"},
-        AttributeDesc{"new_axis_mask"},
-        AttributeDesc{"shrink_axis_mask"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Index", AttributeType::Type},
+        AttributeDesc{"begin_mask", AttributeType::Int},
+        AttributeDesc{"end_mask", AttributeType::Int},
+        AttributeDesc{"ellipsis_mask", AttributeType::Int},
+        AttributeDesc{"new_axis_mask", AttributeType::Int},
+        AttributeDesc{"shrink_axis_mask", AttributeType::Int}
     };
 };
 
@@ -16028,7 +16028,7 @@ struct MatrixLogarithm
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -16057,7 +16057,7 @@ struct InvertPermutation
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -16088,9 +16088,9 @@ struct AnonymousMultiDeviceIterator
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"devices"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"devices", AttributeType::ListString},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -16122,8 +16122,8 @@ struct Transpose
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tperm"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tperm", AttributeType::Type}
     };
 };
 
@@ -16154,11 +16154,11 @@ struct Barrier
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"shapes"},
-        AttributeDesc{"capacity"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -16187,7 +16187,7 @@ struct Sin
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -16219,10 +16219,10 @@ struct Enter
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"frame_name"},
-        AttributeDesc{"is_constant"},
-        AttributeDesc{"parallel_iterations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"frame_name", AttributeType::String},
+        AttributeDesc{"is_constant", AttributeType::Bool},
+        AttributeDesc{"parallel_iterations", AttributeType::Int}
     };
 };
 
@@ -16264,12 +16264,12 @@ struct _MklQuantizeV2
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"mode"},
-        AttributeDesc{"round_mode"},
-        AttributeDesc{"narrow_range"},
-        AttributeDesc{"axis"},
-        AttributeDesc{"ensure_minimum_range"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"mode", AttributeType::String},
+        AttributeDesc{"round_mode", AttributeType::String},
+        AttributeDesc{"narrow_range", AttributeType::Bool},
+        AttributeDesc{"axis", AttributeType::Int},
+        AttributeDesc{"ensure_minimum_range", AttributeType::Float}
     };
 };
 
@@ -16301,8 +16301,8 @@ struct TensorListFromTensor
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"element_dtype"},
-        AttributeDesc{"shape_type"}
+        AttributeDesc{"element_dtype", AttributeType::Type},
+        AttributeDesc{"shape_type", AttributeType::Type}
     };
 };
 
@@ -16339,9 +16339,9 @@ struct SparseSegmentSumGrad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"Tsegmentids"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"Tsegmentids", AttributeType::Type}
     };
 };
 
@@ -16373,8 +16373,8 @@ struct _MklTranspose
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tperm"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tperm", AttributeType::Type}
     };
 };
 
@@ -16410,14 +16410,14 @@ struct DebugNumericSummary
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"device_name"},
-        AttributeDesc{"tensor_name"},
-        AttributeDesc{"debug_urls"},
-        AttributeDesc{"lower_bound"},
-        AttributeDesc{"upper_bound"},
-        AttributeDesc{"mute_if_healthy"},
-        AttributeDesc{"gated_grpc"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"device_name", AttributeType::String},
+        AttributeDesc{"tensor_name", AttributeType::String},
+        AttributeDesc{"debug_urls", AttributeType::ListString},
+        AttributeDesc{"lower_bound", AttributeType::Float},
+        AttributeDesc{"upper_bound", AttributeType::Float},
+        AttributeDesc{"mute_if_healthy", AttributeType::Bool},
+        AttributeDesc{"gated_grpc", AttributeType::Bool}
     };
 };
 
@@ -16449,8 +16449,8 @@ struct ConjugateTranspose
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tperm"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tperm", AttributeType::Type}
     };
 };
 
@@ -16482,8 +16482,8 @@ struct _MklConjugateTranspose
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tperm"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tperm", AttributeType::Type}
     };
 };
 
@@ -16527,10 +16527,10 @@ struct ExperimentalParallelInterleaveDataset
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -16562,8 +16562,8 @@ struct Unique
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"out_idx"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"out_idx", AttributeType::Type}
     };
 };
 
@@ -16598,9 +16598,9 @@ struct UniqueV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Taxis"},
-        AttributeDesc{"out_idx"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Taxis", AttributeType::Type},
+        AttributeDesc{"out_idx", AttributeType::Type}
     };
 };
 
@@ -16632,8 +16632,8 @@ struct TakeDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -16667,8 +16667,8 @@ struct UniqueWithCounts
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"out_idx"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"out_idx", AttributeType::Type}
     };
 };
 
@@ -16705,9 +16705,9 @@ struct UniqueWithCountsV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Taxis"},
-        AttributeDesc{"out_idx"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Taxis", AttributeType::Type},
+        AttributeDesc{"out_idx", AttributeType::Type}
     };
 };
 
@@ -16738,7 +16738,7 @@ struct AdjustSaturation
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -16767,7 +16767,7 @@ struct VariableShape
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"out_type"}
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -16799,8 +16799,8 @@ struct ParallelDynamicStitch
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -16837,7 +16837,7 @@ struct _MklEluGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -16867,8 +16867,8 @@ struct Shape
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -16932,7 +16932,7 @@ struct Tan
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -16965,9 +16965,9 @@ struct RiscReduce
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"reduce_type"},
-        AttributeDesc{"Index"},
-        AttributeDesc{"T"}
+        AttributeDesc{"reduce_type", AttributeType::String},
+        AttributeDesc{"Index", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -16996,7 +16996,7 @@ struct Inv
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -17027,9 +17027,9 @@ struct ShapeN
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -17093,9 +17093,9 @@ struct ScatterUpdate
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -17125,8 +17125,8 @@ struct EnsureShape
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"shape"},
-        AttributeDesc{"T"}
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -17159,11 +17159,11 @@ struct AvgPool3D
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -17192,7 +17192,7 @@ struct BoostedTreesQuantileStreamResourceDeserialize
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"num_streams"}
+        AttributeDesc{"num_streams", AttributeType::Int}
     };
 };
 
@@ -17235,13 +17235,13 @@ struct StridedSliceGrad
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Index"},
-        AttributeDesc{"begin_mask"},
-        AttributeDesc{"end_mask"},
-        AttributeDesc{"ellipsis_mask"},
-        AttributeDesc{"new_axis_mask"},
-        AttributeDesc{"shrink_axis_mask"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Index", AttributeType::Type},
+        AttributeDesc{"begin_mask", AttributeType::Int},
+        AttributeDesc{"end_mask", AttributeType::Int},
+        AttributeDesc{"ellipsis_mask", AttributeType::Int},
+        AttributeDesc{"new_axis_mask", AttributeType::Int},
+        AttributeDesc{"shrink_axis_mask", AttributeType::Int}
     };
 };
 
@@ -17270,7 +17270,7 @@ struct RiscFft
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tcomplex"}
+        AttributeDesc{"Tcomplex", AttributeType::Type}
     };
 };
 
@@ -17340,13 +17340,13 @@ struct TensorStridedSliceUpdate
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Index"},
-        AttributeDesc{"begin_mask"},
-        AttributeDesc{"end_mask"},
-        AttributeDesc{"ellipsis_mask"},
-        AttributeDesc{"new_axis_mask"},
-        AttributeDesc{"shrink_axis_mask"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Index", AttributeType::Type},
+        AttributeDesc{"begin_mask", AttributeType::Int},
+        AttributeDesc{"end_mask", AttributeType::Int},
+        AttributeDesc{"ellipsis_mask", AttributeType::Int},
+        AttributeDesc{"new_axis_mask", AttributeType::Int},
+        AttributeDesc{"shrink_axis_mask", AttributeType::Int}
     };
 };
 
@@ -17424,13 +17424,13 @@ struct _MklMaxPool
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"workspace_enabled"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"workspace_enabled", AttributeType::Bool}
     };
 };
 
@@ -17461,11 +17461,11 @@ struct MultiDeviceIterator
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"devices"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"container"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"devices", AttributeType::ListString},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -17496,7 +17496,7 @@ struct TileGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -17527,7 +17527,7 @@ struct TensorMapHasKey
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"key_dtype"}
+        AttributeDesc{"key_dtype", AttributeType::Type}
     };
 };
 
@@ -17558,7 +17558,7 @@ struct BroadcastArgs
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -17606,14 +17606,14 @@ struct _MklFusedMatMul
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"T"},
-        AttributeDesc{"num_args"},
-        AttributeDesc{"fused_ops"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"leakyrelu_alpha"}
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"fused_ops", AttributeType::ListString},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"leakyrelu_alpha", AttributeType::Float}
     };
 };
 
@@ -17646,7 +17646,7 @@ struct BroadcastGradientArgs
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -17680,8 +17680,8 @@ struct PadV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tpaddings"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tpaddings", AttributeType::Type}
     };
 };
 
@@ -17714,9 +17714,9 @@ struct MirrorPad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tpaddings"},
-        AttributeDesc{"mode"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tpaddings", AttributeType::Type},
+        AttributeDesc{"mode", AttributeType::String}
     };
 };
 
@@ -17749,9 +17749,9 @@ struct MirrorPadGrad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tpaddings"},
-        AttributeDesc{"mode"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tpaddings", AttributeType::Type},
+        AttributeDesc{"mode", AttributeType::String}
     };
 };
 
@@ -17779,8 +17779,8 @@ struct Placeholder
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape}
     };
 };
 
@@ -17820,14 +17820,14 @@ struct GeneratorDataset
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"init_func"},
-        AttributeDesc{"next_func"},
-        AttributeDesc{"finalize_func"},
-        AttributeDesc{"Tinit_func_args"},
-        AttributeDesc{"Tnext_func_args"},
-        AttributeDesc{"Tfinalize_func_args"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"init_func", AttributeType::Func},
+        AttributeDesc{"next_func", AttributeType::Func},
+        AttributeDesc{"finalize_func", AttributeType::Func},
+        AttributeDesc{"Tinit_func_args", AttributeType::ListType},
+        AttributeDesc{"Tnext_func_args", AttributeType::ListType},
+        AttributeDesc{"Tfinalize_func_args", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -17884,8 +17884,8 @@ struct PlaceholderV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape}
     };
 };
 
@@ -17915,8 +17915,8 @@ struct Squeeze
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"squeeze_dims"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"squeeze_dims", AttributeType::ListInt}
     };
 };
 
@@ -18001,7 +18001,7 @@ struct MergeV2Checkpoints
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"delete_old_dirs"}
+        AttributeDesc{"delete_old_dirs", AttributeType::Bool}
     };
 };
 
@@ -18034,9 +18034,9 @@ struct ImageSummary
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"max_images"},
-        AttributeDesc{"T"},
-        AttributeDesc{"bad_color"}
+        AttributeDesc{"max_images", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"bad_color", AttributeType::Tensor}
     };
 };
 
@@ -18071,9 +18071,9 @@ struct SpaceToBatchND
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tblock_shape"},
-        AttributeDesc{"Tpaddings"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tblock_shape", AttributeType::Type},
+        AttributeDesc{"Tpaddings", AttributeType::Type}
     };
 };
 
@@ -18111,10 +18111,10 @@ struct InterleaveDataset
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -18147,9 +18147,9 @@ struct SpaceToBatch
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tpaddings"},
-        AttributeDesc{"block_size"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tpaddings", AttributeType::Type},
+        AttributeDesc{"block_size", AttributeType::Int}
     };
 };
 
@@ -18180,11 +18180,11 @@ struct PriorityQueueV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"shapes"},
-        AttributeDesc{"capacity"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -18219,9 +18219,9 @@ struct BatchToSpaceND
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tblock_shape"},
-        AttributeDesc{"Tcrops"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tblock_shape", AttributeType::Type},
+        AttributeDesc{"Tcrops", AttributeType::Type}
     };
 };
 
@@ -18252,7 +18252,7 @@ struct DivNoNan
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -18299,9 +18299,9 @@ struct ResourceApplyAdam
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"use_nesterov"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"use_nesterov", AttributeType::Bool}
     };
 };
 
@@ -18336,7 +18336,7 @@ struct TensorArrayWriteV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -18369,9 +18369,9 @@ struct BatchToSpace
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"block_size"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"block_size", AttributeType::Int},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -18402,9 +18402,9 @@ struct SpaceToDepth
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"block_size"},
-        AttributeDesc{"data_format"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"block_size", AttributeType::Int},
+        AttributeDesc{"data_format", AttributeType::String}
     };
 };
 
@@ -18437,9 +18437,9 @@ struct ResizeBilinear
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"align_corners"},
-        AttributeDesc{"half_pixel_centers"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"align_corners", AttributeType::Bool},
+        AttributeDesc{"half_pixel_centers", AttributeType::Bool}
     };
 };
 
@@ -18470,9 +18470,9 @@ struct DepthToSpace
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"block_size"},
-        AttributeDesc{"data_format"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"block_size", AttributeType::Int},
+        AttributeDesc{"data_format", AttributeType::String}
     };
 };
 
@@ -18505,11 +18505,11 @@ struct LoadTPUEmbeddingMomentumParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -18545,8 +18545,8 @@ struct SparseReduceMax
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"keep_dims"},
-        AttributeDesc{"T"}
+        AttributeDesc{"keep_dims", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -18579,11 +18579,11 @@ struct ExtractImagePatches
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksizes"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"rates"},
-        AttributeDesc{"T"},
-        AttributeDesc{"padding"}
+        AttributeDesc{"ksizes", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"rates", AttributeType::ListInt},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"padding", AttributeType::String}
     };
 };
 
@@ -18613,8 +18613,8 @@ struct _UnaryOpsComposition
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"op_names"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"op_names", AttributeType::ListString}
     };
 };
 
@@ -18646,10 +18646,10 @@ struct ExtractVolumePatches
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"ksizes"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"T"},
-        AttributeDesc{"padding"}
+        AttributeDesc{"ksizes", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"padding", AttributeType::String}
     };
 };
 
@@ -18688,13 +18688,13 @@ struct FractionalMaxPool
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"pooling_ratio"},
-        AttributeDesc{"pseudo_random"},
-        AttributeDesc{"overlapping"},
-        AttributeDesc{"deterministic"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"T"}
+        AttributeDesc{"pooling_ratio", AttributeType::ListFloat},
+        AttributeDesc{"pseudo_random", AttributeType::Bool},
+        AttributeDesc{"overlapping", AttributeType::Bool},
+        AttributeDesc{"deterministic", AttributeType::Bool},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -18725,7 +18725,7 @@ struct BoostedTreesBucketize
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"num_features"}
+        AttributeDesc{"num_features", AttributeType::Int}
     };
 };
 
@@ -18762,9 +18762,9 @@ struct OneHot
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"axis"},
-        AttributeDesc{"T"},
-        AttributeDesc{"TI"}
+        AttributeDesc{"axis", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"TI", AttributeType::Type}
     };
 };
 
@@ -18802,16 +18802,16 @@ struct CollectiveReduce
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"group_size"},
-        AttributeDesc{"group_key"},
-        AttributeDesc{"instance_key"},
-        AttributeDesc{"merge_op"},
-        AttributeDesc{"final_op"},
-        AttributeDesc{"subdiv_offsets"},
-        AttributeDesc{"wait_for"},
-        AttributeDesc{"communication_hint"},
-        AttributeDesc{"timeout_seconds"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"group_size", AttributeType::Int},
+        AttributeDesc{"group_key", AttributeType::Int},
+        AttributeDesc{"instance_key", AttributeType::Int},
+        AttributeDesc{"merge_op", AttributeType::String},
+        AttributeDesc{"final_op", AttributeType::String},
+        AttributeDesc{"subdiv_offsets", AttributeType::ListInt},
+        AttributeDesc{"wait_for", AttributeType::ListInt},
+        AttributeDesc{"communication_hint", AttributeType::String},
+        AttributeDesc{"timeout_seconds", AttributeType::Float}
     };
 };
 
@@ -18845,12 +18845,12 @@ struct QuantizeAndDequantize
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"signed_input"},
-        AttributeDesc{"num_bits"},
-        AttributeDesc{"range_given"},
-        AttributeDesc{"input_min"},
-        AttributeDesc{"input_max"},
-        AttributeDesc{"T"}
+        AttributeDesc{"signed_input", AttributeType::Bool},
+        AttributeDesc{"num_bits", AttributeType::Int},
+        AttributeDesc{"range_given", AttributeType::Bool},
+        AttributeDesc{"input_min", AttributeType::Float},
+        AttributeDesc{"input_max", AttributeType::Float},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -18893,13 +18893,13 @@ struct CollectiveReduceV2
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"merge_op"},
-        AttributeDesc{"final_op"},
-        AttributeDesc{"communication_hint"},
-        AttributeDesc{"timeout_seconds"},
-        AttributeDesc{"Nordering_token"},
-        AttributeDesc{"max_subdivs_per_device"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"merge_op", AttributeType::String},
+        AttributeDesc{"final_op", AttributeType::String},
+        AttributeDesc{"communication_hint", AttributeType::String},
+        AttributeDesc{"timeout_seconds", AttributeType::Float},
+        AttributeDesc{"Nordering_token", AttributeType::Int},
+        AttributeDesc{"max_subdivs_per_device", AttributeType::Int}
     };
 };
 
@@ -18938,13 +18938,13 @@ struct QuantizeAndDequantizeV2
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"signed_input"},
-        AttributeDesc{"num_bits"},
-        AttributeDesc{"range_given"},
-        AttributeDesc{"T"},
-        AttributeDesc{"round_mode"},
-        AttributeDesc{"narrow_range"},
-        AttributeDesc{"axis"}
+        AttributeDesc{"signed_input", AttributeType::Bool},
+        AttributeDesc{"num_bits", AttributeType::Int},
+        AttributeDesc{"range_given", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"round_mode", AttributeType::String},
+        AttributeDesc{"narrow_range", AttributeType::Bool},
+        AttributeDesc{"axis", AttributeType::Int}
     };
 };
 
@@ -18984,8 +18984,8 @@ struct QuantizeAndDequantizeV4Grad
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"axis"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"axis", AttributeType::Int}
     };
 };
 
@@ -19017,8 +19017,8 @@ struct QueueDequeueManyV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"timeout_ms"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"timeout_ms", AttributeType::Int}
     };
 };
 
@@ -19052,8 +19052,8 @@ struct ScatterNdNonAliasingAdd
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -19089,8 +19089,8 @@ struct BoostedTreesAggregateStats
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"max_splits"},
-        AttributeDesc{"num_buckets"}
+        AttributeDesc{"max_splits", AttributeType::Int},
+        AttributeDesc{"num_buckets", AttributeType::Int}
     };
 };
 
@@ -19129,11 +19129,11 @@ struct QuantizeAndDequantizeV3
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"signed_input"},
-        AttributeDesc{"range_given"},
-        AttributeDesc{"T"},
-        AttributeDesc{"narrow_range"},
-        AttributeDesc{"axis"}
+        AttributeDesc{"signed_input", AttributeType::Bool},
+        AttributeDesc{"range_given", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"narrow_range", AttributeType::Bool},
+        AttributeDesc{"axis", AttributeType::Int}
     };
 };
 
@@ -19170,11 +19170,11 @@ struct UnicodeDecodeWithOffsets
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"input_encoding"},
-        AttributeDesc{"errors"},
-        AttributeDesc{"replacement_char"},
-        AttributeDesc{"replace_control_characters"},
-        AttributeDesc{"Tsplits"}
+        AttributeDesc{"input_encoding", AttributeType::String},
+        AttributeDesc{"errors", AttributeType::String},
+        AttributeDesc{"replacement_char", AttributeType::Int},
+        AttributeDesc{"replace_control_characters", AttributeType::Bool},
+        AttributeDesc{"Tsplits", AttributeType::Type}
     };
 };
 
@@ -19216,12 +19216,12 @@ struct QuantizeV2
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"mode"},
-        AttributeDesc{"round_mode"},
-        AttributeDesc{"narrow_range"},
-        AttributeDesc{"axis"},
-        AttributeDesc{"ensure_minimum_range"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"mode", AttributeType::String},
+        AttributeDesc{"round_mode", AttributeType::String},
+        AttributeDesc{"narrow_range", AttributeType::Bool},
+        AttributeDesc{"axis", AttributeType::Int},
+        AttributeDesc{"ensure_minimum_range", AttributeType::Float}
     };
 };
 
@@ -19253,10 +19253,10 @@ struct NcclAllReduce
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"reduction"},
-        AttributeDesc{"T"},
-        AttributeDesc{"num_devices"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"reduction", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_devices", AttributeType::Int},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -19287,7 +19287,7 @@ struct TensorArrayGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"source"}
+        AttributeDesc{"source", AttributeType::String}
     };
 };
 
@@ -19318,7 +19318,7 @@ struct BitwiseOr
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -19355,11 +19355,11 @@ struct Dequantize
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"mode"},
-        AttributeDesc{"narrow_range"},
-        AttributeDesc{"axis"},
-        AttributeDesc{"dtype"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"mode", AttributeType::String},
+        AttributeDesc{"narrow_range", AttributeType::Bool},
+        AttributeDesc{"axis", AttributeType::Int},
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -19390,7 +19390,7 @@ struct RiscMin
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -19430,8 +19430,8 @@ struct QuantizedConcat
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -19502,8 +19502,8 @@ struct QuantizedReshape
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tshape"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tshape", AttributeType::Type}
     };
 };
 
@@ -19541,10 +19541,10 @@ struct SparseSegmentMeanWithNumSegments
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"Tnumsegments"},
-        AttributeDesc{"Tsegmentids"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"Tnumsegments", AttributeType::Type},
+        AttributeDesc{"Tsegmentids", AttributeType::Type}
     };
 };
 
@@ -19611,12 +19611,12 @@ struct MapDefun
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"Tcaptured"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"f"},
-        AttributeDesc{"max_intra_op_parallelism"}
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"Tcaptured", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"max_intra_op_parallelism", AttributeType::Int}
     };
 };
 
@@ -19658,12 +19658,12 @@ struct QuantizedInstanceNorm
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"output_range_given"},
-        AttributeDesc{"given_y_min"},
-        AttributeDesc{"given_y_max"},
-        AttributeDesc{"variance_epsilon"},
-        AttributeDesc{"min_separation"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"output_range_given", AttributeType::Bool},
+        AttributeDesc{"given_y_min", AttributeType::Float},
+        AttributeDesc{"given_y_max", AttributeType::Float},
+        AttributeDesc{"variance_epsilon", AttributeType::Float},
+        AttributeDesc{"min_separation", AttributeType::Float}
     };
 };
 
@@ -19695,8 +19695,8 @@ struct UpperBound
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -19727,7 +19727,7 @@ struct TensorListConcatLists
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"element_dtype"}
+        AttributeDesc{"element_dtype", AttributeType::Type}
     };
 };
 
@@ -19761,8 +19761,8 @@ struct XlaDynamicSlice
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -19829,10 +19829,10 @@ struct FilterDataset
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"predicate"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"predicate", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -19864,8 +19864,8 @@ struct LowerBound
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -19896,7 +19896,7 @@ struct Relu6Grad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -19930,8 +19930,8 @@ struct ScatterNd
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -19965,8 +19965,8 @@ struct TensorScatterAdd
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -19999,7 +19999,7 @@ struct SelectV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -20028,7 +20028,7 @@ struct GetSessionTensor
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -20065,9 +20065,9 @@ struct ScaleAndTranslateGrad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"kernel_type"},
-        AttributeDesc{"antialias"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"kernel_type", AttributeType::String},
+        AttributeDesc{"antialias", AttributeType::Bool}
     };
 };
 
@@ -20094,7 +20094,7 @@ struct InfeedEnqueuePrelinearizedBuffer
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"device_ordinal"}
+        AttributeDesc{"device_ordinal", AttributeType::Int}
     };
 };
 
@@ -20128,8 +20128,8 @@ struct DeserializeSparse
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tserialized"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tserialized", AttributeType::Type}
     };
 };
 
@@ -20163,8 +20163,8 @@ struct TensorScatterSub
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -20194,8 +20194,8 @@ struct MatrixInverse
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"adjoint"},
-        AttributeDesc{"T"}
+        AttributeDesc{"adjoint", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -20226,7 +20226,7 @@ struct AdjustContrastv2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -20265,13 +20265,13 @@ struct ParallelMapDatasetV2
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"use_inter_op_parallelism"},
-        AttributeDesc{"deterministic"},
-        AttributeDesc{"preserve_cardinality"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"use_inter_op_parallelism", AttributeType::Bool},
+        AttributeDesc{"deterministic", AttributeType::String},
+        AttributeDesc{"preserve_cardinality", AttributeType::Bool}
     };
 };
 
@@ -20298,7 +20298,7 @@ struct QueueCloseV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"cancel_pending_enqueues"}
+        AttributeDesc{"cancel_pending_enqueues", AttributeType::Bool}
     };
 };
 
@@ -20332,8 +20332,8 @@ struct TensorScatterMax
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -20362,7 +20362,7 @@ struct RiscNeg
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -20396,10 +20396,10 @@ struct FakeQuantWithMinMaxArgsGradient
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"min"},
-        AttributeDesc{"max"},
-        AttributeDesc{"num_bits"},
-        AttributeDesc{"narrow_range"}
+        AttributeDesc{"min", AttributeType::Float},
+        AttributeDesc{"max", AttributeType::Float},
+        AttributeDesc{"num_bits", AttributeType::Int},
+        AttributeDesc{"narrow_range", AttributeType::Bool}
     };
 };
 
@@ -20428,7 +20428,7 @@ struct BatchCholesky
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -20455,7 +20455,7 @@ struct OutfeedEnqueue
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -20489,10 +20489,10 @@ struct TPUPartitionedCall
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"},
-        AttributeDesc{"f"},
-        AttributeDesc{"autotuner_thresh"}
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType},
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"autotuner_thresh", AttributeType::Int}
     };
 };
 
@@ -20532,8 +20532,8 @@ struct FakeQuantWithMinMaxVarsGradient
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_bits"},
-        AttributeDesc{"narrow_range"}
+        AttributeDesc{"num_bits", AttributeType::Int},
+        AttributeDesc{"narrow_range", AttributeType::Bool}
     };
 };
 
@@ -20581,8 +20581,8 @@ struct CSVDatasetV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -20616,8 +20616,8 @@ struct FakeQuantWithMinMaxVarsPerChannel
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_bits"},
-        AttributeDesc{"narrow_range"}
+        AttributeDesc{"num_bits", AttributeType::Int},
+        AttributeDesc{"narrow_range", AttributeType::Bool}
     };
 };
 
@@ -20657,8 +20657,8 @@ struct FakeQuantWithMinMaxVarsPerChannelGradient
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_bits"},
-        AttributeDesc{"narrow_range"}
+        AttributeDesc{"num_bits", AttributeType::Int},
+        AttributeDesc{"narrow_range", AttributeType::Bool}
     };
 };
 
@@ -20693,9 +20693,9 @@ struct UnsortedSegmentProd
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"Tnumsegments"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"Tnumsegments", AttributeType::Type}
     };
 };
 
@@ -20733,10 +20733,10 @@ struct ResourceSparseApplyAdagrad
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"update_slots"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"update_slots", AttributeType::Bool}
     };
 };
 
@@ -20782,16 +20782,16 @@ struct GroupByReducerDataset
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"key_func"},
-        AttributeDesc{"init_func"},
-        AttributeDesc{"reduce_func"},
-        AttributeDesc{"finalize_func"},
-        AttributeDesc{"Tkey_func_other_arguments"},
-        AttributeDesc{"Tinit_func_other_arguments"},
-        AttributeDesc{"Treduce_func_other_arguments"},
-        AttributeDesc{"Tfinalize_func_other_arguments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"key_func", AttributeType::Func},
+        AttributeDesc{"init_func", AttributeType::Func},
+        AttributeDesc{"reduce_func", AttributeType::Func},
+        AttributeDesc{"finalize_func", AttributeType::Func},
+        AttributeDesc{"Tkey_func_other_arguments", AttributeType::ListType},
+        AttributeDesc{"Tinit_func_other_arguments", AttributeType::ListType},
+        AttributeDesc{"Treduce_func_other_arguments", AttributeType::ListType},
+        AttributeDesc{"Tfinalize_func_other_arguments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -20822,7 +20822,7 @@ struct Fingerprint
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -20855,9 +20855,9 @@ struct ResizeBicubic
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"align_corners"},
-        AttributeDesc{"half_pixel_centers"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"align_corners", AttributeType::Bool},
+        AttributeDesc{"half_pixel_centers", AttributeType::Bool}
     };
 };
 
@@ -20895,8 +20895,8 @@ struct _MklConcat
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -20956,7 +20956,7 @@ struct BatchMatrixSetDiag
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -20990,8 +20990,8 @@ struct TensorArrayConcat
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"element_shape_except0"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"element_shape_except0", AttributeType::Shape}
     };
 };
 
@@ -21024,7 +21024,7 @@ struct BatchMatrixBandPart
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -21054,8 +21054,8 @@ struct IteratorGetNext
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -21087,8 +21087,8 @@ struct ExperimentalPrivateThreadPoolDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -21122,8 +21122,8 @@ struct CacheDatasetV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -21155,8 +21155,8 @@ struct DecodeWav
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"desired_channels"},
-        AttributeDesc{"desired_samples"}
+        AttributeDesc{"desired_channels", AttributeType::Int},
+        AttributeDesc{"desired_samples", AttributeType::Int}
     };
 };
 
@@ -21187,9 +21187,9 @@ struct AudioSpectrogram
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"window_size"},
-        AttributeDesc{"stride"},
-        AttributeDesc{"magnitude_squared"}
+        AttributeDesc{"window_size", AttributeType::Int},
+        AttributeDesc{"stride", AttributeType::Int},
+        AttributeDesc{"magnitude_squared", AttributeType::Bool}
     };
 };
 
@@ -21230,9 +21230,9 @@ struct ShuffleAndRepeatDatasetV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"reshuffle_each_iteration"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"reshuffle_each_iteration", AttributeType::Bool},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -21269,7 +21269,7 @@ struct _MklMaximum
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -21305,8 +21305,8 @@ struct FractionalAvgPoolGrad
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"overlapping"},
-        AttributeDesc{"T"}
+        AttributeDesc{"overlapping", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -21340,10 +21340,10 @@ struct Mfcc
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"upper_frequency_limit"},
-        AttributeDesc{"lower_frequency_limit"},
-        AttributeDesc{"filterbank_channel_count"},
-        AttributeDesc{"dct_coefficient_count"}
+        AttributeDesc{"upper_frequency_limit", AttributeType::Float},
+        AttributeDesc{"lower_frequency_limit", AttributeType::Float},
+        AttributeDesc{"filterbank_channel_count", AttributeType::Int},
+        AttributeDesc{"dct_coefficient_count", AttributeType::Int}
     };
 };
 
@@ -21377,8 +21377,8 @@ struct StatefulStandardNormalV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape_dtype"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape_dtype", AttributeType::Type}
     };
 };
 
@@ -21407,9 +21407,9 @@ struct _NcclBroadcastSend
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_devices"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_devices", AttributeType::Int},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -21446,9 +21446,9 @@ struct PaddedBatchDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"Toutput_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"N"}
+        AttributeDesc{"Toutput_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -21477,7 +21477,7 @@ struct IFFT3D
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tcomplex"}
+        AttributeDesc{"Tcomplex", AttributeType::Type}
     };
 };
 
@@ -21520,19 +21520,19 @@ struct BatchFunction
 
     static constexpr std::array<AttributeDesc, 13> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"num_batch_threads"},
-        AttributeDesc{"max_batch_size"},
-        AttributeDesc{"batch_timeout_micros"},
-        AttributeDesc{"max_enqueued_batches"},
-        AttributeDesc{"allowed_batch_sizes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"batching_queue"},
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tcaptured"},
-        AttributeDesc{"Tout"},
-        AttributeDesc{"enable_large_batch_splitting"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"num_batch_threads", AttributeType::Int},
+        AttributeDesc{"max_batch_size", AttributeType::Int},
+        AttributeDesc{"batch_timeout_micros", AttributeType::Int},
+        AttributeDesc{"max_enqueued_batches", AttributeType::Int},
+        AttributeDesc{"allowed_batch_sizes", AttributeType::ListInt},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"batching_queue", AttributeType::String},
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tcaptured", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType},
+        AttributeDesc{"enable_large_batch_splitting", AttributeType::Bool}
     };
 };
 
@@ -21561,7 +21561,7 @@ struct SerializeIterator
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"external_state_policy"}
+        AttributeDesc{"external_state_policy", AttributeType::Int}
     };
 };
 
@@ -21603,16 +21603,16 @@ struct Batch
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"num_batch_threads"},
-        AttributeDesc{"max_batch_size"},
-        AttributeDesc{"max_enqueued_batches"},
-        AttributeDesc{"batch_timeout_micros"},
-        AttributeDesc{"allowed_batch_sizes"},
-        AttributeDesc{"grad_timeout_micros"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"batching_queue"},
-        AttributeDesc{"T"}
+        AttributeDesc{"num_batch_threads", AttributeType::Int},
+        AttributeDesc{"max_batch_size", AttributeType::Int},
+        AttributeDesc{"max_enqueued_batches", AttributeType::Int},
+        AttributeDesc{"batch_timeout_micros", AttributeType::Int},
+        AttributeDesc{"allowed_batch_sizes", AttributeType::ListInt},
+        AttributeDesc{"grad_timeout_micros", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"batching_queue", AttributeType::String},
+        AttributeDesc{"T", AttributeType::ListType}
     };
 };
 
@@ -21643,7 +21643,7 @@ struct RsqrtGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -21679,10 +21679,10 @@ struct Unbatch
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"timeout_micros"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"T"}
+        AttributeDesc{"timeout_micros", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -21714,8 +21714,8 @@ struct InTopK
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"k"},
-        AttributeDesc{"T"}
+        AttributeDesc{"k", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -21748,7 +21748,7 @@ struct SparseTensorSliceDataset
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tvalues"}
+        AttributeDesc{"Tvalues", AttributeType::Type}
     };
 };
 
@@ -21785,9 +21785,9 @@ struct UnbatchGrad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"T"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -21864,10 +21864,10 @@ struct SparseApplyAdagrad
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"update_slots"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"update_slots", AttributeType::Bool}
     };
 };
 
@@ -21896,7 +21896,7 @@ struct Invert
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -21925,7 +21925,7 @@ struct LookupTableRemoveV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tin"}
+        AttributeDesc{"Tin", AttributeType::Type}
     };
 };
 
@@ -21960,11 +21960,11 @@ struct _If
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"Tcond"},
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"},
-        AttributeDesc{"then_branch"},
-        AttributeDesc{"else_branch"}
+        AttributeDesc{"Tcond", AttributeType::Type},
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType},
+        AttributeDesc{"then_branch", AttributeType::Func},
+        AttributeDesc{"else_branch", AttributeType::Func}
     };
 };
 
@@ -21993,7 +21993,7 @@ struct PopulationCount
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -22026,11 +22026,11 @@ struct TensorArray
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"dynamic_size"},
-        AttributeDesc{"clear_after_read"},
-        AttributeDesc{"tensor_array_name"},
-        AttributeDesc{"element_shape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"dynamic_size", AttributeType::Bool},
+        AttributeDesc{"clear_after_read", AttributeType::Bool},
+        AttributeDesc{"tensor_array_name", AttributeType::String},
+        AttributeDesc{"element_shape", AttributeType::Shape}
     };
 };
 
@@ -22061,7 +22061,7 @@ struct BitwiseAnd
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -22100,13 +22100,13 @@ struct _MklNativeConv2DBackpropFilter
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -22137,7 +22137,7 @@ struct BitwiseXor
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -22168,7 +22168,7 @@ struct Add
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -22196,8 +22196,8 @@ struct BoostedTreesEnsembleResourceHandleOp
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -22256,8 +22256,8 @@ struct OutfeedDequeueTupleV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"shapes"}
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape}
     };
 };
 
@@ -22315,7 +22315,7 @@ struct FresnelCos
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -22345,8 +22345,8 @@ struct BiasAddGrad
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"data_format"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String}
     };
 };
 
@@ -22394,8 +22394,8 @@ struct BoostedTreesCalculateBestGainsPerFeature
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"max_splits"},
-        AttributeDesc{"num_features"}
+        AttributeDesc{"max_splits", AttributeType::Int},
+        AttributeDesc{"num_features", AttributeType::Int}
     };
 };
 
@@ -22432,9 +22432,9 @@ struct ShuffleDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"reshuffle_each_iteration"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"reshuffle_each_iteration", AttributeType::Bool},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -22468,8 +22468,8 @@ struct TensorArrayGather
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"element_shape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"element_shape", AttributeType::Shape}
     };
 };
 
@@ -22521,8 +22521,8 @@ struct BoostedTreesCalculateBestFeatureSplit
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"logits_dimension"},
-        AttributeDesc{"split_type"}
+        AttributeDesc{"logits_dimension", AttributeType::Int},
+        AttributeDesc{"split_type", AttributeType::String}
     };
 };
 
@@ -22554,8 +22554,8 @@ struct BarrierInsertMany
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"component_index"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"component_index", AttributeType::Int}
     };
 };
 
@@ -22611,8 +22611,8 @@ struct BoostedTreesSparseCalculateBestFeatureSplit
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"logits_dimension"},
-        AttributeDesc{"split_type"}
+        AttributeDesc{"logits_dimension", AttributeType::Int},
+        AttributeDesc{"split_type", AttributeType::String}
     };
 };
 
@@ -22705,7 +22705,7 @@ struct BiasAddV1
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -22740,11 +22740,11 @@ struct LoadTPUEmbeddingProximalYogiParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -22778,10 +22778,10 @@ struct RandomGamma
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"S"},
-        AttributeDesc{"T"}
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"S", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -22812,11 +22812,11 @@ struct ResourceConditionalAccumulator
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"reduction_type"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"reduction_type", AttributeType::String}
     };
 };
 
@@ -22889,8 +22889,8 @@ struct NegTrain
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"vocab_count"},
-        AttributeDesc{"num_negative_samples"}
+        AttributeDesc{"vocab_count", AttributeType::ListInt},
+        AttributeDesc{"num_negative_samples", AttributeType::Int}
     };
 };
 
@@ -22927,9 +22927,9 @@ struct BoostedTreesMakeStatsSummary
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"max_splits"},
-        AttributeDesc{"num_buckets"},
-        AttributeDesc{"num_features"}
+        AttributeDesc{"max_splits", AttributeType::Int},
+        AttributeDesc{"num_buckets", AttributeType::Int},
+        AttributeDesc{"num_features", AttributeType::Int}
     };
 };
 
@@ -22973,8 +22973,8 @@ struct BoostedTreesSparseAggregateStats
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"max_splits"},
-        AttributeDesc{"num_buckets"}
+        AttributeDesc{"max_splits", AttributeType::Int},
+        AttributeDesc{"num_buckets", AttributeType::Int}
     };
 };
 
@@ -23006,8 +23006,8 @@ struct BoostedTreesPredict
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_bucketized_features"},
-        AttributeDesc{"logits_dimension"}
+        AttributeDesc{"num_bucketized_features", AttributeType::Int},
+        AttributeDesc{"logits_dimension", AttributeType::Int}
     };
 };
 
@@ -23047,8 +23047,8 @@ struct ApplyProximalAdagrad
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -23080,8 +23080,8 @@ struct BoostedTreesExampleDebugOutputs
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_bucketized_features"},
-        AttributeDesc{"logits_dimension"}
+        AttributeDesc{"num_bucketized_features", AttributeType::Int},
+        AttributeDesc{"logits_dimension", AttributeType::Int}
     };
 };
 
@@ -23143,7 +23143,7 @@ struct ClipByValue
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -23174,7 +23174,7 @@ struct SigmoidGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -23207,11 +23207,11 @@ struct LoadTPUEmbeddingAdagradParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -23282,8 +23282,8 @@ struct BoostedTreesTrainingPredict
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_bucketized_features"},
-        AttributeDesc{"logits_dimension"}
+        AttributeDesc{"num_bucketized_features", AttributeType::Int},
+        AttributeDesc{"logits_dimension", AttributeType::Int}
     };
 };
 
@@ -23314,9 +23314,9 @@ struct SnapshotNestedDatasetReader
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"N"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -23360,8 +23360,8 @@ struct BoostedTreesUpdateEnsemble
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"pruning_mode"},
-        AttributeDesc{"num_features"}
+        AttributeDesc{"pruning_mode", AttributeType::Int},
+        AttributeDesc{"num_features", AttributeType::Int}
     };
 };
 
@@ -23412,9 +23412,9 @@ struct BoostedTreesUpdateEnsembleV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"num_features"},
-        AttributeDesc{"logits_dimension"},
-        AttributeDesc{"num_groups"}
+        AttributeDesc{"num_features", AttributeType::Int},
+        AttributeDesc{"logits_dimension", AttributeType::Int},
+        AttributeDesc{"num_groups", AttributeType::Int}
     };
 };
 
@@ -23442,8 +23442,8 @@ struct BoostedTreesQuantileStreamResourceHandleOp
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -23477,8 +23477,8 @@ struct RangeDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -23513,9 +23513,9 @@ struct ScatterNdSub
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -23579,11 +23579,11 @@ struct OrderedMapUnstage
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -23612,7 +23612,7 @@ struct BoostedTreesFlushQuantileSummaries
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"num_features"}
+        AttributeDesc{"num_features", AttributeType::Int}
     };
 };
 
@@ -23641,7 +23641,7 @@ struct BoostedTreesQuantileStreamResourceFlush
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"generate_quantiles"}
+        AttributeDesc{"generate_quantiles", AttributeType::Bool}
     };
 };
 
@@ -23670,7 +23670,7 @@ struct BoostedTreesQuantileStreamResourceGetBucketBoundaries
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"num_features"}
+        AttributeDesc{"num_features", AttributeType::Int}
     };
 };
 
@@ -23704,10 +23704,10 @@ struct Cumprod
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"exclusive"},
-        AttributeDesc{"reverse"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"exclusive", AttributeType::Bool},
+        AttributeDesc{"reverse", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -23745,12 +23745,12 @@ struct UniformCandidateSampler
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"num_true"},
-        AttributeDesc{"num_sampled"},
-        AttributeDesc{"unique"},
-        AttributeDesc{"range_max"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"}
+        AttributeDesc{"num_true", AttributeType::Int},
+        AttributeDesc{"num_sampled", AttributeType::Int},
+        AttributeDesc{"unique", AttributeType::Bool},
+        AttributeDesc{"range_max", AttributeType::Int},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int}
     };
 };
 
@@ -23783,11 +23783,11 @@ struct DebugNanCount
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"device_name"},
-        AttributeDesc{"tensor_name"},
-        AttributeDesc{"debug_urls"},
-        AttributeDesc{"gated_grpc"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"device_name", AttributeType::String},
+        AttributeDesc{"tensor_name", AttributeType::String},
+        AttributeDesc{"debug_urls", AttributeType::ListString},
+        AttributeDesc{"gated_grpc", AttributeType::Bool}
     };
 };
 
@@ -23818,11 +23818,11 @@ struct MutableHashTable
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"use_node_name_sharing"},
-        AttributeDesc{"key_dtype"},
-        AttributeDesc{"value_dtype"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"use_node_name_sharing", AttributeType::Bool},
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type}
     };
 };
 
@@ -23860,12 +23860,12 @@ struct ThreadUnsafeUnigramCandidateSampler
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"num_true"},
-        AttributeDesc{"num_sampled"},
-        AttributeDesc{"unique"},
-        AttributeDesc{"range_max"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"}
+        AttributeDesc{"num_true", AttributeType::Int},
+        AttributeDesc{"num_sampled", AttributeType::Int},
+        AttributeDesc{"unique", AttributeType::Bool},
+        AttributeDesc{"range_max", AttributeType::Int},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int}
     };
 };
 
@@ -23896,11 +23896,11 @@ struct _VarHandlesOp
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"containers"},
-        AttributeDesc{"shared_names"},
-        AttributeDesc{"N"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"shapes"}
+        AttributeDesc{"containers", AttributeType::ListString},
+        AttributeDesc{"shared_names", AttributeType::ListString},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape}
     };
 };
 
@@ -23944,18 +23944,18 @@ struct FixedUnigramCandidateSampler
 
     static constexpr std::array<AttributeDesc, 12> attribute_descs
     {
-        AttributeDesc{"num_true"},
-        AttributeDesc{"num_sampled"},
-        AttributeDesc{"unique"},
-        AttributeDesc{"range_max"},
-        AttributeDesc{"vocab_file"},
-        AttributeDesc{"distortion"},
-        AttributeDesc{"num_reserved_ids"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard"},
-        AttributeDesc{"unigrams"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"}
+        AttributeDesc{"num_true", AttributeType::Int},
+        AttributeDesc{"num_sampled", AttributeType::Int},
+        AttributeDesc{"unique", AttributeType::Bool},
+        AttributeDesc{"range_max", AttributeType::Int},
+        AttributeDesc{"vocab_file", AttributeType::String},
+        AttributeDesc{"distortion", AttributeType::Float},
+        AttributeDesc{"num_reserved_ids", AttributeType::Int},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard", AttributeType::Int},
+        AttributeDesc{"unigrams", AttributeType::ListFloat},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int}
     };
 };
 
@@ -23992,9 +23992,9 @@ struct ComputeAccidentalHits
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"num_true"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"}
+        AttributeDesc{"num_true", AttributeType::Int},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int}
     };
 };
 
@@ -24029,7 +24029,7 @@ struct TensorArrayGradWithShape
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"source"}
+        AttributeDesc{"source", AttributeType::String}
     };
 };
 
@@ -24068,9 +24068,9 @@ struct LoadAndRemapMatrix
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"num_rows"},
-        AttributeDesc{"num_cols"},
-        AttributeDesc{"max_rows_in_memory"}
+        AttributeDesc{"num_rows", AttributeType::Int},
+        AttributeDesc{"num_cols", AttributeType::Int},
+        AttributeDesc{"max_rows_in_memory", AttributeType::Int}
     };
 };
 
@@ -24165,7 +24165,7 @@ struct DecodeBmp
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"channels"}
+        AttributeDesc{"channels", AttributeType::Int}
     };
 };
 
@@ -24197,8 +24197,8 @@ struct QueueDequeueUpTo
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"timeout_ms"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"timeout_ms", AttributeType::Int}
     };
 };
 
@@ -24228,8 +24228,8 @@ struct DecodePng
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"channels"},
-        AttributeDesc{"dtype"}
+        AttributeDesc{"channels", AttributeType::Int},
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -24260,9 +24260,9 @@ struct DataFormatDimMap
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"src_format"},
-        AttributeDesc{"dst_format"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"src_format", AttributeType::String},
+        AttributeDesc{"dst_format", AttributeType::String}
     };
 };
 
@@ -24295,13 +24295,13 @@ struct CollectiveBcastRecv
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"group_size"},
-        AttributeDesc{"group_key"},
-        AttributeDesc{"instance_key"},
-        AttributeDesc{"shape"},
-        AttributeDesc{"communication_hint"},
-        AttributeDesc{"timeout_seconds"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"group_size", AttributeType::Int},
+        AttributeDesc{"group_key", AttributeType::Int},
+        AttributeDesc{"instance_key", AttributeType::Int},
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"communication_hint", AttributeType::String},
+        AttributeDesc{"timeout_seconds", AttributeType::Float}
     };
 };
 
@@ -24333,10 +24333,10 @@ struct _NcclReduceRecv
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"reduction"},
-        AttributeDesc{"T"},
-        AttributeDesc{"num_devices"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"reduction", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_devices", AttributeType::Int},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -24368,8 +24368,8 @@ struct TensorArrayPack
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"element_shape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"element_shape", AttributeType::Shape}
     };
 };
 
@@ -24406,9 +24406,9 @@ struct CollectiveBcastSendV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"communication_hint"},
-        AttributeDesc{"timeout_seconds"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"communication_hint", AttributeType::String},
+        AttributeDesc{"timeout_seconds", AttributeType::Float}
     };
 };
 
@@ -24440,8 +24440,8 @@ struct QueueDequeueUpToV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"timeout_ms"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"timeout_ms", AttributeType::Int}
     };
 };
 
@@ -24479,10 +24479,10 @@ struct CollectiveBcastRecvV2
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tshape"},
-        AttributeDesc{"communication_hint"},
-        AttributeDesc{"timeout_seconds"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tshape", AttributeType::Type},
+        AttributeDesc{"communication_hint", AttributeType::String},
+        AttributeDesc{"timeout_seconds", AttributeType::Float}
     };
 };
 
@@ -24515,7 +24515,7 @@ struct Switch
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -24544,7 +24544,7 @@ struct Log
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -24576,8 +24576,8 @@ struct Qr
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"full_matrices"},
-        AttributeDesc{"T"}
+        AttributeDesc{"full_matrices", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -24608,9 +24608,9 @@ struct Einsum
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"equation"},
-        AttributeDesc{"N"},
-        AttributeDesc{"T"}
+        AttributeDesc{"equation", AttributeType::String},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -24643,7 +24643,7 @@ struct RefSwitch
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -24691,10 +24691,10 @@ struct FusedBatchNormGrad
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -24726,8 +24726,8 @@ struct RefSelect
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -24764,11 +24764,11 @@ struct MaxPoolGradGrad
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -24801,7 +24801,7 @@ struct TensorArrayUnpack
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -24833,8 +24833,8 @@ struct Merge
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -24870,12 +24870,12 @@ struct MapDataset
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"use_inter_op_parallelism"},
-        AttributeDesc{"preserve_cardinality"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"use_inter_op_parallelism", AttributeType::Bool},
+        AttributeDesc{"preserve_cardinality", AttributeType::Bool}
     };
 };
 
@@ -24930,15 +24930,15 @@ struct _MklQuantizedConv2DAndRequantize
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -24980,8 +24980,8 @@ struct ResourceApplyAdagradDA
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -25015,8 +25015,8 @@ struct TensorArrayConcatV3
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"element_shape_except0"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"element_shape_except0", AttributeType::Shape}
     };
 };
 
@@ -25048,8 +25048,8 @@ struct RefMerge
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -25085,12 +25085,12 @@ struct DecodeAndCropJpeg
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"channels"},
-        AttributeDesc{"ratio"},
-        AttributeDesc{"fancy_upscaling"},
-        AttributeDesc{"try_recover_truncated"},
-        AttributeDesc{"acceptable_fraction"},
-        AttributeDesc{"dct_method"}
+        AttributeDesc{"channels", AttributeType::Int},
+        AttributeDesc{"ratio", AttributeType::Int},
+        AttributeDesc{"fancy_upscaling", AttributeType::Bool},
+        AttributeDesc{"try_recover_truncated", AttributeType::Bool},
+        AttributeDesc{"acceptable_fraction", AttributeType::Float},
+        AttributeDesc{"dct_method", AttributeType::String}
     };
 };
 
@@ -25122,10 +25122,10 @@ struct RefEnter
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"frame_name"},
-        AttributeDesc{"is_constant"},
-        AttributeDesc{"parallel_iterations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"frame_name", AttributeType::String},
+        AttributeDesc{"is_constant", AttributeType::Bool},
+        AttributeDesc{"parallel_iterations", AttributeType::Int}
     };
 };
 
@@ -25188,8 +25188,8 @@ struct XlaRngBitGenerator
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tshape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tshape", AttributeType::Type}
     };
 };
 
@@ -25218,7 +25218,7 @@ struct Exit
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -25275,8 +25275,8 @@ struct ExperimentalNonSerializableDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -25305,7 +25305,7 @@ struct NextIteration
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -25334,9 +25334,9 @@ struct OutfeedDequeueTuple
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"shapes"},
-        AttributeDesc{"device_ordinal"}
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"device_ordinal", AttributeType::Int}
     };
 };
 
@@ -25416,13 +25416,13 @@ struct QuantizedDepthwiseConv2DWithBiasAndRelu
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -25450,8 +25450,8 @@ struct Abort
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"error_msg"},
-        AttributeDesc{"exit_without_error"}
+        AttributeDesc{"error_msg", AttributeType::String},
+        AttributeDesc{"exit_without_error", AttributeType::Bool}
     };
 };
 
@@ -25489,8 +25489,8 @@ struct NonMaxSuppressionV3
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"T_threshold"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"T_threshold", AttributeType::Type}
     };
 };
 
@@ -25529,11 +25529,11 @@ struct DenseCountSparseOutput
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"minlength"},
-        AttributeDesc{"maxlength"},
-        AttributeDesc{"binary_output"},
-        AttributeDesc{"output_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"minlength", AttributeType::Int},
+        AttributeDesc{"maxlength", AttributeType::Int},
+        AttributeDesc{"binary_output", AttributeType::Bool},
+        AttributeDesc{"output_type", AttributeType::Type}
     };
 };
 
@@ -25564,11 +25564,11 @@ struct OrderedMapSize
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -25623,15 +25623,15 @@ struct _MklQuantizedConv2DAndReluAndRequantize
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -25697,16 +25697,16 @@ struct ParseSingleSequenceExample
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"Ncontext_sparse"},
-        AttributeDesc{"Ncontext_dense"},
-        AttributeDesc{"Nfeature_list_sparse"},
-        AttributeDesc{"Nfeature_list_dense"},
-        AttributeDesc{"context_sparse_types"},
-        AttributeDesc{"Tcontext_dense"},
-        AttributeDesc{"feature_list_dense_types"},
-        AttributeDesc{"context_dense_shapes"},
-        AttributeDesc{"feature_list_sparse_types"},
-        AttributeDesc{"feature_list_dense_shapes"}
+        AttributeDesc{"Ncontext_sparse", AttributeType::Int},
+        AttributeDesc{"Ncontext_dense", AttributeType::Int},
+        AttributeDesc{"Nfeature_list_sparse", AttributeType::Int},
+        AttributeDesc{"Nfeature_list_dense", AttributeType::Int},
+        AttributeDesc{"context_sparse_types", AttributeType::ListType},
+        AttributeDesc{"Tcontext_dense", AttributeType::ListType},
+        AttributeDesc{"feature_list_dense_types", AttributeType::ListType},
+        AttributeDesc{"context_dense_shapes", AttributeType::ListShape},
+        AttributeDesc{"feature_list_sparse_types", AttributeType::ListType},
+        AttributeDesc{"feature_list_dense_shapes", AttributeType::ListShape}
     };
 };
 
@@ -25749,11 +25749,11 @@ struct SparseCountSparseOutput
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"minlength"},
-        AttributeDesc{"maxlength"},
-        AttributeDesc{"binary_output"},
-        AttributeDesc{"output_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"minlength", AttributeType::Int},
+        AttributeDesc{"maxlength", AttributeType::Int},
+        AttributeDesc{"binary_output", AttributeType::Bool},
+        AttributeDesc{"output_type", AttributeType::Type}
     };
 };
 
@@ -25785,8 +25785,8 @@ struct BatchMatrixSolve
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"adjoint"},
-        AttributeDesc{"T"}
+        AttributeDesc{"adjoint", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -25874,13 +25874,13 @@ struct QuantizedConv2DAndReluAndRequantize
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -25920,10 +25920,10 @@ struct CTCLoss
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"preprocess_collapse_repeated"},
-        AttributeDesc{"ctc_merge_repeated"},
-        AttributeDesc{"ignore_longer_outputs_than_inputs"},
-        AttributeDesc{"T"}
+        AttributeDesc{"preprocess_collapse_repeated", AttributeType::Bool},
+        AttributeDesc{"ctc_merge_repeated", AttributeType::Bool},
+        AttributeDesc{"ignore_longer_outputs_than_inputs", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -25952,7 +25952,7 @@ struct Sign
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -25990,10 +25990,10 @@ struct BarrierTakeMany
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"allow_small_batch"},
-        AttributeDesc{"wait_for_incomplete"},
-        AttributeDesc{"timeout_ms"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"allow_small_batch", AttributeType::Bool},
+        AttributeDesc{"wait_for_incomplete", AttributeType::Bool},
+        AttributeDesc{"timeout_ms", AttributeType::Int}
     };
 };
 
@@ -26032,9 +26032,9 @@ struct CTCLossV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"preprocess_collapse_repeated"},
-        AttributeDesc{"ctc_merge_repeated"},
-        AttributeDesc{"ignore_longer_outputs_than_inputs"}
+        AttributeDesc{"preprocess_collapse_repeated", AttributeType::Bool},
+        AttributeDesc{"ctc_merge_repeated", AttributeType::Bool},
+        AttributeDesc{"ignore_longer_outputs_than_inputs", AttributeType::Bool}
     };
 };
 
@@ -26062,8 +26062,8 @@ struct WholeFileReaderV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -26100,9 +26100,9 @@ struct StatelessRandomUniformInt
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tseed"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tseed", AttributeType::Type}
     };
 };
 
@@ -26141,9 +26141,9 @@ struct CTCGreedyDecoder
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"merge_repeated"},
-        AttributeDesc{"blank_index"},
-        AttributeDesc{"T"}
+        AttributeDesc{"merge_repeated", AttributeType::Bool},
+        AttributeDesc{"blank_index", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -26221,15 +26221,15 @@ struct CudnnRNNParamsSize
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"S"},
-        AttributeDesc{"rnn_mode"},
-        AttributeDesc{"input_mode"},
-        AttributeDesc{"direction"},
-        AttributeDesc{"dropout"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"num_proj"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"S", AttributeType::Type},
+        AttributeDesc{"rnn_mode", AttributeType::String},
+        AttributeDesc{"input_mode", AttributeType::String},
+        AttributeDesc{"direction", AttributeType::String},
+        AttributeDesc{"dropout", AttributeType::Float},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"num_proj", AttributeType::Int}
     };
 };
 
@@ -26266,9 +26266,9 @@ struct ScaleAndTranslate
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"kernel_type"},
-        AttributeDesc{"antialias"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"kernel_type", AttributeType::String},
+        AttributeDesc{"antialias", AttributeType::Bool}
     };
 };
 
@@ -26295,7 +26295,7 @@ struct ConfigureTPUEmbedding
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"config"}
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -26343,14 +26343,14 @@ struct CudnnRNN
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"rnn_mode"},
-        AttributeDesc{"input_mode"},
-        AttributeDesc{"direction"},
-        AttributeDesc{"dropout"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"rnn_mode", AttributeType::String},
+        AttributeDesc{"input_mode", AttributeType::String},
+        AttributeDesc{"direction", AttributeType::String},
+        AttributeDesc{"dropout", AttributeType::Float},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -26400,14 +26400,14 @@ struct CudnnRNNV2
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"rnn_mode"},
-        AttributeDesc{"input_mode"},
-        AttributeDesc{"direction"},
-        AttributeDesc{"dropout"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"rnn_mode", AttributeType::String},
+        AttributeDesc{"input_mode", AttributeType::String},
+        AttributeDesc{"direction", AttributeType::String},
+        AttributeDesc{"dropout", AttributeType::Float},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -26440,9 +26440,9 @@ struct BatchMatMul
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"adj_x"},
-        AttributeDesc{"adj_y"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"adj_x", AttributeType::Bool},
+        AttributeDesc{"adj_y", AttributeType::Bool}
     };
 };
 
@@ -26503,13 +26503,13 @@ struct CudnnRNNBackprop
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"rnn_mode"},
-        AttributeDesc{"input_mode"},
-        AttributeDesc{"direction"},
-        AttributeDesc{"dropout"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"rnn_mode", AttributeType::String},
+        AttributeDesc{"input_mode", AttributeType::String},
+        AttributeDesc{"direction", AttributeType::String},
+        AttributeDesc{"dropout", AttributeType::Float},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int}
     };
 };
 
@@ -26553,14 +26553,14 @@ struct CudnnRNNCanonicalToParams
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_params"},
-        AttributeDesc{"rnn_mode"},
-        AttributeDesc{"input_mode"},
-        AttributeDesc{"direction"},
-        AttributeDesc{"dropout"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_params", AttributeType::Int},
+        AttributeDesc{"rnn_mode", AttributeType::String},
+        AttributeDesc{"input_mode", AttributeType::String},
+        AttributeDesc{"direction", AttributeType::String},
+        AttributeDesc{"dropout", AttributeType::Float},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int}
     };
 };
 
@@ -26592,8 +26592,8 @@ struct DynamicPartition
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_partitions"},
-        AttributeDesc{"T"}
+        AttributeDesc{"num_partitions", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -26628,9 +26628,9 @@ struct ScatterNdUpdate
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -26664,14 +26664,14 @@ struct RandomShuffleQueue
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"shapes"},
-        AttributeDesc{"capacity"},
-        AttributeDesc{"min_after_dequeue"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"min_after_dequeue", AttributeType::Int},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -26704,9 +26704,9 @@ struct XlaReduce
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"dimensions_to_reduce"},
-        AttributeDesc{"reducer"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"dimensions_to_reduce", AttributeType::ListInt},
+        AttributeDesc{"reducer", AttributeType::Func}
     };
 };
 
@@ -26761,13 +26761,13 @@ struct QuantizedMatMulWithBiasAndRequantize
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"Toutput"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"input_quant_mode"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"Toutput", AttributeType::Type},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"input_quant_mode", AttributeType::String}
     };
 };
 
@@ -26798,7 +26798,7 @@ struct AccumulatorTakeGradient
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -26829,11 +26829,11 @@ struct FIFOQueueV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"shapes"},
-        AttributeDesc{"capacity"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -26863,8 +26863,8 @@ struct CompositeTensorVariantFromComponents
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"metadata"},
-        AttributeDesc{"Tcomponents"}
+        AttributeDesc{"metadata", AttributeType::String},
+        AttributeDesc{"Tcomponents", AttributeType::ListType}
     };
 };
 
@@ -26902,12 +26902,12 @@ struct ExperimentalScanDataset
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"Tstate"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"preserve_cardinality"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Tstate", AttributeType::ListType},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"preserve_cardinality", AttributeType::Bool}
     };
 };
 
@@ -26936,7 +26936,7 @@ struct MatrixExponential
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -26983,9 +26983,9 @@ struct ApplyFtrlV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"multiply_linear_by_lr"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"multiply_linear_by_lr", AttributeType::Bool}
     };
 };
 
@@ -27045,11 +27045,11 @@ struct PaddingFIFOQueueV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"shapes"},
-        AttributeDesc{"capacity"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -27080,11 +27080,11 @@ struct PriorityQueue
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"shapes"},
-        AttributeDesc{"capacity"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -27116,8 +27116,8 @@ struct Lu
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"output_idx_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"output_idx_type", AttributeType::Type}
     };
 };
 
@@ -27147,8 +27147,8 @@ struct QueueEnqueue
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tcomponents"},
-        AttributeDesc{"timeout_ms"}
+        AttributeDesc{"Tcomponents", AttributeType::ListType},
+        AttributeDesc{"timeout_ms", AttributeType::Int}
     };
 };
 
@@ -27178,8 +27178,8 @@ struct QueueEnqueueV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tcomponents"},
-        AttributeDesc{"timeout_ms"}
+        AttributeDesc{"Tcomponents", AttributeType::ListType},
+        AttributeDesc{"timeout_ms", AttributeType::Int}
     };
 };
 
@@ -27209,8 +27209,8 @@ struct QueueEnqueueMany
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tcomponents"},
-        AttributeDesc{"timeout_ms"}
+        AttributeDesc{"Tcomponents", AttributeType::ListType},
+        AttributeDesc{"timeout_ms", AttributeType::Int}
     };
 };
 
@@ -27267,8 +27267,8 @@ struct QueueEnqueueManyV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tcomponents"},
-        AttributeDesc{"timeout_ms"}
+        AttributeDesc{"Tcomponents", AttributeType::ListType},
+        AttributeDesc{"timeout_ms", AttributeType::Int}
     };
 };
 
@@ -27298,8 +27298,8 @@ struct QueueDequeue
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"timeout_ms"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"timeout_ms", AttributeType::Int}
     };
 };
 
@@ -27331,8 +27331,8 @@ struct RandomDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -27367,9 +27367,9 @@ struct UnsortedSegmentMax
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"Tnumsegments"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"Tnumsegments", AttributeType::Type}
     };
 };
 
@@ -27399,8 +27399,8 @@ struct QueueDequeueV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"timeout_ms"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"timeout_ms", AttributeType::Int}
     };
 };
 
@@ -27435,11 +27435,11 @@ struct RetrieveTPUEmbeddingFTRLParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -27473,8 +27473,8 @@ struct MultiDeviceIteratorGetNextFromShard
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -27506,8 +27506,8 @@ struct QueueDequeueMany
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"component_types"},
-        AttributeDesc{"timeout_ms"}
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"timeout_ms", AttributeType::Int}
     };
 };
 
@@ -27626,8 +27626,8 @@ struct SegmentProd
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -27673,12 +27673,12 @@ struct _MklConv3D
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -27740,7 +27740,7 @@ struct SaveSlices
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::ListType}
     };
 };
 
@@ -27772,10 +27772,10 @@ struct StringFormat
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"template"},
-        AttributeDesc{"placeholder"},
-        AttributeDesc{"summarize"}
+        AttributeDesc{"T", AttributeType::ListType},
+        AttributeDesc{"template", AttributeType::String},
+        AttributeDesc{"placeholder", AttributeType::String},
+        AttributeDesc{"summarize", AttributeType::Int}
     };
 };
 
@@ -27806,11 +27806,11 @@ struct SparseConditionalAccumulator
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"reduction_type"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"reduction_type", AttributeType::String}
     };
 };
 
@@ -27841,7 +27841,7 @@ struct GreaterEqual
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -27877,10 +27877,10 @@ struct StatelessRandomPoisson
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"Rtype"},
-        AttributeDesc{"dtype"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tseed"}
+        AttributeDesc{"Rtype", AttributeType::Type},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tseed", AttributeType::Type}
     };
 };
 
@@ -27916,8 +27916,8 @@ struct SparseAccumulatorApplyGradient
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"has_known_shape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"has_known_shape", AttributeType::Bool}
     };
 };
 
@@ -27950,9 +27950,9 @@ struct ResourceScatterNdAdd
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -27987,7 +27987,7 @@ struct SparseAccumulatorTakeGradient
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -28019,8 +28019,8 @@ struct RepeatDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -28049,7 +28049,7 @@ struct StackPopV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"elem_type"}
+        AttributeDesc{"elem_type", AttributeType::Type}
     };
 };
 
@@ -28093,12 +28093,12 @@ struct StatelessSampleDistortedBoundingBox
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tseed"},
-        AttributeDesc{"aspect_ratio_range"},
-        AttributeDesc{"area_range"},
-        AttributeDesc{"max_attempts"},
-        AttributeDesc{"use_image_if_no_bounding_boxes"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tseed", AttributeType::Type},
+        AttributeDesc{"aspect_ratio_range", AttributeType::ListFloat},
+        AttributeDesc{"area_range", AttributeType::ListFloat},
+        AttributeDesc{"max_attempts", AttributeType::Int},
+        AttributeDesc{"use_image_if_no_bounding_boxes", AttributeType::Bool}
     };
 };
 
@@ -28167,14 +28167,14 @@ struct GroupByWindowDataset
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"key_func"},
-        AttributeDesc{"reduce_func"},
-        AttributeDesc{"window_size_func"},
-        AttributeDesc{"Tkey_func_other_arguments"},
-        AttributeDesc{"Treduce_func_other_arguments"},
-        AttributeDesc{"Twindow_size_func_other_arguments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"key_func", AttributeType::Func},
+        AttributeDesc{"reduce_func", AttributeType::Func},
+        AttributeDesc{"window_size_func", AttributeType::Func},
+        AttributeDesc{"Tkey_func_other_arguments", AttributeType::ListType},
+        AttributeDesc{"Treduce_func_other_arguments", AttributeType::ListType},
+        AttributeDesc{"Twindow_size_func_other_arguments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -28202,8 +28202,8 @@ struct Stack
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"elem_type"},
-        AttributeDesc{"stack_name"}
+        AttributeDesc{"elem_type", AttributeType::Type},
+        AttributeDesc{"stack_name", AttributeType::String}
     };
 };
 
@@ -28239,12 +28239,12 @@ struct TensorArrayV3
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"element_shape"},
-        AttributeDesc{"dynamic_size"},
-        AttributeDesc{"clear_after_read"},
-        AttributeDesc{"identical_element_shapes"},
-        AttributeDesc{"tensor_array_name"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"element_shape", AttributeType::Shape},
+        AttributeDesc{"dynamic_size", AttributeType::Bool},
+        AttributeDesc{"clear_after_read", AttributeType::Bool},
+        AttributeDesc{"identical_element_shapes", AttributeType::Bool},
+        AttributeDesc{"tensor_array_name", AttributeType::String}
     };
 };
 
@@ -28277,11 +28277,11 @@ struct XlaSpmdShardToFullShape
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"manual_sharding"},
-        AttributeDesc{"full_shape"},
-        AttributeDesc{"dim"},
-        AttributeDesc{"unspecified_dims"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"manual_sharding", AttributeType::String},
+        AttributeDesc{"full_shape", AttributeType::Shape},
+        AttributeDesc{"dim", AttributeType::Int},
+        AttributeDesc{"unspecified_dims", AttributeType::ListInt}
     };
 };
 
@@ -28316,7 +28316,7 @@ struct TensorArrayWriteV3
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -28349,7 +28349,7 @@ struct TensorArrayReadV3
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -28388,9 +28388,9 @@ struct ShuffleDatasetV3
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"reshuffle_each_iteration"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"reshuffle_each_iteration", AttributeType::Bool},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -28424,8 +28424,8 @@ struct TensorArrayGatherV3
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"element_shape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"element_shape", AttributeType::Shape}
     };
 };
 
@@ -28457,10 +28457,10 @@ struct DebugNumericSummaryV2
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"output_dtype"},
-        AttributeDesc{"T"},
-        AttributeDesc{"tensor_debug_mode"},
-        AttributeDesc{"tensor_id"}
+        AttributeDesc{"output_dtype", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"tensor_debug_mode", AttributeType::Int},
+        AttributeDesc{"tensor_id", AttributeType::Int}
     };
 };
 
@@ -28524,7 +28524,7 @@ struct TensorArrayScatterV3
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -28557,11 +28557,11 @@ struct TensorArrayV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"element_shape"},
-        AttributeDesc{"dynamic_size"},
-        AttributeDesc{"clear_after_read"},
-        AttributeDesc{"tensor_array_name"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"element_shape", AttributeType::Shape},
+        AttributeDesc{"dynamic_size", AttributeType::Bool},
+        AttributeDesc{"clear_after_read", AttributeType::Bool},
+        AttributeDesc{"tensor_array_name", AttributeType::String}
     };
 };
 
@@ -28596,11 +28596,11 @@ struct AvgPoolGrad
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -28631,7 +28631,7 @@ struct TensorArrayGradV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"source"}
+        AttributeDesc{"source", AttributeType::String}
     };
 };
 
@@ -28670,13 +28670,13 @@ struct ScanDataset
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"Tstate"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"preserve_cardinality"},
-        AttributeDesc{"use_default_device"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Tstate", AttributeType::ListType},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"preserve_cardinality", AttributeType::Bool},
+        AttributeDesc{"use_default_device", AttributeType::Bool}
     };
 };
 
@@ -28706,8 +28706,8 @@ struct ExperimentalUnbatchDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -28740,13 +28740,13 @@ struct RecordInput
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"file_pattern"},
-        AttributeDesc{"file_random_seed"},
-        AttributeDesc{"file_shuffle_shift_ratio"},
-        AttributeDesc{"file_buffer_size"},
-        AttributeDesc{"file_parallelism"},
-        AttributeDesc{"batch_size"},
-        AttributeDesc{"compression_type"}
+        AttributeDesc{"file_pattern", AttributeType::String},
+        AttributeDesc{"file_random_seed", AttributeType::Int},
+        AttributeDesc{"file_shuffle_shift_ratio", AttributeType::Float},
+        AttributeDesc{"file_buffer_size", AttributeType::Int},
+        AttributeDesc{"file_parallelism", AttributeType::Int},
+        AttributeDesc{"batch_size", AttributeType::Int},
+        AttributeDesc{"compression_type", AttributeType::String}
     };
 };
 
@@ -28781,7 +28781,7 @@ struct TensorArrayWrite
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -28814,7 +28814,7 @@ struct TensorArrayRead
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -28846,8 +28846,8 @@ struct SegmentSum
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -28876,7 +28876,7 @@ struct Floor
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -28909,11 +28909,11 @@ struct _MklNativeAvgPool
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -28946,7 +28946,7 @@ struct TensorArrayReadV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -29016,7 +29016,7 @@ struct TensorArrayScatter
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -29068,12 +29068,12 @@ struct FusedBatchNormV3
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"exponential_avg_factor"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"exponential_avg_factor", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -29108,7 +29108,7 @@ struct TensorArrayScatterV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -29143,11 +29143,11 @@ struct LoadTPUEmbeddingAdagradMomentumParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -29178,11 +29178,11 @@ struct OrderedMapClear
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -29216,8 +29216,8 @@ struct TensorArrayConcatV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"element_shape_except0"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"element_shape_except0", AttributeType::Shape}
     };
 };
 
@@ -29253,8 +29253,8 @@ struct SetStatsAggregatorDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -29285,7 +29285,7 @@ struct SqrtGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -29320,9 +29320,9 @@ struct MaxPoolV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String}
     };
 };
 
@@ -29357,7 +29357,7 @@ struct TensorArraySplitV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -29387,8 +29387,8 @@ struct IteratorGetNextAsOptional
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -29423,11 +29423,11 @@ struct SparseMatrixSparseMatMul
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"type"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"adjoint_a"},
-        AttributeDesc{"adjoint_b"}
+        AttributeDesc{"type", AttributeType::Type},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"adjoint_a", AttributeType::Bool},
+        AttributeDesc{"adjoint_b", AttributeType::Bool}
     };
 };
 
@@ -29543,7 +29543,7 @@ struct BarrierClose
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"cancel_pending_enqueues"}
+        AttributeDesc{"cancel_pending_enqueues", AttributeType::Bool}
     };
 };
 
@@ -29601,7 +29601,7 @@ struct GetSessionHandleV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -29661,11 +29661,11 @@ struct Stage
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -29698,7 +29698,7 @@ struct Select
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -29729,11 +29729,11 @@ struct Unstage
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -29766,11 +29766,11 @@ struct StagePeek
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -29801,11 +29801,11 @@ struct StageSize
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -29841,12 +29841,12 @@ struct MapStage
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"fake_dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"fake_dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -29885,11 +29885,11 @@ struct RaggedGather
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"Tvalues"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"Tsplits"},
-        AttributeDesc{"PARAMS_RAGGED_RANK"},
-        AttributeDesc{"OUTPUT_RAGGED_RANK"}
+        AttributeDesc{"Tvalues", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"Tsplits", AttributeType::Type},
+        AttributeDesc{"PARAMS_RAGGED_RANK", AttributeType::Int},
+        AttributeDesc{"OUTPUT_RAGGED_RANK", AttributeType::Int}
     };
 };
 
@@ -29924,11 +29924,11 @@ struct MapUnstage
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -29963,11 +29963,11 @@ struct MapUnstageNoKey
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -30001,8 +30001,8 @@ struct XlaKeyValueSort
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"K"},
-        AttributeDesc{"V"}
+        AttributeDesc{"K", AttributeType::Type},
+        AttributeDesc{"V", AttributeType::Type}
     };
 };
 
@@ -30034,8 +30034,8 @@ struct SleepDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -30066,11 +30066,11 @@ struct MapSize
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -30101,11 +30101,11 @@ struct MapClear
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -30136,11 +30136,11 @@ struct OrderedMapIncompleteSize
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"capacity"},
-        AttributeDesc{"memory_limit"},
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"memory_limit", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -30171,9 +30171,9 @@ struct TensorSliceDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"Toutput_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"is_files"}
+        AttributeDesc{"Toutput_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"is_files", AttributeType::Bool}
     };
 };
 
@@ -30202,7 +30202,7 @@ struct TensorMapStackKeys
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"key_dtype"}
+        AttributeDesc{"key_dtype", AttributeType::Type}
     };
 };
 
@@ -30233,9 +30233,9 @@ struct ZipDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"N"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -30313,9 +30313,9 @@ struct ResourceSparseApplyAdagradDA
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -30344,7 +30344,7 @@ struct Expm1
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -30382,12 +30382,12 @@ struct Conv3DBackpropInputV2
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"Tshape"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"Tshape", AttributeType::Type}
     };
 };
 
@@ -30422,11 +30422,11 @@ struct PrefetchDataset
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"slack_period"},
-        AttributeDesc{"legacy_autotune"},
-        AttributeDesc{"buffer_size_min"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"slack_period", AttributeType::Int},
+        AttributeDesc{"legacy_autotune", AttributeType::Bool},
+        AttributeDesc{"buffer_size_min", AttributeType::Int}
     };
 };
 
@@ -30469,17 +30469,17 @@ struct ParseExampleDatasetV2
 
     static constexpr std::array<AttributeDesc, 11> attribute_descs
     {
-        AttributeDesc{"sparse_keys"},
-        AttributeDesc{"dense_keys"},
-        AttributeDesc{"sparse_types"},
-        AttributeDesc{"Tdense"},
-        AttributeDesc{"dense_shapes"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"deterministic"},
-        AttributeDesc{"ragged_keys"},
-        AttributeDesc{"ragged_value_types"},
-        AttributeDesc{"ragged_split_types"}
+        AttributeDesc{"sparse_keys", AttributeType::ListString},
+        AttributeDesc{"dense_keys", AttributeType::ListString},
+        AttributeDesc{"sparse_types", AttributeType::ListType},
+        AttributeDesc{"Tdense", AttributeType::ListType},
+        AttributeDesc{"dense_shapes", AttributeType::ListShape},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"deterministic", AttributeType::String},
+        AttributeDesc{"ragged_keys", AttributeType::ListString},
+        AttributeDesc{"ragged_value_types", AttributeType::ListType},
+        AttributeDesc{"ragged_split_types", AttributeType::ListType}
     };
 };
 
@@ -30520,11 +30520,11 @@ struct ParallelInterleaveDatasetV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"sloppy"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"sloppy", AttributeType::Bool}
     };
 };
 
@@ -30569,11 +30569,11 @@ struct ParallelInterleaveDatasetV4
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"deterministic"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"deterministic", AttributeType::String},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -30604,9 +30604,9 @@ struct WindowOp
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"Tinputs"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"Tinputs", AttributeType::ListType}
     };
 };
 
@@ -30667,8 +30667,8 @@ struct BatchDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -30708,10 +30708,10 @@ struct PaddedBatchDatasetV2
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"parallel_copy"},
-        AttributeDesc{"Toutput_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"N"}
+        AttributeDesc{"parallel_copy", AttributeType::Bool},
+        AttributeDesc{"Toutput_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -30774,10 +30774,10 @@ struct SaveDataset
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"compression"},
-        AttributeDesc{"shard_func"},
-        AttributeDesc{"use_shard_func"},
-        AttributeDesc{"Tshard_func_args"}
+        AttributeDesc{"compression", AttributeType::String},
+        AttributeDesc{"shard_func", AttributeType::Func},
+        AttributeDesc{"use_shard_func", AttributeType::Bool},
+        AttributeDesc{"Tshard_func_args", AttributeType::ListType}
     };
 };
 
@@ -30836,8 +30836,8 @@ struct ResizeArea
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"align_corners"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"align_corners", AttributeType::Bool}
     };
 };
 
@@ -30896,17 +30896,17 @@ struct _MklQuantizedConv2DWithBiasAndReluAndRequantize
 
     static constexpr std::array<AttributeDesc, 11> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"is_bias_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"is_bias_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -30945,9 +30945,9 @@ struct ShuffleAndRepeatDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"reshuffle_each_iteration"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"reshuffle_each_iteration", AttributeType::Bool}
     };
 };
 
@@ -30977,8 +30977,8 @@ struct OptionalGetValue
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -31014,8 +31014,8 @@ struct ResourceApplyProximalGradientDescent
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -31085,9 +31085,9 @@ struct _MklQuantizedConcatV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -31120,9 +31120,9 @@ struct ResourceScatterNdMax
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -31154,8 +31154,8 @@ struct CacheDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -31289,7 +31289,7 @@ struct SobolSample
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -31319,10 +31319,10 @@ struct Iterator
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"container"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -31381,10 +31381,10 @@ struct IteratorV2
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"container"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -31441,8 +31441,8 @@ struct AnonymousIteratorV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -31502,7 +31502,7 @@ struct DeleteMultiDeviceIterator
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"N"}
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -31569,12 +31569,12 @@ struct ReduceDataset
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"Tstate"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"use_inter_op_parallelism"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Tstate", AttributeType::ListType},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"use_inter_op_parallelism", AttributeType::Bool}
     };
 };
 
@@ -31612,12 +31612,12 @@ struct MaxPoolGradWithArgmax
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"include_batch_in_index"},
-        AttributeDesc{"Targmax"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"include_batch_in_index", AttributeType::Bool},
+        AttributeDesc{"Targmax", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -31648,11 +31648,11 @@ struct OneShotIterator
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"dataset_factory"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"dataset_factory", AttributeType::Func},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -31682,8 +31682,8 @@ struct IteratorGetNextSync
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -31712,7 +31712,7 @@ struct RGBToHSV
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -31742,8 +31742,8 @@ struct DatasetToSingleElement
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -31802,8 +31802,8 @@ struct IteratorFromStringHandle
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -31851,12 +31851,12 @@ struct QuantizedConv2DPerChannel
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -31888,8 +31888,8 @@ struct LatencyStatsDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -31918,7 +31918,7 @@ struct KthOrderStatistic
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"k"}
+        AttributeDesc{"k", AttributeType::Int}
     };
 };
 
@@ -31948,8 +31948,8 @@ struct IteratorFromStringHandleV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -32009,9 +32009,9 @@ struct DatasetToGraph
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"stateful_whitelist"},
-        AttributeDesc{"allow_stateful"},
-        AttributeDesc{"strip_device_assignment"}
+        AttributeDesc{"stateful_whitelist", AttributeType::ListString},
+        AttributeDesc{"allow_stateful", AttributeType::Bool},
+        AttributeDesc{"strip_device_assignment", AttributeType::Bool}
     };
 };
 
@@ -32042,9 +32042,9 @@ struct CopyHost
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"tensor_name"},
-        AttributeDesc{"debug_ops_spec"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"tensor_name", AttributeType::String},
+        AttributeDesc{"debug_ops_spec", AttributeType::ListString}
     };
 };
 
@@ -32073,7 +32073,7 @@ struct RiscCholesky
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -32115,12 +32115,12 @@ struct _MklLRN
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"depth_radius"},
-        AttributeDesc{"bias"},
-        AttributeDesc{"alpha"},
-        AttributeDesc{"beta"},
-        AttributeDesc{"workspace_enabled"},
-        AttributeDesc{"T"}
+        AttributeDesc{"depth_radius", AttributeType::Int},
+        AttributeDesc{"bias", AttributeType::Float},
+        AttributeDesc{"alpha", AttributeType::Float},
+        AttributeDesc{"beta", AttributeType::Float},
+        AttributeDesc{"workspace_enabled", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -32150,8 +32150,8 @@ struct DatasetToGraphV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"external_state_policy"},
-        AttributeDesc{"strip_device_assignment"}
+        AttributeDesc{"external_state_policy", AttributeType::Int},
+        AttributeDesc{"strip_device_assignment", AttributeType::Bool}
     };
 };
 
@@ -32181,8 +32181,8 @@ struct ExperimentalLMDBDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -32215,9 +32215,9 @@ struct BatchMatrixTriangularSolve
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"lower"},
-        AttributeDesc{"adjoint"},
-        AttributeDesc{"T"}
+        AttributeDesc{"lower", AttributeType::Bool},
+        AttributeDesc{"adjoint", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -32250,9 +32250,9 @@ struct OptimizeDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"optimization_configs"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"optimization_configs", AttributeType::ListString}
     };
 };
 
@@ -32283,7 +32283,7 @@ struct RiscRem
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -32320,9 +32320,9 @@ struct OptimizeDatasetV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"optimization_configs"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"optimization_configs", AttributeType::ListString}
     };
 };
 
@@ -32354,8 +32354,8 @@ struct NotEqual
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"incompatible_shape_error"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"incompatible_shape_error", AttributeType::Bool}
     };
 };
 
@@ -32389,8 +32389,8 @@ struct LinSpace
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -32419,7 +32419,7 @@ struct OptionalFromValue
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Toutput_types"}
+        AttributeDesc{"Toutput_types", AttributeType::ListType}
     };
 };
 
@@ -32480,8 +32480,8 @@ struct ExperimentalSqlDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -32510,7 +32510,7 @@ struct StringUpper
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"encoding"}
+        AttributeDesc{"encoding", AttributeType::String}
     };
 };
 
@@ -32573,10 +32573,10 @@ struct SnapshotDatasetReader
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"compression"},
-        AttributeDesc{"version"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"compression", AttributeType::String},
+        AttributeDesc{"version", AttributeType::Int}
     };
 };
 
@@ -32604,8 +32604,8 @@ struct IdentityReader
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -32669,9 +32669,9 @@ struct StatelessMultinomial
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tseed"},
-        AttributeDesc{"output_dtype"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tseed", AttributeType::Type},
+        AttributeDesc{"output_dtype", AttributeType::Type}
     };
 };
 
@@ -32729,7 +32729,7 @@ struct RiscExp
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -32759,8 +32759,8 @@ struct MultiDeviceIteratorFromStringHandle
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -32812,14 +32812,14 @@ struct _MklQuantizedMatMulWithBiasAndDequantize
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"Toutput"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"input_quant_mode"},
-        AttributeDesc{"is_weight_const"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"Toutput", AttributeType::Type},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"input_quant_mode", AttributeType::String},
+        AttributeDesc{"is_weight_const", AttributeType::Bool}
     };
 };
 
@@ -32879,9 +32879,9 @@ struct OptionsDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"serialized_options"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"serialized_options", AttributeType::String},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -32965,8 +32965,8 @@ struct LMDBReader
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -32997,9 +32997,9 @@ struct FinalizeDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"has_captured_ref"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"has_captured_ref", AttributeType::Bool},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -33031,8 +33031,8 @@ struct RFFT3D
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Treal"},
-        AttributeDesc{"Tcomplex"}
+        AttributeDesc{"Treal", AttributeType::Type},
+        AttributeDesc{"Tcomplex", AttributeType::Type}
     };
 };
 
@@ -33063,9 +33063,9 @@ struct Copy
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"tensor_name"},
-        AttributeDesc{"debug_ops_spec"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"tensor_name", AttributeType::String},
+        AttributeDesc{"debug_ops_spec", AttributeType::ListString}
     };
 };
 
@@ -33101,14 +33101,14 @@ struct DebugIdentityV2
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"tfdbg_context_id"},
-        AttributeDesc{"op_name"},
-        AttributeDesc{"output_slot"},
-        AttributeDesc{"tensor_debug_mode"},
-        AttributeDesc{"debug_urls"},
-        AttributeDesc{"circular_buffer_size"},
-        AttributeDesc{"tfdbg_run_id"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"tfdbg_context_id", AttributeType::String},
+        AttributeDesc{"op_name", AttributeType::String},
+        AttributeDesc{"output_slot", AttributeType::Int},
+        AttributeDesc{"tensor_debug_mode", AttributeType::Int},
+        AttributeDesc{"debug_urls", AttributeType::ListString},
+        AttributeDesc{"circular_buffer_size", AttributeType::Int},
+        AttributeDesc{"tfdbg_run_id", AttributeType::String}
     };
 };
 
@@ -33171,10 +33171,10 @@ struct EncodeProto
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"field_names"},
-        AttributeDesc{"message_type"},
-        AttributeDesc{"descriptor_source"},
-        AttributeDesc{"Tinput_types"}
+        AttributeDesc{"field_names", AttributeType::ListString},
+        AttributeDesc{"message_type", AttributeType::String},
+        AttributeDesc{"descriptor_source", AttributeType::String},
+        AttributeDesc{"Tinput_types", AttributeType::ListType}
     };
 };
 
@@ -33206,8 +33206,8 @@ struct AssertNextDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -33240,9 +33240,9 @@ struct RandomCrop
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int}
     };
 };
 
@@ -33274,8 +33274,8 @@ struct ExperimentalAssertNextDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -33307,8 +33307,8 @@ struct IsotonicRegression
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"output_dtype"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"output_dtype", AttributeType::Type}
     };
 };
 
@@ -33344,10 +33344,10 @@ struct AutoShardDataset
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"auto_shard_policy"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"num_replicas"}
+        AttributeDesc{"auto_shard_policy", AttributeType::Int},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"num_replicas", AttributeType::Int}
     };
 };
 
@@ -33382,9 +33382,9 @@ struct ExperimentalAutoShardDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"auto_shard_policy"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"auto_shard_policy", AttributeType::Int},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -33416,8 +33416,8 @@ struct ExperimentalBytesProducedStatsDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -33455,12 +33455,12 @@ struct _MklNativeConv3DBackpropInputV2
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"Tshape"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"Tshape", AttributeType::Type},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String}
     };
 };
 
@@ -33491,9 +33491,9 @@ struct ExperimentalIgnoreErrorsDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"log_warning"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"log_warning", AttributeType::Bool}
     };
 };
 
@@ -33533,12 +33533,12 @@ struct ChooseFastestBranchDataset
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"num_elements_per_branch"},
-        AttributeDesc{"branches"},
-        AttributeDesc{"other_arguments_lengths"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"num_elements_per_branch", AttributeType::Int},
+        AttributeDesc{"branches", AttributeType::ListFunc},
+        AttributeDesc{"other_arguments_lengths", AttributeType::ListInt},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -33583,7 +33583,7 @@ struct GRUBlockCell
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -33615,10 +33615,10 @@ struct ExperimentalChooseFastestDataset
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"num_experiments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"num_experiments", AttributeType::Int},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -33649,7 +33649,7 @@ struct IgammaGradA
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -33678,7 +33678,7 @@ struct CompressElement
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"input_types"}
+        AttributeDesc{"input_types", AttributeType::ListType}
     };
 };
 
@@ -33716,8 +33716,8 @@ struct QuantizeDownAndShrinkRange
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -33747,8 +33747,8 @@ struct UncompressElement
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -33794,8 +33794,8 @@ struct CSVDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -33842,9 +33842,9 @@ struct BatchNormWithGlobalNormalizationGrad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"variance_epsilon"},
-        AttributeDesc{"scale_after_normalization"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"variance_epsilon", AttributeType::Float},
+        AttributeDesc{"scale_after_normalization", AttributeType::Bool}
     };
 };
 
@@ -33890,8 +33890,8 @@ struct ExperimentalCSVDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -33923,8 +33923,8 @@ struct AssignAdd
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -33985,8 +33985,8 @@ struct Complex
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -34028,14 +34028,14 @@ struct ExperimentalGroupByWindowDataset
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"key_func"},
-        AttributeDesc{"reduce_func"},
-        AttributeDesc{"window_size_func"},
-        AttributeDesc{"Tkey_func_other_arguments"},
-        AttributeDesc{"Treduce_func_other_arguments"},
-        AttributeDesc{"Twindow_size_func_other_arguments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"key_func", AttributeType::Func},
+        AttributeDesc{"reduce_func", AttributeType::Func},
+        AttributeDesc{"window_size_func", AttributeType::Func},
+        AttributeDesc{"Tkey_func_other_arguments", AttributeType::ListType},
+        AttributeDesc{"Treduce_func_other_arguments", AttributeType::ListType},
+        AttributeDesc{"Twindow_size_func_other_arguments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -34067,8 +34067,8 @@ struct _XlaSendFromHostV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tinputs"},
-        AttributeDesc{"key"}
+        AttributeDesc{"Tinputs", AttributeType::ListType},
+        AttributeDesc{"key", AttributeType::String}
     };
 };
 
@@ -34099,7 +34099,7 @@ struct StatelessRandomGetKeyCounter
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tseed"}
+        AttributeDesc{"Tseed", AttributeType::Type}
     };
 };
 
@@ -34144,9 +34144,9 @@ struct SparseToSparseSetOperation
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"set_operation"},
-        AttributeDesc{"validate_indices"},
-        AttributeDesc{"T"}
+        AttributeDesc{"set_operation", AttributeType::String},
+        AttributeDesc{"validate_indices", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -34204,7 +34204,7 @@ struct Acos
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -34269,8 +34269,8 @@ struct DenseToSparseBatchDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -34308,10 +34308,10 @@ struct SparseSegmentSumWithNumSegments
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"Tnumsegments"},
-        AttributeDesc{"Tsegmentids"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"Tnumsegments", AttributeType::Type},
+        AttributeDesc{"Tsegmentids", AttributeType::Type}
     };
 };
 
@@ -34342,7 +34342,7 @@ struct TruncateMod
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -34378,8 +34378,8 @@ struct SlidingWindowDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -34413,8 +34413,8 @@ struct ExperimentalDenseToSparseBatchDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -34448,10 +34448,10 @@ struct DirectedInterleaveDataset
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"N"},
-        AttributeDesc{"stop_on_empty_dataset"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"stop_on_empty_dataset", AttributeType::Bool}
     };
 };
 
@@ -34484,9 +34484,9 @@ struct ExperimentalDirectedInterleaveDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"N"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -34519,11 +34519,11 @@ struct LRN
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"depth_radius"},
-        AttributeDesc{"bias"},
-        AttributeDesc{"alpha"},
-        AttributeDesc{"beta"},
-        AttributeDesc{"T"}
+        AttributeDesc{"depth_radius", AttributeType::Int},
+        AttributeDesc{"bias", AttributeType::Float},
+        AttributeDesc{"alpha", AttributeType::Float},
+        AttributeDesc{"beta", AttributeType::Float},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -34569,16 +34569,16 @@ struct ExperimentalGroupByReducerDataset
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"key_func"},
-        AttributeDesc{"init_func"},
-        AttributeDesc{"reduce_func"},
-        AttributeDesc{"finalize_func"},
-        AttributeDesc{"Tkey_func_other_arguments"},
-        AttributeDesc{"Tinit_func_other_arguments"},
-        AttributeDesc{"Treduce_func_other_arguments"},
-        AttributeDesc{"Tfinalize_func_other_arguments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"key_func", AttributeType::Func},
+        AttributeDesc{"init_func", AttributeType::Func},
+        AttributeDesc{"reduce_func", AttributeType::Func},
+        AttributeDesc{"finalize_func", AttributeType::Func},
+        AttributeDesc{"Tkey_func_other_arguments", AttributeType::ListType},
+        AttributeDesc{"Tinit_func_other_arguments", AttributeType::ListType},
+        AttributeDesc{"Treduce_func_other_arguments", AttributeType::ListType},
+        AttributeDesc{"Tfinalize_func_other_arguments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -34610,8 +34610,8 @@ struct GetElementAtIndex
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -34642,9 +34642,9 @@ struct IgnoreErrorsDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"log_warning"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"log_warning", AttributeType::Bool}
     };
 };
 
@@ -34714,11 +34714,11 @@ struct ExperimentalMapAndBatchDataset
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"preserve_cardinality"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"preserve_cardinality", AttributeType::Bool}
     };
 };
 
@@ -34763,9 +34763,9 @@ struct QuantizedAdd
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"Toutput"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"Toutput", AttributeType::Type}
     };
 };
 
@@ -34805,10 +34805,10 @@ struct ResourceSparseApplyKerasMomentum
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"use_nesterov"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"use_nesterov", AttributeType::Bool}
     };
 };
 
@@ -34841,9 +34841,9 @@ struct ResourceScatterNdMin
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -34879,12 +34879,12 @@ struct ExperimentalMapDataset
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"use_inter_op_parallelism"},
-        AttributeDesc{"preserve_cardinality"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"use_inter_op_parallelism", AttributeType::Bool},
+        AttributeDesc{"preserve_cardinality", AttributeType::Bool}
     };
 };
 
@@ -34941,8 +34941,8 @@ struct WholeFileReader
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -34977,9 +34977,9 @@ struct ScatterMul
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -35009,8 +35009,8 @@ struct NonSerializableDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -35042,8 +35042,8 @@ struct MaxIntraOpParallelismDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -35087,10 +35087,10 @@ struct ParallelInterleaveDataset
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -35133,11 +35133,11 @@ struct LegacyParallelInterleaveDatasetV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"f"},
-        AttributeDesc{"deterministic"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"deterministic", AttributeType::String},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -35166,7 +35166,7 @@ struct Erf
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -35197,7 +35197,7 @@ struct TruncateDiv
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -35233,10 +35233,10 @@ struct Conv3DBackpropInput
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -35279,17 +35279,17 @@ struct ParseExampleDataset
 
     static constexpr std::array<AttributeDesc, 11> attribute_descs
     {
-        AttributeDesc{"sparse_keys"},
-        AttributeDesc{"dense_keys"},
-        AttributeDesc{"sparse_types"},
-        AttributeDesc{"Tdense"},
-        AttributeDesc{"dense_shapes"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"sloppy"},
-        AttributeDesc{"ragged_keys"},
-        AttributeDesc{"ragged_value_types"},
-        AttributeDesc{"ragged_split_types"}
+        AttributeDesc{"sparse_keys", AttributeType::ListString},
+        AttributeDesc{"dense_keys", AttributeType::ListString},
+        AttributeDesc{"sparse_types", AttributeType::ListType},
+        AttributeDesc{"Tdense", AttributeType::ListType},
+        AttributeDesc{"dense_shapes", AttributeType::ListShape},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"sloppy", AttributeType::Bool},
+        AttributeDesc{"ragged_keys", AttributeType::ListString},
+        AttributeDesc{"ragged_value_types", AttributeType::ListType},
+        AttributeDesc{"ragged_split_types", AttributeType::ListType}
     };
 };
 
@@ -35353,11 +35353,11 @@ struct _MklDequantize
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"narrow_range"},
-        AttributeDesc{"axis"},
-        AttributeDesc{"mode"},
-        AttributeDesc{"dtype"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"narrow_range", AttributeType::Bool},
+        AttributeDesc{"axis", AttributeType::Int},
+        AttributeDesc{"mode", AttributeType::String},
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -35403,8 +35403,8 @@ struct ApplyCenteredRMSProp
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -35436,8 +35436,8 @@ struct PrivateThreadPoolDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -35467,8 +35467,8 @@ struct ResourceCountUpTo
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"limit"},
-        AttributeDesc{"T"}
+        AttributeDesc{"limit", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -35498,8 +35498,8 @@ struct Angle
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -35531,8 +35531,8 @@ struct ExperimentalRandomDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -35581,11 +35581,11 @@ struct FusedBatchNormGradV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -35618,9 +35618,9 @@ struct ExperimentalRebatchDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"use_fallback"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"use_fallback", AttributeType::Bool}
     };
 };
 
@@ -35651,9 +35651,9 @@ struct XlaSharding
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"sharding"},
-        AttributeDesc{"unspecified_dims"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"sharding", AttributeType::String},
+        AttributeDesc{"unspecified_dims", AttributeType::ListInt}
     };
 };
 
@@ -35686,9 +35686,9 @@ struct RebatchDataset
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"use_fallback"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"use_fallback", AttributeType::Bool}
     };
 };
 
@@ -35723,9 +35723,9 @@ struct DenseBincount
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"T"},
-        AttributeDesc{"binary_output"}
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"binary_output", AttributeType::Bool}
     };
 };
 
@@ -35759,10 +35759,10 @@ struct RaggedTensorToVariant
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"RAGGED_RANK"},
-        AttributeDesc{"Tvalues"},
-        AttributeDesc{"Tsplits"},
-        AttributeDesc{"batched_input"}
+        AttributeDesc{"RAGGED_RANK", AttributeType::Int},
+        AttributeDesc{"Tvalues", AttributeType::Type},
+        AttributeDesc{"Tsplits", AttributeType::Type},
+        AttributeDesc{"batched_input", AttributeType::Bool}
     };
 };
 
@@ -35796,8 +35796,8 @@ struct RebatchDatasetV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -35833,8 +35833,8 @@ struct ExperimentalSetStatsAggregatorDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -35866,8 +35866,8 @@ struct ExperimentalSleepDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -35898,7 +35898,7 @@ struct SoftplusGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -35934,8 +35934,8 @@ struct ExperimentalSlidingWindowDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -35980,17 +35980,17 @@ struct SnapshotDatasetV2
 
     static constexpr std::array<AttributeDesc, 11> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"compression"},
-        AttributeDesc{"reader_prefix"},
-        AttributeDesc{"writer_prefix"},
-        AttributeDesc{"hash_valid"},
-        AttributeDesc{"hash"},
-        AttributeDesc{"reader_func"},
-        AttributeDesc{"shard_func"},
-        AttributeDesc{"Treader_func_args"},
-        AttributeDesc{"Tshard_func_args"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"compression", AttributeType::String},
+        AttributeDesc{"reader_prefix", AttributeType::String},
+        AttributeDesc{"writer_prefix", AttributeType::String},
+        AttributeDesc{"hash_valid", AttributeType::Bool},
+        AttributeDesc{"hash", AttributeType::Int},
+        AttributeDesc{"reader_func", AttributeType::Func},
+        AttributeDesc{"shard_func", AttributeType::Func},
+        AttributeDesc{"Treader_func_args", AttributeType::ListType},
+        AttributeDesc{"Tshard_func_args", AttributeType::ListType}
     };
 };
 
@@ -36021,7 +36021,7 @@ struct HistogramSummary
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -36061,8 +36061,8 @@ struct QuantizedReluX
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -36100,12 +36100,12 @@ struct SaveDatasetV2
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"compression"},
-        AttributeDesc{"shard_func"},
-        AttributeDesc{"use_shard_func"},
-        AttributeDesc{"Tshard_func_args"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"compression", AttributeType::String},
+        AttributeDesc{"shard_func", AttributeType::Func},
+        AttributeDesc{"use_shard_func", AttributeType::Bool},
+        AttributeDesc{"Tshard_func_args", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -36144,13 +36144,13 @@ struct Conv2DBackpropInput
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -36184,8 +36184,8 @@ struct SqlDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -36247,7 +36247,7 @@ struct Betainc
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -36342,18 +36342,18 @@ struct _MklQuantizedConv2DWithBiasSumAndReluAndRequantize
 
     static constexpr std::array<AttributeDesc, 12> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"Tsummand"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"is_bias_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"Tsummand", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"is_bias_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -36381,8 +36381,8 @@ struct StatsAggregatorHandle
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -36410,8 +36410,8 @@ struct ExperimentalStatsAggregatorHandle
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -36475,9 +36475,9 @@ struct AddSparseToTensorsMap
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -36511,10 +36511,10 @@ struct TakeWhileDataset
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"predicate"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"predicate", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -36548,10 +36548,10 @@ struct ExperimentalTakeWhileDataset
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"predicate"},
-        AttributeDesc{"Targuments"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"predicate", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -36583,8 +36583,8 @@ struct ExperimentalThreadPoolDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -36644,11 +36644,11 @@ struct ThreadPoolHandle
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"num_threads"},
-        AttributeDesc{"max_intra_op_parallelism"},
-        AttributeDesc{"display_name"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"num_threads", AttributeType::Int},
+        AttributeDesc{"max_intra_op_parallelism", AttributeType::Int},
+        AttributeDesc{"display_name", AttributeType::String},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -36679,11 +36679,11 @@ struct ExperimentalThreadPoolHandle
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"num_threads"},
-        AttributeDesc{"max_intra_op_parallelism"},
-        AttributeDesc{"display_name"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"num_threads", AttributeType::Int},
+        AttributeDesc{"max_intra_op_parallelism", AttributeType::Int},
+        AttributeDesc{"display_name", AttributeType::String},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -36712,7 +36712,7 @@ struct BesselK1e
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -36762,12 +36762,12 @@ struct QuantizedDepthwiseConv2DWithBias
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -36797,8 +36797,8 @@ struct UnbatchDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -36828,8 +36828,8 @@ struct ExperimentalUniqueDataset
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -36857,8 +36857,8 @@ struct IdentityReaderV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -36889,7 +36889,7 @@ struct DrawBoundingBoxes
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -36934,11 +36934,11 @@ struct DataServiceDataset
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"task_refresh_interval_hint_ms"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"data_transfer_protocol"},
-        AttributeDesc{"target_workers"}
+        AttributeDesc{"task_refresh_interval_hint_ms", AttributeType::Int},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"data_transfer_protocol", AttributeType::String},
+        AttributeDesc{"target_workers", AttributeType::String}
     };
 };
 
@@ -36987,11 +36987,11 @@ struct DataServiceDatasetV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"task_refresh_interval_hint_ms"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"data_transfer_protocol"},
-        AttributeDesc{"target_workers"}
+        AttributeDesc{"task_refresh_interval_hint_ms", AttributeType::Int},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"data_transfer_protocol", AttributeType::String},
+        AttributeDesc{"target_workers", AttributeType::String}
     };
 };
 
@@ -37024,9 +37024,9 @@ struct ResizeBicubicGrad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"align_corners"},
-        AttributeDesc{"half_pixel_centers"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"align_corners", AttributeType::Bool},
+        AttributeDesc{"half_pixel_centers", AttributeType::Bool}
     };
 };
 
@@ -37059,9 +37059,9 @@ struct ResizeBilinearGrad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"align_corners"},
-        AttributeDesc{"half_pixel_centers"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"align_corners", AttributeType::Bool},
+        AttributeDesc{"half_pixel_centers", AttributeType::Bool}
     };
 };
 
@@ -37101,8 +37101,8 @@ struct StatelessRandomUniformIntV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tshape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tshape", AttributeType::Type}
     };
 };
 
@@ -37140,12 +37140,12 @@ struct DepthwiseConv2dNativeBackpropInput
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -37175,8 +37175,8 @@ struct Real
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -37210,12 +37210,12 @@ struct DecodeJpeg
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"channels"},
-        AttributeDesc{"ratio"},
-        AttributeDesc{"fancy_upscaling"},
-        AttributeDesc{"try_recover_truncated"},
-        AttributeDesc{"acceptable_fraction"},
-        AttributeDesc{"dct_method"}
+        AttributeDesc{"channels", AttributeType::Int},
+        AttributeDesc{"ratio", AttributeType::Int},
+        AttributeDesc{"fancy_upscaling", AttributeType::Bool},
+        AttributeDesc{"try_recover_truncated", AttributeType::Bool},
+        AttributeDesc{"acceptable_fraction", AttributeType::Float},
+        AttributeDesc{"dct_method", AttributeType::String}
     };
 };
 
@@ -37250,7 +37250,7 @@ struct AdjustContrast
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -37282,8 +37282,8 @@ struct TensorMapLookup
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"key_dtype"},
-        AttributeDesc{"value_dtype"}
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type}
     };
 };
 
@@ -37317,8 +37317,8 @@ struct RiscScatter
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -37349,7 +37349,7 @@ struct AdjustHue
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -37407,7 +37407,7 @@ struct HSVToRGB
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -37440,7 +37440,7 @@ struct DrawBoundingBoxesV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -37478,12 +37478,12 @@ struct _MklNativeDepthwiseConv2dNativeBackpropInput
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -37519,10 +37519,10 @@ struct ExtractGlimpse
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"centered"},
-        AttributeDesc{"normalized"},
-        AttributeDesc{"uniform_noise"},
-        AttributeDesc{"noise"}
+        AttributeDesc{"centered", AttributeType::Bool},
+        AttributeDesc{"normalized", AttributeType::Bool},
+        AttributeDesc{"uniform_noise", AttributeType::Bool},
+        AttributeDesc{"noise", AttributeType::String}
     };
 };
 
@@ -37558,10 +37558,10 @@ struct ExtractGlimpseV2
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"centered"},
-        AttributeDesc{"normalized"},
-        AttributeDesc{"uniform_noise"},
-        AttributeDesc{"noise"}
+        AttributeDesc{"centered", AttributeType::Bool},
+        AttributeDesc{"normalized", AttributeType::Bool},
+        AttributeDesc{"uniform_noise", AttributeType::Bool},
+        AttributeDesc{"noise", AttributeType::String}
     };
 };
 
@@ -37596,11 +37596,11 @@ struct LoadTPUEmbeddingRMSPropParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -37633,7 +37633,7 @@ struct SaveV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtypes"}
+        AttributeDesc{"dtypes", AttributeType::ListType}
     };
 };
 
@@ -37665,12 +37665,12 @@ struct MutableHashTableOfTensorsV2
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"use_node_name_sharing"},
-        AttributeDesc{"key_dtype"},
-        AttributeDesc{"value_dtype"},
-        AttributeDesc{"value_shape"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"use_node_name_sharing", AttributeType::Bool},
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type},
+        AttributeDesc{"value_shape", AttributeType::Shape}
     };
 };
 
@@ -37699,7 +37699,7 @@ struct IsInf
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -37736,9 +37736,9 @@ struct CropAndResize
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"method"},
-        AttributeDesc{"extrapolation_value"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"method", AttributeType::String},
+        AttributeDesc{"extrapolation_value", AttributeType::Float}
     };
 };
 
@@ -37767,9 +37767,9 @@ struct TFRecordReaderV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"compression_type"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"compression_type", AttributeType::String}
     };
 };
 
@@ -37805,8 +37805,8 @@ struct CropAndResizeGradImage
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"method"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"method", AttributeType::String}
     };
 };
 
@@ -37844,8 +37844,8 @@ struct XlaPad
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -37881,8 +37881,8 @@ struct CropAndResizeGradBoxes
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"method"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"method", AttributeType::String}
     };
 };
 
@@ -37917,11 +37917,11 @@ struct LoadTPUEmbeddingFTRLParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -37954,7 +37954,7 @@ struct NonMaxSuppression
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"iou_threshold"}
+        AttributeDesc{"iou_threshold", AttributeType::Float}
     };
 };
 
@@ -37983,7 +37983,7 @@ struct Atanh
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -38024,9 +38024,9 @@ struct NonMaxSuppressionV4
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"T_threshold"},
-        AttributeDesc{"pad_to_max_output_size"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"T_threshold", AttributeType::Type},
+        AttributeDesc{"pad_to_max_output_size", AttributeType::Bool}
     };
 };
 
@@ -38070,8 +38070,8 @@ struct NonMaxSuppressionV5
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"pad_to_max_output_size"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"pad_to_max_output_size", AttributeType::Bool}
     };
 };
 
@@ -38141,7 +38141,7 @@ struct SparseFillEmptyRowsGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -38187,8 +38187,8 @@ struct CombinedNonMaxSuppression
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"pad_per_class"},
-        AttributeDesc{"clip_boxes"}
+        AttributeDesc{"pad_per_class", AttributeType::Bool},
+        AttributeDesc{"clip_boxes", AttributeType::Bool}
     };
 };
 
@@ -38221,9 +38221,9 @@ struct Prod
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"keep_dims"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"keep_dims", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -38266,7 +38266,7 @@ struct GenerateBoundingBoxProposals
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"post_nms_topn"}
+        AttributeDesc{"post_nms_topn", AttributeType::Int}
     };
 };
 
@@ -38295,7 +38295,7 @@ struct Acosh
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -38330,9 +38330,9 @@ struct ImageProjectiveTransformV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"interpolation"},
-        AttributeDesc{"fill_mode"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"interpolation", AttributeType::String},
+        AttributeDesc{"fill_mode", AttributeType::String}
     };
 };
 
@@ -38369,9 +38369,9 @@ struct ImageProjectiveTransformV3
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"interpolation"},
-        AttributeDesc{"fill_mode"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"interpolation", AttributeType::String},
+        AttributeDesc{"fill_mode", AttributeType::String}
     };
 };
 
@@ -38402,7 +38402,7 @@ struct SquaredDifference
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -38435,7 +38435,7 @@ struct RestoreV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtypes"}
+        AttributeDesc{"dtypes", AttributeType::ListType}
     };
 };
 
@@ -38472,11 +38472,11 @@ struct Conv3DBackpropFilterV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -38507,7 +38507,7 @@ struct Save
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::ListType}
     };
 };
 
@@ -38539,12 +38539,12 @@ struct MutableHashTableOfTensors
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"use_node_name_sharing"},
-        AttributeDesc{"key_dtype"},
-        AttributeDesc{"value_dtype"},
-        AttributeDesc{"value_shape"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"use_node_name_sharing", AttributeType::Bool},
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type},
+        AttributeDesc{"value_shape", AttributeType::Shape}
     };
 };
 
@@ -38579,9 +38579,9 @@ struct UnsortedSegmentMin
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"Tnumsegments"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"Tnumsegments", AttributeType::Type}
     };
 };
 
@@ -38620,13 +38620,13 @@ struct _FusedMatMul
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"T"},
-        AttributeDesc{"num_args"},
-        AttributeDesc{"fused_ops"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"leakyrelu_alpha"}
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"fused_ops", AttributeType::ListString},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"leakyrelu_alpha", AttributeType::Float}
     };
 };
 
@@ -38660,8 +38660,8 @@ struct TopKV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"sorted"},
-        AttributeDesc{"T"}
+        AttributeDesc{"sorted", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -38693,8 +38693,8 @@ struct Restore
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dt"},
-        AttributeDesc{"preferred_shard"}
+        AttributeDesc{"dt", AttributeType::Type},
+        AttributeDesc{"preferred_shard", AttributeType::Int}
     };
 };
 
@@ -38736,10 +38736,10 @@ struct SparseApplyAdagradV2
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"update_slots"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"update_slots", AttributeType::Bool}
     };
 };
 
@@ -38773,8 +38773,8 @@ struct RestoreSlice
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dt"},
-        AttributeDesc{"preferred_shard"}
+        AttributeDesc{"dt", AttributeType::Type},
+        AttributeDesc{"preferred_shard", AttributeType::Int}
     };
 };
 
@@ -38836,7 +38836,7 @@ struct Relu6
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -38865,9 +38865,9 @@ struct TextLineReader
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"skip_header_lines"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"skip_header_lines", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -38901,8 +38901,8 @@ struct StatefulUniformFullInt
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape_dtype"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape_dtype", AttributeType::Type}
     };
 };
 
@@ -38931,9 +38931,9 @@ struct TextLineReaderV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"skip_header_lines"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"skip_header_lines", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -38966,7 +38966,7 @@ struct TensorListGather
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"element_dtype"}
+        AttributeDesc{"element_dtype", AttributeType::Type}
     };
 };
 
@@ -38998,12 +38998,12 @@ struct FixedLengthRecordReader
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"header_bytes"},
-        AttributeDesc{"record_bytes"},
-        AttributeDesc{"footer_bytes"},
-        AttributeDesc{"hop_bytes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"header_bytes", AttributeType::Int},
+        AttributeDesc{"record_bytes", AttributeType::Int},
+        AttributeDesc{"footer_bytes", AttributeType::Int},
+        AttributeDesc{"hop_bytes", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -39032,7 +39032,7 @@ struct MatrixSquareRoot
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -39064,10 +39064,10 @@ struct XlaSpmdFullToShardShape
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"manual_sharding"},
-        AttributeDesc{"dim"},
-        AttributeDesc{"unspecified_dims"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"manual_sharding", AttributeType::String},
+        AttributeDesc{"dim", AttributeType::Int},
+        AttributeDesc{"unspecified_dims", AttributeType::ListInt}
     };
 };
 
@@ -39099,8 +39099,8 @@ struct NthElement
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"reverse"},
-        AttributeDesc{"T"}
+        AttributeDesc{"reverse", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -39133,13 +39133,13 @@ struct FixedLengthRecordReaderV2
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"header_bytes"},
-        AttributeDesc{"record_bytes"},
-        AttributeDesc{"footer_bytes"},
-        AttributeDesc{"hop_bytes"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"encoding"}
+        AttributeDesc{"header_bytes", AttributeType::Int},
+        AttributeDesc{"record_bytes", AttributeType::Int},
+        AttributeDesc{"footer_bytes", AttributeType::Int},
+        AttributeDesc{"hop_bytes", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"encoding", AttributeType::String}
     };
 };
 
@@ -39261,7 +39261,7 @@ struct LogMatrixDeterminant
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -39379,7 +39379,7 @@ struct Xlog1py
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -39408,7 +39408,7 @@ struct AssignSubVariableOp
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -39495,7 +39495,7 @@ struct SparseMatrixSoftmaxGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"type"}
+        AttributeDesc{"type", AttributeType::Type}
     };
 };
 
@@ -39529,10 +39529,10 @@ struct Multinomial
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"T"},
-        AttributeDesc{"output_dtype"}
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"output_dtype", AttributeType::Type}
     };
 };
 
@@ -39590,7 +39590,7 @@ struct Cholesky
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -39632,8 +39632,8 @@ struct ApplyPowerSign
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -39662,7 +39662,7 @@ struct SelfAdjointEig
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -39695,9 +39695,9 @@ struct Eig
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"compute_v"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"compute_v", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -39760,8 +39760,8 @@ struct SerializeSparse
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -39793,8 +39793,8 @@ struct SelfAdjointEigV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"compute_v"},
-        AttributeDesc{"T"}
+        AttributeDesc{"compute_v", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -39826,8 +39826,8 @@ struct MatrixSolve
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"adjoint"},
-        AttributeDesc{"T"}
+        AttributeDesc{"adjoint", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -39886,17 +39886,17 @@ struct _MklQuantizedConv2DWithBiasAndRequantize
 
     static constexpr std::array<AttributeDesc, 11> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"is_bias_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"is_bias_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -39929,9 +39929,9 @@ struct BandedTriangularSolve
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"lower"},
-        AttributeDesc{"adjoint"},
-        AttributeDesc{"T"}
+        AttributeDesc{"lower", AttributeType::Bool},
+        AttributeDesc{"adjoint", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -39963,8 +39963,8 @@ struct RiscReverse
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"T"}
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -39997,9 +39997,9 @@ struct MatrixTriangularSolve
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"lower"},
-        AttributeDesc{"adjoint"},
-        AttributeDesc{"T"}
+        AttributeDesc{"lower", AttributeType::Bool},
+        AttributeDesc{"adjoint", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -40035,12 +40035,12 @@ struct If
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"Tcond"},
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"},
-        AttributeDesc{"then_branch"},
-        AttributeDesc{"else_branch"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"Tcond", AttributeType::Type},
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType},
+        AttributeDesc{"then_branch", AttributeType::Func},
+        AttributeDesc{"else_branch", AttributeType::Func},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -40070,8 +40070,8 @@ struct RiscBitcast
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"SrcT"},
-        AttributeDesc{"DstT"}
+        AttributeDesc{"SrcT", AttributeType::Type},
+        AttributeDesc{"DstT", AttributeType::Type}
     };
 };
 
@@ -40105,8 +40105,8 @@ struct MatrixSolveLs
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"fast"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"fast", AttributeType::Bool}
     };
 };
 
@@ -40146,12 +40146,12 @@ struct _MklNativeConv2DBackpropFilterWithBias
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -40181,8 +40181,8 @@ struct CountUpTo
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"limit"},
-        AttributeDesc{"T"}
+        AttributeDesc{"limit", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -40217,9 +40217,9 @@ struct Svd
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"compute_uv"},
-        AttributeDesc{"full_matrices"},
-        AttributeDesc{"T"}
+        AttributeDesc{"compute_uv", AttributeType::Bool},
+        AttributeDesc{"full_matrices", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -40248,7 +40248,7 @@ struct Exp
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -40283,7 +40283,7 @@ struct TridiagonalMatMul
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -40316,9 +40316,9 @@ struct TridiagonalSolve
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"partial_pivoting"},
-        AttributeDesc{"perturb_singular"},
-        AttributeDesc{"T"}
+        AttributeDesc{"partial_pivoting", AttributeType::Bool},
+        AttributeDesc{"perturb_singular", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -40347,7 +40347,7 @@ struct BatchMatrixDeterminant
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -40376,7 +40376,7 @@ struct RiscSign
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -40407,7 +40407,7 @@ struct BatchCholeskyGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -40444,9 +40444,9 @@ struct ResourceApplyAdagradV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"update_slots"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"update_slots", AttributeType::Bool}
     };
 };
 
@@ -40477,7 +40477,7 @@ struct TensorListPushBackBatch
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"element_dtype"}
+        AttributeDesc{"element_dtype", AttributeType::Type}
     };
 };
 
@@ -40539,9 +40539,9 @@ struct Mean
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"keep_dims"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"keep_dims", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -40573,8 +40573,8 @@ struct TensorListStack
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"element_dtype"},
-        AttributeDesc{"num_elements"}
+        AttributeDesc{"element_dtype", AttributeType::Type},
+        AttributeDesc{"num_elements", AttributeType::Int}
     };
 };
 
@@ -40602,8 +40602,8 @@ struct _Retval
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"index"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"index", AttributeType::Int}
     };
 };
 
@@ -40635,8 +40635,8 @@ struct TensorListConcat
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"element_dtype"},
-        AttributeDesc{"element_shape"}
+        AttributeDesc{"element_dtype", AttributeType::Type},
+        AttributeDesc{"element_shape", AttributeType::Shape}
     };
 };
 
@@ -40672,8 +40672,8 @@ struct TensorListConcatV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"element_dtype"},
-        AttributeDesc{"shape_type"}
+        AttributeDesc{"element_dtype", AttributeType::Type},
+        AttributeDesc{"shape_type", AttributeType::Type}
     };
 };
 
@@ -40729,14 +40729,14 @@ struct _MklQuantizedMatMulWithBiasAndReluAndRequantize
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"Toutput"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"input_quant_mode"},
-        AttributeDesc{"is_weight_const"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"Toutput", AttributeType::Type},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"input_quant_mode", AttributeType::String},
+        AttributeDesc{"is_weight_const", AttributeType::Bool}
     };
 };
 
@@ -40770,8 +40770,8 @@ struct TensorListSplit
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"element_dtype"},
-        AttributeDesc{"shape_type"}
+        AttributeDesc{"element_dtype", AttributeType::Type},
+        AttributeDesc{"shape_type", AttributeType::Type}
     };
 };
 
@@ -40804,7 +40804,7 @@ struct TensorSummaryV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -40833,7 +40833,7 @@ struct TensorListElementShape
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"shape_type"}
+        AttributeDesc{"shape_type", AttributeType::Type}
     };
 };
 
@@ -40864,9 +40864,9 @@ struct _HostCast
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"SrcT"},
-        AttributeDesc{"DstT"},
-        AttributeDesc{"Truncate"}
+        AttributeDesc{"SrcT", AttributeType::Type},
+        AttributeDesc{"DstT", AttributeType::Type},
+        AttributeDesc{"Truncate", AttributeType::Bool}
     };
 };
 
@@ -40899,7 +40899,7 @@ struct TensorListGetItem
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"element_dtype"}
+        AttributeDesc{"element_dtype", AttributeType::Type}
     };
 };
 
@@ -40964,8 +40964,8 @@ struct TensorListScatter
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"element_dtype"},
-        AttributeDesc{"shape_type"}
+        AttributeDesc{"element_dtype", AttributeType::Type},
+        AttributeDesc{"shape_type", AttributeType::Type}
     };
 };
 
@@ -41001,8 +41001,8 @@ struct TensorListScatterV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"element_dtype"},
-        AttributeDesc{"shape_type"}
+        AttributeDesc{"element_dtype", AttributeType::Type},
+        AttributeDesc{"shape_type", AttributeType::Type}
     };
 };
 
@@ -41033,7 +41033,7 @@ struct NextAfter
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -41066,7 +41066,7 @@ struct TensorListScatterIntoExistingList
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"element_dtype"}
+        AttributeDesc{"element_dtype", AttributeType::Type}
     };
 };
 
@@ -41128,7 +41128,7 @@ struct AudioSummaryV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"max_outputs"}
+        AttributeDesc{"max_outputs", AttributeType::Int}
     };
 };
 
@@ -41160,8 +41160,8 @@ struct TensorMapErase
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"key_dtype"},
-        AttributeDesc{"value_dtype"}
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type}
     };
 };
 
@@ -41191,8 +41191,8 @@ struct Assert
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"summarize"}
+        AttributeDesc{"T", AttributeType::ListType},
+        AttributeDesc{"summarize", AttributeType::Int}
     };
 };
 
@@ -41227,11 +41227,11 @@ struct Print
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"message"},
-        AttributeDesc{"first_n"},
-        AttributeDesc{"summarize"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::ListType},
+        AttributeDesc{"message", AttributeType::String},
+        AttributeDesc{"first_n", AttributeType::Int},
+        AttributeDesc{"summarize", AttributeType::Int}
     };
 };
 
@@ -41259,8 +41259,8 @@ struct PrintV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"output_stream"},
-        AttributeDesc{"end"}
+        AttributeDesc{"output_stream", AttributeType::String},
+        AttributeDesc{"end", AttributeType::String}
     };
 };
 
@@ -41292,10 +41292,10 @@ struct TensorSummary
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"description"},
-        AttributeDesc{"labels"},
-        AttributeDesc{"display_name"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"description", AttributeType::String},
+        AttributeDesc{"labels", AttributeType::ListString},
+        AttributeDesc{"display_name", AttributeType::String}
     };
 };
 
@@ -41329,8 +41329,8 @@ struct LookupTableFind
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"Tin", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -41364,8 +41364,8 @@ struct LookupTableFindV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"Tin", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -41394,7 +41394,7 @@ struct SerializeTensor
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -41426,8 +41426,8 @@ struct LookupTableInsert
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"Tin", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -41486,13 +41486,13 @@ struct _FusedBatchNormGradEx
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"num_side_inputs"},
-        AttributeDesc{"activation_mode"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"num_side_inputs", AttributeType::Int},
+        AttributeDesc{"activation_mode", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -41523,7 +41523,7 @@ struct InvGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -41555,8 +41555,8 @@ struct LookupTableInsertV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"Tin", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -41591,11 +41591,11 @@ struct BatchMatMulV3
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"Ta"},
-        AttributeDesc{"Tb"},
-        AttributeDesc{"Tout"},
-        AttributeDesc{"adj_x"},
-        AttributeDesc{"adj_y"}
+        AttributeDesc{"Ta", AttributeType::Type},
+        AttributeDesc{"Tb", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type},
+        AttributeDesc{"adj_x", AttributeType::Bool},
+        AttributeDesc{"adj_y", AttributeType::Bool}
     };
 };
 
@@ -41627,8 +41627,8 @@ struct LookupTableExport
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tkeys"},
-        AttributeDesc{"Tvalues"}
+        AttributeDesc{"Tkeys", AttributeType::Type},
+        AttributeDesc{"Tvalues", AttributeType::Type}
     };
 };
 
@@ -41660,8 +41660,8 @@ struct LookupTableExportV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tkeys"},
-        AttributeDesc{"Tvalues"}
+        AttributeDesc{"Tkeys", AttributeType::Type},
+        AttributeDesc{"Tvalues", AttributeType::Type}
     };
 };
 
@@ -41690,7 +41690,7 @@ struct Rsqrt
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -41722,8 +41722,8 @@ struct LookupTableImportV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"Tin", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -41754,11 +41754,11 @@ struct HashTable
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"use_node_name_sharing"},
-        AttributeDesc{"key_dtype"},
-        AttributeDesc{"value_dtype"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"use_node_name_sharing", AttributeType::Bool},
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type}
     };
 };
 
@@ -41789,11 +41789,11 @@ struct HashTableV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"use_node_name_sharing"},
-        AttributeDesc{"key_dtype"},
-        AttributeDesc{"value_dtype"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"use_node_name_sharing", AttributeType::Bool},
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type}
     };
 };
 
@@ -41824,11 +41824,11 @@ struct MutableHashTableV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"use_node_name_sharing"},
-        AttributeDesc{"key_dtype"},
-        AttributeDesc{"value_dtype"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"use_node_name_sharing", AttributeType::Bool},
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type}
     };
 };
 
@@ -41859,7 +41859,7 @@ struct SparseMatrixSparseCholesky
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"type"}
+        AttributeDesc{"type", AttributeType::Type}
     };
 };
 
@@ -41895,14 +41895,14 @@ struct MutableDenseHashTable
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"use_node_name_sharing"},
-        AttributeDesc{"key_dtype"},
-        AttributeDesc{"value_dtype"},
-        AttributeDesc{"value_shape"},
-        AttributeDesc{"initial_num_buckets"},
-        AttributeDesc{"max_load_factor"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"use_node_name_sharing", AttributeType::Bool},
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type},
+        AttributeDesc{"value_shape", AttributeType::Shape},
+        AttributeDesc{"initial_num_buckets", AttributeType::Int},
+        AttributeDesc{"max_load_factor", AttributeType::Float}
     };
 };
 
@@ -41970,8 +41970,8 @@ struct LSTMBlockCellGrad
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"use_peephole"},
-        AttributeDesc{"T"}
+        AttributeDesc{"use_peephole", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -42009,14 +42009,14 @@ struct MutableDenseHashTableV2
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"use_node_name_sharing"},
-        AttributeDesc{"key_dtype"},
-        AttributeDesc{"value_dtype"},
-        AttributeDesc{"value_shape"},
-        AttributeDesc{"initial_num_buckets"},
-        AttributeDesc{"max_load_factor"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"use_node_name_sharing", AttributeType::Bool},
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type},
+        AttributeDesc{"value_shape", AttributeType::Shape},
+        AttributeDesc{"initial_num_buckets", AttributeType::Int},
+        AttributeDesc{"max_load_factor", AttributeType::Float}
     };
 };
 
@@ -42053,9 +42053,9 @@ struct DenseToDenseSetOperation
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"set_operation"},
-        AttributeDesc{"validate_indices"},
-        AttributeDesc{"T"}
+        AttributeDesc{"set_operation", AttributeType::String},
+        AttributeDesc{"validate_indices", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -42089,10 +42089,10 @@ struct RandomPoisson
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"S"},
-        AttributeDesc{"dtype"}
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"S", AttributeType::Type},
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -42124,8 +42124,8 @@ struct InitializeTable
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tkey"},
-        AttributeDesc{"Tval"}
+        AttributeDesc{"Tkey", AttributeType::Type},
+        AttributeDesc{"Tval", AttributeType::Type}
     };
 };
 
@@ -42181,18 +42181,18 @@ struct _MklFusedConv2D
 
     static constexpr std::array<AttributeDesc, 12> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_args"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"fused_ops"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"leakyrelu_alpha"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"fused_ops", AttributeType::ListString},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"leakyrelu_alpha", AttributeType::Float}
     };
 };
 
@@ -42228,12 +42228,12 @@ struct SparseMatMul
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"a_is_sparse"},
-        AttributeDesc{"b_is_sparse"},
-        AttributeDesc{"Ta"},
-        AttributeDesc{"Tb"}
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"a_is_sparse", AttributeType::Bool},
+        AttributeDesc{"b_is_sparse", AttributeType::Bool},
+        AttributeDesc{"Ta", AttributeType::Type},
+        AttributeDesc{"Tb", AttributeType::Type}
     };
 };
 
@@ -42268,11 +42268,11 @@ struct RandomPoissonV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"S"},
-        AttributeDesc{"R"},
-        AttributeDesc{"dtype"}
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"S", AttributeType::Type},
+        AttributeDesc{"R", AttributeType::Type},
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -42304,8 +42304,8 @@ struct InitializeTableV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tkey"},
-        AttributeDesc{"Tval"}
+        AttributeDesc{"Tkey", AttributeType::Type},
+        AttributeDesc{"Tval", AttributeType::Type}
     };
 };
 
@@ -42354,9 +42354,9 @@ struct ApplyAdam
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"use_nesterov"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"use_nesterov", AttributeType::Bool}
     };
 };
 
@@ -42389,11 +42389,11 @@ struct InitializeTableFromTextFile
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"key_index"},
-        AttributeDesc{"value_index"},
-        AttributeDesc{"vocab_size"},
-        AttributeDesc{"delimiter"},
-        AttributeDesc{"offset"}
+        AttributeDesc{"key_index", AttributeType::Int},
+        AttributeDesc{"value_index", AttributeType::Int},
+        AttributeDesc{"vocab_size", AttributeType::Int},
+        AttributeDesc{"delimiter", AttributeType::String},
+        AttributeDesc{"offset", AttributeType::Int}
     };
 };
 
@@ -42429,8 +42429,8 @@ struct For
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"body"}
+        AttributeDesc{"T", AttributeType::ListType},
+        AttributeDesc{"body", AttributeType::Func}
     };
 };
 
@@ -42459,7 +42459,7 @@ struct Tanh
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -42492,11 +42492,11 @@ struct InitializeTableFromTextFileV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"key_index"},
-        AttributeDesc{"value_index"},
-        AttributeDesc{"vocab_size"},
-        AttributeDesc{"delimiter"},
-        AttributeDesc{"offset"}
+        AttributeDesc{"key_index", AttributeType::Int},
+        AttributeDesc{"value_index", AttributeType::Int},
+        AttributeDesc{"vocab_size", AttributeType::Int},
+        AttributeDesc{"delimiter", AttributeType::String},
+        AttributeDesc{"offset", AttributeType::Int}
     };
 };
 
@@ -42544,10 +42544,10 @@ struct ResourceSparseApplyFtrlV2
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"multiply_linear_by_lr"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"multiply_linear_by_lr", AttributeType::Bool}
     };
 };
 
@@ -42578,9 +42578,9 @@ struct AccumulateNV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"},
-        AttributeDesc{"shape"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape}
     };
 };
 
@@ -42613,9 +42613,9 @@ struct BatchMatMulV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"adj_x"},
-        AttributeDesc{"adj_y"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"adj_x", AttributeType::Bool},
+        AttributeDesc{"adj_y", AttributeType::Bool}
     };
 };
 
@@ -42644,7 +42644,7 @@ struct RiscAbs
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -42677,9 +42677,9 @@ struct _MklBatchMatMulV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"adj_x"},
-        AttributeDesc{"adj_y"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"adj_x", AttributeType::Bool},
+        AttributeDesc{"adj_y", AttributeType::Bool}
     };
 };
 
@@ -42717,8 +42717,8 @@ struct _MklLeakyReluGrad
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"alpha"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"alpha", AttributeType::Float}
     };
 };
 
@@ -42749,9 +42749,9 @@ struct Cast
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"SrcT"},
-        AttributeDesc{"DstT"},
-        AttributeDesc{"Truncate"}
+        AttributeDesc{"SrcT", AttributeType::Type},
+        AttributeDesc{"DstT", AttributeType::Type},
+        AttributeDesc{"Truncate", AttributeType::Bool}
     };
 };
 
@@ -42780,7 +42780,7 @@ struct Abs
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -42810,8 +42810,8 @@ struct ComplexAbs
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -42850,11 +42850,11 @@ struct TPUCompile
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"num_computations"},
-        AttributeDesc{"function"},
-        AttributeDesc{"metadata"},
-        AttributeDesc{"NumDynamicShapes"},
-        AttributeDesc{"Tguaranteed_constants"}
+        AttributeDesc{"num_computations", AttributeType::Int},
+        AttributeDesc{"function", AttributeType::Func},
+        AttributeDesc{"metadata", AttributeType::String},
+        AttributeDesc{"NumDynamicShapes", AttributeType::Int},
+        AttributeDesc{"Tguaranteed_constants", AttributeType::ListType}
     };
 };
 
@@ -42890,10 +42890,10 @@ struct RiscGather
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"batch_dims"},
-        AttributeDesc{"Tparams"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"Taxis"}
+        AttributeDesc{"batch_dims", AttributeType::Int},
+        AttributeDesc{"Tparams", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"Taxis", AttributeType::Type}
     };
 };
 
@@ -42922,7 +42922,7 @@ struct Neg
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -42951,7 +42951,7 @@ struct Softmax
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -42980,7 +42980,7 @@ struct Erfc
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43009,7 +43009,7 @@ struct Expint
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43040,7 +43040,7 @@ struct ReciprocalGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43076,8 +43076,8 @@ struct StatelessRandomUniformFullIntV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tshape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tshape", AttributeType::Type}
     };
 };
 
@@ -43108,9 +43108,9 @@ struct DataFormatVecPermute
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"src_format"},
-        AttributeDesc{"dst_format"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"src_format", AttributeType::String},
+        AttributeDesc{"dst_format", AttributeType::String}
     };
 };
 
@@ -43139,7 +43139,7 @@ struct Square
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43190,15 +43190,15 @@ struct _MklQuantizedConv2D
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -43227,7 +43227,7 @@ struct StringToHashBucket
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"num_buckets"}
+        AttributeDesc{"num_buckets", AttributeType::Int}
     };
 };
 
@@ -43256,7 +43256,7 @@ struct Sinh
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43285,7 +43285,7 @@ struct Cosh
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43318,9 +43318,9 @@ struct StatelessRandomUniform
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tseed"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tseed", AttributeType::Type}
     };
 };
 
@@ -43351,7 +43351,7 @@ struct TanhGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43380,7 +43380,7 @@ struct Digamma
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43409,7 +43409,7 @@ struct Ndtri
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43438,7 +43438,7 @@ struct Cos
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43467,7 +43467,7 @@ struct Asin
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43502,7 +43502,7 @@ struct RequantizationRange
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tinput"}
+        AttributeDesc{"Tinput", AttributeType::Type}
     };
 };
 
@@ -43531,7 +43531,7 @@ struct Atan
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43562,7 +43562,7 @@ struct Polygamma
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43593,9 +43593,9 @@ struct _ListToArray
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"T"},
-        AttributeDesc{"N"}
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -43626,7 +43626,7 @@ struct AddV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43668,10 +43668,10 @@ struct XlaSelectAndScatter
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"select"},
-        AttributeDesc{"scatter"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"select", AttributeType::Func},
+        AttributeDesc{"scatter", AttributeType::Func}
     };
 };
 
@@ -43708,7 +43708,7 @@ struct _MklAdd
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43741,7 +43741,7 @@ struct SparseSoftmax
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43780,13 +43780,13 @@ struct Conv2DBackpropFilter
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -43823,7 +43823,7 @@ struct _MklAddV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43854,7 +43854,7 @@ struct Sub
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43891,7 +43891,7 @@ struct _MklSub
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -43924,11 +43924,11 @@ struct LoadTPUEmbeddingProximalAdagradParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -44013,19 +44013,19 @@ struct ParseSequenceExampleV2
 
     static constexpr std::array<AttributeDesc, 13> attribute_descs
     {
-        AttributeDesc{"Ncontext_sparse"},
-        AttributeDesc{"Tcontext_dense"},
-        AttributeDesc{"context_sparse_types"},
-        AttributeDesc{"context_ragged_value_types"},
-        AttributeDesc{"context_ragged_split_types"},
-        AttributeDesc{"context_dense_shapes"},
-        AttributeDesc{"Nfeature_list_sparse"},
-        AttributeDesc{"Nfeature_list_dense"},
-        AttributeDesc{"feature_list_dense_types"},
-        AttributeDesc{"feature_list_sparse_types"},
-        AttributeDesc{"feature_list_ragged_value_types"},
-        AttributeDesc{"feature_list_ragged_split_types"},
-        AttributeDesc{"feature_list_dense_shapes"}
+        AttributeDesc{"Ncontext_sparse", AttributeType::Int},
+        AttributeDesc{"Tcontext_dense", AttributeType::ListType},
+        AttributeDesc{"context_sparse_types", AttributeType::ListType},
+        AttributeDesc{"context_ragged_value_types", AttributeType::ListType},
+        AttributeDesc{"context_ragged_split_types", AttributeType::ListType},
+        AttributeDesc{"context_dense_shapes", AttributeType::ListShape},
+        AttributeDesc{"Nfeature_list_sparse", AttributeType::Int},
+        AttributeDesc{"Nfeature_list_dense", AttributeType::Int},
+        AttributeDesc{"feature_list_dense_types", AttributeType::ListType},
+        AttributeDesc{"feature_list_sparse_types", AttributeType::ListType},
+        AttributeDesc{"feature_list_ragged_value_types", AttributeType::ListType},
+        AttributeDesc{"feature_list_ragged_split_types", AttributeType::ListType},
+        AttributeDesc{"feature_list_dense_shapes", AttributeType::ListShape}
     };
 };
 
@@ -44056,7 +44056,7 @@ struct Mul
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -44093,7 +44093,7 @@ struct _MklMul
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -44124,7 +44124,7 @@ struct Xlogy
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -44155,7 +44155,7 @@ struct Xdivy
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -44186,7 +44186,7 @@ struct Maximum
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -44217,7 +44217,7 @@ struct Minimum
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -44272,13 +44272,13 @@ struct QuantizedMatMulWithBiasAndReluAndRequantize
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"Toutput"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"input_quant_mode"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"Toutput", AttributeType::Type},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"input_quant_mode", AttributeType::String}
     };
 };
 
@@ -44309,7 +44309,7 @@ struct Pow
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -44340,7 +44340,7 @@ struct Igamma
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -44374,8 +44374,8 @@ struct ApplyGradientDescent
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -44406,7 +44406,7 @@ struct Zeta
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -44437,7 +44437,7 @@ struct Atan2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -44468,7 +44468,7 @@ struct Less
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -44499,7 +44499,7 @@ struct LessEqual
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -44550,15 +44550,15 @@ struct _MklQuantizedConv2DPerChannel
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -44589,7 +44589,7 @@ struct Greater
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -44639,16 +44639,16 @@ struct __MklDummyPadWithFusedConv2D
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_args"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"fused_ops"},
-        AttributeDesc{"Tpaddings"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"leakyrelu_alpha"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"fused_ops", AttributeType::ListString},
+        AttributeDesc{"Tpaddings", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"leakyrelu_alpha", AttributeType::Float}
     };
 };
 
@@ -44696,8 +44696,8 @@ struct ResourceApplyAdamWithAmsgrad
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -44729,8 +44729,8 @@ struct ResourceApplyGradientDescent
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -44782,14 +44782,14 @@ struct _MklPadWithConv2D
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"Tpaddings"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"Tpaddings", AttributeType::Type}
     };
 };
 
@@ -44821,8 +44821,8 @@ struct Equal
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"incompatible_shape_error"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"incompatible_shape_error", AttributeType::Bool}
     };
 };
 
@@ -44873,13 +44873,13 @@ struct _MklQuantizedMatMulWithBiasAndRelu
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"Toutput"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"input_quant_mode"},
-        AttributeDesc{"is_weight_const"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"Toutput", AttributeType::Type},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"input_quant_mode", AttributeType::String},
+        AttributeDesc{"is_weight_const", AttributeType::Bool}
     };
 };
 
@@ -44909,10 +44909,10 @@ struct Variable
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"shape"},
-        AttributeDesc{"dtype"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -44979,12 +44979,12 @@ struct _MklNativeDepthwiseConv2dNativeBackpropFilter
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -45017,9 +45017,9 @@ struct EuclideanNorm
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"keep_dims"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"keep_dims", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -45114,9 +45114,9 @@ struct MatMul
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"T"}
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -45149,9 +45149,9 @@ struct Max
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"keep_dims"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"keep_dims", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -45184,9 +45184,9 @@ struct ArgMin
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"output_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"output_type", AttributeType::Type}
     };
 };
 
@@ -45223,11 +45223,11 @@ struct LRNGrad
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"depth_radius"},
-        AttributeDesc{"bias"},
-        AttributeDesc{"alpha"},
-        AttributeDesc{"beta"},
-        AttributeDesc{"T"}
+        AttributeDesc{"depth_radius", AttributeType::Int},
+        AttributeDesc{"bias", AttributeType::Float},
+        AttributeDesc{"alpha", AttributeType::Float},
+        AttributeDesc{"beta", AttributeType::Float},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -45259,8 +45259,8 @@ struct SegmentMean
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -45319,8 +45319,8 @@ struct SegmentMin
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -45352,8 +45352,8 @@ struct SegmentMax
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -45388,11 +45388,11 @@ struct XlaIf
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"Tcond"},
-        AttributeDesc{"then_branch"},
-        AttributeDesc{"else_branch"},
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"Tcond", AttributeType::Type},
+        AttributeDesc{"then_branch", AttributeType::Func},
+        AttributeDesc{"else_branch", AttributeType::Func},
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType}
     };
 };
 
@@ -45427,9 +45427,9 @@ struct UnsortedSegmentSum
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"Tnumsegments"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"Tnumsegments", AttributeType::Type}
     };
 };
 
@@ -45464,9 +45464,9 @@ struct SparseSegmentSum
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"Tsegmentids"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"Tsegmentids", AttributeType::Type}
     };
 };
 
@@ -45509,9 +45509,9 @@ struct SparseApplyProximalAdagrad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -45548,9 +45548,9 @@ struct SparseSegmentMeanGrad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"Tsegmentids"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"Tsegmentids", AttributeType::Type}
     };
 };
 
@@ -45585,9 +45585,9 @@ struct SparseSegmentSqrtN
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"Tsegmentids"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"Tsegmentids", AttributeType::Type}
     };
 };
 
@@ -45625,10 +45625,10 @@ struct SparseSegmentSqrtNWithNumSegments
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"Tnumsegments"},
-        AttributeDesc{"Tsegmentids"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"Tnumsegments", AttributeType::Type},
+        AttributeDesc{"Tsegmentids", AttributeType::Type}
     };
 };
 
@@ -45660,8 +45660,8 @@ struct Any
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"keep_dims"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"keep_dims", AttributeType::Bool},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -45694,9 +45694,9 @@ struct RiscConcat
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -45729,7 +45729,7 @@ struct Range
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -45758,7 +45758,7 @@ struct AssignVariableOp
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -45787,7 +45787,7 @@ struct Conj
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -45818,7 +45818,7 @@ struct Cross
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -45852,8 +45852,8 @@ struct HistogramFixedWidth
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"dtype"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -45886,7 +45886,7 @@ struct Bincount
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -45925,9 +45925,9 @@ struct SparseBincount
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"T"},
-        AttributeDesc{"binary_output"}
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"binary_output", AttributeType::Bool}
     };
 };
 
@@ -45964,9 +45964,9 @@ struct RaggedBincount
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"Tidx"},
-        AttributeDesc{"T"},
-        AttributeDesc{"binary_output"}
+        AttributeDesc{"Tidx", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"binary_output", AttributeType::Bool}
     };
 };
 
@@ -46014,12 +46014,12 @@ struct QuantizedMatMul
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"Toutput"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"Tactivation"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"Toutput", AttributeType::Type},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"Tactivation", AttributeType::Type}
     };
 };
 
@@ -46049,10 +46049,10 @@ struct _NcclReduceSend
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"reduction"},
-        AttributeDesc{"T"},
-        AttributeDesc{"num_devices"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"reduction", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_devices", AttributeType::Int},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -46110,10 +46110,10 @@ struct LSTMBlockCell
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"forget_bias"},
-        AttributeDesc{"cell_clip"},
-        AttributeDesc{"use_peephole"},
-        AttributeDesc{"T"}
+        AttributeDesc{"forget_bias", AttributeType::Float},
+        AttributeDesc{"cell_clip", AttributeType::Float},
+        AttributeDesc{"use_peephole", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -46146,7 +46146,7 @@ struct SoftmaxCrossEntropyWithLogits
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -46191,9 +46191,9 @@ struct QuantizedMul
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"Toutput"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"Toutput", AttributeType::Type}
     };
 };
 
@@ -46227,8 +46227,8 @@ struct _MklAddN
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -46264,10 +46264,10 @@ struct Dilation2DBackpropInput
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"rates"},
-        AttributeDesc{"padding"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"rates", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String}
     };
 };
 
@@ -46309,8 +46309,8 @@ struct RequantizePerChannel
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -46346,8 +46346,8 @@ struct RequantizationRangePerChannel
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"clip_value_max"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"clip_value_max", AttributeType::Float}
     };
 };
 
@@ -46378,9 +46378,9 @@ struct NcclReduce
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"reduction"},
-        AttributeDesc{"T"},
-        AttributeDesc{"num_devices"}
+        AttributeDesc{"reduction", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_devices", AttributeType::Int}
     };
 };
 
@@ -46410,8 +46410,8 @@ struct NcclBroadcast
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"shape"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape}
     };
 };
 
@@ -46444,11 +46444,11 @@ struct AvgPool
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -46504,14 +46504,14 @@ struct _FusedBatchNormEx
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"exponential_avg_factor"},
-        AttributeDesc{"num_side_inputs"},
-        AttributeDesc{"activation_mode"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"exponential_avg_factor", AttributeType::Float},
+        AttributeDesc{"num_side_inputs", AttributeType::Int},
+        AttributeDesc{"activation_mode", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -46562,11 +46562,11 @@ struct FusedBatchNormGradV3
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -46609,17 +46609,17 @@ struct _FusedConv2D
 
     static constexpr std::array<AttributeDesc, 11> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_args"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"fused_ops"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"leakyrelu_alpha"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"fused_ops", AttributeType::ListString},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"leakyrelu_alpha", AttributeType::Float}
     };
 };
 
@@ -46658,11 +46658,11 @@ struct FusedResizeAndPadConv2D
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"resize_align_corners"},
-        AttributeDesc{"mode"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"resize_align_corners", AttributeType::Bool},
+        AttributeDesc{"mode", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String}
     };
 };
 
@@ -46693,9 +46693,9 @@ struct _MklEinsum
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"equation"},
-        AttributeDesc{"N"},
-        AttributeDesc{"T"}
+        AttributeDesc{"equation", AttributeType::String},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -46730,7 +46730,7 @@ struct SparseDenseCwiseMul
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -46766,10 +46766,10 @@ struct FusedPadConv2D
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"mode"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"mode", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String}
     };
 };
 
@@ -46815,8 +46815,8 @@ struct ApplyAdaMax
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -46852,12 +46852,12 @@ struct DepthwiseConv2dNative
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -46902,9 +46902,9 @@ struct SparseApplyAdadelta
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -46942,12 +46942,12 @@ struct DepthwiseConv2dNativeBackpropFilter
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -46983,10 +46983,10 @@ struct Conv3DBackpropFilter
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -47019,11 +47019,11 @@ struct MaxPool3D
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47061,12 +47061,12 @@ struct MaxPool3DGrad
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"},
-        AttributeDesc{"TInput"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"TInput", AttributeType::Type}
     };
 };
 
@@ -47103,11 +47103,11 @@ struct MaxPool3DGradGrad
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47143,12 +47143,12 @@ struct StatelessIf
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"Tcond"},
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"},
-        AttributeDesc{"then_branch"},
-        AttributeDesc{"else_branch"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"Tcond", AttributeType::Type},
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType},
+        AttributeDesc{"then_branch", AttributeType::Func},
+        AttributeDesc{"else_branch", AttributeType::Func},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -47183,9 +47183,9 @@ struct ScatterDiv
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -47214,7 +47214,7 @@ struct L2Loss
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47252,12 +47252,12 @@ struct MaxPoolGrad
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47296,9 +47296,9 @@ struct MaxPoolGradV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47337,9 +47337,9 @@ struct MaxPoolGradGradV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47374,11 +47374,11 @@ struct _ScopedAllocatorSplit
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"sa_name"},
-        AttributeDesc{"id"},
-        AttributeDesc{"N"},
-        AttributeDesc{"shapes"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"sa_name", AttributeType::String},
+        AttributeDesc{"id", AttributeType::Int},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"shapes", AttributeType::ListShape}
     };
 };
 
@@ -47414,12 +47414,12 @@ struct MaxPoolWithArgmax
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"Targmax"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"include_batch_in_index"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"Targmax", AttributeType::Type},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"include_batch_in_index", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47457,12 +47457,12 @@ struct MaxPoolGradGradWithArgmax
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"include_batch_in_index"},
-        AttributeDesc{"Targmax"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"include_batch_in_index", AttributeType::Bool},
+        AttributeDesc{"Targmax", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47496,10 +47496,10 @@ struct Dilation2D
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"rates"},
-        AttributeDesc{"padding"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"rates", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String}
     };
 };
 
@@ -47531,8 +47531,8 @@ struct RiscTranspose
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tperm"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tperm", AttributeType::Type}
     };
 };
 
@@ -47574,12 +47574,12 @@ struct _MklMaxPool3D
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"},
-        AttributeDesc{"workspace_enabled"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"workspace_enabled", AttributeType::Bool}
     };
 };
 
@@ -47615,10 +47615,10 @@ struct Dilation2DBackpropFilter
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"rates"},
-        AttributeDesc{"padding"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"rates", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String}
     };
 };
 
@@ -47652,10 +47652,10 @@ struct StatelessCase
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"},
-        AttributeDesc{"branches"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType},
+        AttributeDesc{"branches", AttributeType::ListFunc},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -47684,7 +47684,7 @@ struct Relu
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47715,7 +47715,7 @@ struct ReluGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47745,8 +47745,8 @@ struct LeakyRelu
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"alpha"},
-        AttributeDesc{"T"}
+        AttributeDesc{"alpha", AttributeType::Float},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47778,8 +47778,8 @@ struct LeakyReluGrad
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"alpha"},
-        AttributeDesc{"T"}
+        AttributeDesc{"alpha", AttributeType::Float},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47808,7 +47808,7 @@ struct Elu
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47840,12 +47840,12 @@ struct ConfigureDistributedTPU
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"embedding_config"},
-        AttributeDesc{"tpu_embedding_config"},
-        AttributeDesc{"is_global_init"},
-        AttributeDesc{"enable_whole_mesh_compilations"},
-        AttributeDesc{"compilation_failure_closes_chips"},
-        AttributeDesc{"tpu_cancellation_closes_chips"}
+        AttributeDesc{"embedding_config", AttributeType::String},
+        AttributeDesc{"tpu_embedding_config", AttributeType::String},
+        AttributeDesc{"is_global_init", AttributeType::Bool},
+        AttributeDesc{"enable_whole_mesh_compilations", AttributeType::Bool},
+        AttributeDesc{"compilation_failure_closes_chips", AttributeType::Bool},
+        AttributeDesc{"tpu_cancellation_closes_chips", AttributeType::Int}
     };
 };
 
@@ -47876,7 +47876,7 @@ struct EluGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47905,7 +47905,7 @@ struct Selu
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47936,7 +47936,7 @@ struct SeluGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47965,7 +47965,7 @@ struct Softsign
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -47996,7 +47996,7 @@ struct SoftsignGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -48066,12 +48066,12 @@ struct _MklFusedBatchNormV2
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"exponential_avg_factor"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"exponential_avg_factor", AttributeType::Float},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -48100,7 +48100,7 @@ struct LogSoftmax
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -48134,8 +48134,8 @@ struct SparseSoftmaxCrossEntropyWithLogits
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tlabels"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tlabels", AttributeType::Type}
     };
 };
 
@@ -48179,10 +48179,10 @@ struct XlaConv
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"dimension_numbers"},
-        AttributeDesc{"precision_config"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"dimension_numbers", AttributeType::String},
+        AttributeDesc{"precision_config", AttributeType::String}
     };
 };
 
@@ -48215,7 +48215,7 @@ struct InTopKV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -48248,9 +48248,9 @@ struct TopK
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"k"},
-        AttributeDesc{"sorted"},
-        AttributeDesc{"T"}
+        AttributeDesc{"k", AttributeType::Int},
+        AttributeDesc{"sorted", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -48288,8 +48288,8 @@ struct FractionalMaxPoolGrad
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"overlapping"},
-        AttributeDesc{"T"}
+        AttributeDesc{"overlapping", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -48375,9 +48375,9 @@ struct BlockLSTMV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"cell_clip"},
-        AttributeDesc{"use_peephole"},
-        AttributeDesc{"T"}
+        AttributeDesc{"cell_clip", AttributeType::Float},
+        AttributeDesc{"use_peephole", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -48416,13 +48416,13 @@ struct FractionalAvgPool
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"pooling_ratio"},
-        AttributeDesc{"pseudo_random"},
-        AttributeDesc{"overlapping"},
-        AttributeDesc{"deterministic"},
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"T"}
+        AttributeDesc{"pooling_ratio", AttributeType::ListFloat},
+        AttributeDesc{"pseudo_random", AttributeType::Bool},
+        AttributeDesc{"overlapping", AttributeType::Bool},
+        AttributeDesc{"deterministic", AttributeType::Bool},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -48456,12 +48456,12 @@ struct PartitionedCall
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"},
-        AttributeDesc{"f"},
-        AttributeDesc{"config"},
-        AttributeDesc{"config_proto"},
-        AttributeDesc{"executor_type"}
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType},
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"config", AttributeType::String},
+        AttributeDesc{"config_proto", AttributeType::String},
+        AttributeDesc{"executor_type", AttributeType::String}
     };
 };
 
@@ -48501,10 +48501,10 @@ struct QuantizedAvgPool
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String}
     };
 };
 
@@ -48549,9 +48549,9 @@ struct QuantizedBiasAdd
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -48599,12 +48599,12 @@ struct QuantizedConv2D
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -48642,8 +48642,8 @@ struct QuantizedRelu
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -48676,7 +48676,7 @@ struct SparseTensorToCSRSparseMatrix
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -48714,8 +48714,8 @@ struct QuantizedRelu6
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -48762,13 +48762,13 @@ struct _MklDepthwiseConv2dNative
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -48816,14 +48816,14 @@ struct _MklConv2D
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -48861,14 +48861,14 @@ struct _MklNativeConv2D
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -48905,7 +48905,7 @@ struct _MklRelu6Grad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -48945,14 +48945,14 @@ struct __MklDummyConv2DWithBias
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -49004,14 +49004,14 @@ struct _MklConv2DWithBias
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -49050,13 +49050,13 @@ struct __MklDummyPadWithConv2D
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"Tpaddings"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"Tpaddings", AttributeType::Type}
     };
 };
 
@@ -49130,13 +49130,13 @@ struct _MklConv2DBackpropFilter
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -49165,7 +49165,7 @@ struct BesselI0
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -49205,12 +49205,12 @@ struct __MklDummyConv2DBackpropFilterWithBias
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -49257,13 +49257,13 @@ struct _MklConv2DBackpropInput
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -49302,13 +49302,13 @@ struct _MklNativeConv2DBackpropInput
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -49349,13 +49349,13 @@ struct _MklNativeMaxPoolGrad
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"workspace_enabled"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"workspace_enabled", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt}
     };
 };
 
@@ -49401,12 +49401,12 @@ struct _MklConv3DBackpropInputV2
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"Tshape"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"Tshape", AttributeType::Type},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String}
     };
 };
 
@@ -49451,11 +49451,11 @@ struct _MklConv3DBackpropFilterV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -49484,7 +49484,7 @@ struct RiscLog
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -49517,7 +49517,7 @@ struct _MklRelu
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -49554,7 +49554,7 @@ struct _MklReluGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -49587,7 +49587,7 @@ struct _MklRelu6
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -49621,8 +49621,8 @@ struct _MklLeakyRelu
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"alpha"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"alpha", AttributeType::Float}
     };
 };
 
@@ -49654,8 +49654,8 @@ struct TPUEmbeddingActivations
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"lookup_id"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"lookup_id", AttributeType::Int}
     };
 };
 
@@ -49688,7 +49688,7 @@ struct _MklElu
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -49721,7 +49721,7 @@ struct _MklSoftmax
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -49754,7 +49754,7 @@ struct _MklTanh
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -49791,7 +49791,7 @@ struct _MklTanhGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -49828,11 +49828,11 @@ struct _MklAvgPool
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -49872,10 +49872,10 @@ struct _MklQuantizedAvgPool
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String}
     };
 };
 
@@ -49912,11 +49912,11 @@ struct _MklAvgPool3D
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -49946,8 +49946,8 @@ struct SparseMatrixTranspose
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"conjugate"},
-        AttributeDesc{"type"}
+        AttributeDesc{"conjugate", AttributeType::Bool},
+        AttributeDesc{"type", AttributeType::Type}
     };
 };
 
@@ -49988,11 +49988,11 @@ struct _MklAvgPool3DGrad
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -50037,17 +50037,17 @@ struct _MklNativePadWithFusedConv2D
 
     static constexpr std::array<AttributeDesc, 11> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_args"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"fused_ops"},
-        AttributeDesc{"Tpaddings"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"leakyrelu_alpha"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"fused_ops", AttributeType::ListString},
+        AttributeDesc{"Tpaddings", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"leakyrelu_alpha", AttributeType::Float}
     };
 };
 
@@ -50079,12 +50079,12 @@ struct Recv
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"tensor_type"},
-        AttributeDesc{"tensor_name"},
-        AttributeDesc{"send_device"},
-        AttributeDesc{"send_device_incarnation"},
-        AttributeDesc{"recv_device"},
-        AttributeDesc{"client_terminated"}
+        AttributeDesc{"tensor_type", AttributeType::Type},
+        AttributeDesc{"tensor_name", AttributeType::String},
+        AttributeDesc{"send_device", AttributeType::String},
+        AttributeDesc{"send_device_incarnation", AttributeType::Int},
+        AttributeDesc{"recv_device", AttributeType::String},
+        AttributeDesc{"client_terminated", AttributeType::Bool}
     };
 };
 
@@ -50135,13 +50135,13 @@ struct _MklMaxPool3DGrad
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"},
-        AttributeDesc{"TInput"},
-        AttributeDesc{"workspace_enabled"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"TInput", AttributeType::Type},
+        AttributeDesc{"workspace_enabled", AttributeType::Bool}
     };
 };
 
@@ -50191,12 +50191,12 @@ struct _MklLRNGrad
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"depth_radius"},
-        AttributeDesc{"bias"},
-        AttributeDesc{"alpha"},
-        AttributeDesc{"beta"},
-        AttributeDesc{"workspace_enabled"},
-        AttributeDesc{"T"}
+        AttributeDesc{"depth_radius", AttributeType::Int},
+        AttributeDesc{"bias", AttributeType::Float},
+        AttributeDesc{"alpha", AttributeType::Float},
+        AttributeDesc{"beta", AttributeType::Float},
+        AttributeDesc{"workspace_enabled", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -50265,11 +50265,11 @@ struct _MklFusedBatchNorm
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"exponential_avg_factor"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"exponential_avg_factor", AttributeType::Float},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -50337,10 +50337,10 @@ struct _MklFusedBatchNormGrad
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -50409,11 +50409,11 @@ struct _MklFusedBatchNormGradV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -50445,8 +50445,8 @@ struct _MklToTf
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"data_format"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String}
     };
 };
 
@@ -50488,8 +50488,8 @@ struct _MklInputConversion
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"data_format"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String}
     };
 };
 
@@ -50521,8 +50521,8 @@ struct ResourceScatterMax
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -50575,13 +50575,13 @@ struct QuantizedConv2DAndRequantize
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -50637,14 +50637,14 @@ struct QuantizedConv2DWithBiasAndRequantize
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -50676,8 +50676,8 @@ struct RiscBroadcast
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tidx"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tidx", AttributeType::Type}
     };
 };
 
@@ -50726,13 +50726,13 @@ struct QuantizedConv2DAndRelu
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -50783,13 +50783,13 @@ struct QuantizedConv2DWithBiasAndRelu
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -50845,14 +50845,14 @@ struct QuantizedConv2DWithBiasAndReluAndRequantize
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -50905,13 +50905,13 @@ struct QuantizedConv2DWithBiasSumAndRelu
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -50974,15 +50974,15 @@ struct QuantizedConv2DWithBiasSumAndReluAndRequantize
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"Tsummand"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"Tsummand", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -51012,8 +51012,8 @@ struct _ReadVariablesOp
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"dtypes"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"dtypes", AttributeType::ListType}
     };
 };
 
@@ -51076,15 +51076,15 @@ struct QuantizedConv2DWithBiasSignedSumAndReluAndRequantize
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"Tsummand"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"Tsummand", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -51135,13 +51135,13 @@ struct QuantizedMatMulWithBias
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"Toutput"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"input_quant_mode"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"Toutput", AttributeType::Type},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"input_quant_mode", AttributeType::String}
     };
 };
 
@@ -51192,13 +51192,13 @@ struct QuantizedMatMulWithBiasAndDequantize
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"Toutput"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"input_quant_mode"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"Toutput", AttributeType::Type},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"input_quant_mode", AttributeType::String}
     };
 };
 
@@ -51246,12 +51246,12 @@ struct QuantizedDepthwiseConv2D
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -51307,14 +51307,14 @@ struct QuantizedDepthwiseConv2DWithBiasAndReluAndRequantize
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -51346,8 +51346,8 @@ struct ResourceScatterMul
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -51377,8 +51377,8 @@ struct RiscUnary
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"op_type"},
-        AttributeDesc{"T"}
+        AttributeDesc{"op_type", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -51435,8 +51435,8 @@ struct DecodeRaw
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"out_type"},
-        AttributeDesc{"little_endian"}
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"little_endian", AttributeType::Bool}
     };
 };
 
@@ -51476,8 +51476,8 @@ struct ResourceApplyAdadelta
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -51509,8 +51509,8 @@ struct DecodePaddedRaw
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"out_type"},
-        AttributeDesc{"little_endian"}
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"little_endian", AttributeType::Bool}
     };
 };
 
@@ -51539,7 +51539,7 @@ struct DecodeCompressed
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"compression_type"}
+        AttributeDesc{"compression_type", AttributeType::String}
     };
 };
 
@@ -51586,11 +51586,11 @@ struct ParseExample
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"Nsparse"},
-        AttributeDesc{"Ndense"},
-        AttributeDesc{"sparse_types"},
-        AttributeDesc{"Tdense"},
-        AttributeDesc{"dense_shapes"}
+        AttributeDesc{"Nsparse", AttributeType::Int},
+        AttributeDesc{"Ndense", AttributeType::Int},
+        AttributeDesc{"sparse_types", AttributeType::ListType},
+        AttributeDesc{"Tdense", AttributeType::ListType},
+        AttributeDesc{"dense_shapes", AttributeType::ListShape}
     };
 };
 
@@ -51632,12 +51632,12 @@ struct ParseSingleExample
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"num_sparse"},
-        AttributeDesc{"sparse_keys"},
-        AttributeDesc{"dense_keys"},
-        AttributeDesc{"sparse_types"},
-        AttributeDesc{"Tdense"},
-        AttributeDesc{"dense_shapes"}
+        AttributeDesc{"num_sparse", AttributeType::Int},
+        AttributeDesc{"sparse_keys", AttributeType::ListString},
+        AttributeDesc{"dense_keys", AttributeType::ListString},
+        AttributeDesc{"sparse_types", AttributeType::ListType},
+        AttributeDesc{"Tdense", AttributeType::ListType},
+        AttributeDesc{"dense_shapes", AttributeType::ListShape}
     };
 };
 
@@ -51700,21 +51700,21 @@ struct ParseSequenceExample
 
     static constexpr std::array<AttributeDesc, 15> attribute_descs
     {
-        AttributeDesc{"feature_list_dense_missing_assumed_empty"},
-        AttributeDesc{"context_sparse_keys"},
-        AttributeDesc{"context_dense_keys"},
-        AttributeDesc{"feature_list_sparse_keys"},
-        AttributeDesc{"feature_list_dense_keys"},
-        AttributeDesc{"Ncontext_sparse"},
-        AttributeDesc{"Ncontext_dense"},
-        AttributeDesc{"Nfeature_list_sparse"},
-        AttributeDesc{"Nfeature_list_dense"},
-        AttributeDesc{"context_sparse_types"},
-        AttributeDesc{"Tcontext_dense"},
-        AttributeDesc{"feature_list_dense_types"},
-        AttributeDesc{"context_dense_shapes"},
-        AttributeDesc{"feature_list_sparse_types"},
-        AttributeDesc{"feature_list_dense_shapes"}
+        AttributeDesc{"feature_list_dense_missing_assumed_empty", AttributeType::ListString},
+        AttributeDesc{"context_sparse_keys", AttributeType::ListString},
+        AttributeDesc{"context_dense_keys", AttributeType::ListString},
+        AttributeDesc{"feature_list_sparse_keys", AttributeType::ListString},
+        AttributeDesc{"feature_list_dense_keys", AttributeType::ListString},
+        AttributeDesc{"Ncontext_sparse", AttributeType::Int},
+        AttributeDesc{"Ncontext_dense", AttributeType::Int},
+        AttributeDesc{"Nfeature_list_sparse", AttributeType::Int},
+        AttributeDesc{"Nfeature_list_dense", AttributeType::Int},
+        AttributeDesc{"context_sparse_types", AttributeType::ListType},
+        AttributeDesc{"Tcontext_dense", AttributeType::ListType},
+        AttributeDesc{"feature_list_dense_types", AttributeType::ListType},
+        AttributeDesc{"context_dense_shapes", AttributeType::ListShape},
+        AttributeDesc{"feature_list_sparse_types", AttributeType::ListType},
+        AttributeDesc{"feature_list_dense_shapes", AttributeType::ListShape}
     };
 };
 
@@ -51778,11 +51778,11 @@ struct DecodeCSV
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"OUT_TYPE"},
-        AttributeDesc{"field_delim"},
-        AttributeDesc{"use_quote_delim"},
-        AttributeDesc{"na_value"},
-        AttributeDesc{"select_cols"}
+        AttributeDesc{"OUT_TYPE", AttributeType::ListType},
+        AttributeDesc{"field_delim", AttributeType::String},
+        AttributeDesc{"use_quote_delim", AttributeType::Bool},
+        AttributeDesc{"na_value", AttributeType::String},
+        AttributeDesc{"select_cols", AttributeType::ListInt}
     };
 };
 
@@ -51811,7 +51811,7 @@ struct StringToNumber
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"out_type"}
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -51862,17 +51862,17 @@ struct RaggedCross
 
     static constexpr std::array<AttributeDesc, 11> attribute_descs
     {
-        AttributeDesc{"Nsparse"},
-        AttributeDesc{"input_order"},
-        AttributeDesc{"hashed_output"},
-        AttributeDesc{"num_buckets"},
-        AttributeDesc{"hash_key"},
-        AttributeDesc{"ragged_values_types"},
-        AttributeDesc{"ragged_splits_types"},
-        AttributeDesc{"sparse_values_types"},
-        AttributeDesc{"dense_types"},
-        AttributeDesc{"out_values_type"},
-        AttributeDesc{"out_row_splits_type"}
+        AttributeDesc{"Nsparse", AttributeType::Int},
+        AttributeDesc{"input_order", AttributeType::String},
+        AttributeDesc{"hashed_output", AttributeType::Bool},
+        AttributeDesc{"num_buckets", AttributeType::Int},
+        AttributeDesc{"hash_key", AttributeType::Int},
+        AttributeDesc{"ragged_values_types", AttributeType::ListType},
+        AttributeDesc{"ragged_splits_types", AttributeType::ListType},
+        AttributeDesc{"sparse_values_types", AttributeType::ListType},
+        AttributeDesc{"dense_types", AttributeType::ListType},
+        AttributeDesc{"out_values_type", AttributeType::Type},
+        AttributeDesc{"out_row_splits_type", AttributeType::Type}
     };
 };
 
@@ -51909,9 +51909,9 @@ struct RaggedTensorToSparse
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"RAGGED_RANK"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tsplits"}
+        AttributeDesc{"RAGGED_RANK", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tsplits", AttributeType::Type}
     };
 };
 
@@ -51945,10 +51945,10 @@ struct RaggedTensorFromVariant
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"input_ragged_rank"},
-        AttributeDesc{"output_ragged_rank"},
-        AttributeDesc{"Tvalues"},
-        AttributeDesc{"Tsplits"}
+        AttributeDesc{"input_ragged_rank", AttributeType::Int},
+        AttributeDesc{"output_ragged_rank", AttributeType::Int},
+        AttributeDesc{"Tvalues", AttributeType::Type},
+        AttributeDesc{"Tsplits", AttributeType::Type}
     };
 };
 
@@ -51982,8 +51982,8 @@ struct RaggedTensorToVariantGradient
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tvalues"},
-        AttributeDesc{"Tsplits"}
+        AttributeDesc{"Tvalues", AttributeType::Type},
+        AttributeDesc{"Tsplits", AttributeType::Type}
     };
 };
 
@@ -52019,8 +52019,8 @@ struct RaggedRange
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tsplits"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tsplits", AttributeType::Type}
     };
 };
 
@@ -52052,10 +52052,10 @@ struct RandomUniform
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"dtype"},
-        AttributeDesc{"T"}
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52091,10 +52091,10 @@ struct RandomUniformInt
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"Tout"},
-        AttributeDesc{"T"}
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"Tout", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52126,10 +52126,10 @@ struct RandomStandardNormal
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"dtype"},
-        AttributeDesc{"T"}
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52161,8 +52161,8 @@ struct StatefulStandardNormal
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape_dtype"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape_dtype", AttributeType::Type}
     };
 };
 
@@ -52202,10 +52202,10 @@ struct ParameterizedTruncatedNormal
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"dtype"},
-        AttributeDesc{"T"}
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52237,10 +52237,10 @@ struct TruncatedNormal
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"seed"},
-        AttributeDesc{"seed2"},
-        AttributeDesc{"dtype"},
-        AttributeDesc{"T"}
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52271,7 +52271,7 @@ struct RandomGammaGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52302,7 +52302,7 @@ struct RiscAdd
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52334,8 +52334,8 @@ struct RiscBinaryComparison
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"op_type"},
-        AttributeDesc{"T"}
+        AttributeDesc{"op_type", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52365,8 +52365,8 @@ struct RiscCast
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"SrcT"},
-        AttributeDesc{"DstT"}
+        AttributeDesc{"SrcT", AttributeType::Type},
+        AttributeDesc{"DstT", AttributeType::Type}
     };
 };
 
@@ -52400,10 +52400,10 @@ struct RiscConv
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -52432,7 +52432,7 @@ struct RiscCos
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52469,13 +52469,13 @@ struct _MklNativeDepthwiseConv2dNative
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -52506,7 +52506,7 @@ struct RiscDiv
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52539,9 +52539,9 @@ struct RiscDot
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"T"}
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52570,7 +52570,7 @@ struct RiscFloor
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52600,8 +52600,8 @@ struct RiscImag
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -52630,7 +52630,7 @@ struct RiscIsFinite
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52721,7 +52721,7 @@ struct FFT3D
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tcomplex"}
+        AttributeDesc{"Tcomplex", AttributeType::Type}
     };
 };
 
@@ -52752,7 +52752,7 @@ struct RiscMax
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52783,7 +52783,7 @@ struct RiscMul
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52817,8 +52817,8 @@ struct RiscPad
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tpaddings"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tpaddings", AttributeType::Type}
     };
 };
 
@@ -52849,9 +52849,9 @@ struct SendTPUEmbeddingGradients
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"NN"},
-        AttributeDesc{"config"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"NN", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -52884,11 +52884,11 @@ struct RiscPool
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"pooling_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"pooling_type", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52917,9 +52917,9 @@ struct TemporaryVariable
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"shape"},
-        AttributeDesc{"dtype"},
-        AttributeDesc{"var_name"}
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"var_name", AttributeType::String}
     };
 };
 
@@ -52950,7 +52950,7 @@ struct RiscPow
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52980,8 +52980,8 @@ struct RiscRandomUniform
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"seed"},
-        AttributeDesc{"T"}
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53013,8 +53013,8 @@ struct RiscReshape
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tshape"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tshape", AttributeType::Type}
     };
 };
 
@@ -53044,8 +53044,8 @@ struct RiscShape
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -53107,7 +53107,7 @@ struct RiscSub
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53140,9 +53140,9 @@ struct RiscTriangularSolve
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"lower"},
-        AttributeDesc{"adjoint"},
-        AttributeDesc{"T"}
+        AttributeDesc{"lower", AttributeType::Bool},
+        AttributeDesc{"adjoint", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53175,11 +53175,11 @@ struct RiscWhile
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"cond"},
-        AttributeDesc{"body"},
-        AttributeDesc{"output_shapes"},
-        AttributeDesc{"parallel_iterations"}
+        AttributeDesc{"T", AttributeType::ListType},
+        AttributeDesc{"cond", AttributeType::Func},
+        AttributeDesc{"body", AttributeType::Func},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"parallel_iterations", AttributeType::Int}
     };
 };
 
@@ -53232,7 +53232,7 @@ struct GRUBlockCellGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53271,13 +53271,13 @@ struct StringNGrams
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"separator"},
-        AttributeDesc{"ngram_widths"},
-        AttributeDesc{"left_pad"},
-        AttributeDesc{"right_pad"},
-        AttributeDesc{"pad_width"},
-        AttributeDesc{"preserve_short_sequences"},
-        AttributeDesc{"Tsplits"}
+        AttributeDesc{"separator", AttributeType::String},
+        AttributeDesc{"ngram_widths", AttributeType::ListInt},
+        AttributeDesc{"left_pad", AttributeType::String},
+        AttributeDesc{"right_pad", AttributeType::String},
+        AttributeDesc{"pad_width", AttributeType::Int},
+        AttributeDesc{"preserve_short_sequences", AttributeType::Bool},
+        AttributeDesc{"Tsplits", AttributeType::Type}
     };
 };
 
@@ -53306,7 +53306,7 @@ struct Dawsn
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53335,7 +53335,7 @@ struct FresnelSin
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53364,7 +53364,7 @@ struct Spence
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53393,7 +53393,7 @@ struct BesselI1
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53422,7 +53422,7 @@ struct BesselI0e
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53451,7 +53451,7 @@ struct BesselI1e
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53480,7 +53480,7 @@ struct BesselK0
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53509,7 +53509,7 @@ struct BesselK0e
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53538,7 +53538,7 @@ struct BesselJ0
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53596,7 +53596,7 @@ struct BesselJ1
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53625,7 +53625,7 @@ struct BesselY1
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53659,8 +53659,8 @@ struct StatefulTruncatedNormal
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape_dtype"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape_dtype", AttributeType::Type}
     };
 };
 
@@ -53694,10 +53694,10 @@ struct XlaSelfAdjointEig
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"lower"},
-        AttributeDesc{"max_iter"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"T"}
+        AttributeDesc{"lower", AttributeType::Bool},
+        AttributeDesc{"max_iter", AttributeType::Int},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -53735,8 +53735,8 @@ struct StatefulUniformInt
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape_dtype"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape_dtype", AttributeType::Type}
     };
 };
 
@@ -53790,16 +53790,16 @@ struct _MklQuantizedConv2DWithBiasAndRelu
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"is_bias_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"is_bias_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -53893,8 +53893,8 @@ struct NonDeterministicInts
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape_dtype"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape_dtype", AttributeType::Type}
     };
 };
 
@@ -53936,8 +53936,8 @@ struct ApplyAddSign
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -53976,9 +53976,9 @@ struct StatefulRandomBinomial
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"S"},
-        AttributeDesc{"T"},
-        AttributeDesc{"dtype"}
+        AttributeDesc{"S", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -54009,11 +54009,11 @@ struct VarHandleOp
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"},
-        AttributeDesc{"allowed_devices"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"allowed_devices", AttributeType::ListString}
     };
 };
 
@@ -54042,7 +54042,7 @@ struct ReadVariableOp
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -54069,7 +54069,7 @@ struct DestroyResourceOp
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"ignore_lookup_error"}
+        AttributeDesc{"ignore_lookup_error", AttributeType::Bool}
     };
 };
 
@@ -54098,7 +54098,7 @@ struct AssignAddVariableOp
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -54132,10 +54132,10 @@ struct ResourceGather
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"batch_dims"},
-        AttributeDesc{"validate_indices"},
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"batch_dims", AttributeType::Int},
+        AttributeDesc{"validate_indices", AttributeType::Bool},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -54170,7 +54170,7 @@ struct StringSplit
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"skip_empty"}
+        AttributeDesc{"skip_empty", AttributeType::Bool}
     };
 };
 
@@ -54202,8 +54202,8 @@ struct ResourceGatherNd
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -54235,8 +54235,8 @@ struct ResourceScatterSub
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -54268,8 +54268,8 @@ struct ResourceScatterMin
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -54301,8 +54301,8 @@ struct ResourceScatterUpdate
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -54359,8 +54359,8 @@ struct MutexV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -54419,12 +54419,12 @@ struct _ScopedAllocator
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"shapes"},
-        AttributeDesc{"shape"},
-        AttributeDesc{"T"},
-        AttributeDesc{"sa_name"},
-        AttributeDesc{"id"},
-        AttributeDesc{"expected_call_count"}
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"sa_name", AttributeType::String},
+        AttributeDesc{"id", AttributeType::Int},
+        AttributeDesc{"expected_call_count", AttributeType::Int}
     };
 };
 
@@ -54460,12 +54460,12 @@ struct _ScopedAllocatorConcat
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"shape"},
-        AttributeDesc{"T"},
-        AttributeDesc{"reshape"},
-        AttributeDesc{"sa_name"},
-        AttributeDesc{"id"},
-        AttributeDesc{"N"}
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"reshape", AttributeType::Bool},
+        AttributeDesc{"sa_name", AttributeType::String},
+        AttributeDesc{"id", AttributeType::Int},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -54523,9 +54523,9 @@ struct PyFunc
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"token"},
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"token", AttributeType::String},
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType}
     };
 };
 
@@ -54556,9 +54556,9 @@ struct PyFuncStateless
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"token"},
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"token", AttributeType::String},
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType}
     };
 };
 
@@ -54590,10 +54590,10 @@ struct EagerPyFunc
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"token"},
-        AttributeDesc{"is_async"},
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"}
+        AttributeDesc{"token", AttributeType::String},
+        AttributeDesc{"is_async", AttributeType::Bool},
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType}
     };
 };
 
@@ -54652,15 +54652,15 @@ struct SdcaOptimizer
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"loss_type"},
-        AttributeDesc{"adaptative"},
-        AttributeDesc{"num_sparse_features"},
-        AttributeDesc{"num_sparse_features_with_values"},
-        AttributeDesc{"num_dense_features"},
-        AttributeDesc{"l1"},
-        AttributeDesc{"l2"},
-        AttributeDesc{"num_loss_partitions"},
-        AttributeDesc{"num_inner_iterations"}
+        AttributeDesc{"loss_type", AttributeType::String},
+        AttributeDesc{"adaptative", AttributeType::Bool},
+        AttributeDesc{"num_sparse_features", AttributeType::Int},
+        AttributeDesc{"num_sparse_features_with_values", AttributeType::Int},
+        AttributeDesc{"num_dense_features", AttributeType::Int},
+        AttributeDesc{"l1", AttributeType::Float},
+        AttributeDesc{"l2", AttributeType::Float},
+        AttributeDesc{"num_loss_partitions", AttributeType::Int},
+        AttributeDesc{"num_inner_iterations", AttributeType::Int}
     };
 };
 
@@ -54719,15 +54719,15 @@ struct SdcaOptimizerV2
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"loss_type"},
-        AttributeDesc{"adaptive"},
-        AttributeDesc{"num_sparse_features"},
-        AttributeDesc{"num_sparse_features_with_values"},
-        AttributeDesc{"num_dense_features"},
-        AttributeDesc{"l1"},
-        AttributeDesc{"l2"},
-        AttributeDesc{"num_loss_partitions"},
-        AttributeDesc{"num_inner_iterations"}
+        AttributeDesc{"loss_type", AttributeType::String},
+        AttributeDesc{"adaptive", AttributeType::Bool},
+        AttributeDesc{"num_sparse_features", AttributeType::Int},
+        AttributeDesc{"num_sparse_features_with_values", AttributeType::Int},
+        AttributeDesc{"num_dense_features", AttributeType::Int},
+        AttributeDesc{"l1", AttributeType::Float},
+        AttributeDesc{"l2", AttributeType::Float},
+        AttributeDesc{"num_loss_partitions", AttributeType::Int},
+        AttributeDesc{"num_inner_iterations", AttributeType::Int}
     };
 };
 
@@ -54756,9 +54756,9 @@ struct SdcaShrinkL1
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"num_features"},
-        AttributeDesc{"l1"},
-        AttributeDesc{"l2"}
+        AttributeDesc{"num_features", AttributeType::Int},
+        AttributeDesc{"l1", AttributeType::Float},
+        AttributeDesc{"l2", AttributeType::Float}
     };
 };
 
@@ -54819,12 +54819,12 @@ struct _Send
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"tensor_name"},
-        AttributeDesc{"send_device"},
-        AttributeDesc{"send_device_incarnation"},
-        AttributeDesc{"recv_device"},
-        AttributeDesc{"client_terminated"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"tensor_name", AttributeType::String},
+        AttributeDesc{"send_device", AttributeType::String},
+        AttributeDesc{"send_device_incarnation", AttributeType::Int},
+        AttributeDesc{"recv_device", AttributeType::String},
+        AttributeDesc{"client_terminated", AttributeType::Bool}
     };
 };
 
@@ -54856,12 +54856,12 @@ struct _HostSend
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"tensor_name"},
-        AttributeDesc{"send_device"},
-        AttributeDesc{"send_device_incarnation"},
-        AttributeDesc{"recv_device"},
-        AttributeDesc{"client_terminated"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"tensor_name", AttributeType::String},
+        AttributeDesc{"send_device", AttributeType::String},
+        AttributeDesc{"send_device_incarnation", AttributeType::Int},
+        AttributeDesc{"recv_device", AttributeType::String},
+        AttributeDesc{"client_terminated", AttributeType::Bool}
     };
 };
 
@@ -54893,12 +54893,12 @@ struct _HostRecv
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"tensor_type"},
-        AttributeDesc{"tensor_name"},
-        AttributeDesc{"send_device"},
-        AttributeDesc{"send_device_incarnation"},
-        AttributeDesc{"recv_device"},
-        AttributeDesc{"client_terminated"}
+        AttributeDesc{"tensor_type", AttributeType::Type},
+        AttributeDesc{"tensor_name", AttributeType::String},
+        AttributeDesc{"send_device", AttributeType::String},
+        AttributeDesc{"send_device_incarnation", AttributeType::Int},
+        AttributeDesc{"recv_device", AttributeType::String},
+        AttributeDesc{"client_terminated", AttributeType::Bool}
     };
 };
 
@@ -54939,9 +54939,9 @@ struct DenseToSparseSetOperation
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"set_operation"},
-        AttributeDesc{"validate_indices"},
-        AttributeDesc{"T"}
+        AttributeDesc{"set_operation", AttributeType::String},
+        AttributeDesc{"validate_indices", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -55003,7 +55003,7 @@ struct CSRSparseMatrixToSparseTensor
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"type"}
+        AttributeDesc{"type", AttributeType::Type}
     };
 };
 
@@ -55034,7 +55034,7 @@ struct DenseToCSRSparseMatrix
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -55063,7 +55063,7 @@ struct CSRSparseMatrixToDense
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"type"}
+        AttributeDesc{"type", AttributeType::Type}
     };
 };
 
@@ -55098,7 +55098,7 @@ struct CSRSparseMatrixComponents
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"type"}
+        AttributeDesc{"type", AttributeType::Type}
     };
 };
 
@@ -55164,13 +55164,13 @@ struct SparseMatrixMatMul
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"adjoint_a"},
-        AttributeDesc{"adjoint_b"},
-        AttributeDesc{"transpose_output"},
-        AttributeDesc{"conjugate_output"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"adjoint_a", AttributeType::Bool},
+        AttributeDesc{"adjoint_b", AttributeType::Bool},
+        AttributeDesc{"transpose_output", AttributeType::Bool},
+        AttributeDesc{"conjugate_output", AttributeType::Bool}
     };
 };
 
@@ -55201,7 +55201,7 @@ struct SparseMatrixMul
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -55236,7 +55236,7 @@ struct SparseMatrixAdd
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -55272,8 +55272,8 @@ struct StatelessRandomNormalV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tshape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tshape", AttributeType::Type}
     };
 };
 
@@ -55302,7 +55302,7 @@ struct SparseMatrixZeros
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"type"}
+        AttributeDesc{"type", AttributeType::Type}
     };
 };
 
@@ -55331,7 +55331,7 @@ struct SparseMatrixSoftmax
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"type"}
+        AttributeDesc{"type", AttributeType::Type}
     };
 };
 
@@ -55397,7 +55397,7 @@ struct SparseAddGrad
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -55429,10 +55429,10 @@ struct XlaDequantize
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"min_range"},
-        AttributeDesc{"max_range"},
-        AttributeDesc{"mode"},
-        AttributeDesc{"transpose_output"}
+        AttributeDesc{"min_range", AttributeType::Float},
+        AttributeDesc{"max_range", AttributeType::Float},
+        AttributeDesc{"mode", AttributeType::String},
+        AttributeDesc{"transpose_output", AttributeType::Bool}
     };
 };
 
@@ -55478,8 +55478,8 @@ struct SparseAdd
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Treal"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Treal", AttributeType::Type}
     };
 };
 
@@ -55517,10 +55517,10 @@ struct SparseTensorDenseMatMul
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"adjoint_a"},
-        AttributeDesc{"adjoint_b"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"adjoint_a", AttributeType::Bool},
+        AttributeDesc{"adjoint_b", AttributeType::Bool}
     };
 };
 
@@ -55554,8 +55554,8 @@ struct SerializeManySparse
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 
@@ -55588,7 +55588,7 @@ struct DeserializeManySparse
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -55625,9 +55625,9 @@ struct SparseToDense
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"validate_indices"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"validate_indices", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -55666,9 +55666,9 @@ struct SparseConcat
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"concat_dim"},
-        AttributeDesc{"N"},
-        AttributeDesc{"T"}
+        AttributeDesc{"concat_dim", AttributeType::Int},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -55715,9 +55715,9 @@ struct SparseCrossHashed
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"sparse_types"},
-        AttributeDesc{"dense_types"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"sparse_types", AttributeType::ListType},
+        AttributeDesc{"dense_types", AttributeType::ListType}
     };
 };
 
@@ -55744,7 +55744,7 @@ struct OutfeedEnqueueTuple
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtypes"}
+        AttributeDesc{"dtypes", AttributeType::ListType}
     };
 };
 
@@ -55784,8 +55784,8 @@ struct SparseSplit
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_split"},
-        AttributeDesc{"T"}
+        AttributeDesc{"num_split", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -55826,7 +55826,7 @@ struct SparseSlice
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -55861,7 +55861,7 @@ struct SparseReorder
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -55897,8 +55897,8 @@ struct SparseTensorDenseAdd
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -55938,8 +55938,8 @@ struct SparseReduceMaxSparse
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"keep_dims"},
-        AttributeDesc{"T"}
+        AttributeDesc{"keep_dims", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -55975,8 +55975,8 @@ struct SparseReduceSum
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"keep_dims"},
-        AttributeDesc{"T"}
+        AttributeDesc{"keep_dims", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -56011,7 +56011,7 @@ struct SparseDenseCwiseDiv
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -56079,7 +56079,7 @@ struct SparseSparseMaximum
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -56120,7 +56120,7 @@ struct SparseSparseMinimum
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -56155,9 +56155,9 @@ struct AddManySparseToTensorsMap
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -56192,9 +56192,9 @@ struct TakeManySparseFromTensorsMap
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -56235,7 +56235,7 @@ struct SparseFillEmptyRows
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -56263,8 +56263,8 @@ struct SummaryWriter
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"shared_name"},
-        AttributeDesc{"container"}
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"container", AttributeType::String}
     };
 };
 
@@ -56327,8 +56327,8 @@ struct StatelessTruncatedNormalV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tshape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tshape", AttributeType::Type}
     };
 };
 
@@ -56363,7 +56363,7 @@ struct WriteSummary
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -56425,7 +56425,7 @@ struct WriteHistogramSummary
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -56461,8 +56461,8 @@ struct WriteImageSummary
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"max_images"},
-        AttributeDesc{"T"}
+        AttributeDesc{"max_images", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -56522,7 +56522,7 @@ struct FFT
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tcomplex"}
+        AttributeDesc{"Tcomplex", AttributeType::Type}
     };
 };
 
@@ -56551,7 +56551,7 @@ struct IFFT
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tcomplex"}
+        AttributeDesc{"Tcomplex", AttributeType::Type}
     };
 };
 
@@ -56580,7 +56580,7 @@ struct FFT2D
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tcomplex"}
+        AttributeDesc{"Tcomplex", AttributeType::Type}
     };
 };
 
@@ -56609,7 +56609,7 @@ struct IFFT2D
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tcomplex"}
+        AttributeDesc{"Tcomplex", AttributeType::Type}
     };
 };
 
@@ -56644,11 +56644,11 @@ struct RetrieveTPUEmbeddingProximalYogiParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -56680,8 +56680,8 @@ struct RFFT
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Treal"},
-        AttributeDesc{"Tcomplex"}
+        AttributeDesc{"Treal", AttributeType::Type},
+        AttributeDesc{"Tcomplex", AttributeType::Type}
     };
 };
 
@@ -56713,8 +56713,8 @@ struct IRFFT
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Treal"},
-        AttributeDesc{"Tcomplex"}
+        AttributeDesc{"Treal", AttributeType::Type},
+        AttributeDesc{"Tcomplex", AttributeType::Type}
     };
 };
 
@@ -56749,9 +56749,9 @@ struct ScatterNdMin
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -56783,8 +56783,8 @@ struct RFFT2D
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Treal"},
-        AttributeDesc{"Tcomplex"}
+        AttributeDesc{"Treal", AttributeType::Type},
+        AttributeDesc{"Tcomplex", AttributeType::Type}
     };
 };
 
@@ -56816,8 +56816,8 @@ struct IRFFT2D
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Treal"},
-        AttributeDesc{"Tcomplex"}
+        AttributeDesc{"Treal", AttributeType::Type},
+        AttributeDesc{"Tcomplex", AttributeType::Type}
     };
 };
 
@@ -56849,8 +56849,8 @@ struct IRFFT3D
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Treal"},
-        AttributeDesc{"Tcomplex"}
+        AttributeDesc{"Treal", AttributeType::Type},
+        AttributeDesc{"Tcomplex", AttributeType::Type}
     };
 };
 
@@ -56972,9 +56972,9 @@ struct ScatterMax
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -57033,10 +57033,10 @@ struct VariableV2
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"shape"},
-        AttributeDesc{"dtype"},
-        AttributeDesc{"container"},
-        AttributeDesc{"shared_name"}
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -57065,7 +57065,7 @@ struct IsVariableInitialized
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"dtype"}
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -57114,11 +57114,11 @@ struct _MklNativeFusedBatchNormGradV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -57150,8 +57150,8 @@ struct AssignSub
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -57181,10 +57181,10 @@ struct InfeedEnqueue
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"},
-        AttributeDesc{"layout"},
-        AttributeDesc{"device_ordinal"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"layout", AttributeType::ListInt},
+        AttributeDesc{"device_ordinal", AttributeType::Int}
     };
 };
 
@@ -57219,9 +57219,9 @@ struct ScatterAdd
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -57273,12 +57273,12 @@ struct _MklNativeFusedBatchNormV3
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"exponential_avg_factor"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"exponential_avg_factor", AttributeType::Float},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -57313,9 +57313,9 @@ struct ScatterSub
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -57348,9 +57348,9 @@ struct ResourceScatterNdUpdate
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -57383,9 +57383,9 @@ struct ResourceScatterNdSub
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -57420,9 +57420,9 @@ struct ScatterNdAdd
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -57457,9 +57457,9 @@ struct ScatterNdMax
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -57492,9 +57492,9 @@ struct StatelessRandomNormal
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tseed"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tseed", AttributeType::Type}
     };
 };
 
@@ -57527,9 +57527,9 @@ struct StatelessTruncatedNormal
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tseed"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tseed", AttributeType::Type}
     };
 };
 
@@ -57562,9 +57562,9 @@ struct StatelessRandomUniformFullInt
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tseed"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tseed", AttributeType::Type}
     };
 };
 
@@ -57602,10 +57602,10 @@ struct StatelessRandomBinomial
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"S"},
-        AttributeDesc{"Tseed"},
-        AttributeDesc{"T"},
-        AttributeDesc{"dtype"}
+        AttributeDesc{"S", AttributeType::Type},
+        AttributeDesc{"Tseed", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -57646,9 +57646,9 @@ struct StatelessParameterizedTruncatedNormal
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"S"},
-        AttributeDesc{"Tseed"},
-        AttributeDesc{"dtype"}
+        AttributeDesc{"S", AttributeType::Type},
+        AttributeDesc{"Tseed", AttributeType::Type},
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -57684,8 +57684,8 @@ struct StatelessRandomUniformV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"Tshape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tshape", AttributeType::Type}
     };
 };
 
@@ -57718,7 +57718,7 @@ struct StatelessRandomGetKeyCounterAlg
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"Tseed"}
+        AttributeDesc{"Tseed", AttributeType::Type}
     };
 };
 
@@ -57778,7 +57778,7 @@ struct RegexReplace
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"replace_global"}
+        AttributeDesc{"replace_global", AttributeType::Bool}
     };
 };
 
@@ -57809,9 +57809,9 @@ struct StaticRegexReplace
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"pattern"},
-        AttributeDesc{"rewrite"},
-        AttributeDesc{"replace_global"}
+        AttributeDesc{"pattern", AttributeType::String},
+        AttributeDesc{"rewrite", AttributeType::String},
+        AttributeDesc{"replace_global", AttributeType::Bool}
     };
 };
 
@@ -57839,8 +57839,8 @@ struct RecvTPUEmbeddingActivations
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_outputs"},
-        AttributeDesc{"config"}
+        AttributeDesc{"num_outputs", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -57900,7 +57900,7 @@ struct StaticRegexFullMatch
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"pattern"}
+        AttributeDesc{"pattern", AttributeType::String}
     };
 };
 
@@ -57929,7 +57929,7 @@ struct StringToHashBucketFast
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"num_buckets"}
+        AttributeDesc{"num_buckets", AttributeType::Int}
     };
 };
 
@@ -57960,11 +57960,11 @@ struct LoadTPUEmbeddingStochasticGradientDescentParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -58006,8 +58006,8 @@ struct ResourceApplyRMSProp
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -58037,8 +58037,8 @@ struct _TensorToHashBucketFast
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_buckets"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_buckets", AttributeType::Int}
     };
 };
 
@@ -58068,8 +58068,8 @@ struct StringToHashBucketStrong
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_buckets"},
-        AttributeDesc{"key"}
+        AttributeDesc{"num_buckets", AttributeType::Int},
+        AttributeDesc{"key", AttributeType::ListInt}
     };
 };
 
@@ -58101,8 +58101,8 @@ struct ReduceJoin
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"keep_dims"},
-        AttributeDesc{"separator"}
+        AttributeDesc{"keep_dims", AttributeType::Bool},
+        AttributeDesc{"separator", AttributeType::String}
     };
 };
 
@@ -58137,9 +58137,9 @@ struct UnsortedSegmentJoin
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"separator"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"Tnumsegments"}
+        AttributeDesc{"separator", AttributeType::String},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"Tnumsegments", AttributeType::Type}
     };
 };
 
@@ -58173,12 +58173,12 @@ struct AsString
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"precision"},
-        AttributeDesc{"scientific"},
-        AttributeDesc{"shortest"},
-        AttributeDesc{"width"},
-        AttributeDesc{"fill"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"precision", AttributeType::Int},
+        AttributeDesc{"scientific", AttributeType::Bool},
+        AttributeDesc{"shortest", AttributeType::Bool},
+        AttributeDesc{"width", AttributeType::Int},
+        AttributeDesc{"fill", AttributeType::String}
     };
 };
 
@@ -58208,8 +58208,8 @@ struct StringJoin
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"separator"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"separator", AttributeType::String}
     };
 };
 
@@ -58244,7 +58244,7 @@ struct StringSplitV2
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"maxsplit"}
+        AttributeDesc{"maxsplit", AttributeType::Int}
     };
 };
 
@@ -58273,7 +58273,7 @@ struct StringLower
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"encoding"}
+        AttributeDesc{"encoding", AttributeType::String}
     };
 };
 
@@ -58302,7 +58302,7 @@ struct StringLength
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"unit"}
+        AttributeDesc{"unit", AttributeType::String}
     };
 };
 
@@ -58331,7 +58331,7 @@ struct EncodeBase64
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"pad"}
+        AttributeDesc{"pad", AttributeType::Bool}
     };
 };
 
@@ -58365,10 +58365,10 @@ struct _TPUCompileMlir
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"num_computations"},
-        AttributeDesc{"mlir_module"},
-        AttributeDesc{"metadata"},
-        AttributeDesc{"NumDynamicShapes"}
+        AttributeDesc{"num_computations", AttributeType::Int},
+        AttributeDesc{"mlir_module", AttributeType::String},
+        AttributeDesc{"metadata", AttributeType::String},
+        AttributeDesc{"NumDynamicShapes", AttributeType::Int}
     };
 };
 
@@ -58441,18 +58441,18 @@ struct _MklNativeFusedConv2D
 
     static constexpr std::array<AttributeDesc, 12> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_args"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"fused_ops"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"leakyrelu_alpha"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"fused_ops", AttributeType::ListString},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"leakyrelu_alpha", AttributeType::Float}
     };
 };
 
@@ -58486,8 +58486,8 @@ struct Substr
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"unit"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"unit", AttributeType::String}
     };
 };
 
@@ -58521,10 +58521,10 @@ struct UnicodeEncode
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"errors"},
-        AttributeDesc{"output_encoding"},
-        AttributeDesc{"replacement_char"},
-        AttributeDesc{"Tsplits"}
+        AttributeDesc{"errors", AttributeType::String},
+        AttributeDesc{"output_encoding", AttributeType::String},
+        AttributeDesc{"replacement_char", AttributeType::Int},
+        AttributeDesc{"Tsplits", AttributeType::Type}
     };
 };
 
@@ -58557,11 +58557,11 @@ struct UnicodeTranscode
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"input_encoding"},
-        AttributeDesc{"output_encoding"},
-        AttributeDesc{"errors"},
-        AttributeDesc{"replacement_char"},
-        AttributeDesc{"replace_control_characters"}
+        AttributeDesc{"input_encoding", AttributeType::String},
+        AttributeDesc{"output_encoding", AttributeType::String},
+        AttributeDesc{"errors", AttributeType::String},
+        AttributeDesc{"replacement_char", AttributeType::Int},
+        AttributeDesc{"replace_control_characters", AttributeType::Bool}
     };
 };
 
@@ -58596,11 +58596,11 @@ struct UnicodeDecode
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"input_encoding"},
-        AttributeDesc{"errors"},
-        AttributeDesc{"replacement_char"},
-        AttributeDesc{"replace_control_characters"},
-        AttributeDesc{"Tsplits"}
+        AttributeDesc{"input_encoding", AttributeType::String},
+        AttributeDesc{"errors", AttributeType::String},
+        AttributeDesc{"replacement_char", AttributeType::Int},
+        AttributeDesc{"replace_control_characters", AttributeType::Bool},
+        AttributeDesc{"Tsplits", AttributeType::Type}
     };
 };
 
@@ -58641,9 +58641,9 @@ struct SparseApplyProximalGradientDescent
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -58682,9 +58682,9 @@ struct ResourceSparseApplyProximalGradientDescent
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -58726,8 +58726,8 @@ struct ApplyAdadelta
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -58770,9 +58770,9 @@ struct ResourceSparseApplyAdadelta
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -58809,9 +58809,9 @@ struct ApplyAdagrad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"update_slots"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"update_slots", AttributeType::Bool}
     };
 };
 
@@ -58846,9 +58846,9 @@ struct ResourceApplyAdagrad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"update_slots"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"update_slots", AttributeType::Bool}
     };
 };
 
@@ -58877,7 +58877,7 @@ struct _InitializeHostForDistributedTPU
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"enable_whole_mesh_compilations"}
+        AttributeDesc{"enable_whole_mesh_compilations", AttributeType::Bool}
     };
 };
 
@@ -58916,9 +58916,9 @@ struct ApplyMomentum
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"use_nesterov"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"use_nesterov", AttributeType::Bool}
     };
 };
 
@@ -58957,9 +58957,9 @@ struct ApplyAdagradV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"update_slots"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"update_slots", AttributeType::Bool}
     };
 };
 
@@ -58999,10 +58999,10 @@ struct ResourceSparseApplyAdagradV2
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"update_slots"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"update_slots", AttributeType::Bool}
     };
 };
 
@@ -59040,8 +59040,8 @@ struct ResourceApplyProximalAdagrad
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -59082,9 +59082,9 @@ struct ResourceSparseApplyProximalAdagrad
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -59115,7 +59115,7 @@ struct TopKWithUnique
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"k"}
+        AttributeDesc{"k", AttributeType::Int}
     };
 };
 
@@ -59164,9 +59164,9 @@ struct SparseApplyCenteredRMSProp
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -59213,9 +59213,9 @@ struct SparseApplyAdagradDA
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -59263,10 +59263,10 @@ struct SparseApplyFtrl
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"multiply_linear_by_lr"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"multiply_linear_by_lr", AttributeType::Bool}
     };
 };
 
@@ -59309,9 +59309,9 @@ struct ResourceApplyFtrl
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"multiply_linear_by_lr"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"multiply_linear_by_lr", AttributeType::Bool}
     };
 };
 
@@ -59357,10 +59357,10 @@ struct ResourceSparseApplyFtrl
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"multiply_linear_by_lr"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"multiply_linear_by_lr", AttributeType::Bool}
     };
 };
 
@@ -59405,9 +59405,9 @@ struct ResourceApplyFtrlV2
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"multiply_linear_by_lr"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"multiply_linear_by_lr", AttributeType::Bool}
     };
 };
 
@@ -59449,10 +59449,10 @@ struct SparseApplyMomentum
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"use_nesterov"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"use_nesterov", AttributeType::Bool}
     };
 };
 
@@ -59489,9 +59489,9 @@ struct ResourceApplyMomentum
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"use_nesterov"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"use_nesterov", AttributeType::Bool}
     };
 };
 
@@ -59531,10 +59531,10 @@ struct ResourceSparseApplyMomentum
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"},
-        AttributeDesc{"use_nesterov"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"use_nesterov", AttributeType::Bool}
     };
 };
 
@@ -59578,8 +59578,8 @@ struct ResourceApplyCenteredRMSProp
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -59626,9 +59626,9 @@ struct ResourceSparseApplyCenteredRMSProp
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -59668,8 +59668,8 @@ struct ResourceApplyPowerSign
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"use_locking"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
     };
 };
 
@@ -59712,11 +59712,11 @@ struct Skipgram
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"filename"},
-        AttributeDesc{"batch_size"},
-        AttributeDesc{"window_size"},
-        AttributeDesc{"min_count"},
-        AttributeDesc{"subsample"}
+        AttributeDesc{"filename", AttributeType::String},
+        AttributeDesc{"batch_size", AttributeType::Int},
+        AttributeDesc{"window_size", AttributeType::Int},
+        AttributeDesc{"min_count", AttributeType::Int},
+        AttributeDesc{"subsample", AttributeType::Float}
     };
 };
 
@@ -59746,8 +59746,8 @@ struct _WaitForDistributedTPU
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"startup_timeout_sec"},
-        AttributeDesc{"N"}
+        AttributeDesc{"startup_timeout_sec", AttributeType::Int},
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -59835,10 +59835,10 @@ struct AllToAll
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"concat_dimension"},
-        AttributeDesc{"split_dimension"},
-        AttributeDesc{"split_count"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"concat_dimension", AttributeType::Int},
+        AttributeDesc{"split_dimension", AttributeType::Int},
+        AttributeDesc{"split_count", AttributeType::Int}
     };
 };
 
@@ -59869,7 +59869,7 @@ struct CollectivePermute
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -59899,8 +59899,8 @@ struct EnqueueTPUEmbeddingIntegerBatch
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"device_ordinal"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"device_ordinal", AttributeType::Int}
     };
 };
 
@@ -59938,12 +59938,12 @@ struct EnqueueTPUEmbeddingSparseBatch
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"T3"},
-        AttributeDesc{"N"},
-        AttributeDesc{"device_ordinal"},
-        AttributeDesc{"combiners"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"T3", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"device_ordinal", AttributeType::Int},
+        AttributeDesc{"combiners", AttributeType::ListString}
     };
 };
 
@@ -59984,15 +59984,15 @@ struct EnqueueTPUEmbeddingRaggedTensorBatch
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"T3"},
-        AttributeDesc{"N"},
-        AttributeDesc{"device_ordinal"},
-        AttributeDesc{"combiners"},
-        AttributeDesc{"table_ids"},
-        AttributeDesc{"max_sequence_lengths"},
-        AttributeDesc{"num_features"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"T3", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"device_ordinal", AttributeType::Int},
+        AttributeDesc{"combiners", AttributeType::ListString},
+        AttributeDesc{"table_ids", AttributeType::ListInt},
+        AttributeDesc{"max_sequence_lengths", AttributeType::ListInt},
+        AttributeDesc{"num_features", AttributeType::ListInt}
     };
 };
 
@@ -60024,8 +60024,8 @@ struct XlaEinsum
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"equation"},
-        AttributeDesc{"T"}
+        AttributeDesc{"equation", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -60058,11 +60058,11 @@ struct RetrieveTPUEmbeddingAdagradParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -60097,11 +60097,11 @@ struct RetrieveTPUEmbeddingAdagradMomentumParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -60132,11 +60132,11 @@ struct RetrieveTPUEmbeddingStochasticGradientDescentParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -60171,11 +60171,11 @@ struct LoadTPUEmbeddingADAMParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -60227,14 +60227,14 @@ struct _MklQuantizedMatMulWithBias
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"Toutput"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"input_quant_mode"},
-        AttributeDesc{"is_weight_const"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"Toutput", AttributeType::Type},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"input_quant_mode", AttributeType::String},
+        AttributeDesc{"is_weight_const", AttributeType::Bool}
     };
 };
 
@@ -60269,11 +60269,11 @@ struct RetrieveTPUEmbeddingADAMParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -60306,11 +60306,11 @@ struct RetrieveTPUEmbeddingMomentumParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -60350,14 +60350,14 @@ struct _MklNativeConv2DWithBias
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -60392,11 +60392,11 @@ struct RetrieveTPUEmbeddingRMSPropParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -60433,11 +60433,11 @@ struct RetrieveTPUEmbeddingCenteredRMSPropParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -60474,11 +60474,11 @@ struct LoadTPUEmbeddingMDLAdagradLightParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -60515,11 +60515,11 @@ struct RetrieveTPUEmbeddingMDLAdagradLightParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -60554,11 +60554,11 @@ struct LoadTPUEmbeddingAdadeltaParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -60593,11 +60593,11 @@ struct RetrieveTPUEmbeddingAdadeltaParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -60630,11 +60630,11 @@ struct RetrieveTPUEmbeddingProximalAdagradParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -60667,11 +60667,11 @@ struct LoadTPUEmbeddingFrequencyEstimatorParameters
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"table_id"},
-        AttributeDesc{"table_name"},
-        AttributeDesc{"num_shards"},
-        AttributeDesc{"shard_id"},
-        AttributeDesc{"config"}
+        AttributeDesc{"table_id", AttributeType::Int},
+        AttributeDesc{"table_name", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -60702,9 +60702,9 @@ struct _XlaRecvAtHost
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"Toutputs"},
-        AttributeDesc{"key"},
-        AttributeDesc{"device_ordinal"}
+        AttributeDesc{"Toutputs", AttributeType::ListType},
+        AttributeDesc{"key", AttributeType::String},
+        AttributeDesc{"device_ordinal", AttributeType::Int}
     };
 };
 
@@ -60736,8 +60736,8 @@ struct _XlaRecvAtHostV2
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Toutputs"},
-        AttributeDesc{"key"}
+        AttributeDesc{"Toutputs", AttributeType::ListType},
+        AttributeDesc{"key", AttributeType::String}
     };
 };
 
@@ -60769,10 +60769,10 @@ struct XlaConcatND
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"},
-        AttributeDesc{"num_concats"},
-        AttributeDesc{"paddings"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"num_concats", AttributeType::ListInt},
+        AttributeDesc{"paddings", AttributeType::ListInt}
     };
 };
 
@@ -60804,10 +60804,10 @@ struct ReadVariableXlaSplitND
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"N"},
-        AttributeDesc{"num_splits"},
-        AttributeDesc{"paddings"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"num_splits", AttributeType::ListInt},
+        AttributeDesc{"paddings", AttributeType::ListInt}
     };
 };
 
@@ -60835,8 +60835,8 @@ struct InfeedDequeue
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape}
     };
 };
 
@@ -60866,10 +60866,10 @@ struct InfeedEnqueueTuple
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"dtypes"},
-        AttributeDesc{"shapes"},
-        AttributeDesc{"layouts"},
-        AttributeDesc{"device_ordinal"}
+        AttributeDesc{"dtypes", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"layouts", AttributeType::ListInt},
+        AttributeDesc{"device_ordinal", AttributeType::Int}
     };
 };
 
@@ -60900,9 +60900,9 @@ struct Prelinearize
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"},
-        AttributeDesc{"layout"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"layout", AttributeType::ListInt}
     };
 };
 
@@ -60935,9 +60935,9 @@ struct XlaDot
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"dimension_numbers"},
-        AttributeDesc{"precision_config"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"dimension_numbers", AttributeType::String},
+        AttributeDesc{"precision_config", AttributeType::String}
     };
 };
 
@@ -60966,9 +60966,9 @@ struct OutfeedDequeue
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"},
-        AttributeDesc{"device_ordinal"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"device_ordinal", AttributeType::Int}
     };
 };
 
@@ -61001,11 +61001,11 @@ struct TPUReplicatedInput
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"},
-        AttributeDesc{"is_mirrored_variable"},
-        AttributeDesc{"index"},
-        AttributeDesc{"is_packed"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"is_mirrored_variable", AttributeType::Bool},
+        AttributeDesc{"index", AttributeType::Int},
+        AttributeDesc{"is_packed", AttributeType::Bool}
     };
 };
 
@@ -61035,8 +61035,8 @@ struct TPUReplicatedOutput
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"num_replicas"},
-        AttributeDesc{"T"}
+        AttributeDesc{"num_replicas", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -61087,23 +61087,23 @@ struct _TPUReplicate
 
     static constexpr std::array<AttributeDesc, 17> attribute_descs
     {
-        AttributeDesc{"computation"},
-        AttributeDesc{"num_replicas"},
-        AttributeDesc{"num_cores_per_replica"},
-        AttributeDesc{"topology"},
-        AttributeDesc{"use_tpu"},
-        AttributeDesc{"device_assignment"},
-        AttributeDesc{"host_compute_core"},
-        AttributeDesc{"Tinputs"},
-        AttributeDesc{"Tbroadcast_inputs"},
-        AttributeDesc{"NumVariables"},
-        AttributeDesc{"Tguaranteed_constants"},
-        AttributeDesc{"output_types"},
-        AttributeDesc{"padding_map"},
-        AttributeDesc{"step_marker_location"},
-        AttributeDesc{"allow_soft_placement"},
-        AttributeDesc{"num_distributed_variables"},
-        AttributeDesc{"use_spmd_for_xla_partitioning"}
+        AttributeDesc{"computation", AttributeType::Func},
+        AttributeDesc{"num_replicas", AttributeType::Int},
+        AttributeDesc{"num_cores_per_replica", AttributeType::Int},
+        AttributeDesc{"topology", AttributeType::String},
+        AttributeDesc{"use_tpu", AttributeType::Bool},
+        AttributeDesc{"device_assignment", AttributeType::ListInt},
+        AttributeDesc{"host_compute_core", AttributeType::ListString},
+        AttributeDesc{"Tinputs", AttributeType::ListType},
+        AttributeDesc{"Tbroadcast_inputs", AttributeType::ListType},
+        AttributeDesc{"NumVariables", AttributeType::Int},
+        AttributeDesc{"Tguaranteed_constants", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"padding_map", AttributeType::ListString},
+        AttributeDesc{"step_marker_location", AttributeType::String},
+        AttributeDesc{"allow_soft_placement", AttributeType::Bool},
+        AttributeDesc{"num_distributed_variables", AttributeType::Int},
+        AttributeDesc{"use_spmd_for_xla_partitioning", AttributeType::Bool}
     };
 };
 
@@ -61140,11 +61140,11 @@ struct _MklNativeConv3DBackpropFilterV2
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -61198,16 +61198,16 @@ struct _MklFusedDepthwiseConv2dNative
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"num_args"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"fused_ops"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"leakyrelu_alpha"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"fused_ops", AttributeType::ListString},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"leakyrelu_alpha", AttributeType::Float}
     };
 };
 
@@ -61247,14 +61247,14 @@ struct _MklNativeFusedMatMul
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"T"},
-        AttributeDesc{"num_args"},
-        AttributeDesc{"fused_ops"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"leakyrelu_alpha"}
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"fused_ops", AttributeType::ListString},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"leakyrelu_alpha", AttributeType::Float}
     };
 };
 
@@ -61294,14 +61294,14 @@ struct _MklNativePadWithConv2D
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"use_cudnn_on_gpu"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"Tpaddings"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"Tpaddings", AttributeType::Type}
     };
 };
 
@@ -61336,11 +61336,11 @@ struct _MklNativeAvgPoolGrad
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -61373,11 +61373,11 @@ struct _MklNativeAvgPool3D
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -61412,11 +61412,11 @@ struct _MklNativeAvgPool3DGrad
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -61453,13 +61453,13 @@ struct _MklNativeMaxPool
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"workspace_enabled"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"workspace_enabled", AttributeType::Bool}
     };
 };
 
@@ -61495,12 +61495,12 @@ struct _MklNativeMaxPool3D
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"},
-        AttributeDesc{"workspace_enabled"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"workspace_enabled", AttributeType::Bool}
     };
 };
 
@@ -61541,13 +61541,13 @@ struct _MklNativeMaxPool3DGrad
 
     static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"T"},
-        AttributeDesc{"TInput"},
-        AttributeDesc{"workspace_enabled"}
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"TInput", AttributeType::Type},
+        AttributeDesc{"workspace_enabled", AttributeType::Bool}
     };
 };
 
@@ -61587,10 +61587,10 @@ struct _MklQuantizedMaxPool
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"ksize"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"ksize", AttributeType::ListInt},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String}
     };
 };
 
@@ -61638,10 +61638,10 @@ struct _MklNativeFusedBatchNormGrad
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -61695,16 +61695,16 @@ struct _MklQuantizedConv2DWithBias
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"is_bias_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"is_bias_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -61755,15 +61755,15 @@ struct _MklQuantizedConv2DAndRelu
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -61819,16 +61819,16 @@ struct _MklQuantizedConv2DWithBiasSumAndRelu
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"is_bias_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"is_bias_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -61894,18 +61894,18 @@ struct _MklQuantizedConv2DWithBiasSignedSumAndReluAndRequantize
 
     static constexpr std::array<AttributeDesc, 12> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"Tsummand"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"is_bias_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"Tsummand", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"is_bias_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -61951,12 +61951,12 @@ struct _MklDepthwiseConv2dNativeBackpropInput
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -62036,14 +62036,14 @@ struct _MklFusedBatchNormEx
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"exponential_avg_factor"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"num_side_inputs"},
-        AttributeDesc{"activation_mode"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"exponential_avg_factor", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"num_side_inputs", AttributeType::Int},
+        AttributeDesc{"activation_mode", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -62089,12 +62089,12 @@ struct _MklDepthwiseConv2dNativeBackpropFilter
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"explicit_paddings"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -62150,14 +62150,14 @@ struct _MklQuantizedMatMulWithBiasAndRequantize
 
     static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"T1"},
-        AttributeDesc{"T2"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"Toutput"},
-        AttributeDesc{"transpose_a"},
-        AttributeDesc{"transpose_b"},
-        AttributeDesc{"input_quant_mode"},
-        AttributeDesc{"is_weight_const"}
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"Toutput", AttributeType::Type},
+        AttributeDesc{"transpose_a", AttributeType::Bool},
+        AttributeDesc{"transpose_b", AttributeType::Bool},
+        AttributeDesc{"input_quant_mode", AttributeType::String},
+        AttributeDesc{"is_weight_const", AttributeType::Bool}
     };
 };
 
@@ -62210,15 +62210,15 @@ struct _MklQuantizedDepthwiseConv2DWithBias
 
     static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"is_bias_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"is_bias_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -62272,16 +62272,16 @@ struct _MklQuantizedDepthwiseConv2DWithBiasAndRelu
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"is_bias_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"is_bias_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -62340,17 +62340,17 @@ struct _MklQuantizedDepthwiseConv2DWithBiasAndReluAndRequantize
 
     static constexpr std::array<AttributeDesc, 11> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"Tfilter"},
-        AttributeDesc{"Tbias"},
-        AttributeDesc{"out_type"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"strides"},
-        AttributeDesc{"is_filter_const"},
-        AttributeDesc{"is_bias_const"},
-        AttributeDesc{"padding"},
-        AttributeDesc{"dilations"},
-        AttributeDesc{"padding_list"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"is_bias_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
     };
 };
 
@@ -62424,12 +62424,12 @@ struct _MklFusedBatchNormV3
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"exponential_avg_factor"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"exponential_avg_factor", AttributeType::Float},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -62478,11 +62478,11 @@ struct _MklNativeFusedBatchNorm
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"exponential_avg_factor"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"exponential_avg_factor", AttributeType::Float},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -62532,12 +62532,12 @@ struct _MklNativeFusedBatchNormV2
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"exponential_avg_factor"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"exponential_avg_factor", AttributeType::Float},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -62588,11 +62588,11 @@ struct _MklNativeFusedBatchNormGradV3
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"U"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"data_format"},
-        AttributeDesc{"is_training"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -62630,16 +62630,16 @@ struct XlaHostCompute
 
     static constexpr std::array<AttributeDesc, 10> attribute_descs
     {
-        AttributeDesc{"Tinputs"},
-        AttributeDesc{"Toutputs"},
-        AttributeDesc{"ancestors"},
-        AttributeDesc{"shapes"},
-        AttributeDesc{"shape_inference_graph"},
-        AttributeDesc{"key"},
-        AttributeDesc{"send_key"},
-        AttributeDesc{"recv_key"},
-        AttributeDesc{"cost_estimate_ns"},
-        AttributeDesc{"tpu_core"}
+        AttributeDesc{"Tinputs", AttributeType::ListType},
+        AttributeDesc{"Toutputs", AttributeType::ListType},
+        AttributeDesc{"ancestors", AttributeType::ListString},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"shape_inference_graph", AttributeType::Func},
+        AttributeDesc{"key", AttributeType::String},
+        AttributeDesc{"send_key", AttributeType::String},
+        AttributeDesc{"recv_key", AttributeType::String},
+        AttributeDesc{"cost_estimate_ns", AttributeType::Int},
+        AttributeDesc{"tpu_core", AttributeType::Int}
     };
 };
 
@@ -62667,8 +62667,8 @@ struct XlaSendToHost
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Tinput"},
-        AttributeDesc{"key"}
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"key", AttributeType::String}
     };
 };
 
@@ -62699,7 +62699,7 @@ struct TopKUnique
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"k"}
+        AttributeDesc{"k", AttributeType::Int}
     };
 };
 
@@ -62731,8 +62731,8 @@ struct TPUExecute
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"Targs"},
-        AttributeDesc{"Tresults"}
+        AttributeDesc{"Targs", AttributeType::ListType},
+        AttributeDesc{"Tresults", AttributeType::ListType}
     };
 };
 
@@ -62766,10 +62766,10 @@ struct TPUExecuteAndUpdateVariables
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"Targs"},
-        AttributeDesc{"Tresults"},
-        AttributeDesc{"device_var_reads_indices"},
-        AttributeDesc{"device_var_updates_indices"}
+        AttributeDesc{"Targs", AttributeType::ListType},
+        AttributeDesc{"Tresults", AttributeType::ListType},
+        AttributeDesc{"device_var_reads_indices", AttributeType::ListInt},
+        AttributeDesc{"device_var_updates_indices", AttributeType::ListInt}
     };
 };
 
@@ -62800,9 +62800,9 @@ struct TPUPartitionedInput
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"N"},
-        AttributeDesc{"T"},
-        AttributeDesc{"partition_dim"}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"partition_dim", AttributeType::Int}
     };
 };
 
@@ -62833,9 +62833,9 @@ struct MlirPassthroughOp
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"mlir_module"},
-        AttributeDesc{"Tinputs"},
-        AttributeDesc{"Toutputs"}
+        AttributeDesc{"mlir_module", AttributeType::String},
+        AttributeDesc{"Tinputs", AttributeType::ListType},
+        AttributeDesc{"Toutputs", AttributeType::ListType}
     };
 };
 
@@ -62871,10 +62871,10 @@ struct XlaSvd
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"max_iter"},
-        AttributeDesc{"epsilon"},
-        AttributeDesc{"precision_config"},
-        AttributeDesc{"T"}
+        AttributeDesc{"max_iter", AttributeType::Int},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"precision_config", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -62920,12 +62920,12 @@ struct XlaConvV2
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"LhsT"},
-        AttributeDesc{"RhsT"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"dimension_numbers"},
-        AttributeDesc{"precision_config"},
-        AttributeDesc{"preferred_element_type"}
+        AttributeDesc{"LhsT", AttributeType::Type},
+        AttributeDesc{"RhsT", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"dimension_numbers", AttributeType::String},
+        AttributeDesc{"precision_config", AttributeType::String},
+        AttributeDesc{"preferred_element_type", AttributeType::Type}
     };
 };
 
@@ -62958,7 +62958,7 @@ struct XlaSetDynamicDimensionSize
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -62989,7 +62989,7 @@ struct XlaRemoveDynamicDimensionSize
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -63023,8 +63023,8 @@ struct XlaDynamicUpdateSlice
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -63067,9 +63067,9 @@ struct XlaReduceWindow
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"},
-        AttributeDesc{"computation"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type},
+        AttributeDesc{"computation", AttributeType::Func}
     };
 };
 
@@ -63097,8 +63097,8 @@ struct XlaSend
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"tensor_name"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"tensor_name", AttributeType::String}
     };
 };
 
@@ -63127,7 +63127,7 @@ struct XlaSort
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"T"}
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -63160,9 +63160,9 @@ struct XlaVariadicSort
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"comparator"},
-        AttributeDesc{"is_stable"}
+        AttributeDesc{"T", AttributeType::ListType},
+        AttributeDesc{"comparator", AttributeType::Func},
+        AttributeDesc{"is_stable", AttributeType::Bool}
     };
 };
 
@@ -63198,10 +63198,10 @@ struct XlaGather
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"dimension_numbers"},
-        AttributeDesc{"indices_are_sorted"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"dimension_numbers", AttributeType::String},
+        AttributeDesc{"indices_are_sorted", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -63238,11 +63238,11 @@ struct XlaScatter
 
     static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
-        AttributeDesc{"update_computation"},
-        AttributeDesc{"dimension_numbers"},
-        AttributeDesc{"indices_are_sorted"},
-        AttributeDesc{"T"},
-        AttributeDesc{"Tindices"}
+        AttributeDesc{"update_computation", AttributeType::Func},
+        AttributeDesc{"dimension_numbers", AttributeType::String},
+        AttributeDesc{"indices_are_sorted", AttributeType::Bool},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -63270,8 +63270,8 @@ struct _Arg
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"index"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"index", AttributeType::Int}
     };
 };
 
@@ -63299,8 +63299,8 @@ struct _DeviceArg
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"index"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"index", AttributeType::Int}
     };
 };
 
@@ -63328,8 +63328,8 @@ struct _DeviceRetval
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"index"}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"index", AttributeType::Int}
     };
 };
 
@@ -63360,9 +63360,9 @@ struct SymbolicGradient
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"},
-        AttributeDesc{"f"}
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType},
+        AttributeDesc{"f", AttributeType::Func}
     };
 };
 
@@ -63396,10 +63396,10 @@ struct Case
 
     static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"},
-        AttributeDesc{"branches"},
-        AttributeDesc{"output_shapes"}
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType},
+        AttributeDesc{"branches", AttributeType::ListFunc},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -63430,9 +63430,9 @@ struct _While
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T"},
-        AttributeDesc{"cond"},
-        AttributeDesc{"body"}
+        AttributeDesc{"T", AttributeType::ListType},
+        AttributeDesc{"cond", AttributeType::Func},
+        AttributeDesc{"body", AttributeType::Func}
     };
 };
 
@@ -63466,12 +63466,12 @@ struct StatefulPartitionedCall
 
     static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
-        AttributeDesc{"Tin"},
-        AttributeDesc{"Tout"},
-        AttributeDesc{"f"},
-        AttributeDesc{"config"},
-        AttributeDesc{"config_proto"},
-        AttributeDesc{"executor_type"}
+        AttributeDesc{"Tin", AttributeType::ListType},
+        AttributeDesc{"Tout", AttributeType::ListType},
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"config", AttributeType::String},
+        AttributeDesc{"config_proto", AttributeType::String},
+        AttributeDesc{"executor_type", AttributeType::String}
     };
 };
 
@@ -63499,8 +63499,8 @@ struct FakeParam
 
     static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype"},
-        AttributeDesc{"shape"}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape}
     };
 };
 
@@ -63527,7 +63527,7 @@ struct DeviceIndex
 
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-        AttributeDesc{"device_names"}
+        AttributeDesc{"device_names", AttributeType::ListString}
     };
 };
 
@@ -63577,28 +63577,28 @@ struct AudioMicrofrontend
 
     static constexpr std::array<AttributeDesc, 22> attribute_descs
     {
-        AttributeDesc{"sample_rate"},
-        AttributeDesc{"window_size"},
-        AttributeDesc{"window_step"},
-        AttributeDesc{"num_channels"},
-        AttributeDesc{"upper_band_limit"},
-        AttributeDesc{"lower_band_limit"},
-        AttributeDesc{"smoothing_bits"},
-        AttributeDesc{"even_smoothing"},
-        AttributeDesc{"odd_smoothing"},
-        AttributeDesc{"min_signal_remaining"},
-        AttributeDesc{"enable_pcan"},
-        AttributeDesc{"pcan_strength"},
-        AttributeDesc{"pcan_offset"},
-        AttributeDesc{"gain_bits"},
-        AttributeDesc{"enable_log"},
-        AttributeDesc{"scale_shift"},
-        AttributeDesc{"left_context"},
-        AttributeDesc{"right_context"},
-        AttributeDesc{"frame_stride"},
-        AttributeDesc{"zero_padding"},
-        AttributeDesc{"out_scale"},
-        AttributeDesc{"out_type"}
+        AttributeDesc{"sample_rate", AttributeType::Int},
+        AttributeDesc{"window_size", AttributeType::Int},
+        AttributeDesc{"window_step", AttributeType::Int},
+        AttributeDesc{"num_channels", AttributeType::Int},
+        AttributeDesc{"upper_band_limit", AttributeType::Float},
+        AttributeDesc{"lower_band_limit", AttributeType::Float},
+        AttributeDesc{"smoothing_bits", AttributeType::Int},
+        AttributeDesc{"even_smoothing", AttributeType::Float},
+        AttributeDesc{"odd_smoothing", AttributeType::Float},
+        AttributeDesc{"min_signal_remaining", AttributeType::Float},
+        AttributeDesc{"enable_pcan", AttributeType::Bool},
+        AttributeDesc{"pcan_strength", AttributeType::Float},
+        AttributeDesc{"pcan_offset", AttributeType::Float},
+        AttributeDesc{"gain_bits", AttributeType::Int},
+        AttributeDesc{"enable_log", AttributeType::Bool},
+        AttributeDesc{"scale_shift", AttributeType::Int},
+        AttributeDesc{"left_context", AttributeType::Int},
+        AttributeDesc{"right_context", AttributeType::Int},
+        AttributeDesc{"frame_stride", AttributeType::Int},
+        AttributeDesc{"zero_padding", AttributeType::Bool},
+        AttributeDesc{"out_scale", AttributeType::Int},
+        AttributeDesc{"out_type", AttributeType::Type}
     };
 };
 

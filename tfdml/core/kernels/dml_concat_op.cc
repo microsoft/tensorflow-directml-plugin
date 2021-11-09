@@ -331,17 +331,17 @@ template <
     typename Op::Argument AxisArg>
 void RegisterConcat()
 {
-    using K = KernelDefinition<Op, DmlConcatWrapper<AxisArgName>>::
-        WithHostMemoryArgument<AxisArg>;
+    using K = typename KernelDefinition<Op, DmlConcatWrapper<AxisArgName>>::
+        template WithHostMemoryArgument<AxisArg>;
 
     // TODO: add uint64 support
     // TF2 #36692608
     constexpr auto T = Op::Attribute::T;
-    K::WithTypeConstraint<T, TF_FLOAT>::Register();
-    K::WithTypeConstraint<T, TF_HALF>::Register();
-    K::WithTypeConstraint<T, TF_UINT8>::Register();
-    K::WithTypeConstraint<T, TF_INT64>::Register();
-    K::WithTypeConstraint<T, TF_BOOL>::Register();
+    K::template WithTypeConstraint<T, TF_FLOAT>::Register();
+    K::template WithTypeConstraint<T, TF_HALF>::Register();
+    K::template WithTypeConstraint<T, TF_UINT8>::Register();
+    K::template WithTypeConstraint<T, TF_INT64>::Register();
+    K::template WithTypeConstraint<T, TF_BOOL>::Register();
 }
 
 void RegisterKernels_Concat()

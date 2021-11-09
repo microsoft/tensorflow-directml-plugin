@@ -14,21 +14,23 @@ limitations under the License.
 #pragma once
 
 #include "absl/container/inlined_vector.h"
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "absl/types/variant.h"
+#include "tfdml/core/util/types.h"
 
-using PrimitiveAttribute =
-    absl::variant<int32_t, int64_t, float, bool, std::string>;
-
-using Attribute = absl::
-    variant<PrimitiveAttribute, absl::InlinedVector<PrimitiveAttribute, 4>>;
-
-using NameAttributePair = std::pair<std::string, Attribute>;
-
-// TODO: Remove this when/if the following PR gets merged
-// https://github.com/tensorflow/tensorflow/pull/52157
-struct BaseAttributes
+namespace tfdml
 {
-    virtual ~BaseAttributes() = default;
-    virtual absl::Span<const NameAttributePair> GetNamedAttributes() const = 0;
-};
+using AttributeValue = absl::optional<absl::variant<
+    TF_DataType,
+    int64_t,
+    float,
+    bool,
+    std::string,
+    std::vector<TF_DataType>,
+    std::vector<int64_t>,
+    std::vector<float>,
+    std::vector<bool>,
+    std::vector<std::string>>>;
+
+} // namespace tfdml

@@ -40,6 +40,11 @@ def append_args(arg_metadata, arg_list):
         else:
             arg_metadata.append(f'        ArgumentDesc{{"{arg.name}", ArgumentDesc::TensorCount::Single}}')
 
+def append_attr(attr_metadata, attr):
+    # Convert string to enum type (e.g. list(int) -> AttributeType::ListInt)
+    enum_value = "AttributeType::" + attr.type.title().replace("(","").replace(")","")
+    attr_metadata.append(f'        AttributeDesc{{"{attr.name}", {enum_value}}}')
+
 def generate_op_struct(op):
     # Op names may have characters that make illegal C++ identifiers (e.g. the "Namespace>TestStringOutput" op).
     # The struct can be named anything, so long as it's unique, since it stores the original op name as a field.
@@ -66,7 +71,7 @@ def generate_op_struct(op):
 
     attr_metadata = []
     for attr in op.attr:
-        attr_metadata.append(f'        AttributeDesc{{"{attr.name}"}}')
+        append_attr(attr_metadata, attr)
     attr_metadata = ',\n'.join(attr_metadata)
 
     return f"""struct {struct_name}
