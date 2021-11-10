@@ -22,9 +22,9 @@ steps:
   workingDirectory: $(Build.StagingDirectory)
   target: manylinux
 
-- script: |
-    sudo apt update
-    sudo apt install clang -y
-  displayName: Install Clang
-  workingDirectory: $(Build.StagingDirectory)
-  target: manylinux
+# - script: |
+#     sudo apt update
+#     sudo apt install clang -y
+#   displayName: Install Clang
+#   workingDirectory: $(Build.StagingDirectory)
+#   target: manylinux
