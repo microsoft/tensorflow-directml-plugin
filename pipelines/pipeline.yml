@@ -37,7 +37,7 @@ parameters:
 resources:
   containers:
   - container: manylinux
-    image: tensorflow/tensorflow:custom-op-ubuntu16
+    image: tensorflow/tensorflow:2.3.0-custom-op-ubuntu16
 
 stages:
 - stage: buildStage
