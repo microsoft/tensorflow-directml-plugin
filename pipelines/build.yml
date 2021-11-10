@@ -72,15 +72,15 @@ jobs:
         $(miniconda.activateCommand)
         python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry
       displayName: Build
-      # target: manylinux
+      target: manylinux
     # Rename instead of using auditwheel repair since libd3d12.so will not register as manylinux compliant
-    # - powershell: |
-    #     get-childitem -file -recurse $(buildOutPath)
-    #     $original_whl = (get-childitem $(buildOutPath)/python_package/*).FullName
-    #     $manylinux_whl = $original_whl -replace 'linux_x86_64','manylinux2010_x86_64'
-    #     mv $original_whl $manylinux_whl
-    #   displayName: Rename Wheel
-    #   continueOnError: true
+    - powershell: |
+        get-childitem -file -recurse $(buildOutPath)
+        $original_whl = (get-childitem $(buildOutPath)/python_package/*).FullName
+        $manylinux_whl = $original_whl -replace 'linux_x86_64','manylinux2010_x86_64'
+        mv $original_whl $manylinux_whl
+      displayName: Rename Wheel
+      continueOnError: true
   - ${{if contains(parameters.artifact, '-win-') }}:
     - powershell: |
         Invoke-Expression '$(miniconda.activateCommand)'
