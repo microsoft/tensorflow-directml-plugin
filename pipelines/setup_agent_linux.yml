@@ -21,3 +21,10 @@ steps:
   name: miniconda
   workingDirectory: $(Build.StagingDirectory)
   target: manylinux
+
+- script: |
+    sudo apt update
+    sudo apt install clang
+  displayName: Install Clang
+  workingDirectory: $(Build.StagingDirectory)
+  target: manylinux

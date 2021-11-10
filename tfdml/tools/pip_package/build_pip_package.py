@@ -118,7 +118,8 @@ def prepare_src(src_dir):
 
 
 def build_wheel(src_dir, dst_dir):
-  tf_path = os.path.realpath('bazel-tensorflow-directml-plugin/external/tensorflow')
+  tf_src_dir = os.path.split(os.path.realpath('.'))[-1]
+  tf_path = os.path.realpath(f'bazel-{tf_src_dir}/external/tensorflow')
 
   if not os.path.exists(tf_path):
     raise FileNotFoundError(f'{tf_path} could not be found')
