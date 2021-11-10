@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 steps:
 - script: |
     wget --output-document="$(Build.StagingDirectory)/bazel" https://github.com/bazelbuild/bazelisk/releases/download/v1.10.1/bazelisk-linux-amd64
@@ -17,10 +20,4 @@ steps:
   displayName: Install Miniconda
   name: miniconda
   workingDirectory: $(Build.StagingDirectory)
-  target: manylinux
-
-- script: |
-    $(miniconda.activateCommand)
-    pip install -r requirements.txt
-  displayName: Install Python Packages
   target: manylinux
