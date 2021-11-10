@@ -70,7 +70,7 @@ jobs:
   - ${{if contains(parameters.artifact, '-linux-') }}:
     - script: |
         $(miniconda.activateCommand)
-        python build.py --package --config $(vars.configuration) --build_output $(buildOutPath) --telemetry
+        python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry
       displayName: Build
       target: manylinux
     # Rename instead of using auditwheel repair since libd3d12.so will not register as manylinux compliant
@@ -84,7 +84,7 @@ jobs:
   - ${{if contains(parameters.artifact, '-win-') }}:
     - powershell: |
         Invoke-Expression '$(miniconda.activateCommand)'
-        python build.py --package --config $(vars.configuration) --build_output $(buildOutPath) --telemetry
+        python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry
       displayName: Build
   - powershell: |
       New-Item -Force -ItemType Directory "$(buildPubPath)"
