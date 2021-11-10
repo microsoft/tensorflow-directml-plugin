@@ -34,10 +34,10 @@ parameters:
   default: $(emailTo) # the default is stored in the pipeline as a variable
 
 # For building manylinux2010-compliant Linux wheels:
-resources:
-  containers:
-  - container: manylinux
-    image: tensorflow/tensorflow:custom-op-ubuntu16
+# resources:
+#   containers:
+#   - container: manylinux
+#     image: tensorflow/tensorflow:2.3.0-custom-op-ubuntu16
 
 stages:
 - stage: buildStage
@@ -53,7 +53,7 @@ stages:
   displayName: Report Results
   dependsOn: [buildStage]
   condition: succeededOrFailed()
-  pool: Package ES Standard Build
+  pool: DirectML_TF2_Windows_Pool
   jobs:
   - template: report.yml
     parameters:

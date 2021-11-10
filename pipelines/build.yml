@@ -1,3 +1,5 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
 
 parameters:
 - name: artifact
@@ -14,9 +16,9 @@ jobs:
   workspace:
     clean: all
   ${{if contains(parameters.artifact, '-linux-') }}:
-    pool: DirectML_TFLinux_Pool
+    pool: DirectML_TF2_Linux_Pool
   ${{if contains(parameters.artifact, '-win-') }}:
-    pool: DirectML_TFWindows_Pool
+    pool: DirectML_TF2_Windows_Pool
   variables:
     buildOutPath: $(Build.StagingDirectory)/build_out
     buildPubPath: $(Build.StagingDirectory)/build_pub
@@ -68,21 +70,21 @@ jobs:
   - ${{if contains(parameters.artifact, '-linux-') }}:
     - script: |
         $(miniconda.activateCommand)
-        python build.py --package --config $(vars.configuration) --build_output $(buildOutPath) --telemetry
+        python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry
       displayName: Build
-      target: manylinux
+      # target: manylinux
     # Rename instead of using auditwheel repair since libd3d12.so will not register as manylinux compliant
-    - powershell: |
-        get-childitem -file -recurse $(buildOutPath)
-        $original_whl = (get-childitem $(buildOutPath)/python_package/*).FullName
-        $manylinux_whl = $original_whl -replace 'linux_x86_64','manylinux2010_x86_64'
-        mv $original_whl $manylinux_whl
-      displayName: Rename Wheel
-      continueOnError: true
+    # - powershell: |
+        # get-childitem -file -recurse $(buildOutPath)
+        # $original_whl = (get-childitem $(buildOutPath)/python_package/*).FullName
+        # $manylinux_whl = $original_whl -replace 'linux_x86_64','manylinux2010_x86_64'
+        # mv $original_whl $manylinux_whl
+      # displayName: Rename Wheel
+      # continueOnError: true
   - ${{if contains(parameters.artifact, '-win-') }}:
     - powershell: |
         Invoke-Expression '$(miniconda.activateCommand)'
-        python build.py --package --config $(vars.configuration) --build_output $(buildOutPath) --telemetry
+        python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry
       displayName: Build
   - powershell: |
       New-Item -Force -ItemType Directory "$(buildPubPath)"

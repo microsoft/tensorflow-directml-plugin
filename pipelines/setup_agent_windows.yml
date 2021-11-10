@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 steps:
 - powershell: |
     $Url = 'https://github.com/bazelbuild/bazelisk/releases/download/v1.10.1/bazelisk-windows-amd64.exe'
@@ -24,8 +27,3 @@ steps:
   displayName: Install Miniconda
   name: miniconda
   workingDirectory: $(Build.StagingDirectory)
-
-- powershell: |
-    Invoke-Expression '$(miniconda.activateCommand)'
-    pip install -r requirements.txt
-  displayName: Install Python Packages

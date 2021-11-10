@@ -12,7 +12,6 @@ build:windows --action_env CC_OPT_FLAGS="/arch:AVX"
 build:windows:debug --linkopt /DEBUG:FASTLINK
 build:windows:debug --copt /Z7
 build:windows:debug --copt /FS
-build:linux --action_env TF_DOWNLOAD_CLANG="1"
 build:linux --action_env CC_OPT_FLAGS="-mavx"
 build:linux --repo_env=CC=clang
 build:linux --cxxopt=-std=c++17
@@ -29,3 +28,6 @@ build:windows --copt=/wd4190
 
 # Abseil has a few of these instances
 build:linux --copt=-Wno-implicit-int-float-conversion
+
+# Build with telemetry enabled
+build:telemetry --copt=-DDIRECTML_ENABLE_TELEMETRY
