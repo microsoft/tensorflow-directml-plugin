@@ -45,7 +45,7 @@ def build(args):
     cl.append("--subcommands")
   cl.append("--config={}".format(args.config))
   if args.telemetry:
-    cl.append("--config=dml_telemetry")
+    cl.append("--config=telemetry")
   if sys.platform == "win32":
     cl.append("--config=windows")
   else:

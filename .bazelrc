@@ -29,3 +29,6 @@ build:windows --copt=/wd4190
 
 # Abseil has a few of these instances
 build:linux --copt=-Wno-implicit-int-float-conversion
+
+# Build with telemetry enabled
+build:telemetry --copt=-DDIRECTML_ENABLE_TELEMETRY
