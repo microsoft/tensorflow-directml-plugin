@@ -7,7 +7,7 @@ steps:
     echo "##vso[task.prependpath]$(Build.StagingDirectory)"
   displayName: Install Bazelisk
   workingDirectory: $(Build.StagingDirectory)
-  target: manylinux
+  # target: manylinux
 
 - script: |
     miniconda_path="miniconda3"
@@ -20,7 +20,7 @@ steps:
   displayName: Install Miniconda
   name: miniconda
   workingDirectory: $(Build.StagingDirectory)
-  target: manylinux
+  # target: manylinux
 
 # - script: |
 #     sudo apt update
