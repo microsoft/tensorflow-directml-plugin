@@ -15,7 +15,7 @@ limitations under the License.
 
 #pragma once
 
-#include "tfdml/core/util/tensor_shape.h"
+#include "tfdml/external/tensor_shape.h"
 
 namespace tfdml
 {

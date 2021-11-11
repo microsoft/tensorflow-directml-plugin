@@ -24,8 +24,8 @@ limitations under the License.
 #include <vector>
 
 #include "absl/container/flat_hash_set.h"
-#include "tfdml/core/util/allocator.h"
-#include "tfdml/core/util/allocator_retry.h"
+#include "tfdml/external/allocator.h"
+#include "tfdml/external/allocator_retry.h"
 #include "tfdml/external/number.h"
 
 namespace tfdml

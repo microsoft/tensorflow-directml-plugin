@@ -30,7 +30,7 @@ limitations under the License.
 #include "tensorflow/core/framework/resource_handle.pb.h"
 #include "tfdml/external/macros.h"
 #include "tfdml/core/op_kernel_context.h"
-#include "tfdml/core/util/refcount.h"
+#include "tfdml/external/refcount.h"
 #include "tfdml/external/status.h"
 
 namespace tfdml

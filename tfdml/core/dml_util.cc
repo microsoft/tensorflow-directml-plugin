@@ -20,7 +20,7 @@ limitations under the License.
 #include "tfdml/core/dml_dso_loader.h"
 #include "tfdml/external/env.h"
 #include "tfdml/external/tensor.h"
-#include "tfdml/core/util/tensor_format.h"
+#include "tfdml/external/tensor_format.h"
 
 namespace tfdml
 {

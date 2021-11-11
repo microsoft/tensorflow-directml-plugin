@@ -30,7 +30,7 @@ limitations under the License.
 #include "tfdml/core/dml_device.h"
 #include "tfdml/core/dml_device_cache.h"
 #include "tfdml/core/dml_device_context.h"
-#include "tfdml/core/util/stream.h"
+#include "tfdml/external/stream.h"
 
 using namespace tfdml;
 

@@ -22,9 +22,9 @@ limitations under the License.
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/c/tf_datatype.h"
 #include "tfdml/external/macros.h"
-#include "tfdml/core/util/node_def.h"
-#include "tfdml/core/util/op_defs.h"
-#include "tfdml/core/util/op_kernel_construction.h"
+#include "node_def.h"
+#include "op_defs.h"
+#include "op_kernel_construction.h"
 #include "tfdml/core/op_kernel_context.h"
 #include "tfdml/external/status.h"
 

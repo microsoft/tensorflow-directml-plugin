@@ -24,7 +24,7 @@ limitations under the License.
 #include "dml_tracing.h"
 #include "dml_upload_heap.h"
 #include "tfdml/core/dml_util.h"
-#include "tfdml/core/util/allocator.h"
+#include "tfdml/external/allocator.h"
 #include "tfdml/external/tensor.h"
 
 // {D113B493-BBA2-4993-8608-D706A73B91CE}

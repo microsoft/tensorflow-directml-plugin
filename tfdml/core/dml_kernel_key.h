@@ -17,8 +17,8 @@ limitations under the License.
 #include "absl/types/variant.h"
 #include "tensorflow/c/tf_datatype.h"
 #include "tfdml/core/dml_common.h"
-#include "tfdml/core/util/attribute.h"
-#include "tfdml/core/util/node_def.h"
+#include "attribute.h"
+#include "node_def.h"
 #include "tfdml/external/tensor.h"
 
 namespace tfdml

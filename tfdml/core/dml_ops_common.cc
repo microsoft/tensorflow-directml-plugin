@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/core/kernels/dml_ops_common.h"
+#include "dml_ops_common.h"
 
 #include <numeric>
 
@@ -22,8 +22,8 @@ limitations under the License.
 #include "tfdml/core/dml_tracing.h"
 #include "tfdml/core/dml_util.h"
 #include "tfdml/external/number.h"
-#include "tfdml/core/util/op_kernel.h"
-#include "tfdml/core/util/types.h"
+#include "op_kernel.h"
+#include "types.h"
 
 #ifdef _WIN32
 #include "tfdml/external/wide_char.h"

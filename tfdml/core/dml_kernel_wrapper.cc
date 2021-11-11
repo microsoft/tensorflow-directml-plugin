@@ -20,7 +20,7 @@ limitations under the License.
 #include "tfdml/core/dml_operator_helper.h"
 #include "tfdml/core/dml_tracing.h"
 #include "tfdml/core/dml_util.h"
-#include "tfdml/core/util/types.h"
+#include "types.h"
 
 namespace tfdml
 {

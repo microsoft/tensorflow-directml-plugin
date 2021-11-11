@@ -13,7 +13,7 @@ limitations under the License.
 
 #pragma once
 
-#include "tfdml/core/util/device.h"
+#include "device.h"
 
 class IDMLDevice;
 class ID3D12Device;

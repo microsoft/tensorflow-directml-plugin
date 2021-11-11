@@ -22,7 +22,7 @@ limitations under the License.
 #include "tfdml/core/dml_kernel_context.h"
 #include "tfdml/core/dml_operator_helper.h"
 #include "tfdml/core/dml_tensor_desc.h"
-#include "tfdml/core/util/types.h"
+#include "types.h"
 
 namespace tfdml
 {

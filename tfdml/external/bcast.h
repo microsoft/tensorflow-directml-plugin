@@ -16,7 +16,7 @@ limitations under the License.
 #pragma once
 
 #include "absl/container/inlined_vector.h"
-#include "tfdml/core/util/tensor_shape.h"
+#include "tfdml/external/tensor_shape.h"
 
 namespace tfdml
 {

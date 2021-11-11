@@ -15,11 +15,11 @@ limitations under the License.
 
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/c/tf_tensor.h"
-#include "tfdml/core/util/device.h"
+#include "tfdml/device.h"
 #include "tfdml/external/macros.h"
-#include "tfdml/core/util/op_kernel.h"
+#include "tfdml/op_kernel.h"
 #include "tfdml/external/status.h"
-#include "tfdml/core/util/stream.h"
+#include "tfdml/external/stream.h"
 
 namespace tfdml
 {

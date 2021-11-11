@@ -17,8 +17,8 @@ limitations under the License.
 #include "tfdml/core/dml_buffer_region.h"
 #include "tfdml/core/dml_common.h"
 #include "tfdml/external/macros.h"
-#include "tfdml/core/util/tensor_format.h"
-#include "tfdml/core/util/tensor_shape.h"
+#include "tfdml/external/tensor_format.h"
+#include "tfdml/external/tensor_shape.h"
 
 struct SP_DeviceMemoryBase;
 

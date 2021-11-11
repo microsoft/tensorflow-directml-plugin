@@ -20,7 +20,7 @@ limitations under the License.
 #include "tfdml/core/dml_device.h"
 #include "tfdml/core/dml_kernel_manager.h"
 #include "tfdml/core/kernels/dml_ops_common.h"
-#include "tfdml/core/util/op_kernel.h"
+#include "op_kernel.h"
 
 namespace tfdml
 {

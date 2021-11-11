@@ -17,7 +17,7 @@ limitations under the License.
 #pragma once
 
 #include "tensorflow/c/logging.h"
-#include "tfdml/core/util/types.h"
+#include "types.h"
 
 // Compiler attributes
 #if defined(__GNUC__)

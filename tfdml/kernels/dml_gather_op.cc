@@ -18,11 +18,11 @@ limitations under the License.
 #include "tfdml/core/dml_util.h"
 #include "tfdml/core/kernels/dml_kernel_wrapper.h"
 #include "tfdml/core/kernels/dml_ops_common.h"
-#include "tfdml/core/util/attribute.h"
-#include "tfdml/core/util/kernel_def_builder.h"
-#include "tfdml/core/util/refcount.h"
-#include "tfdml/core/util/resource_var.h"
-#include "tfdml/core/util/types.h"
+#include "tfdml/core/attribute.h"
+#include "tfdml/core/kernel_def_builder.h"
+#include "tfdml/external/refcount.h"
+#include "tfdml/external/resource_var.h"
+#include "tfdml/external/types.h"
 
 namespace tfdml
 {

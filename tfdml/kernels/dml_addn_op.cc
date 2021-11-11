@@ -18,7 +18,7 @@ limitations under the License.
 #include "tfdml/core/dml_util.h"
 #include "tfdml/core/kernels/dml_kernel_wrapper.h"
 #include "tfdml/core/kernels/dml_ops_common.h"
-#include "tfdml/core/util/kernel_def_builder.h"
+#include "tfdml/core/kernel_def_builder.h"
 #include "tfdml/external/macros.h"
 
 namespace tfdml

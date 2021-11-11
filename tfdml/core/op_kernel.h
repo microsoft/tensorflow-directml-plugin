@@ -16,10 +16,10 @@ limitations under the License.
 #include <string>
 
 #include "absl/types/span.h"
-#include "tfdml/core/util/attribute.h"
-#include "tfdml/core/util/node_def.h"
-#include "tfdml/core/util/resource_mgr.h"
-#include "tfdml/core/util/types.h"
+#include "attribute.h"
+#include "node_def.h"
+#include "tfdml/external/resource_mgr.h"
+#include "types.h"
 
 namespace tfdml
 {

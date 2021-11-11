@@ -15,8 +15,8 @@ limitations under the License.
 
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/core/framework/tensor.pb.h"
-#include "tfdml/core/util/attribute.h"
-#include "tfdml/core/util/op_defs.h"
+#include "attribute.h"
+#include "op_defs.h"
 #include "tfdml/external/status.h"
 #include "tfdml/external/tensor.h"
 
