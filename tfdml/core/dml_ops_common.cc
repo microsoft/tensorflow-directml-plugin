@@ -21,7 +21,7 @@ limitations under the License.
 #include "tensorflow/c/logging.h"
 #include "tfdml/core/dml_tracing.h"
 #include "tfdml/core/dml_util.h"
-#include "tfdml/external/number.h"
+#include "tfdml/external/numbers.h"
 #include "op_kernel.h"
 #include "types.h"
 

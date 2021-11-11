@@ -50,7 +50,7 @@ def build(args):
     cl.append("--config=windows")
   else:
     cl.append("--config=linux")
-  cl.append("//tfdml/core:core")
+  cl.append("//tfdml:external")
   # cl.append("//tfdml/tools/pip_package:build_pip_package")
   cl.append("--action_env PYTHON_BIN_PATH={}".format(python_bin_path))
   cl.append("--action_env PYTHON_LIB_PATH={}".format(python_lib_path))

@@ -15,9 +15,9 @@ limitations under the License.
 
 #include "absl/container/inlined_vector.h"
 #include "absl/types/variant.h"
-#include "tfdml/op_defs.h"
-#include "tfdml/op_kernel_construction.h"
-#include "tfdml/types.h"
+#include "tfdml/external/op_defs.h"
+#include "tfdml/external/op_kernel_construction.h"
+#include "tfdml/external/types.h"
 
 namespace tfdml
 {

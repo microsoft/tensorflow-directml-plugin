@@ -11,20 +11,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/core/device.h"
+#pragma once
+
+#include "absl/container/inlined_vector.h"
+#include "absl/types/optional.h"
+#include "absl/types/span.h"
+#include "absl/types/variant.h"
+#include "tfdml/external/types.h"
 
 namespace tfdml
 {
-
-Device::Device() { rmgr_ = new ResourceMgr(); }
-
-Device::~Device()
-{
-    if (rmgr_ != nullptr)
-    {
-        delete rmgr_;
-        rmgr_ = nullptr;
-    }
-}
+using AttributeValue = absl::optional<absl::variant<
+    TF_DataType,
+    int64_t,
+    float,
+    bool,
+    std::string,
+    std::vector<TF_DataType>,
+    std::vector<int64_t>,
+    std::vector<float>,
+    std::vector<bool>,
+    std::vector<std::string>>>;
 
 } // namespace tfdml

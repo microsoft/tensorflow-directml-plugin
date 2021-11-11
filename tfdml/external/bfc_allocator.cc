@@ -19,7 +19,7 @@ limitations under the License.
 
 #include "tensorflow/c/logging.h"
 #include "tfdml/external/macros.h"
-#include "tfdml/external/number.h"
+#include "tfdml/external/numbers.h"
 
 namespace tfdml
 {

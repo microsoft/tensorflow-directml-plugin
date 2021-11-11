@@ -17,7 +17,7 @@ limitations under the License.
 #include "tfdml/external/status.h"
 #include "tfdml/external/statusor.h"
 #include "tfdml/external/tensor.h"
-#include "types.h"
+#include "tfdml/external/types.h"
 
 struct TF_OpKernelContext;
 
