@@ -35,27 +35,16 @@ namespace tfdml
 class MatMulInitHelper : public InitializationHelper
 {
   public:
-    struct Attributes : public BaseAttributes
+    struct Attributes
     {
         explicit Attributes(OpKernelConstruction* ctx)
         {
             OP_REQUIRES_OK(ctx, ctx->GetAttr("transpose_a", &transpose_a));
             OP_REQUIRES_OK(ctx, ctx->GetAttr("transpose_b", &transpose_b));
-
-            named_attributes_ = {
-                {"transpose_a", transpose_a},
-                {"transpose_b", transpose_b},
-            };
-        }
-
-        absl::Span<const NameAttributePair> GetNamedAttributes() const final
-        {
-            return named_attributes_;
         }
 
         bool transpose_a;
         bool transpose_b;
-        absl::InlinedVector<NameAttributePair, 1> named_attributes_;
     };
 
     MatMulInitHelper(
@@ -102,27 +91,16 @@ class MatMulInitHelper : public InitializationHelper
 class BaseBatchMatMulInitHelper : public InitializationHelper
 {
   public:
-    struct Attributes : public BaseAttributes
+    struct Attributes
     {
         explicit Attributes(OpKernelConstruction* ctx)
         {
             OP_REQUIRES_OK(ctx, ctx->GetAttr("adj_x", &adj_x));
             OP_REQUIRES_OK(ctx, ctx->GetAttr("adj_y", &adj_y));
-
-            named_attributes_ = {
-                {"adj_x", adj_x},
-                {"adj_y", adj_y},
-            };
-        }
-
-        absl::Span<const NameAttributePair> GetNamedAttributes() const final
-        {
-            return named_attributes_;
         }
 
         bool adj_x;
         bool adj_y;
-        absl::InlinedVector<NameAttributePair, 1> named_attributes_;
     };
 
     BaseBatchMatMulInitHelper(
@@ -429,14 +407,6 @@ class DmlMatMulKernel : public DmlKernel
     }
 };
 
-#define DML_REGISTER_KERNEL(type)                                              \
-    REGISTER_KERNEL_BUILDER(                                                   \
-        Name("MatMul").Device(DEVICE_DML).TypeConstraint<type>("T"),           \
-        DmlKernelWrapper<DmlMatMulKernel, MatMulShapeHelper>);
-TF_CALL_float(DML_REGISTER_KERNEL);
-TF_CALL_half(DML_REGISTER_KERNEL);
-#undef DML_REGISTER_KERNEL
-
 template <typename TInitHelper> class DmlBatchMatMulKernel : public DmlKernel
 {
   public:
@@ -556,26 +526,6 @@ template <typename TInitHelper> class DmlBatchMatMulKernel : public DmlKernel
         Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
-
-#define DML_REGISTER_KERNEL(type)                                              \
-    REGISTER_KERNEL_BUILDER(                                                   \
-        Name("BatchMatMul").Device(DEVICE_DML).TypeConstraint<type>("T"),      \
-        DmlKernelWrapper<                                                      \
-            DmlBatchMatMulKernel<BatchMatMulInitHelper>,                       \
-            BatchMatMulShapeHelper<BatchMatMulInitHelper>>);
-TF_CALL_float(DML_REGISTER_KERNEL);
-TF_CALL_half(DML_REGISTER_KERNEL);
-#undef DML_REGISTER_KERNEL
-
-#define DML_REGISTER_KERNEL(type)                                              \
-    REGISTER_KERNEL_BUILDER(                                                   \
-        Name("BatchMatMulV2").Device(DEVICE_DML).TypeConstraint<type>("T"),    \
-        DmlKernelWrapper<                                                      \
-            DmlBatchMatMulKernel<BatchMatMulV2InitHelper>,                     \
-            BatchMatMulShapeHelper<BatchMatMulV2InitHelper>>);
-TF_CALL_float(DML_REGISTER_KERNEL);
-TF_CALL_half(DML_REGISTER_KERNEL);
-#undef DML_REGISTER_KERNEL
 
 /*
 class FusedMatMulInitHelper : public MatMulInitHelper {
@@ -706,4 +656,42 @@ TF_CALL_float(DML_REGISTER_KERNEL);
 TF_CALL_half(DML_REGISTER_KERNEL);
 #undef DML_REGISTER_KERNEL
 */
+
+void RegisterMatMul()
+{
+    using K = KernelDefinition<
+        ops::MatMul,
+        DmlKernelWrapper<DmlMatMulKernel, MatMulShapeHelper>>;
+
+    RegisterWithTypes<K, ops::MatMul::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+void RegisterBatchMatMul()
+{
+    using K = KernelDefinition<
+        ops::BatchMatMul,
+        DmlKernelWrapper<
+            DmlBatchMatMulKernel<BatchMatMulInitHelper>,
+            BatchMatMulShapeHelper<BatchMatMulInitHelper>>>;
+
+    RegisterWithTypes<K, ops::BatchMatMul::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+void RegisterBatchMatMulV2()
+{
+    using K = KernelDefinition<
+        ops::BatchMatMulV2,
+        DmlKernelWrapper<
+            DmlBatchMatMulKernel<BatchMatMulV2InitHelper>,
+            BatchMatMulShapeHelper<BatchMatMulV2InitHelper>>>;
+
+    RegisterWithTypes<K, ops::BatchMatMulV2::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+void RegisterKernels_MatMul()
+{
+    RegisterBatchMatMul();
+    RegisterBatchMatMulV2();
+}
+
 } // namespace tfdml
