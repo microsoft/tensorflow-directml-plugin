@@ -11,9 +11,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/core/common_runtime/dml/dml_adapter.h"
-
-#include "tfdml/core/common_runtime/dml/dml_adapter_impl.h"
+#include "tfdml/core/dml_adapter.h"
+#include "tfdml/core/dml_adapter_impl.h"
 
 namespace tfdml
 {

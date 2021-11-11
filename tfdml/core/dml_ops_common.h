@@ -16,12 +16,12 @@ limitations under the License.
 
 #pragma once
 
-#include "tfdml/core/common_runtime/dml/dml_buffer.h"
-#include "tfdml/core/common_runtime/dml/dml_common.h"
-#include "tfdml/core/common_runtime/dml/dml_device.h"
-#include "tfdml/core/common_runtime/dml/dml_kernel_context.h"
-#include "tfdml/core/common_runtime/dml/dml_operator_helper.h"
-#include "tfdml/core/common_runtime/dml/dml_tensor_desc.h"
+#include "tfdml/core/dml_buffer.h"
+#include "tfdml/core/dml_common.h"
+#include "tfdml/core/dml_device.h"
+#include "tfdml/core/dml_kernel_context.h"
+#include "tfdml/core/dml_operator_helper.h"
+#include "tfdml/core/dml_tensor_desc.h"
 #include "tfdml/core/util/types.h"
 
 namespace tfdml

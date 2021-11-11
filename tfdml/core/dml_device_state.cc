@@ -22,9 +22,9 @@ limitations under the License.
 #include "dml_readback_heap.h"
 #include "dml_upload_heap.h"
 #include "dml_util.h"
-#include "tfdml/core/common_runtime/dml/dml_dso_loader.h"
-#include "tfdml/core/common_runtime/dml/dml_heap_allocator.h"
-#include "tfdml/core/util/env_var.h"
+#include "tfdml/core/dml_dso_loader.h"
+#include "tfdml/core/dml_heap_allocator.h"
+#include "tfdml/external/env_var.h"
 
 using Microsoft::WRL::ComPtr;
 

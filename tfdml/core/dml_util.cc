@@ -11,15 +11,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/core/common_runtime/dml/dml_util.h"
+#include "tfdml/core/dml_util.h"
 
 #include "tensorflow/c/experimental/stream_executor/stream_executor.h"
 #include "tensorflow/c/logging.h"
-#include "tfdml/core/common_runtime/dml/dml_bfc_allocator.h"
-#include "tfdml/core/common_runtime/dml/dml_device.h"
-#include "tfdml/core/common_runtime/dml/dml_dso_loader.h"
-#include "tfdml/core/util/env.h"
-#include "tfdml/core/util/tensor.h"
+#include "tfdml/core/dml_bfc_allocator.h"
+#include "tfdml/core/dml_device.h"
+#include "tfdml/core/dml_dso_loader.h"
+#include "tfdml/external/env.h"
+#include "tfdml/external/tensor.h"
 #include "tfdml/core/util/tensor_format.h"
 
 namespace tfdml

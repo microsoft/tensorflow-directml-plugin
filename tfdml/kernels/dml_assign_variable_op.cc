@@ -15,15 +15,15 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tensorflow/c/tf_datatype.h"
-#include "tfdml/core/common_runtime/dml/dml_common.h"
+#include "tfdml/core/dml_common.h"
 #include "tfdml/core/util/kernel_def_builder.h"
-#include "tfdml/core/util/macros.h"
+#include "tfdml/external/macros.h"
 #include "tfdml/core/util/op_kernel.h"
 #include "tfdml/core/util/op_kernel_construction.h"
-#include "tfdml/core/util/op_kernel_context.h"
+#include "tfdml/core/op_kernel_context.h"
 #include "tfdml/core/util/refcount.h"
 #include "tfdml/core/util/resource_var.h"
-#include "tfdml/core/util/tensor.h"
+#include "tfdml/external/tensor.h"
 
 namespace tfdml
 {

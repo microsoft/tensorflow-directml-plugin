@@ -15,7 +15,7 @@ limitations under the License.
 
 #include "dml_bfc_allocator.h"
 #include "dml_device.h"
-#include "tfdml/core/util/op_kernel_context.h"
+#include "tfdml/core/op_kernel_context.h"
 
 namespace tfdml
 {

@@ -15,10 +15,10 @@ limitations under the License.
 
 #include <memory>
 
-#include "tfdml/core/common_runtime/dml/dml_common.h"
-#include "tfdml/core/common_runtime/dml/dml_gpu_event.h"
-#include "tfdml/core/common_runtime/dml/dml_kernel_context.h"
-#include "tfdml/core/common_runtime/dml/dml_kernel_key.h"
+#include "tfdml/core/dml_common.h"
+#include "tfdml/core/dml_gpu_event.h"
+#include "tfdml/core/dml_kernel_context.h"
+#include "tfdml/core/dml_kernel_key.h"
 
 namespace tfdml
 {

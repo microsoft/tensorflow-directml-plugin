@@ -16,10 +16,10 @@ limitations under the License.
 #include "absl/container/flat_hash_map.h"
 #include "absl/types/variant.h"
 #include "tensorflow/c/tf_datatype.h"
-#include "tfdml/core/common_runtime/dml/dml_common.h"
+#include "tfdml/core/dml_common.h"
 #include "tfdml/core/util/attribute.h"
 #include "tfdml/core/util/node_def.h"
-#include "tfdml/core/util/tensor.h"
+#include "tfdml/external/tensor.h"
 
 namespace tfdml
 {

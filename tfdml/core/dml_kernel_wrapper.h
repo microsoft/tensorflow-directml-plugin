@@ -16,9 +16,9 @@ limitations under the License.
 
 #pragma once
 
-#include "tfdml/core/common_runtime/dml/dml_common.h"
-#include "tfdml/core/common_runtime/dml/dml_device.h"
-#include "tfdml/core/common_runtime/dml/dml_kernel_manager.h"
+#include "tfdml/core/dml_common.h"
+#include "tfdml/core/dml_device.h"
+#include "tfdml/core/dml_kernel_manager.h"
 #include "tfdml/core/kernels/dml_ops_common.h"
 #include "tfdml/core/util/op_kernel.h"
 

@@ -16,10 +16,10 @@ limitations under the License.
 
 #include "tfdml/core/kernels/dml_kernel_wrapper.h"
 
-#include "tfdml/core/common_runtime/dml/dml_execution_context.h"
-#include "tfdml/core/common_runtime/dml/dml_operator_helper.h"
-#include "tfdml/core/common_runtime/dml/dml_tracing.h"
-#include "tfdml/core/common_runtime/dml/dml_util.h"
+#include "tfdml/core/dml_execution_context.h"
+#include "tfdml/core/dml_operator_helper.h"
+#include "tfdml/core/dml_tracing.h"
+#include "tfdml/core/dml_util.h"
 #include "tfdml/core/util/types.h"
 
 namespace tfdml

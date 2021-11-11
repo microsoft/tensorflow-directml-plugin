@@ -23,9 +23,9 @@ limitations under the License.
 #include "dml_readback_heap.h"
 #include "dml_tracing.h"
 #include "dml_upload_heap.h"
-#include "tfdml/core/common_runtime/dml/dml_util.h"
+#include "tfdml/core/dml_util.h"
 #include "tfdml/core/util/allocator.h"
-#include "tfdml/core/util/tensor.h"
+#include "tfdml/external/tensor.h"
 
 // {D113B493-BBA2-4993-8608-D706A73B91CE}
 static const GUID PIX_EVAL_CAPTURABLE_WORK_GUID = {

@@ -13,7 +13,7 @@ limitations under the License.
 
 #include "dml_event_queue.h"
 
-#include "tfdml/core/util/macros.h"
+#include "tfdml/external/macros.h"
 
 namespace tfdml
 {

@@ -19,7 +19,7 @@ limitations under the License.
 #include "absl/types/optional.h"
 #include "tensorflow/c/tf_datatype.h"
 #include "tensorflow/core/framework/resource_handle.pb.h"
-#include "tfdml/core/util/macros.h"
+#include "tfdml/external/macros.h"
 #include "tfdml/core/util/tensor_shape.h"
 
 struct TF_Tensor;

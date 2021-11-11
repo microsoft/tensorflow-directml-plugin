@@ -11,9 +11,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/core/common_runtime/dml/dml_kernel_key.h"
+#include "tfdml/core/dml_kernel_key.h"
 
-#include "tfdml/core/util/tensor.h"
+#include "tfdml/external/tensor.h"
 
 namespace tfdml
 {

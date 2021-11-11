@@ -11,11 +11,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/core/common_runtime/dml/dml_error_handling.h"
+#include "tfdml/core/dml_error_handling.h"
 
 #include "absl/strings/str_cat.h"
 #include "tensorflow/c/logging.h"
-#include "tfdml/core/util/macros.h"
+#include "tfdml/external/macros.h"
 
 namespace tfdml
 {

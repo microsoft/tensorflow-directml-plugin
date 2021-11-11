@@ -15,7 +15,7 @@ limitations under the License.
 
 #include "dml_buffer_region.h"
 #include "dml_common.h"
-#include "tfdml/core/util/tensor.h"
+#include "tfdml/external/tensor.h"
 
 namespace tfdml
 {

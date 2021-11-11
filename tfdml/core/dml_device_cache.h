@@ -16,9 +16,9 @@ limitations under the License.
 #include <mutex>
 #include <unordered_map>
 
-#include "tfdml/core/common_runtime/dml/dml_adapter.h"
-#include "tfdml/core/common_runtime/dml/dml_device_state.h"
-#include "tfdml/core/util/status.h"
+#include "tfdml/core/dml_adapter.h"
+#include "tfdml/core/dml_device_state.h"
+#include "tfdml/external/status.h"
 
 namespace tfdml
 {

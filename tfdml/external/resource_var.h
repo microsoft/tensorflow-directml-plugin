@@ -22,7 +22,7 @@ limitations under the License.
 #include "absl/strings/str_cat.h"
 #include "tensorflow/c/tf_datatype.h"
 #include "tfdml/core/util/resource_mgr.h"
-#include "tfdml/core/util/tensor.h"
+#include "tfdml/external/tensor.h"
 
 namespace tfdml
 {

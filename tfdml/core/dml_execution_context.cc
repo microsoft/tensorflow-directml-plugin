@@ -17,9 +17,9 @@ limitations under the License.
 #include "dml_buffer.h"
 #include "dml_tracing.h"
 #include "dml_util.h"
-#include "tfdml/core/common_runtime/dml/dml_dso_loader.h"
-#include "tfdml/core/util/env.h"
-#include "tfdml/core/util/env_var.h"
+#include "tfdml/core/dml_dso_loader.h"
+#include "tfdml/external/env.h"
+#include "tfdml/external/env_var.h"
 
 #if _WIN32
 typedef HRESULT(

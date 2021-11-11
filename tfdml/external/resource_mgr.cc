@@ -19,8 +19,8 @@ limitations under the License.
 
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
-#include "tfdml/core/util/macros.h"
-#include "tfdml/core/util/op_kernel_context.h"
+#include "tfdml/external/macros.h"
+#include "tfdml/core/op_kernel_context.h"
 
 namespace tfdml
 {

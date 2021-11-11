@@ -15,9 +15,9 @@ limitations under the License.
 
 #include "dml_util.h"
 #include "tensorflow/c/logging.h"
-#include "tfdml/core/util/env_var.h"
-#include "tfdml/core/util/numbers.h"
-#include "tfdml/core/util/status.h"
+#include "tfdml/external/env_var.h"
+#include "tfdml/external/number.h"
+#include "tfdml/external/status.h"
 
 namespace tfdml
 {

@@ -15,7 +15,7 @@ limitations under the License.
 
 #include "dml_common.h"
 #include "dml_gpu_event.h"
-#include "tfdml/core/util/status.h"
+#include "tfdml/external/status.h"
 
 namespace tfdml
 {

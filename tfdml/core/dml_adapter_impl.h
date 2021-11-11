@@ -13,9 +13,9 @@ limitations under the License.
 
 #pragma once
 
-#include "tfdml/core/common_runtime/dml/dml_adapter.h"
-#include "tfdml/core/common_runtime/dml/dml_common.h"
-#include "tfdml/core/util/status.h"
+#include "tfdml/core/dml_adapter.h"
+#include "tfdml/core/dml_common.h"
+#include "tfdml/external/status.h"
 
 namespace tfdml
 {

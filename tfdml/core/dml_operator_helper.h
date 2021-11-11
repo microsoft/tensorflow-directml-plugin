@@ -13,10 +13,10 @@ limitations under the License.
 
 #pragma once
 
-#include "tfdml/core/common_runtime/dml/dml_common.h"
+#include "tfdml/core/dml_common.h"
 #include "tfdml/core/util/attribute.h"
-#include "tfdml/core/util/op_kernel_context.h"
-#include "tfdml/core/util/tensor.h"
+#include "tfdml/core/op_kernel_context.h"
+#include "tfdml/external/tensor.h"
 #include "tfdml/core/util/tensor_shape_utils.h"
 
 namespace tfdml

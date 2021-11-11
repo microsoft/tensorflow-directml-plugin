@@ -11,19 +11,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/core/common_runtime/dml/dml_adapter_impl.h"
+#include "tfdml/core/dml_adapter_impl.h"
 
 #include <numeric>
 
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_split.h"
-#include "dml_util.h"
+#include "tfdml/core/dml_util.h"
 #include "tensorflow/c/logging.h"
-#include "tfdml/core/util/macros.h"
-#include "tfdml/core/util/status.h"
+#include "tfdml/external/macros.h"
+#include "tfdml/external/status.h"
 
 #if _WIN32
-#include "tfdml/core/util/wide_char.h"
+#include "tfdml/external/wide_char.h"
 #endif
 
 using Microsoft::WRL::ComPtr;

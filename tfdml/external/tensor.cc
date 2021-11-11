@@ -18,8 +18,8 @@ limitations under the License.
 #include "tensorflow/c/tf_tstring.h"
 #include "tensorflow/core/framework/tensor.pb.h"
 #include "tensorflow/core/framework/types.pb.h"
-#include "tfdml/core/util/macros.h"
-#include "tfdml/core/util/status.h"
+#include "tfdml/external/macros.h"
+#include "tfdml/external/status.h"
 
 namespace tfdml
 {

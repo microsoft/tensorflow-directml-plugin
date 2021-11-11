@@ -21,12 +21,12 @@ limitations under the License.
 #include "absl/types/span.h"
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/c/tf_datatype.h"
-#include "tfdml/core/util/macros.h"
+#include "tfdml/external/macros.h"
 #include "tfdml/core/util/node_def.h"
 #include "tfdml/core/util/op_defs.h"
 #include "tfdml/core/util/op_kernel_construction.h"
-#include "tfdml/core/util/op_kernel_context.h"
-#include "tfdml/core/util/status.h"
+#include "tfdml/core/op_kernel_context.h"
+#include "tfdml/external/status.h"
 
 struct TF_OpKernelConstruction;
 struct TF_OpKernelContext;

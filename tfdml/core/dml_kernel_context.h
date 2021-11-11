@@ -14,15 +14,15 @@ limitations under the License.
 #pragma once
 
 #include "tensorflow/c/kernels.h"
-#include "tfdml/core/common_runtime/dml/dml_buffer.h"
-#include "tfdml/core/common_runtime/dml/dml_buffer_region.h"
-#include "tfdml/core/common_runtime/dml/dml_common.h"
-#include "tfdml/core/common_runtime/dml/dml_descriptor_bfc_allocator.h"
-#include "tfdml/core/common_runtime/dml/dml_device_context.h"
-#include "tfdml/core/common_runtime/dml/dml_gpu_event.h"
-#include "tfdml/core/util/op_kernel_context.h"
-#include "tfdml/core/util/statusor.h"
-#include "tfdml/core/util/tensor.h"
+#include "tfdml/core/dml_buffer.h"
+#include "tfdml/core/dml_buffer_region.h"
+#include "tfdml/core/dml_common.h"
+#include "tfdml/core/dml_descriptor_bfc_allocator.h"
+#include "tfdml/core/dml_device_context.h"
+#include "tfdml/core/dml_gpu_event.h"
+#include "tfdml/core/op_kernel_context.h"
+#include "tfdml/external/statusor.h"
+#include "tfdml/external/tensor.h"
 
 class IDMLDevice;
 class ID3D12Device;

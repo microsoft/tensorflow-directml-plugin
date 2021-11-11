@@ -11,12 +11,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/core/common_runtime/dml/dml_operator_helper.h"
+#include "tfdml/core/dml_operator_helper.h"
 
 #include "tfdml/core/util/bcast.h"
-#include "tfdml/core/util/macros.h"
-#include "tfdml/core/util/op_kernel_context.h"
-#include "tfdml/core/util/status.h"
+#include "tfdml/external/macros.h"
+#include "tfdml/core/op_kernel_context.h"
+#include "tfdml/external/status.h"
 
 namespace tfdml
 {

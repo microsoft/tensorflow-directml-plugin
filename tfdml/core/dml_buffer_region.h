@@ -14,7 +14,7 @@ limitations under the License.
 #pragma once
 
 #include "dml_common.h"
-#include "tfdml/core/util/macros.h"
+#include "tfdml/external/macros.h"
 
 namespace tfdml
 {

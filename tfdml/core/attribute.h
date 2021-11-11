@@ -17,7 +17,7 @@ limitations under the License.
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "absl/types/variant.h"
-#include "tfdml/core/util/types.h"
+#include "tfdml/core/types.h"
 
 namespace tfdml
 {

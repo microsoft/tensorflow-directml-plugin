@@ -18,8 +18,8 @@ limitations under the License.
 #include "absl/container/inlined_vector.h"
 #include "absl/strings/string_view.h"
 #include "tensorflow/c/tf_datatype.h"
-#include "tfdml/core/util/macros.h"
-#include "tfdml/core/util/tensor.h"
+#include "tfdml/external/macros.h"
+#include "tfdml/external/tensor.h"
 
 namespace tfdml
 {

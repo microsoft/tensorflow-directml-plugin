@@ -16,8 +16,8 @@ limitations under the License.
 #include "dml_bfc_allocator.h"
 #include "dml_util.h"
 #include "tensorflow/c/experimental/stream_executor/stream_executor.h"
-#include "tfdml/core/common_runtime/dml/dml_device.h"
-#include "tfdml/core/util/status.h"
+#include "tfdml/core/dml_device.h"
+#include "tfdml/external/status.h"
 
 namespace tfdml
 {

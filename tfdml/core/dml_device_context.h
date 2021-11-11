@@ -20,7 +20,7 @@ limitations under the License.
 #include "dml_execution_context.h"
 #include "dml_readback_heap.h"
 #include "dml_upload_heap.h"
-#include "tfdml/core/util/tensor.h"
+#include "tfdml/external/tensor.h"
 
 struct SP_DeviceMemoryBase;
 

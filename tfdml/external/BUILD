@@ -1,0 +1,88 @@
+load(
+    "//tfdml:tfdml.bzl",
+    "if_not_windows",
+    "if_windows",
+)
+
+package(
+    licenses = ["notice"],  # Apache 2.0
+)
+
+# Contains source that is copied & potentially modified from the TF upstream repo.
+cc_library(
+    name = "external",
+    srcs = [
+        "allocator.cc",
+        "allocator_retry.cc",
+        "bcast.cc",
+        "bfc_allocator.cc",
+        "env.cc",
+        "env_var.cc",
+        "numbers.cc",
+        "resource_mgr.cc",
+        "status.cc",
+        "tensor.cc",
+        "tensor_shape.cc",
+        "tensor_shape_utils.cc",
+    ],
+    hdrs = [
+        "allocator.h",
+        "allocator_retry.h",
+        "bcast.h",
+        "bfc_allocator.h",
+        "env.h",
+        "env_var.h",
+        "macros.h",
+        "numbers.h",
+        "refcount.h",
+        "resource_mgr.h",
+        "resource_var.h",
+        "status.h",
+        "statusor.h",
+        "stream.h",
+        "tensor.h",
+        "tensor_format.h",
+        "tensor_shape.h",
+        "tensor_shape_utils.h",
+        "wide_char.h",
+    ],
+    copts = if_windows([
+        "-DDML_BUILD_WINDOWS",
+        "-D_WIN32_WINNT=_WIN32_WINNT_WIN10",
+    ]),
+    linkopts = if_windows([
+        "pathcch.lib",
+        "advapi32.lib",
+    ]) + if_not_windows([
+        "-Wl,-rpath,$$ORIGIN/directml",
+    ]),
+    linkstatic = 1,
+    visibility = ["//visibility:public"],
+    deps = [
+        "@dml_redist//:headers",
+        "@directml//:directmlx",
+        "@directx_headers//:directx_headers",
+        "@directx_headers//:directx_guids",
+        "@directx_headers//:directx_winadapter",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/base:config",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/container:hash_function_defaults",
+        "@com_google_absl//absl/container:inlined_vector",
+        "@com_google_absl//absl/container:raw_hash_map",
+        "@com_google_absl//absl/container:raw_hash_set",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/synchronization",
+        "@com_google_absl//absl/time",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:span",
+        "@com_google_absl//absl/types:variant",
+        "@tensorflow//:headers",
+        "@tensorflow//:lib",
+        "@tensorflow//:resource_handle_cc_proto",
+    ] + if_windows(["@pix//:headers"]),
+    alwayslink = 1,
+)

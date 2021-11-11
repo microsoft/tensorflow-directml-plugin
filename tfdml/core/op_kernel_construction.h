@@ -17,8 +17,8 @@ limitations under the License.
 #include "tensorflow/core/framework/tensor.pb.h"
 #include "tfdml/core/util/attribute.h"
 #include "tfdml/core/util/op_defs.h"
-#include "tfdml/core/util/status.h"
-#include "tfdml/core/util/tensor.h"
+#include "tfdml/external/status.h"
+#include "tfdml/external/tensor.h"
 
 struct TF_OpKernelConstruction;
 

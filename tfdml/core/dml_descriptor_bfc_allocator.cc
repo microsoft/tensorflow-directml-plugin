@@ -13,8 +13,8 @@ limitations under the License.
 
 #include "dml_descriptor_bfc_allocator.h"
 
-#include "tfdml/core/util/op_kernel_context.h"
-#include "tfdml/core/util/status.h"
+#include "tfdml/core/op_kernel_context.h"
+#include "tfdml/external/status.h"
 
 namespace tfdml
 {

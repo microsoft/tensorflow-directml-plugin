@@ -16,7 +16,7 @@ limitations under the License.
 
 #pragma once
 
-#include "tfdml/core/util/statusor.h"
+#include "tfdml/external/statusor.h"
 
 namespace tfdml
 {

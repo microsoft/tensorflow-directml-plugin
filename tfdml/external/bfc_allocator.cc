@@ -18,8 +18,8 @@ limitations under the License.
 #include <atomic>
 
 #include "tensorflow/c/logging.h"
-#include "tfdml/core/util/macros.h"
-#include "tfdml/core/util/numbers.h"
+#include "tfdml/external/macros.h"
+#include "tfdml/external/number.h"
 
 namespace tfdml
 {

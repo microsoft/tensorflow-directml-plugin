@@ -13,8 +13,8 @@ limitations under the License.
 
 #pragma once
 
-#include "tfdml/core/util/resource_mgr.h"
-#include "tfdml/core/util/status.h"
+#include "tfdml/external/resource_mgr.h"
+#include "tfdml/external/status.h"
 
 namespace tfdml
 {

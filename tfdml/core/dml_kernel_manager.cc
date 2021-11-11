@@ -11,9 +11,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/core/common_runtime/dml/dml_kernel_manager.h"
+#include "tfdml/core/dml_kernel_manager.h"
 
-#include "tfdml/core/util/env_var.h"
+#include "tfdml/external/env_var.h"
 
 namespace tfdml
 {

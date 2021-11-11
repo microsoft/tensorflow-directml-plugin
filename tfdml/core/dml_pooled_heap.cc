@@ -13,9 +13,9 @@ limitations under the License.
 
 #include "dml_pooled_heap.h"
 
-#include "tfdml/core/common_runtime/dml/dml_util.h"
-#include "tfdml/core/util/numbers.h"
-#include "tfdml/core/util/status.h"
+#include "tfdml/core/dml_util.h"
+#include "tfdml/external/number.h"
+#include "tfdml/external/status.h"
 
 namespace tfdml
 {
