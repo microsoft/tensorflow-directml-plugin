@@ -363,11 +363,6 @@ class DmlMatMulKernel : public DmlKernel
   public:
     using InitHelper = MatMulInitHelper;
 
-    // TODO: Remove this when/if the following PR gets merged
-    // https://github.com/tensorflow/tensorflow/pull/51759
-    static constexpr std::array<int, 0> host_input_indices = {};
-    static constexpr std::array<int, 0> host_output_indices = {};
-
     explicit DmlMatMulKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
@@ -411,11 +406,6 @@ template <typename TInitHelper> class DmlBatchMatMulKernel : public DmlKernel
 {
   public:
     using InitHelper = TInitHelper;
-
-    // TODO: Remove this when/if the following PR gets merged
-    // https://github.com/tensorflow/tensorflow/pull/51759
-    static constexpr std::array<int, 0> host_input_indices = {};
-    static constexpr std::array<int, 0> host_output_indices = {};
 
     explicit DmlBatchMatMulKernel(
         DmlKernelConstruction* ctx,
@@ -566,11 +556,6 @@ class FusedMatMulInitHelper : public MatMulInitHelper {
 class DmlFusedMatMulKernel : public DmlKernel {
  public:
   using InitHelper = FusedMatMulInitHelper;
-
-  // TODO: Remove this when/if the following PR gets merged
-  // https://github.com/tensorflow/tensorflow/pull/51759
-  static constexpr std::array<int, 0> host_input_indices = {};
-  static constexpr std::array<int, 0> host_output_indices = {};
 
   explicit DmlFusedMatMulKernel(DmlKernelConstruction* ctx,
                                 const InitHelper* init_helper) {
