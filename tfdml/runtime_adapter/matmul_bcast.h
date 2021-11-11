@@ -60,15 +60,16 @@ class MatMulBCast
 
         if (broadcasting_required_)
         {
-            // TODO : need to integrate these into bcast.h
-            //   ComputeBatchIndices(output_batch_size_,
-            //   batch_bcast_->x_reshape(),
-            //                       batch_bcast_->x_bcast(),
-            //                       &x_batch_indices_);
-            //   ComputeBatchIndices(output_batch_size_,
-            //   batch_bcast_->y_reshape(),
-            //                       batch_bcast_->y_bcast(),
-            //                       &y_batch_indices_);
+            ComputeBatchIndices(
+                output_batch_size_,
+                batch_bcast_->x_reshape(),
+                batch_bcast_->x_bcast(),
+                &x_batch_indices_);
+            ComputeBatchIndices(
+                output_batch_size_,
+                batch_bcast_->y_reshape(),
+                batch_bcast_->y_bcast(),
+                &y_batch_indices_);
         }
     }
 
