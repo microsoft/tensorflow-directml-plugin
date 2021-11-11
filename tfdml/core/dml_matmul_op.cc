@@ -690,6 +690,7 @@ void RegisterBatchMatMulV2()
 
 void RegisterKernels_MatMul()
 {
+    RegisterMatMul();
     RegisterBatchMatMul();
     RegisterBatchMatMulV2();
 }
