@@ -110,12 +110,14 @@ void TensorShape::set_dim(int dim_index, int64_t dim)
     }
 }
 
-absl::InlinedVector<int64_t, 4> TensorShape::dim_sizes() const {
-  absl::InlinedVector<int64_t, 4> result;
-  for (auto dim_size : dim_sizes_) {
-    result.push_back(dim_size);
-  }
-  return result;
+absl::InlinedVector<int64_t, 4> TensorShape::dim_sizes() const
+{
+    absl::InlinedVector<int64_t, 4> result;
+    for (auto dim_size : dim_sizes_)
+    {
+        result.push_back(dim_size);
+    }
+    return result;
 }
 
 int64_t TensorShape::num_elements() const { return num_elements_; }
