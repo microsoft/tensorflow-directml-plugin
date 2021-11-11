@@ -657,7 +657,7 @@ TF_CALL_half(DML_REGISTER_KERNEL);
 #undef DML_REGISTER_KERNEL
 */
 
-void RegisterMatMul()
+static void RegisterMatMul()
 {
     using K = KernelDefinition<
         ops::MatMul,
@@ -666,7 +666,7 @@ void RegisterMatMul()
     RegisterWithTypes<K, ops::MatMul::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
-void RegisterBatchMatMul()
+static void RegisterBatchMatMul()
 {
     using K = KernelDefinition<
         ops::BatchMatMul,
@@ -677,7 +677,7 @@ void RegisterBatchMatMul()
     RegisterWithTypes<K, ops::BatchMatMul::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
-void RegisterBatchMatMulV2()
+static void RegisterBatchMatMulV2()
 {
     using K = KernelDefinition<
         ops::BatchMatMulV2,
