@@ -227,11 +227,11 @@ cc_library(
 cc_library(
     name = "kernels",
     srcs = [
-        "dml_addn_op.cc",
-        "dml_assign_variable_op.cc",
-        "dml_concat_op.cc",
-        "dml_gather_nd_op.cc",
-        "dml_gather_op.cc",
+        "kernels/dml_addn_op.cc",
+        "kernels/dml_assign_variable_op.cc",
+        "kernels/dml_concat_op.cc",
+        "kernels/dml_gather_nd_op.cc",
+        "kernels/dml_gather_op.cc",
     ],
     linkstatic = 1,
     visibility = ["//visibility:public"],

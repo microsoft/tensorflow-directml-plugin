@@ -15,12 +15,7 @@ limitations under the License.
 ==============================================================================*/
 
 #include "absl/cleanup/cleanup.h"
-#include "tfdml/core/dml_operator_helper.h"
-#include "tfdml/core/dml_util.h"
-#include "tfdml/core/kernels/dml_kernel_wrapper.h"
-#include "tfdml/core/kernels/dml_ops_common.h"
-#include "tfdml/core/dml_kernel_definition.h"
-#include "tfdml/runtime_adapter/resource_var.h"
+#include "tfdml/core/dml_ops_common.h"
 
 namespace tfdml
 {
