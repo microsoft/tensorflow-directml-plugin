@@ -37,8 +37,8 @@ py_binary(
 )
 
 py_binary(
-    name = "build_pip_package",
-    srcs = ["build_pip_package.py"],
+    name = "build_wheel",
+    srcs = ["build_wheel.py"],
     data = [
         "simple_console",
         "@dml_redist//:pip_files",

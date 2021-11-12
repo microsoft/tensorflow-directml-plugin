@@ -11,6 +11,8 @@ This document contains instructions for producing private builds of tensorflow-d
 - [Detailed Instructions: Windows](#detailed-instructions-windows)
   - [Install Visual Studio 2019](#install-visual-studio-2019)
   - [Install Bazel](#install-bazel)
+    - [Install Bazel using Bazelisk (recommended)](#install-bazel-using-bazelisk-recommended)
+    - [Install Bazel manually](#install-bazel-manually)
   - [Install Miniconda](#install-miniconda)
   - [Create Conda Build Environment](#create-conda-build-environment)
   - [Clone](#clone)
@@ -18,6 +20,8 @@ This document contains instructions for producing private builds of tensorflow-d
 - [Detailed Instructions: Linux](#detailed-instructions-linux)
   - [Install Development Tools](#install-development-tools)
   - [Install Bazel](#install-bazel-1)
+    - [Install Bazel using Bazelisk (recommended)](#install-bazel-using-bazelisk-recommended-1)
+    - [Install Bazel manually](#install-bazel-manually-1)
   - [Install Miniconda](#install-miniconda-1)
   - [Create Conda Build Environment](#create-conda-build-environment-1)
   - [Clone](#clone-1)
@@ -35,7 +39,7 @@ dml_repository(
     package = "Microsoft.AI.DirectML.Preview",
     version = "1.5.0-dev20210406",
     source = "https://pkgs.dev.azure.com/ms/DirectML/_packaging/tensorflow-directml-plugin/nuget/v3/index.json",
-    build_file = "//third_party/dml/redist:BUILD.bazel",
+    build_file = "//third_party/dml_redist:BUILD.bazel",
 )
 ```
 

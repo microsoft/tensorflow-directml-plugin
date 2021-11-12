@@ -243,13 +243,14 @@ cc_library(
 )
 
 # Target to build the TF plugin module.
-cc_library(
-    name = "plugin_impl",
+cc_binary(
+    name = "tfdml_plugin",
     srcs = [
-        "plugin_device.cc",
-        "plugin_kernel.cc",
+        "plugin/plugin_device.cc",
+        "plugin/plugin_kernel.cc",
     ],
-    linkstatic = 1,
+    features = ["windows_export_all_symbols"],
+    linkshared = True,
     visibility = ["//visibility:public"],
     deps = [
         "//tfdml:core",
@@ -260,21 +261,6 @@ cc_library(
         "@directx_headers//:directx_winadapter",
         "@dml_redist//:headers",
         "@tensorflow//:headers",
-    ],
-    alwayslink = True,
-)
-
-cc_binary(
-    name = "plugin",
-    srcs = [
-        "plugin_device.cc",
-        "plugin_kernel.cc",
-    ],
-    features = ["windows_export_all_symbols"],
-    linkshared = True,
-    visibility = ["//visibility:public"],
-    deps = [
-        "//tfdml:plugin_impl",
     ],
 )
 
