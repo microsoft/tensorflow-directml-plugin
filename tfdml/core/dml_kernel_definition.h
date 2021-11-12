@@ -22,10 +22,10 @@ limitations under the License.
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/c/tf_datatype.h"
 #include "tfdml/runtime_adapter/macros.h"
-#include "node_def.h"
-#include "op_defs.h"
-#include "op_kernel_construction.h"
-#include "tfdml/core/op_kernel_context.h"
+#include "tfdml/runtime_adapter/node_def.h"
+#include "tfdml/runtime_adapter/op_defs.h"
+#include "tfdml/runtime_adapter/op_kernel_construction.h"
+#include "tfdml/runtime_adapter/op_kernel_context.h"
 #include "tfdml/runtime_adapter/status.h"
 
 struct TF_OpKernelConstruction;

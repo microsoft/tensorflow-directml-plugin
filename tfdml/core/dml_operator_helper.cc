@@ -15,7 +15,7 @@ limitations under the License.
 
 #include "tfdml/runtime_adapter/bcast.h"
 #include "tfdml/runtime_adapter/macros.h"
-#include "tfdml/core/op_kernel_context.h"
+#include "tfdml/runtime_adapter/op_kernel_context.h"
 #include "tfdml/runtime_adapter/status.h"
 
 namespace tfdml

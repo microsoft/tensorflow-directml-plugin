@@ -22,8 +22,8 @@ limitations under the License.
 #include "tfdml/core/dml_tracing.h"
 #include "tfdml/core/dml_util.h"
 #include "tfdml/runtime_adapter/numbers.h"
-#include "op_kernel.h"
-#include "types.h"
+#include "tfdml/runtime_adapter/op_kernel.h"
+#include "tfdml/runtime_adapter/types.h"
 
 #ifdef _WIN32
 #include "tfdml/runtime_adapter/wide_char.h"

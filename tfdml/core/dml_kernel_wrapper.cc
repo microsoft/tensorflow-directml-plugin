@@ -14,13 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/core/kernels/dml_kernel_wrapper.h"
-
+#include "tfdml/core/dml_kernel_wrapper.h"
 #include "tfdml/core/dml_execution_context.h"
 #include "tfdml/core/dml_operator_helper.h"
 #include "tfdml/core/dml_tracing.h"
 #include "tfdml/core/dml_util.h"
-#include "types.h"
+#include "tfdml/runtime_adapter/types.h"
 
 namespace tfdml
 {

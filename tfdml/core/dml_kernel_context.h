@@ -20,7 +20,7 @@ limitations under the License.
 #include "tfdml/core/dml_descriptor_bfc_allocator.h"
 #include "tfdml/core/dml_device_context.h"
 #include "tfdml/core/dml_gpu_event.h"
-#include "tfdml/core/op_kernel_context.h"
+#include "tfdml/runtime_adapter/op_kernel_context.h"
 #include "tfdml/runtime_adapter/statusor.h"
 #include "tfdml/runtime_adapter/tensor.h"
 
