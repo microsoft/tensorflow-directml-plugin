@@ -16,8 +16,8 @@ limitations under the License.
 #pragma once
 
 #include "absl/types/optional.h"
-#include "tfdml/external/macros.h"
-#include "tfdml/external/status.h"
+#include "tfdml/runtime_adapter/macros.h"
+#include "tfdml/runtime_adapter/status.h"
 
 namespace tfdml
 {

@@ -15,8 +15,8 @@ limitations under the License.
 
 #include "dml_common.h"
 #include "dml_descriptor_heap_allocator.h"
-#include "tfdml/external/bfc_allocator.h"
-#include "tfdml/external/tensor.h"
+#include "tfdml/runtime_adapter/bfc_allocator.h"
+#include "tfdml/runtime_adapter/tensor.h"
 namespace tfdml
 {
 

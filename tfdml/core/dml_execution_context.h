@@ -24,7 +24,7 @@ limitations under the License.
 #include "dml_command_queue.h"
 #include "dml_common.h"
 #include "dml_descriptor_pool.h"
-#include "tfdml/external/statusor.h"
+#include "tfdml/runtime_adapter/statusor.h"
 
 namespace tfdml
 {

@@ -16,7 +16,7 @@ limitations under the License.
 #include "dml_command_allocator_ring.h"
 #include "dml_common.h"
 #include "dml_descriptor_pool.h"
-#include "tfdml/external/status.h"
+#include "tfdml/runtime_adapter/status.h"
 
 namespace tfdml
 {

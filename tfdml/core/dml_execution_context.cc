@@ -18,8 +18,8 @@ limitations under the License.
 #include "dml_tracing.h"
 #include "dml_util.h"
 #include "tfdml/core/dml_dso_loader.h"
-#include "tfdml/external/env.h"
-#include "tfdml/external/env_var.h"
+#include "tfdml/runtime_adapter/env.h"
+#include "tfdml/runtime_adapter/env_var.h"
 
 #if _WIN32
 typedef HRESULT(

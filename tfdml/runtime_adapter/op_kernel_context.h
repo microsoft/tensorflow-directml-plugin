@@ -14,10 +14,10 @@ limitations under the License.
 #pragma once
 
 #include "absl/types/span.h"
-#include "tfdml/external/status.h"
-#include "tfdml/external/statusor.h"
-#include "tfdml/external/tensor.h"
-#include "tfdml/external/types.h"
+#include "tfdml/runtime_adapter/status.h"
+#include "tfdml/runtime_adapter/statusor.h"
+#include "tfdml/runtime_adapter/tensor.h"
+#include "tfdml/runtime_adapter/types.h"
 
 struct TF_OpKernelContext;
 

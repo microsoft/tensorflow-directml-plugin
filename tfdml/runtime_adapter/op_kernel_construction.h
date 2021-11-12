@@ -14,11 +14,10 @@ limitations under the License.
 #pragma once
 
 #include "tensorflow/c/kernels.h"
-#include "tensorflow/core/framework/tensor.pb.h"
 #include "attribute.h"
 #include "op_defs.h"
-#include "tfdml/external/status.h"
-#include "tfdml/external/tensor.h"
+#include "tfdml/runtime_adapter/status.h"
+#include "tfdml/runtime_adapter/tensor.h"
 
 struct TF_OpKernelConstruction;
 

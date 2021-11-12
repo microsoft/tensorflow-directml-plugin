@@ -16,9 +16,9 @@ limitations under the License.
 #include "tensorflow/c/tf_datatype.h"
 #include "tfdml/core/dml_buffer_region.h"
 #include "tfdml/core/dml_common.h"
-#include "tfdml/external/macros.h"
-#include "tfdml/external/tensor_format.h"
-#include "tfdml/external/tensor_shape.h"
+#include "tfdml/runtime_adapter/macros.h"
+#include "tfdml/runtime_adapter/tensor_format.h"
+#include "tfdml/runtime_adapter/tensor_shape.h"
 
 struct SP_DeviceMemoryBase;
 

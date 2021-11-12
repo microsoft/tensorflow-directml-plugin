@@ -21,8 +21,8 @@ limitations under the License.
 #include "tfdml/core/dml_device_context.h"
 #include "tfdml/core/dml_gpu_event.h"
 #include "tfdml/core/op_kernel_context.h"
-#include "tfdml/external/statusor.h"
-#include "tfdml/external/tensor.h"
+#include "tfdml/runtime_adapter/statusor.h"
+#include "tfdml/runtime_adapter/tensor.h"
 
 class IDMLDevice;
 class ID3D12Device;

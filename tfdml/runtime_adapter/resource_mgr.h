@@ -28,10 +28,10 @@ limitations under the License.
 #include "absl/types/span.h"
 #include "tensorflow/c/logging.h"
 #include "tensorflow/core/framework/resource_handle.pb.h"
-#include "tfdml/external/macros.h"
-#include "tfdml/external/op_kernel_context.h"
-#include "tfdml/external/refcount.h"
-#include "tfdml/external/status.h"
+#include "tfdml/runtime_adapter/macros.h"
+#include "tfdml/runtime_adapter/op_kernel_context.h"
+#include "tfdml/runtime_adapter/refcount.h"
+#include "tfdml/runtime_adapter/status.h"
 
 namespace tfdml
 {

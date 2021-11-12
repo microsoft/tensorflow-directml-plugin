@@ -10,7 +10,7 @@
 
 #include "pix3.h"
 #include "tfdml/core/dml_dso_loader.h"
-#include "tfdml/external/env.h"
+#include "tfdml/runtime_adapter/env.h"
 
 #pragma comment(lib, "advapi32.lib")
 
@@ -104,8 +104,8 @@ extern "C" UINT64 WINAPI PIXEventsReplaceBlock(
 #endif
 
 #include "dml_tracing.h"
-#include "tfdml/external/env_var.h"
-#include "tfdml/external/status.h"
+#include "tfdml/runtime_adapter/env_var.h"
+#include "tfdml/runtime_adapter/status.h"
 
 TRACELOGGING_DECLARE_PROVIDER(g_providerHandle);
 

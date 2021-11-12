@@ -17,7 +17,7 @@ limitations under the License.
 
 #include <limits>
 
-#include "tfdml/external/macros.h"
+#include "tfdml/runtime_adapter/macros.h"
 
 namespace tfdml
 {

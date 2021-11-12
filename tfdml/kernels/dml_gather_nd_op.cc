@@ -20,7 +20,7 @@ limitations under the License.
 #include "tfdml/core/kernels/dml_kernel_wrapper.h"
 #include "tfdml/core/kernels/dml_ops_common.h"
 #include "tfdml/core/kernel_def_builder.h"
-#include "tfdml/external/resource_var.h"
+#include "tfdml/runtime_adapter/resource_var.h"
 
 namespace tfdml
 {

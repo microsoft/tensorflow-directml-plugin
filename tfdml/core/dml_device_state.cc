@@ -24,7 +24,7 @@ limitations under the License.
 #include "dml_util.h"
 #include "tfdml/core/dml_dso_loader.h"
 #include "tfdml/core/dml_heap_allocator.h"
-#include "tfdml/external/env_var.h"
+#include "tfdml/runtime_adapter/env_var.h"
 
 using Microsoft::WRL::ComPtr;
 

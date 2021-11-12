@@ -13,7 +13,7 @@ limitations under the License.
 
 #include "tfdml/core/dml_kernel_manager.h"
 
-#include "tfdml/external/env_var.h"
+#include "tfdml/runtime_adapter/env_var.h"
 
 namespace tfdml
 {

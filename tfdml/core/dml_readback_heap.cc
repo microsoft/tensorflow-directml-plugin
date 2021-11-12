@@ -13,8 +13,8 @@ limitations under the License.
 
 #include "dml_readback_heap.h"
 
-#include "tfdml/external/macros.h"
-#include "tfdml/external/status.h"
+#include "tfdml/runtime_adapter/macros.h"
+#include "tfdml/runtime_adapter/status.h"
 
 namespace tfdml
 {

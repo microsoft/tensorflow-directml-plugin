@@ -17,7 +17,7 @@ limitations under the License.
 
 #include <string>
 
-#include "tfdml/external/status.h"
+#include "tfdml/runtime_adapter/status.h"
 
 namespace tfdml
 {

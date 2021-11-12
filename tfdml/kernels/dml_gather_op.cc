@@ -20,9 +20,9 @@ limitations under the License.
 #include "tfdml/core/kernels/dml_ops_common.h"
 #include "tfdml/core/attribute.h"
 #include "tfdml/core/kernel_def_builder.h"
-#include "tfdml/external/refcount.h"
-#include "tfdml/external/resource_var.h"
-#include "tfdml/external/types.h"
+#include "tfdml/runtime_adapter/refcount.h"
+#include "tfdml/runtime_adapter/resource_var.h"
+#include "tfdml/runtime_adapter/types.h"
 
 namespace tfdml
 {

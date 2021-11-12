@@ -19,7 +19,7 @@ limitations under the License.
 #include "tfdml/core/dml_common.h"
 #include "attribute.h"
 #include "node_def.h"
-#include "tfdml/external/tensor.h"
+#include "tfdml/runtime_adapter/tensor.h"
 
 namespace tfdml
 {

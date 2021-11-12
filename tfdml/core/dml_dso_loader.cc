@@ -17,14 +17,14 @@ limitations under the License.
 #include "DirectMLConfig.h"
 #include "tensorflow/c/env.h"
 #include "tensorflow/c/logging.h"
-#include "tfdml/external/env.h"
-#include "tfdml/external/statusor.h"
+#include "tfdml/runtime_adapter/env.h"
+#include "tfdml/runtime_adapter/statusor.h"
 
 #if _WIN32
 #include <Windows.h>
 #include <pathcch.h>
 
-#include "tfdml/external/wide_char.h"
+#include "tfdml/runtime_adapter/wide_char.h"
 
 #pragma comment(lib, "Pathcch.lib") // For PathCchRemoveFileSpec
 #endif

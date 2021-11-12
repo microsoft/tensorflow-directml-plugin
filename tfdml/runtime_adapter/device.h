@@ -13,24 +13,27 @@ limitations under the License.
 
 #pragma once
 
-#include "absl/container/inlined_vector.h"
-#include "absl/types/optional.h"
-#include "absl/types/span.h"
-#include "absl/types/variant.h"
-#include "tfdml/external/types.h"
+#include "tfdml/runtime_adapter/resource_mgr.h"
+#include "tfdml/runtime_adapter/status.h"
 
 namespace tfdml
 {
-using AttributeValue = absl::optional<absl::variant<
-    TF_DataType,
-    int64_t,
-    float,
-    bool,
-    std::string,
-    std::vector<TF_DataType>,
-    std::vector<int64_t>,
-    std::vector<float>,
-    std::vector<bool>,
-    std::vector<std::string>>>;
+class Tensor;
 
+class Device
+{
+  public:
+    Device();
+    virtual ~Device();
+
+    virtual Status CopyCPUTensorToDevice(
+        const Tensor* cpu_tensor,
+        Tensor* device_tensor) = 0;
+
+    // Returns the resource manager associated w/ this device.
+    virtual ResourceMgr* resource_manager() { return rmgr_; }
+
+  private:
+    ResourceMgr* rmgr_;
+};
 } // namespace tfdml

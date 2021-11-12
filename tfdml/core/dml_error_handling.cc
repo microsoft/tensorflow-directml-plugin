@@ -15,7 +15,7 @@ limitations under the License.
 
 #include "absl/strings/str_cat.h"
 #include "tensorflow/c/logging.h"
-#include "tfdml/external/macros.h"
+#include "tfdml/runtime_adapter/macros.h"
 
 namespace tfdml
 {

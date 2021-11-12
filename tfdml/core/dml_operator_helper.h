@@ -16,8 +16,8 @@ limitations under the License.
 #include "tfdml/core/dml_common.h"
 #include "attribute.h"
 #include "tfdml/core/op_kernel_context.h"
-#include "tfdml/external/tensor.h"
-#include "tfdml/external/tensor_shape_utils.h"
+#include "tfdml/runtime_adapter/tensor.h"
+#include "tfdml/runtime_adapter/tensor_shape_utils.h"
 
 namespace tfdml
 {

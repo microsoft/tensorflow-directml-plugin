@@ -13,10 +13,10 @@ limitations under the License.
 
 #include "tfdml/core/dml_operator_helper.h"
 
-#include "tfdml/external/bcast.h"
-#include "tfdml/external/macros.h"
+#include "tfdml/runtime_adapter/bcast.h"
+#include "tfdml/runtime_adapter/macros.h"
 #include "tfdml/core/op_kernel_context.h"
-#include "tfdml/external/status.h"
+#include "tfdml/runtime_adapter/status.h"
 
 namespace tfdml
 {

@@ -21,8 +21,8 @@ limitations under the License.
 
 #include "absl/strings/str_cat.h"
 #include "tensorflow/c/tf_datatype.h"
-#include "tfdml/external/resource_mgr.h"
-#include "tfdml/external/tensor.h"
+#include "tfdml/runtime_adapter/resource_mgr.h"
+#include "tfdml/runtime_adapter/tensor.h"
 
 namespace tfdml
 {

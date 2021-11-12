@@ -21,12 +21,12 @@ limitations under the License.
 #include "tensorflow/c/logging.h"
 #include "tfdml/core/dml_tracing.h"
 #include "tfdml/core/dml_util.h"
-#include "tfdml/external/numbers.h"
+#include "tfdml/runtime_adapter/numbers.h"
 #include "op_kernel.h"
 #include "types.h"
 
 #ifdef _WIN32
-#include "tfdml/external/wide_char.h"
+#include "tfdml/runtime_adapter/wide_char.h"
 #endif
 
 using Microsoft::WRL::ComPtr;

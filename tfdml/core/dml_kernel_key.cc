@@ -13,7 +13,7 @@ limitations under the License.
 
 #include "tfdml/core/dml_kernel_key.h"
 
-#include "tfdml/external/tensor.h"
+#include "tfdml/runtime_adapter/tensor.h"
 
 namespace tfdml
 {

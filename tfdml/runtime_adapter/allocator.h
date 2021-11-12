@@ -22,7 +22,7 @@ limitations under the License.
 
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "tfdml/external/macros.h"
+#include "tfdml/runtime_adapter/macros.h"
 
 namespace tfdml
 {

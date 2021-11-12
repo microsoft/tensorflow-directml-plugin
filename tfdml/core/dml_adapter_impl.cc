@@ -19,11 +19,11 @@ limitations under the License.
 #include "absl/strings/str_split.h"
 #include "tfdml/core/dml_util.h"
 #include "tensorflow/c/logging.h"
-#include "tfdml/external/macros.h"
-#include "tfdml/external/status.h"
+#include "tfdml/runtime_adapter/macros.h"
+#include "tfdml/runtime_adapter/status.h"
 
 #if _WIN32
-#include "tfdml/external/wide_char.h"
+#include "tfdml/runtime_adapter/wide_char.h"
 #endif
 
 using Microsoft::WRL::ComPtr;

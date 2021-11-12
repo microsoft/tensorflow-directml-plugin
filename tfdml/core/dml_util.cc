@@ -18,9 +18,9 @@ limitations under the License.
 #include "tfdml/core/dml_bfc_allocator.h"
 #include "tfdml/core/dml_device.h"
 #include "tfdml/core/dml_dso_loader.h"
-#include "tfdml/external/env.h"
-#include "tfdml/external/tensor.h"
-#include "tfdml/external/tensor_format.h"
+#include "tfdml/runtime_adapter/env.h"
+#include "tfdml/runtime_adapter/tensor.h"
+#include "tfdml/runtime_adapter/tensor_format.h"
 
 namespace tfdml
 {

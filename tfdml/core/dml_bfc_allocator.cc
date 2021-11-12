@@ -17,7 +17,7 @@ limitations under the License.
 
 #include "dml_common.h"
 #include "dml_heap_allocator.h"
-#include "tfdml/external/env_var.h"
+#include "tfdml/runtime_adapter/env_var.h"
 
 namespace tfdml
 {

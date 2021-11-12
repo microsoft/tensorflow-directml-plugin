@@ -18,7 +18,7 @@ limitations under the License.
 #if _WIN32
 #include <Windows.h>
 
-#include "tfdml/external/wide_char.h"
+#include "tfdml/runtime_adapter/wide_char.h"
 #else
 #include <dlfcn.h>
 #endif

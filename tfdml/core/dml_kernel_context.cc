@@ -18,8 +18,8 @@ limitations under the License.
 #include "tfdml/core/dml_execution_context.h"
 #include "tfdml/core/dml_upload_heap.h"
 #include "tfdml/core/dml_util.h"
-#include "tfdml/external/status.h"
-#include "tfdml/external/tensor.h"
+#include "tfdml/runtime_adapter/status.h"
+#include "tfdml/runtime_adapter/tensor.h"
 
 using Microsoft::WRL::ComPtr;
 

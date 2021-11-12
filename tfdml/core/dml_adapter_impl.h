@@ -15,7 +15,7 @@ limitations under the License.
 
 #include "tfdml/core/dml_adapter.h"
 #include "tfdml/core/dml_common.h"
-#include "tfdml/external/status.h"
+#include "tfdml/runtime_adapter/status.h"
 
 namespace tfdml
 {
