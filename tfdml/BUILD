@@ -233,6 +233,9 @@ cc_library(
         "kernels/dml_gather_nd_op.cc",
         "kernels/dml_gather_op.cc",
     ],
+    hdrs = [
+        "kernels/pch.h",
+    ],
     linkstatic = 1,
     visibility = ["//visibility:public"],
     deps = [

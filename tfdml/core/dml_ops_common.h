@@ -28,8 +28,6 @@ limitations under the License.
 #include "tfdml/core/dml_common.h"
 #include "tfdml/core/dml_device.h"
 #include "tfdml/core/dml_kernel_context.h"
-#include "tfdml/core/dml_kernel_definition.h"
-#include "tfdml/core/dml_kernel_wrapper.h"
 #include "tfdml/core/dml_operator_helper.h"
 #include "tfdml/core/dml_tensor_desc.h"
 #include "tfdml/core/dml_util.h"

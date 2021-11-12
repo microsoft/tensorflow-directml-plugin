@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/core/dml_ops_common.h"
+#include "tfdml/kernels/pch.h"
 
 namespace tfdml
 {
