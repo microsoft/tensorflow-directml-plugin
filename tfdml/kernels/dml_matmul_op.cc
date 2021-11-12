@@ -14,20 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// TODO: consider copying these into tfdml/core/util and pruning them:
+// TODO: consider copying these into tfdml/runtime_adapter and pruning them:
 // #include "tensorflow/core/framework/register_types.h"
 // #include "tensorflow/core/kernels/fused_eigen_output_kernels.h"
 
-// TODO: integrate ComputeBatchIndices into tfdml bcast.h copy, a dependency of
-// matmul_bcast.h
-#include "tfdml/core/common_runtime/dml/dml_operator_helper.h"
-#include "tfdml/core/common_runtime/dml/dml_util.h"
-#include "tfdml/core/kernels/dml_kernel_wrapper.h"
-#include "tfdml/core/kernels/dml_ops_common.h"
-#include "tfdml/core/util/kernel_def_builder.h"
-#include "tfdml/core/util/macros.h"
-#include "tfdml/core/util/matmul_bcast.h"
-#include "tfdml/core/util/op_kernel_construction.h"
+#include "tfdml/kernels/pch.h"
+#include "tfdml/runtime_adapter/macros.h"
+#include "tfdml/runtime_adapter/matmul_bcast.h"
 
 namespace tfdml
 {

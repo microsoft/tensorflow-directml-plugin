@@ -18,8 +18,8 @@ limitations under the License.
 #include <vector>
 
 #include "absl/container/inlined_vector.h"
-#include "tfdml/core/util/bcast.h"
-#include "tfdml/core/util/tensor_shape.h"
+#include "tfdml/runtime_adapter/bcast.h"
+#include "tfdml/runtime_adapter/tensor_shape.h"
 
 namespace tfdml
 {

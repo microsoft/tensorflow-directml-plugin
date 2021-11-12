@@ -5,12 +5,12 @@ load(
 )
 
 # Target comprising source that (mostly) originates from the core TF runtime and is needed
-# to implement the core TFDML plugin and its kernels. There is no clear interface between 
+# to implement the core TFDML plugin and its kernels. There is no clear interface between
 # the TF runtime and device backend/kernels in TF1.15, and many of the TFDML classes/kernels
-# are ported from TF1.15 fork. 
+# are ported from TF1.15 fork.
 #
-# WARNING: Some of the files in this library are under Apache license and largely unmodified 
-# from their original form. Other files simply retain the original struct/class names but are 
+# WARNING: Some of the files in this library are under Apache license and largely unmodified
+# from their original form. Other files simply retain the original struct/class names but are
 # total rewrites. Pay careful attention to license banners when modifying code in this
 # target. We may choose to further refactor these files over time to simplify layering.
 cc_library(
@@ -43,6 +43,7 @@ cc_library(
         "runtime_adapter/env.h",
         "runtime_adapter/env_var.h",
         "runtime_adapter/macros.h",
+        "runtime_adapter/matmul_bcast.h",
         "runtime_adapter/node_def.h",
         "runtime_adapter/numbers.h",
         "runtime_adapter/op_defs.h",
@@ -109,20 +110,20 @@ cc_library(
 cc_library(
     name = "core",
     srcs = [
-        "core/dml_adapter_impl.cc",
         "core/dml_adapter.cc",
+        "core/dml_adapter_impl.cc",
         "core/dml_bfc_allocator.cc",
-        "core/dml_buffer_region.cc",
         "core/dml_buffer.cc",
+        "core/dml_buffer_region.cc",
         "core/dml_command_list.cc",
         "core/dml_command_queue.cc",
         "core/dml_descriptor_bfc_allocator.cc",
         "core/dml_descriptor_heap_allocator.cc",
         "core/dml_descriptor_pool.cc",
+        "core/dml_device.cc",
         "core/dml_device_cache.cc",
         "core/dml_device_context.cc",
         "core/dml_device_state.cc",
-        "core/dml_device.cc",
         "core/dml_dso_loader.cc",
         "core/dml_error_handling.cc",
         "core/dml_event_queue.cc",
@@ -143,12 +144,12 @@ cc_library(
         "core/dml_util.cc",
     ],
     hdrs = [
+        "core/dml_adapter.h",
         "core/dml_adapter_heuristics.h",
         "core/dml_adapter_impl.h",
-        "core/dml_adapter.h",
         "core/dml_bfc_allocator.h",
-        "core/dml_buffer_region.h",
         "core/dml_buffer.h",
+        "core/dml_buffer_region.h",
         "core/dml_command_allocator_ring.h",
         "core/dml_command_list.h",
         "core/dml_command_queue.h",
@@ -156,10 +157,10 @@ cc_library(
         "core/dml_descriptor_bfc_allocator.h",
         "core/dml_descriptor_heap_allocator.h",
         "core/dml_descriptor_pool.h",
+        "core/dml_device.h",
         "core/dml_device_cache.h",
         "core/dml_device_context.h",
         "core/dml_device_state.h",
-        "core/dml_device.h",
         "core/dml_dso_loader.h",
         "core/dml_error_handling.h",
         "core/dml_event_queue.h",
@@ -168,6 +169,7 @@ cc_library(
         "core/dml_guids.h",
         "core/dml_heap_allocator.h",
         "core/dml_kernel_context.h",
+        "core/dml_kernel_definition.h",
         "core/dml_kernel_key.h",
         "core/dml_kernel_manager.h",
         "core/dml_kernel_wrapper.h",
@@ -179,7 +181,6 @@ cc_library(
         "core/dml_tracing.h",
         "core/dml_upload_heap.h",
         "core/dml_util.h",
-        "core/dml_kernel_definition.h",
     ],
     copts = if_windows([
         "-DDML_BUILD_WINDOWS",
@@ -232,6 +233,7 @@ cc_library(
         "kernels/dml_concat_op.cc",
         "kernels/dml_gather_nd_op.cc",
         "kernels/dml_gather_op.cc",
+        "kernels/dml_matmul_op.cc",
     ],
     hdrs = [
         "kernels/pch.h",
