@@ -1,6 +1,6 @@
 """Describes a list of plugins and tools to download"""
 
-load("//third_party/dml/redist:workspace.bzl", "dml_repository")
+load("//third_party/dml_redist:workspace.bzl", "dml_repository")
 load("//third_party/pix:workspace.bzl", "pix_repository")
 load("//third_party/tensorflow:workspace.bzl", "tensorflow_pip_package")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -77,7 +77,7 @@ def tfdml_plugin_workspace():
         name = "dml_redist",
         url = "https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.7.0",
         sha256 = "77bd5de862c36f084c138ff3341936dca01bd21e58bfc57cb45118b116b1f9f4",
-        build_file = "//third_party/dml/redist:BUILD.bazel",
+        build_file = "//third_party/dml_redist:BUILD.bazel",
     )
 
     pix_repository(

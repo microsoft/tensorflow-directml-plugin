@@ -57,7 +57,7 @@ jobs:
   # is 211007-2233.1.master, and _VERSION is currently 0.0.1, then the updated version will be
   # 0.0.1.dev211007. If the "Release Build" parameter is set then the .dev suffix is removed entirely.
   - powershell: |
-      $SetupPyPath = "$(Build.SourcesDirectory)/tfdml/tools/pip_package/setup.py"
+      $SetupPyPath = "$(Build.SourcesDirectory)/tfdml/wheel/setup.py"
       if ("${{parameters.releaseBuild}}" -eq "True") {
           $SubstituteVersion = "_VERSION = '`$1'"
       } else {
