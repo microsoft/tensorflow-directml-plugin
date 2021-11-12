@@ -105,16 +105,14 @@ def prepare_src(src_dir):
         manifest.read(),
         flags=re.MULTILINE).group(1)
 
-  os.makedirs(f'{src_dir}/tensorflow-plugins/tensorflow-directml-plugin')
-  os.listdir(src_dir)
+  os.makedirs(f'{src_dir}/tensorflow-plugins')
+  os.makedirs(f'{src_dir}/tensorflow-directml-plugin')
   os.chmod(tfdml_plugin_path, 0o777)
   shutil.copy(tfdml_plugin_path, f'{src_dir}/tensorflow-plugins')
   shutil.copy('tfdml/wheel/MANIFEST.in', src_dir)
   shutil.copy('tfdml/wheel/README', src_dir)
   shutil.copy('tfdml/wheel/setup.py', src_dir)
   shutil.copy('tfdml/wheel/template_init.py', f'{src_dir}/tensorflow-directml-plugin/__init__.py')
-  # shutil.copytree('tfdml/python', f'{src_dir}/tensorflow-directml-plugin')
-  open(f'{src_dir}/tensorflow-directml-plugin/__init__.py', 'a').close()
   os.makedirs(f'{src_dir}/tensorflow-plugins/directml')
   copy_dml_redist_files(f'{src_dir}/tensorflow-plugins/directml')
 
