@@ -23,7 +23,7 @@ to ensure all available op definitions are generated. However, you may also hand
 structs for custom ops only used by the DML device. The output from this script should
 be redirected as follows:
 
-python generate_op_defs_core.py > tfdml/core/op_defs_core.h
+python generate_op_defs_core.py > tfdml/runtime_adapter/op_defs_core.h
 """
 
 from tensorflow.python.client import pywrap_tf_session as c_api

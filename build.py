@@ -84,7 +84,7 @@ def create_package(args):
 
   build_pip_package_path = os.path.join(
       os.path.dirname(os.path.realpath(__file__)), "bazel-bin", "tfdml",
-      "tools", "pip_package", "build_pip_package")
+      "wheel", "build_wheel")
 
   if sys.platform == "win32":
     build_pip_package_path += ".exe"
@@ -174,7 +174,7 @@ def main():
   build(args)
 
   # Create Python package
-  # create_package(args)
+  create_package(args)
   if args.install:
     install_package(args)
 

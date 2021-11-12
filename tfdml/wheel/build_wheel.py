@@ -31,9 +31,9 @@ def is_windows():
 
 def copy_dml_redist_files(dml_redist_dir):
   if is_windows():
-    runfiles_manifest_path = 'bazel-bin/tfdml/tools/pip_package/build_pip_package.exe.runfiles_manifest'
+    runfiles_manifest_path = 'bazel-bin/tfdml/wheel/build_wheel.exe.runfiles_manifest'
   else:
-    runfiles_manifest_path = 'bazel-bin/tfdml/tools/pip_package/build_pip_package.runfiles_manifest'
+    runfiles_manifest_path = 'bazel-bin/tfdml/wheel/build_wheel.runfiles_manifest'
 
   with open(runfiles_manifest_path, 'r') as manifest:
     dml_config_path = re.search(
@@ -92,10 +92,10 @@ def prepare_src(src_dir):
     )
 
   if is_windows():
-    runfiles_manifest_path = 'bazel-bin/tfdml/tools/pip_package/build_pip_package.exe.runfiles_manifest'
+    runfiles_manifest_path = 'bazel-bin/tfdml/wheel/build_wheel.exe.runfiles_manifest'
     tfdml_plugin_path_regex = r'^.*tfdml_plugin\.dll (.*tfdml_plugin\.dll)$'
   else:
-    runfiles_manifest_path = 'bazel-bin/tfdml/tools/pip_package/build_pip_package.runfiles_manifest'
+    runfiles_manifest_path = 'bazel-bin/tfdml/wheel/build_wheel.runfiles_manifest'
     tfdml_plugin_path_regex = r'^.*libtfdml_plugin\.so (.*tfdml_plugin\.so)$'
 
   # Locate path to tfdml_plugin.dll or libtfdml_plugin.so in the manifest
@@ -105,13 +105,15 @@ def prepare_src(src_dir):
         manifest.read(),
         flags=re.MULTILINE).group(1)
 
-  os.makedirs(f'{src_dir}/tensorflow-plugins')
+  os.makedirs(f'{src_dir}/tensorflow-plugins/tensorflow-directml-plugin')
+  os.listdir(src_dir)
   os.chmod(tfdml_plugin_path, 0o777)
   shutil.copy(tfdml_plugin_path, f'{src_dir}/tensorflow-plugins')
-  shutil.copy('tfdml/tools/pip_package/MANIFEST.in', src_dir)
-  shutil.copy('tfdml/tools/pip_package/README', src_dir)
-  shutil.copy('tfdml/tools/pip_package/setup.py', src_dir)
-  shutil.copytree('tfdml/python', f'{src_dir}/tensorflow-directml-plugin')
+  shutil.copy('tfdml/wheel/MANIFEST.in', src_dir)
+  shutil.copy('tfdml/wheel/README', src_dir)
+  shutil.copy('tfdml/wheel/setup.py', src_dir)
+  shutil.copy('tfdml/wheel/template_init.py', f'{src_dir}/tensorflow-directml-plugin/__init__.py')
+  # shutil.copytree('tfdml/python', f'{src_dir}/tensorflow-directml-plugin')
   open(f'{src_dir}/tensorflow-directml-plugin/__init__.py', 'a').close()
   os.makedirs(f'{src_dir}/tensorflow-plugins/directml')
   copy_dml_redist_files(f'{src_dir}/tensorflow-plugins/directml')
