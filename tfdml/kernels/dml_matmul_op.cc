@@ -19,7 +19,6 @@ limitations under the License.
 // #include "tensorflow/core/kernels/fused_eigen_output_kernels.h"
 
 #include "tfdml/kernels/pch.h"
-#include "tfdml/runtime_adapter/macros.h"
 #include "tfdml/runtime_adapter/matmul_bcast.h"
 
 namespace tfdml
