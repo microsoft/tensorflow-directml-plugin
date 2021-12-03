@@ -40,6 +40,7 @@ class TensorShape
     void RemoveLastDims(int num_dims);
     int64_t dim_size(int dim_index) const;
     int64_t dims() const;
+    absl::InlinedVector<int64_t, 4> dim_sizes() const;
     int64_t num_elements() const;
     int64_t* data();
     const int64_t* data() const;
