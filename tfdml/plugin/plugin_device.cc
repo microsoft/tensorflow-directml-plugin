@@ -30,6 +30,7 @@ limitations under the License.
 #include "tfdml/core/dml_device.h"
 #include "tfdml/core/dml_device_cache.h"
 #include "tfdml/core/dml_device_context.h"
+#include "tfdml/core/dml_util.h"
 #include "tfdml/runtime_adapter/stream.h"
 
 using namespace tfdml;
@@ -490,31 +491,61 @@ void plugin_mem_zero(
     uint64_t size,
     TF_Status* status)
 {
-    // TODO
+    if (size == 0)
+    {
+        TF_SetStatus(status, TF_OK, "");
+        return;
+    }
+
+    DmlDevice* dml_device = static_cast<DmlDevice*>(device->device_handle);
+
+    D3D12BufferRegion dst =
+        dml_util::CreateBufferForDeviceMemory(dml_device, location, size);
+
+    (void)dml_device->GetDeviceContext()->ZeroBuffer(dst);
+
+    // Immediately signal completion even though we haven't actually kicked off
+    // the GPU, or waited for it to complete. This is because from the
+    // framework's point of view, there's no way for it to observe this state
+    // (except when copying a tensor back to CPU, at which point we correctly
+    // flush and queue a callback)
+    TF_SetStatus(status, TF_OK, "");
 }
 
-// Set the 8-bit patterns starting at the location with `size` bytes.
+template <typename T>
 void plugin_memset(
     const SP_Device* device,
     SP_Stream stream,
     SP_DeviceMemoryBase* location,
-    uint8_t pattern,
+    T pattern,
     uint64_t size,
     TF_Status* status)
 {
-    // TODO
-}
+    if (size == 0)
+    {
+        TF_SetStatus(status, TF_OK, "");
+        return;
+    }
 
-// Set the 32-bit patterns starting at the location with `size` bytes.
-void plugin_memset32(
-    const SP_Device* device,
-    SP_Stream stream,
-    SP_DeviceMemoryBase* location,
-    uint32_t pattern,
-    uint64_t size,
-    TF_Status* status)
-{
-    // TODO
+    DmlDevice* dml_device = static_cast<DmlDevice*>(device->device_handle);
+
+    D3D12BufferRegion dst =
+        dml_util::CreateBufferForDeviceMemory(dml_device, location, size);
+
+    auto pattern_bytes = absl::Span<const uint8_t>(
+        reinterpret_cast<const uint8_t*>(&pattern),
+        sizeof(pattern));
+
+    (void)dml_device->GetDeviceContext()->FillBufferWithPattern(
+        dst,
+        pattern_bytes);
+
+    // Immediately signal completion even though we haven't actually kicked off
+    // the GPU, or waited for it to complete. This is because from the
+    // framework's point of view, there's no way for it to observe this state
+    // (except when copying a tensor back to CPU, at which point we correctly
+    // flush and queue a callback)
+    TF_SetStatus(status, TF_OK, "");
 }
 
 // Synchronizes all activity occurring in the StreamExecutor's context (most
@@ -595,8 +626,8 @@ void plugin_create_stream_executor(
         plugin_synchronize_all_activity;
 
     params->stream_executor->mem_zero = plugin_mem_zero;
-    params->stream_executor->memset = plugin_memset;
-    params->stream_executor->memset32 = plugin_memset32;
+    params->stream_executor->memset = plugin_memset<uint8_t>;
+    params->stream_executor->memset32 = plugin_memset<uint32_t>;
 
     params->stream_executor->host_callback = plugin_host_callback;
 }
