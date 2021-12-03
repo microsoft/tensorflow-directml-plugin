@@ -583,6 +583,9 @@ class DmlFusedMatMulKernel : public DmlKernel
             elu_desc.Alpha = 1.0f;
             fused_op_desc.Desc = &elu_desc;
             break;
+        // Grappler pass shouldn't attempt other fused computations for this
+        // kernel.
+        default: assert(false); break;
         }
 
         DmlTensorInfo a;
