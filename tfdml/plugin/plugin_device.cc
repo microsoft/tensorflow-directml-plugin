@@ -482,6 +482,41 @@ void plugin_block_host_until_done(
 {
 }
 
+// Zero out `size` bytes starting at the location.
+void plugin_mem_zero(
+    const SP_Device* device,
+    SP_Stream stream,
+    SP_DeviceMemoryBase* location,
+    uint64_t size,
+    TF_Status* status)
+{
+    // TODO
+}
+
+// Set the 8-bit patterns starting at the location with `size` bytes.
+void plugin_memset(
+    const SP_Device* device,
+    SP_Stream stream,
+    SP_DeviceMemoryBase* location,
+    uint8_t pattern,
+    uint64_t size,
+    TF_Status* status)
+{
+    // TODO
+}
+
+// Set the 32-bit patterns starting at the location with `size` bytes.
+void plugin_memset32(
+    const SP_Device* device,
+    SP_Stream stream,
+    SP_DeviceMemoryBase* location,
+    uint32_t pattern,
+    uint64_t size,
+    TF_Status* status)
+{
+    // TODO
+}
+
 // Synchronizes all activity occurring in the StreamExecutor's context (most
 // likely a whole device).
 void plugin_synchronize_all_activity(const SP_Device* device, TF_Status* status)
@@ -558,6 +593,11 @@ void plugin_create_stream_executor(
 
     params->stream_executor->synchronize_all_activity =
         plugin_synchronize_all_activity;
+
+    params->stream_executor->mem_zero = plugin_mem_zero;
+    params->stream_executor->memset = plugin_memset;
+    params->stream_executor->memset32 = plugin_memset32;
+
     params->stream_executor->host_callback = plugin_host_callback;
 }
 
