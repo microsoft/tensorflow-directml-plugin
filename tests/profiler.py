@@ -12,8 +12,7 @@ b_values = [[2],[3],[4]]
 # 1 2 3 * 2 = 20
 # 4 5 6   3   47
 #         4
-with tf.device("CPU"):
-    y = tf.raw_ops.MatMul(a=a, b=b)
+y = tf.raw_ops.MatMul(a=a, b=b)
 
 profiler_options = tf.profiler.experimental.ProfilerOptions(
     host_tracer_level=3,
