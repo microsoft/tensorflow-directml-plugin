@@ -255,6 +255,7 @@ cc_binary(
     srcs = [
         "plugin/plugin_device.cc",
         "plugin/plugin_kernel.cc",
+        "plugin/plugin_profiler.cc",
     ],
     features = ["windows_export_all_symbols"],
     linkshared = True,

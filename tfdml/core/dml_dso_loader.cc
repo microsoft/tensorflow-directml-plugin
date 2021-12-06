@@ -187,7 +187,12 @@ StatusOr<void*> GetDxCoreDsoHandle() { return GetDsoHandle("dxcore", ""); }
 StatusOr<void*> GetPixDsoHandle()
 {
 #if _WIN32
-    return GetDsoHandle("WinPixEventRuntime", "", GetModuleDirectory());
+    // The WinPixEventRuntime DLL can't be located next to the pluggable device
+    // library because TensorFlow would try to load it, so we place it in a
+    // "directml" folder that we append to the search path
+    auto path = GetModuleDirectory();
+    path = (std::filesystem::path(path) / "directml").string();
+    return GetDsoHandle("WinPixEventRuntime", "", path);
 #else
     return Status(TF_UNIMPLEMENTED, "PIX events are not supported in WSL");
 #endif
