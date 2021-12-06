@@ -29,8 +29,7 @@ _VERSION = '0.0.1'
 _PLUGIN_LIB_PATH = 'tensorflow-plugins'
 _MY_PLUGIN_PATH = 'tensorflow-directml-plugin'
 
-_TF_VERSION = pkg_resources.get_distribution("tf-nightly-cpu").version
-REQUIRED_PACKAGES = [f'tf-nightly-cpu=={_TF_VERSION}']
+REQUIRED_PACKAGES = [f'tensorflow-cpu>=2.7.0']
 
 if sys.byteorder == 'little':
   # grpcio does not build correctly on big-endian machines due to lack of
