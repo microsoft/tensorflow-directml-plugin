@@ -1,9 +1,15 @@
 #pragma once
 
 #include "dml_common.h"
+#include "tfdml/core/dml_adapter.h"
 
-// Helper for adding tracing events useful in ETW-based perf analysis
-// (GPUView/WPA). No telemetry.
+#include "absl/types/span.h"
+#include "tfdml/runtime_adapter/xplane_builder.h"
+
+// DirectML tracer that emits the following types of events:
+// - ETW: for analysis in GPUView and WPA
+// - PIX: for analysis in PIX timing and GPU captures
+// - TF Profiler: for analysis in TensorBoard
 class DmlTracing
 {
   public:
@@ -19,31 +25,101 @@ class DmlTracing
     enum TraceLevel
     {
         None = 0,
-        LowFrequency = 1,
-        All = 10
+        Standard = 1,
+        Verbose = 2,
+    };
+
+    // Pair of IDs for the device and event within that device.
+    struct ProfilerEventId
+    {
+        size_t device_id;
+        size_t event_id;
+    };
+
+    // RAII helper to track a DML kernel compute call on the CPU timeline.
+    struct KernelComputeEventScope
+    {
+        std::optional<ProfilerEventId> device_event_id;
+
+        KernelComputeEventScope(
+            uint32_t device_id,
+            const std::string_view type,
+            const std::string_view name)
+        {
+            device_event_id = DmlTracing::Instance().LogKernelComputeStart(
+                device_id,
+                type,
+                name);
+        }
+
+        ~KernelComputeEventScope()
+        {
+            if (device_event_id)
+            {
+                DmlTracing::Instance().LogKernelComputeEnd(*device_event_id);
+            }
+        }
     };
 
   private:
     DmlTracing();
     ~DmlTracing();
 
-    TraceLevel trace_level_ = None;
+    // The trace_profiler_level_ only applies to events that occur while the TF
+    // profiler is active (within a TF profiler session), so the default value
+    // is higher than for PIX/ETW. PIX/ETW events may be emitted outside of
+    // profiler sessions and require environment variables to be set to collect
+    // data.
+    TraceLevel trace_pix_level_ = None;
+    TraceLevel trace_etw_level_ = None;
+    TraceLevel trace_profiler_level_ = Standard;
+
+    // Tracks a DML kernel compute call on the CPU timeline.
+    struct KernelComputeEvent
+    {
+        std::string op_type;
+        std::string op_name;
+        int64_t start_timestamp_ns;
+        int64_t end_timestamp_ns;
+    };
+
+    // Data collected for the TF profiler.
+    struct DeviceEvents
+    {
+        std::vector<KernelComputeEvent> kernel_compute_events;
+
+        inline void Clear() { kernel_compute_events.clear(); }
+    };
+    std::vector<DeviceEvents> device_events_;
+    tensorflow::profiler::XSpace xspace_;
+    bool xspace_dirty_ = true;
+    int64_t profiler_start_timestamp_ns_ = 0;
+    std::mutex mutex_;
+    bool profiler_active_ = false;
 
   public:
     static DmlTracing& Instance();
 
-    void LogSessionRunStart();
-    void LogSessionRunEnd();
+    void StartProfiler();
+    void StopProfiler();
+
+    // CPU timeline
     void LogExecutionContextCopyBufferRegion();
     void LogExecutionContextFillBufferWithPattern();
     void LogExecutionContextFlush();
-    void LogKernelCompute(
+    std::optional<ProfilerEventId> LogKernelComputeStart(
+        uint32_t device_ordinal,
         const std::string_view op_type,
         const std::string_view op_name);
+    void LogKernelComputeEnd(const ProfilerEventId& id);
 
     // GPU timeline
     void LogExecuteOperatorStart(
         IDMLCompiledOperator* op,
         ID3D12GraphicsCommandList* command_list);
     void LogExecuteOperatorEnd(ID3D12GraphicsCommandList* command_list);
+
+    // Lazily converts internal events into a profiler XSpace. Repeated calls
+    // to this function will return the same XSpace.
+    const tensorflow::profiler::XSpace& GetXSpace();
 };

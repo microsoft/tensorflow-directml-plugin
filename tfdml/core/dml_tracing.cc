@@ -1,14 +1,18 @@
 #if _WIN32
+#define NOMINMAX
 // clang-format off
 #include <Windows.h>
 #include <TraceLoggingProvider.h>
 #include <evntrace.h>
 // clang-format on
 
+#include "absl/time/clock.h"
+
 #define USE_PIX
 #include <d3d12.h>
 
 #include "pix3.h"
+#include "tfdml/core/dml_device_cache.h"
 #include "tfdml/core/dml_dso_loader.h"
 #include "tfdml/runtime_adapter/env.h"
 
@@ -125,22 +129,48 @@ TRACELOGGING_DEFINE_PROVIDER(
      0x95,
      0x60));
 
+// {D113B493-BBA2-4993-8608-D706A73B91CE}
+static constexpr GUID PIX_EVAL_CAPTURABLE_WORK_GUID = {
+    0xd113b493,
+    0xbba2,
+    0x4993,
+    {0x86, 0x08, 0xd7, 0x06, 0xa7, 0x3b, 0x91, 0xce}};
+
+// Overrides the default value of a tracing level using an environment variable
+// (if set).
+DmlTracing::TraceLevel MaybeOverrideTraceLevelFromEnvVar(
+    const char* name,
+    DmlTracing::TraceLevel& level)
+{
+    int64_t trace_level = 0;
+    tfdml::Status s = tfdml::ReadInt64FromEnvVar(name, level, &trace_level);
+    if (!s.ok() || (trace_level != DmlTracing::None &&
+                    trace_level != DmlTracing::Standard &&
+                    trace_level != DmlTracing::Verbose))
+    {
+        // TODO: print warning
+    }
+    level = static_cast<DmlTracing::TraceLevel>(trace_level);
+}
+
 DmlTracing::DmlTracing()
 {
     TraceLoggingRegister(g_providerHandle);
 
-    int64_t trace_level = 0;
-    tfdml::Status s = tfdml::ReadInt64FromEnvVar(
-        "TF_DIRECTML_TRACE_LEVEL",
-        trace_level_,
-        &trace_level);
-    if (s.ok())
-    {
-        trace_level_ = static_cast<TraceLevel>(trace_level);
-    }
+    MaybeOverrideTraceLevelFromEnvVar(
+        "TF_DIRECTML_TRACE_PIX_LEVEL",
+        trace_pix_level_);
+    MaybeOverrideTraceLevelFromEnvVar(
+        "TF_DIRECTML_TRACE_ETW_LEVEL",
+        trace_etw_level_);
+    MaybeOverrideTraceLevelFromEnvVar(
+        "TF_DIRECTML_TRACE_PROFILER_LEVEL",
+        trace_profiler_level_);
+
+    device_events_.resize(tfdml::DmlDeviceCache::Instance().GetAdapterCount());
 
 #if _WIN32
-    if (trace_level_ > None)
+    if (trace_pix_level_ > None)
     {
         auto pix_handle_or = tfdml::DmlCachedDsoLoader::GetPixDsoHandle();
         if (pix_handle_or.ok())
@@ -178,33 +208,84 @@ DmlTracing::~DmlTracing() { TraceLoggingUnregister(g_providerHandle); }
     return traceLogger;
 }
 
-void DmlTracing::LogSessionRunStart()
+void DmlTracing::StartProfiler()
 {
-    if (trace_level_ >= LowFrequency)
+    // The core TF runtime should not be calling start when the profiler is
+    // already active.
+    assert(!profiler_active_);
+    profiler_active_ = true;
+
+    // Reset previously collected events for the TF profiler.
+    profiler_start_timestamp_ns_ = absl::GetCurrentTimeNanos();
+    xspace_dirty_ = true;
+    for (auto& device_events : device_events_)
+    {
+        device_events.Clear();
+    }
+
+    if (trace_etw_level_ >= Standard)
     {
         TraceLoggingWrite(
             g_providerHandle,
-            "SessionRun",
+            "ProfilerSession",
             TraceLoggingOpcode(EVENT_TRACE_TYPE_START));
-        PIXBeginEvent(PIX_COLOR(255, 0, 0), "SessionRun");
+    }
+
+    if (trace_pix_level_ >= Standard)
+    {
+        PIXBeginEvent(PIX_COLOR(255, 0, 0), "ProfilerSession");
+    }
+
+    // If attached to PIX, marks the start of a "frame" of GPU work.
+    auto& device_cache = tfdml::DmlDeviceCache::Instance();
+    for (uint32_t i = 0; i < device_cache.GetAdapterCount(); ++i)
+    {
+        const auto* state = device_cache.GetOrCreateDeviceState(i);
+
+        if (state->sharing_contract)
+        {
+            state->sharing_contract->BeginCapturableWork(
+                PIX_EVAL_CAPTURABLE_WORK_GUID);
+        }
     }
 }
 
-void DmlTracing::LogSessionRunEnd()
+void DmlTracing::StopProfiler()
 {
-    if (trace_level_ >= LowFrequency)
+    // Marks the end of the profiling region using both ETW (GPUView/WPA) and
+    // PIX events.
+    if (trace_etw_level_ >= Standard)
     {
         TraceLoggingWrite(
             g_providerHandle,
-            "SessionRun",
+            "ProfilerSession",
             TraceLoggingOpcode(EVENT_TRACE_TYPE_STOP));
+    }
+
+    if (trace_pix_level_ >= Standard)
+    {
         PIXEndEvent();
     }
+
+    // If attached to PIX, marks the end of a "frame" of GPU work.
+    auto& device_cache = tfdml::DmlDeviceCache::Instance();
+    for (uint32_t i = 0; i < device_cache.GetAdapterCount(); ++i)
+    {
+        const auto* state = device_cache.GetOrCreateDeviceState(i);
+
+        if (state->sharing_contract)
+        {
+            state->sharing_contract->EndCapturableWork(
+                PIX_EVAL_CAPTURABLE_WORK_GUID);
+        }
+    }
+
+    profiler_active_ = false;
 }
 
 void DmlTracing::LogExecutionContextCopyBufferRegion()
 {
-    if (trace_level_ >= All)
+    if (trace_etw_level_ >= Verbose)
     {
         TraceLoggingWrite(g_providerHandle, "ExecutionContextCopyBufferRegion");
     }
@@ -212,7 +293,7 @@ void DmlTracing::LogExecutionContextCopyBufferRegion()
 
 void DmlTracing::LogExecutionContextFillBufferWithPattern()
 {
-    if (trace_level_ >= All)
+    if (trace_etw_level_ >= Verbose)
     {
         TraceLoggingWrite(
             g_providerHandle,
@@ -222,24 +303,52 @@ void DmlTracing::LogExecutionContextFillBufferWithPattern()
 
 void DmlTracing::LogExecutionContextFlush()
 {
-    if (trace_level_ >= All)
+    if (trace_etw_level_ >= Verbose)
     {
         TraceLoggingWrite(g_providerHandle, "ExecutionContextFlush");
+    }
+
+    if (trace_pix_level_ >= Verbose)
+    {
         PIXSetMarker(0, "EC Flush");
     }
 }
 
-void DmlTracing::LogKernelCompute(
+std::optional<DmlTracing::ProfilerEventId> DmlTracing::LogKernelComputeStart(
+    uint32_t device_ordinal,
     const std::string_view op_type,
     const std::string_view op_name)
 {
-    if (trace_level_ >= All)
+    std::optional<ProfilerEventId> profiler_event_id;
+    if (profiler_active_ && trace_profiler_level_ >= Standard)
     {
-        TraceLoggingWrite(
-            g_providerHandle,
-            "KernelCompute",
-            TraceLoggingString(op_type.data(), "Type"),
-            TraceLoggingString(op_name.data(), "Name"));
+        auto timestamp = absl::GetCurrentTimeNanos();
+
+        // Locking here is not ideal and can be avoided with TLS.
+        std::unique_lock<std::mutex> lock(mutex_);
+        auto& events = device_events_[device_ordinal].kernel_compute_events;
+        profiler_event_id = {device_ordinal, events.size()};
+        events.push_back(KernelComputeEvent{
+            op_type.data(),
+            op_name.data(),
+            timestamp,
+            timestamp});
+        lock.unlock();
+    }
+
+    return profiler_event_id;
+}
+
+void DmlTracing::LogKernelComputeEnd(const ProfilerEventId& id)
+{
+    if (profiler_active_ && trace_profiler_level_ >= Standard)
+    {
+        // Locking here is not ideal and can be avoided with TLS.
+        std::unique_lock<std::mutex> lock(mutex_);
+        auto& event =
+            device_events_[id.device_id].kernel_compute_events[id.event_id];
+        event.end_timestamp_ns = absl::GetCurrentTimeNanos();
+        lock.unlock();
     }
 }
 
@@ -248,7 +357,7 @@ void DmlTracing::LogExecuteOperatorStart(
     ID3D12GraphicsCommandList* command_list)
 {
 #if _WIN32
-    if (trace_level_ >= All)
+    if (trace_pix_level_ >= Verbose)
     {
         std::vector<char> eventName(100);
         UINT data_size = (UINT)(eventName.size() * sizeof(char));
@@ -263,8 +372,85 @@ void DmlTracing::LogExecuteOperatorStart(
 
 void DmlTracing::LogExecuteOperatorEnd(ID3D12GraphicsCommandList* command_list)
 {
-    if (trace_level_ >= All)
+    if (trace_pix_level_ >= Verbose)
     {
         EndEventOnCommandList(command_list);
     }
+}
+
+const tensorflow::profiler::XSpace& DmlTracing::GetXSpace()
+{
+    using namespace tensorflow::profiler;
+
+    if (!xspace_dirty_)
+    {
+        return xspace_;
+    }
+
+    xspace_.Clear();
+
+    auto& device_cache = tfdml::DmlDeviceCache::Instance();
+
+    for (uint32_t i = 0; i < device_events_.size(); i++)
+    {
+        auto& device_events = device_events_[i];
+        if (device_events.kernel_compute_events.empty())
+        {
+            continue;
+        }
+
+        uint32_t adapter_index;
+        if (!device_cache.GetAdapterIndexFromDeviceId(i, &adapter_index).ok())
+        {
+            continue;
+        }
+        auto& adapter = device_cache.GetAdapter(adapter_index);
+
+        auto xplane = xspace_.add_planes();
+        XPlaneBuilder plane(xplane);
+        plane.SetId(i);
+
+        // A few undocumented "rules" for naming the planes in our pluggable
+        // profiler:
+        //
+        // - The plane name MUST start with /device:GPU, /device:TPU, or
+        // /device:CUSTOM for the plane to be included in the trace_viewer tool.
+        // See `ConvertXSpaceToTraceEvents` (xplane_to_trace_events.cc) in the
+        // TF core runtime.
+        // - The plane name MUST start with /device:GPU: for the plane to be
+        // included in the tensorflow_stats tool. See `ConvertXSpaceToOpStats`
+        // (xplane_to_op_stats.cc) in TF core runtime.
+        plane.SetName(
+            absl::StrCat("/device:GPU:", i, " (DirectML) - ", adapter.Name()));
+
+        auto line = plane.GetOrCreateLine(0);
+        line.SetName("Kernels (CPU Timeline)");
+
+        plane.ForEachLine(
+            [&](XLineBuilder line)
+            { line.SetTimestampNs(profiler_start_timestamp_ns_); });
+
+        for (auto& kernel_event : device_events.kernel_compute_events)
+        {
+            // WARNING: The pluggable profiler interface doesn't guarantee
+            // events from the plugin will be reflected in all the various
+            // tools. This logic may change in the future, but for now any
+            // events tagged with the "tf_op" stat and named <op_name>:<op_type>
+            // (e.g. "MyMatrixMultiply:MatMul") will be parsed correctly.
+            auto event_name =
+                absl::StrCat(kernel_event.op_name, ":", kernel_event.op_type);
+
+            auto event_metadata = plane.GetOrCreateEventMetadata(event_name);
+            event_metadata->set_display_name(kernel_event.op_type);
+            auto event = line.AddEvent(*event_metadata);
+            event.SetTimestampNs(kernel_event.start_timestamp_ns);
+            event.SetEndTimestampNs(kernel_event.end_timestamp_ns);
+            event.AddStatValue(
+                *plane.GetOrCreateStatMetadata("tf_op"),
+                *plane.GetOrCreateStatMetadata(event_name));
+        }
+    }
+
+    xspace_dirty_ = false;
+    return xspace_;
 }

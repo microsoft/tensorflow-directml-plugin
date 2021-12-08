@@ -62,7 +62,8 @@ void plugin_create_device(
 
     const auto* device_state =
         device_cache.GetOrCreateDeviceState(adapter_index);
-    params->device->device_handle = new DmlDevice(device_state);
+    params->device->device_handle =
+        new DmlDevice(device_state, params->device->ordinal, adapter_index);
     TF_SetStatus(status, TF_OK, "");
 }
 
