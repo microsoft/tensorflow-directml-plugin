@@ -13,7 +13,8 @@ limitations under the License.
 
 #pragma once
 
-// NOTE: not ACTUALLY a precompiled header yet... (does bazel even support this?)
-#include "tfdml/core/dml_ops_common.h"
+// NOTE: not ACTUALLY a precompiled header yet... (does bazel even support
+// this?)
 #include "tfdml/core/dml_kernel_definition.h"
 #include "tfdml/core/dml_kernel_wrapper.h"
+#include "tfdml/core/dml_ops_common.h"

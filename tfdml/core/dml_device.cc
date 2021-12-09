@@ -27,13 +27,6 @@ limitations under the License.
 #include "tfdml/runtime_adapter/allocator.h"
 #include "tfdml/runtime_adapter/tensor.h"
 
-// {D113B493-BBA2-4993-8608-D706A73B91CE}
-static const GUID PIX_EVAL_CAPTURABLE_WORK_GUID = {
-    0xd113b493,
-    0xbba2,
-    0x4993,
-    {0x86, 0x08, 0xd7, 0x06, 0xa7, 0x3b, 0x91, 0xce}};
-
 namespace tfdml
 {
 
@@ -68,26 +61,6 @@ Status DmlDevice::Sync()
     // Take the opportunity to free some memory if needed
     state_->kernel_manager->ReleaseCompletedReferences();
     return Status::OK();
-}
-
-void DmlDevice::DebugOnSessionRunStart()
-{
-    DmlTracing::Instance().LogSessionRunStart();
-    if (state_->sharing_contract)
-    {
-        state_->sharing_contract->BeginCapturableWork(
-            PIX_EVAL_CAPTURABLE_WORK_GUID);
-    }
-}
-
-void DmlDevice::DebugOnSessionRunEnd()
-{
-    DmlTracing::Instance().LogSessionRunEnd();
-    if (state_->sharing_contract)
-    {
-        state_->sharing_contract->EndCapturableWork(
-            PIX_EVAL_CAPTURABLE_WORK_GUID);
-    }
 }
 
 Status DmlDevice::CopyCPUTensorToDevice(

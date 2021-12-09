@@ -13,9 +13,9 @@ limitations under the License.
 
 #pragma once
 
-#include "tensorflow/c/kernels.h"
 #include "attribute.h"
 #include "op_defs.h"
+#include "tensorflow/c/kernels.h"
 #include "tfdml/runtime_adapter/status.h"
 #include "tfdml/runtime_adapter/tensor.h"
 

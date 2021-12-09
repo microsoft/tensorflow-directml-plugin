@@ -17,8 +17,8 @@ limitations under the License.
 
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_split.h"
-#include "tfdml/core/dml_util.h"
 #include "tensorflow/c/logging.h"
+#include "tfdml/core/dml_util.h"
 #include "tfdml/runtime_adapter/macros.h"
 #include "tfdml/runtime_adapter/status.h"
 

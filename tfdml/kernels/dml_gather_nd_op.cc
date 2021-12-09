@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/kernels/pch.h"
 #include "absl/cleanup/cleanup.h"
+#include "tfdml/kernels/pch.h"
 
 namespace tfdml
 {
