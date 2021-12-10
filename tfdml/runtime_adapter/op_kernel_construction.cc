@@ -139,8 +139,7 @@ AttributeValue OpKernelConstruction::TryGetAttributeValue(
     case AttributeType::ListShape:
     case AttributeType::ListFunc:
     case AttributeType::ListTensor:
-    default:
-        return absl::nullopt;
+    default: return absl::nullopt;
     }
 }
 

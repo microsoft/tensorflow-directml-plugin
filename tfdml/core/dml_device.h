@@ -57,11 +57,6 @@ class DmlDevice : public Device
         const Tensor* cpu_tensor,
         Tensor* device_tensor) final;
 
-    // TODO: Make them override if/when we implement it as part of TensorFlow's
-    // Device class. Check if we can hook them to the proflier API.
-    void DebugOnSessionRunStart();
-    void DebugOnSessionRunEnd();
-
   private:
     const DmlDeviceState* state_; // Weak; owned by the device factory
     std::unique_ptr<DMLDeviceContext> device_context_;
