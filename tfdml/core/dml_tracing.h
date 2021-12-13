@@ -1,3 +1,16 @@
+/* Copyright (c) Microsoft Corporation.
+
+Use of this source code is governed by an MIT-style
+license that can be found in the LICENSE file or at
+https://opensource.org/licenses/MIT.
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
 #pragma once
 
 #include "dml_common.h"
@@ -37,16 +50,19 @@ class DmlTracing
     };
 
     // RAII helper to track a DML kernel compute call on the CPU timeline.
-    struct KernelComputeEventScope
+    class KernelComputeEventScope
     {
+        // This event will be null if the TF profiler isn't active when the
+        // scope is constructed.
         std::optional<ProfilerEventId> device_event_id;
 
+      public:
         KernelComputeEventScope(
             uint32_t device_id,
             const std::string_view type,
             const std::string_view name)
         {
-            device_event_id = DmlTracing::Instance().LogKernelComputeStart(
+            device_event_id = DmlTracing::Instance().TryLogKernelComputeStart(
                 device_id,
                 type,
                 name);
@@ -107,7 +123,7 @@ class DmlTracing
     void LogExecutionContextCopyBufferRegion();
     void LogExecutionContextFillBufferWithPattern();
     void LogExecutionContextFlush();
-    std::optional<ProfilerEventId> LogKernelComputeStart(
+    std::optional<ProfilerEventId> TryLogKernelComputeStart(
         uint32_t device_ordinal,
         const std::string_view op_type,
         const std::string_view op_name);

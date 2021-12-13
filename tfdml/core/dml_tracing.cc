@@ -1,3 +1,16 @@
+/* Copyright (c) Microsoft Corporation.
+
+Use of this source code is governed by an MIT-style
+license that can be found in the LICENSE file or at
+https://opensource.org/licenses/MIT.
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
 #if _WIN32
 #define NOMINMAX
 // clang-format off
@@ -148,7 +161,14 @@ DmlTracing::TraceLevel MaybeOverrideTraceLevelFromEnvVar(
                     trace_level != DmlTracing::Standard &&
                     trace_level != DmlTracing::Verbose))
     {
-        // TODO: print warning
+        TF_Log(
+            TF_WARNING,
+            "The '%s' environment variable, if defined, may only have one of "
+            "the following values: %d, %d, or %d.",
+            name,
+            DmlTracing::None,
+            DmlTracing::Standard,
+            DmlTracing::Verbose);
     }
     level = static_cast<DmlTracing::TraceLevel>(trace_level);
 }
@@ -170,7 +190,7 @@ DmlTracing::DmlTracing()
     device_events_.resize(tfdml::DmlDeviceCache::Instance().GetAdapterCount());
 
 #if _WIN32
-    if (trace_pix_level_ > None)
+    if (trace_pix_level_ > TraceLevel::None)
     {
         auto pix_handle_or = tfdml::DmlCachedDsoLoader::GetPixDsoHandle();
         if (pix_handle_or.ok())
@@ -223,7 +243,7 @@ void DmlTracing::StartProfiler()
         device_events.Clear();
     }
 
-    if (trace_etw_level_ >= Standard)
+    if (trace_etw_level_ >= TraceLevel::Standard)
     {
         TraceLoggingWrite(
             g_providerHandle,
@@ -231,7 +251,7 @@ void DmlTracing::StartProfiler()
             TraceLoggingOpcode(EVENT_TRACE_TYPE_START));
     }
 
-    if (trace_pix_level_ >= Standard)
+    if (trace_pix_level_ >= TraceLevel::Standard)
     {
         PIXBeginEvent(PIX_COLOR(255, 0, 0), "ProfilerSession");
     }
@@ -254,7 +274,7 @@ void DmlTracing::StopProfiler()
 {
     // Marks the end of the profiling region using both ETW (GPUView/WPA) and
     // PIX events.
-    if (trace_etw_level_ >= Standard)
+    if (trace_etw_level_ >= TraceLevel::Standard)
     {
         TraceLoggingWrite(
             g_providerHandle,
@@ -262,7 +282,7 @@ void DmlTracing::StopProfiler()
             TraceLoggingOpcode(EVENT_TRACE_TYPE_STOP));
     }
 
-    if (trace_pix_level_ >= Standard)
+    if (trace_pix_level_ >= TraceLevel::Standard)
     {
         PIXEndEvent();
     }
@@ -285,7 +305,7 @@ void DmlTracing::StopProfiler()
 
 void DmlTracing::LogExecutionContextCopyBufferRegion()
 {
-    if (trace_etw_level_ >= Verbose)
+    if (trace_etw_level_ >= TraceLevel::Verbose)
     {
         TraceLoggingWrite(g_providerHandle, "ExecutionContextCopyBufferRegion");
     }
@@ -293,7 +313,7 @@ void DmlTracing::LogExecutionContextCopyBufferRegion()
 
 void DmlTracing::LogExecutionContextFillBufferWithPattern()
 {
-    if (trace_etw_level_ >= Verbose)
+    if (trace_etw_level_ >= TraceLevel::Verbose)
     {
         TraceLoggingWrite(
             g_providerHandle,
@@ -303,24 +323,24 @@ void DmlTracing::LogExecutionContextFillBufferWithPattern()
 
 void DmlTracing::LogExecutionContextFlush()
 {
-    if (trace_etw_level_ >= Verbose)
+    if (trace_etw_level_ >= TraceLevel::Verbose)
     {
         TraceLoggingWrite(g_providerHandle, "ExecutionContextFlush");
     }
 
-    if (trace_pix_level_ >= Verbose)
+    if (trace_pix_level_ >= TraceLevel::Verbose)
     {
         PIXSetMarker(0, "EC Flush");
     }
 }
 
-std::optional<DmlTracing::ProfilerEventId> DmlTracing::LogKernelComputeStart(
+std::optional<DmlTracing::ProfilerEventId> DmlTracing::TryLogKernelComputeStart(
     uint32_t device_ordinal,
     const std::string_view op_type,
     const std::string_view op_name)
 {
     std::optional<ProfilerEventId> profiler_event_id;
-    if (profiler_active_ && trace_profiler_level_ >= Standard)
+    if (profiler_active_ && trace_profiler_level_ >= TraceLevel::Standard)
     {
         auto timestamp = absl::GetCurrentTimeNanos();
 
@@ -341,7 +361,7 @@ std::optional<DmlTracing::ProfilerEventId> DmlTracing::LogKernelComputeStart(
 
 void DmlTracing::LogKernelComputeEnd(const ProfilerEventId& id)
 {
-    if (profiler_active_ && trace_profiler_level_ >= Standard)
+    if (profiler_active_ && trace_profiler_level_ >= TraceLevel::Standard)
     {
         // Locking here is not ideal and can be avoided with TLS.
         std::unique_lock<std::mutex> lock(mutex_);
@@ -357,7 +377,7 @@ void DmlTracing::LogExecuteOperatorStart(
     ID3D12GraphicsCommandList* command_list)
 {
 #if _WIN32
-    if (trace_pix_level_ >= Verbose)
+    if (trace_pix_level_ >= TraceLevel::Verbose)
     {
         std::vector<char> eventName(100);
         UINT data_size = (UINT)(eventName.size() * sizeof(char));
@@ -372,7 +392,7 @@ void DmlTracing::LogExecuteOperatorStart(
 
 void DmlTracing::LogExecuteOperatorEnd(ID3D12GraphicsCommandList* command_list)
 {
-    if (trace_pix_level_ >= Verbose)
+    if (trace_pix_level_ >= TraceLevel::Verbose)
     {
         EndEventOnCommandList(command_list);
     }

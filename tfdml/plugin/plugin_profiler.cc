@@ -42,7 +42,17 @@ void profiler_collect_data_xspace(
     // The second call to this function occurs after an appropriately sized
     // buffer is reserved for the XSpace.
     bool success = xspace.SerializeToArray(buffer, *size_in_bytes);
-    TF_SetStatus(status, success ? TF_OK : TF_FAILED_PRECONDITION, "");
+    if (success)
+    {
+        TF_SetStatus(status, TF_OK, "");
+    }
+    else
+    {
+        TF_SetStatus(
+            status,
+            TF_FAILED_PRECONDITION,
+            "Failed to serialize XSpace into buffer.");
+    }
 }
 
 void profiler_destroy_profiler(TP_Profiler* profiler)
