@@ -121,6 +121,7 @@ extern "C" UINT64 WINAPI PIXEventsReplaceBlock(
 #endif
 
 #include "dml_tracing.h"
+#include "tfdml/core/dml_device_cache.h"
 #include "tfdml/runtime_adapter/env_var.h"
 #include "tfdml/runtime_adapter/status.h"
 
@@ -151,7 +152,7 @@ static constexpr GUID PIX_EVAL_CAPTURABLE_WORK_GUID = {
 
 // Overrides the default value of a tracing level using an environment variable
 // (if set).
-DmlTracing::TraceLevel MaybeOverrideTraceLevelFromEnvVar(
+void MaybeOverrideTraceLevelFromEnvVar(
     const char* name,
     DmlTracing::TraceLevel& level)
 {
