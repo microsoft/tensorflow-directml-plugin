@@ -27,7 +27,6 @@ for i in range(1,3):
         time.sleep(0.25)
         pass
 
-tf.config.experimental
 with tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(log_device_placement=True)) as s:
     print(s.run(y2, feed_dict={a:a_values, b:b_values, c:c_values}))
 
