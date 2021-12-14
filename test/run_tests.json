@@ -1,0 +1,16 @@
+{
+    "testGroups": {
+        "ops": {
+            "type": "python_abseil",
+            "test_script_dir": "python/ops"
+        },
+        "models": {
+            "type": "python_abseil",
+            "test_script_dir": "python/models"
+        },
+        "plugin_python": {
+            "type": "python_abseil",
+            "test_script_dir": "python/plugin"
+        }
+    }
+}
