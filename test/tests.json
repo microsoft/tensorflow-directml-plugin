@@ -1,5 +1,5 @@
 {
-    "testGroups": {
+    "groups": {
         "ops": {
             "type": "python_abseil",
             "test_script_dir": "python/ops"
