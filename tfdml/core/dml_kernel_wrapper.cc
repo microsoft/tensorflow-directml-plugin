@@ -34,11 +34,13 @@ DmlKernelWrapperBase::DmlKernelWrapperBase(
 
 void DmlKernelWrapperBase::Compute(OpKernelContext* ctx)
 {
-    DmlTracing::Instance().LogKernelCompute(
+    DmlDevice* dml_device = static_cast<DmlDevice*>(ctx->device());
+
+    DmlTracing::KernelComputeEventScope event_scope(
+        dml_device->GetDeviceOrdinal(),
         ctx->op_kernel().type_string(),
         ctx->op_kernel().name());
 
-    DmlDevice* dml_device = static_cast<DmlDevice*>(ctx->device());
     const DmlKernelManager& kernel_manager = *dml_device->GetKernelManager();
 
     // Compute the output shapes

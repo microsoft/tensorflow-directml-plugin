@@ -56,3 +56,14 @@ proto_library(
     srcs = ["tensorflow/include/tensorflow/core/framework/types.proto"],
     strip_import_prefix = "tensorflow/include",
 )
+
+cc_proto_library(
+    name = "xplane_cc_proto",
+    deps = [":xplane_proto"],
+)
+
+proto_library(
+    name = "xplane_proto",
+    srcs = ["tensorflow/include/tensorflow/core/profiler/protobuf/xplane.proto"],
+    strip_import_prefix = "tensorflow/include",
+)

@@ -33,6 +33,7 @@ cc_library(
         "runtime_adapter/tensor_shape.cc",
         "runtime_adapter/tensor_shape_utils.cc",
         "runtime_adapter/types.cc",
+        "runtime_adapter/xplane_builder.cc",
     ],
     hdrs = [
         "runtime_adapter/allocator.h",
@@ -66,6 +67,7 @@ cc_library(
         "runtime_adapter/tensor_shape_utils.h",
         "runtime_adapter/types.h",
         "runtime_adapter/wide_char.h",
+        "runtime_adapter/xplane_builder.h",
     ],
     copts = if_windows([
         "-DDML_BUILD_WINDOWS",
@@ -222,6 +224,7 @@ cc_library(
         "@tensorflow//:headers",
         "@tensorflow//:lib",
         "@tensorflow//:resource_handle_cc_proto",
+        "@tensorflow//:xplane_cc_proto",
     ] + if_windows(["@pix//:headers"]),
     alwayslink = 1,
 )
