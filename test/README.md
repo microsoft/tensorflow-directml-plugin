@@ -52,26 +52,72 @@ python S:\tensorflow-directml-plugin\test\python\ops\concat_op_test.py -- Concat
 
 # Test JSON Metadata
 
-## Test Type: python_abseil 
+## python_abseil 
 
-Test groups of this type reference a directory of python scripts. Each python script is expected to contain abseil test classes. Test scripts should **not** be organized into subdirectories; only the top-level .py files will be considered for 
+Test groups of this type reference a directory of python scripts. 
 
-Example:
+- Each python top-level python file is expected to contain abseil test classes. 
+- Only the top-level .py files will be considered as tests; the test group **does not recurse** into subdirectories. 
+- You may have helper files in subdirectories that are imported/used by the top-level .py files.
+
+**Fields**
+
+| Field                         | Required | Type                | Default | Description                                                                  |
+| ----------------------------- | -------- | ------------------- | ------- | ---------------------------------------------------------------------------- |
+| type                          | Yes      | string              |         | Must be "python_abseil".                                                     |
+| test_script_dir               | Yes      | string              |         | Directory (relative to tests.json) containing the test scripts.              |
+| group_timeout_seconds         | No       | number              | 900     | Max number of seconds to wait for all tests in the group to complete.        |
+| default_test_timeout_seconds  | No       | number              | 30      | Max number of seconds each test script can run before being terminated.      |
+| override_test_timeout_seconds | No       | map(string, number) | {}      | Max number of seconds specific test scripts can run before being terminated. |
+| disabled_tests                | No       | array(string)       | []      | Names of scripts in test_script_dir to skip executing.                       |
+
+**Example**
+
+Consider a directory structure with the following files:
+```
+tests/
+│   tests.json
+│
+├───basic_tests/
+│   │   bar.py
+│   │   broken_test.py
+│   │   foo.py
+│   │   slow_test.py
+│   │
+│   └───helpers/
+│           common.py
+│
+└───native/
+        ...
+```
+
+The `tests.json` may look like the following:
+
 ```json
 {
-"ops": {
-    "type": "python_abseil",
-    "test_timeout_minutes": 30,
-    "test_script_dir": "python/ops",
-    "disabled_tests": [
-        "batch_matmul_op_test.py"
-    ]
+    "groups": {
+        "basic_tests": {
+            "type": "python_abseil",
+            "test_script_dir": "basic_tests",
+            "group_timeout_seconds": 100,
+            "default_test_timeout_seconds": 15,
+            "override_test_timeout_seconds": {
+                "slow_test.py": 120
+            },
+            "disabled_tests": [
+                "broken_test.py"
+            ]
+        },
+        "native": {
+            ...
+        }
+    }
 }
 ```
 
-| Field                | Required | Type          | Description                                                                      |
-| -------------------- | -------- | ------------- | -------------------------------------------------------------------------------- |
-| type                 | Yes      | string        | Must be "python_abseil".                                                         |
-| test_timeout_minutes | Yes      | number        | Max number of minutes to wait for each test.                                     |
-| test_script_dir      | Yes      | string        | Directory (relative to root test content directory) containing the test scripts. |
-| disabled_tests       | No       | array(string) | Names of scripts in test_script_dir to skip executing.                           |
+Running the `basic_tests` test group, as defined above, will execute three tests: 
+- `bar.py` (given 15 seconds to complete)
+- `foo.py` (given 15 seconds to complete)
+- `slow_test.py` (given 120 seconds to complete)
+
+All three tests combined have a max duration of 150 seconds, but the test group is only given 100 seconds to complete. Any tests that have not started within the `group_test_timeout_seconds` duration will not be executed. Any tests that have not completed within the `group_test_timeout_seconds` duration will be terminated.

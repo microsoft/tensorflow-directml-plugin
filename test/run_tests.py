@@ -176,7 +176,7 @@ def parse_test_groups(tests_root_dir, test_group_filter = "", results_dir = None
                 tests.append(Test(
                     test_group_name,
                     test_command_line, 
-                    test_group_metadata["test_timeout_minutes"] * 60, 
+                    test_group_metadata["test_timeout_seconds"], 
                     results_path
                 ))
 
