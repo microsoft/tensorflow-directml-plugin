@@ -61,7 +61,7 @@ Example:
 {
 "ops": {
     "type": "python_abseil",
-    "timeout_minutes": 30,
+    "test_timeout_minutes": 30,
     "test_script_dir": "python/ops",
     "disabled_tests": [
         "batch_matmul_op_test.py"
@@ -69,9 +69,9 @@ Example:
 }
 ```
 
-| Field           | Required | Type          | Description                                                                      |
-| --------------- | -------- | ------------- | -------------------------------------------------------------------------------- |
-| type            | Yes      | string        | Must be "python_abseil".                                                         |
-| timeout_minutes | Yes      | number        | Max number of minutes to wait for tests in the group to complete.                |
-| test_script_dir | Yes      | string        | Directory (relative to root test content directory) containing the test scripts. |
-| disabled_tests  | No       | array(string) | Names of scripts in test_script_dir to skip executing.                           |
+| Field                | Required | Type          | Description                                                                      |
+| -------------------- | -------- | ------------- | -------------------------------------------------------------------------------- |
+| type                 | Yes      | string        | Must be "python_abseil".                                                         |
+| test_timeout_minutes | Yes      | number        | Max number of minutes to wait for each test.                                     |
+| test_script_dir      | Yes      | string        | Directory (relative to root test content directory) containing the test scripts. |
+| disabled_tests       | No       | array(string) | Names of scripts in test_script_dir to skip executing.                           |

@@ -2,7 +2,7 @@
     "groups": {
         "ops": {
             "type": "python_abseil",
-            "timeout_minutes": 30,
+            "test_timeout_minutes": 5,
             "test_script_dir": "python/ops",
             "disabled_tests": [
                 "batch_matmul_op_test.py"
@@ -10,12 +10,12 @@
         },
         "models": {
             "type": "python_abseil",
-            "timeout_minutes": 10,
+            "test_timeout_minutes": 5,
             "test_script_dir": "python/models"
         },
         "plugin_python": {
             "type": "python_abseil",
-            "timeout_minutes": 10,
+            "test_timeout_minutes": 5,
             "test_script_dir": "python/plugin"
         }
     }
