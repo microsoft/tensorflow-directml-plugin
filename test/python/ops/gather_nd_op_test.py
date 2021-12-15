@@ -18,7 +18,6 @@ import time
 
 import numpy as np
 import os
-input(os.getpid())
 
 from tensorflow.python.client import session
 from tensorflow.python.eager import context
