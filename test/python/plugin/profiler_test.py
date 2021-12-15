@@ -5,6 +5,8 @@ import tensorboard_plugin_profile.protobuf.tf_stats_pb2 as tf_stats_pb2
 import tempfile
 import shutil
 from pathlib import Path
+import gzip
+import json
 
 class ProfilerTest(absltest.TestCase):
 
@@ -87,6 +89,28 @@ class ProfilerTest(absltest.TestCase):
     # Checks that trace.json contains expected device kernel events.
     def testTraceKernelEvents(self):
         file_path = self.getProfilerLogFilePath("*trace.json.gz")
+        with gzip.open(file_path) as f:
+            json_trace = json.loads(f.read())
+        
+        pid_to_event = {}
+        dml_kernel_events = 0
+
+        for trace_event in json_trace["traceEvents"]:
+            if not "ph" in trace_event:
+                continue
+            
+            if trace_event["ph"] == "M":
+                if trace_event["name"] == "process_name":
+                    pid_to_event[trace_event["pid"]] = trace_event
+            elif trace_event["ph"] == "X":
+                # The MatMul and AddN events should be on a DirectML device
+                if trace_event["name"] == "MatMul" or trace_event["name"] == "AddN":
+                    proc_event = pid_to_event[trace_event["pid"]]
+                    self.assertRegex(proc_event["args"]["name"], "/device:GPU:\d \(DirectML\) - .*")
+                    dml_kernel_events += 1
+        
+        self.assertEqual(dml_kernel_events, 2)
+
 
     # Checks that device kernels appear in the tensorflow_stats.pb
     def testTensorFlowStats(self):
