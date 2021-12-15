@@ -79,20 +79,40 @@ class TestGroup:
         summary["cases_failed"] = 0
         summary["cases_skipped"] = 0
         summary["tests_timed_out"] = tests_timed_out
+        summary["failed_case_names"] = []
 
         for test in self.tests:
             test_summary = test.summarize()
-            if test_summary:
-                for test_case in test_summary:
-                    summary["cases_ran"] += 1
-                    if test_case["Result"] == "Pass":
-                        summary["cases_passed"] += 1
-                    elif test_case["Result"] == "Fail":
-                        summary["cases_failed"] += 1
-                    elif test_case["Result"] == "Skipped":
-                        summary["cases_skipped"] += 1
+            for test_case in test_summary["cases"]:
+                summary["cases_ran"] += 1
+                if test_case["result"] == "passed":
+                    summary["cases_passed"] += 1
+                elif test_case["result"] == "failed":
+                    summary["cases_failed"] += 1
+                    summary["failed_case_names"].append(test_case["name"])
+                elif test_case["result"] == "skipped":
+                    summary["cases_skipped"] += 1
         
         return summary
+
+    def print_summary(self):
+        if not self.tests:
+            return
+        summary = self.summarize()
+        
+        print('-' * 80)
+        print(f"Test Group         : {summary['group']}")
+        print(f"Test Cases Ran     : {summary['cases_ran']}")
+        print(f"Test Cases Passed  : {summary['cases_passed']}")
+        print(f"Test Cases Skipped : {summary['cases_skipped']}")
+        print(f"Test Cases Failed  : {summary['cases_failed']}")
+        if len(summary["failed_case_names"]) > 0:
+            print("Failing Test Cases : ")
+            for i in range(0, len(summary["failed_case_names"])):
+                failed_case = summary["failed_case_names"][i]
+                print(f"{i}: {failed_case}")
+        print('-' * 80)
+        print()
 
 
 class Test:
@@ -153,54 +173,41 @@ class Test:
                 log_file.write(str(p.stdout))
 
     def summarize(self):
+        summary = {}
+        summary["name"] = self.name
+        summary["cases"] = []
+
         if not Path(self.results_file_path).exists():
-            return None
+            return summary
         
         try:
-            summary = []
             root = ET.parse(self.results_file_path).getroot()
-            for test_suite in root.findall("testsuite"):
-                test_suite_name = test_suite.attrib["name"]
-                for test_case in test_suite.findall("testcase"):
-                    test_case_name = test_case.attrib['name']
-                    json_test_case = {}
-                    json_test_case["Name"] = f"{test_suite_name}.{test_case_name}"
-                    json_test_case["Module"] = Path(self.results_file_path).stem
-                    json_test_case["Time"] = test_case.attrib["time"]
-
-                    # Failures are saved as children nodes instead of attributes
-                    failures = test_case.findall("failure") + test_case.findall("error")
-
-                    if failures:
-                        json_test_case["Result"] = "Fail"
-                        error_strings = []
-
-                        for failure in failures:
-                            failure_message = failure.attrib["message"]
-                            if re.match(r".+\.(cpp|h):\d+", failure_message) is None:
-                                error_strings.append(failure_message)
-                            else:
-                                file_path = re.sub(r"(.+):\d+", lambda match: match.group(1), failure_message)
-                                line_number = re.sub(r".+:(\d+)", lambda match: match.group(1), failure_message)
-                                message = re.sub(r"&#xA(.+)", lambda match: match.group(1), failure_message)
-                                error_strings.append(f"{message} [{file_path}:{line_number}]")
-
-                        json_test_case["Errors"] = "".join(error_strings).replace("&#xA", "     ")
-                    else:
-                        status = test_case.attrib.get("status", "")
-                        result = test_case.attrib.get("result", "")
-
-                        if status == "run" or result == "completed":
-                            json_test_case["Result"] = "Pass"
-                        elif status == "skipped" or result == "suppressed":
-                            json_test_case["Result"] = "Skipped"
-                        else:
-                            json_test_case["Result"] = "Blocked"
-                    summary.append(json_test_case)
-
+        except:
             return summary
-        except ET.ParseError:
-            return None
+
+        for test_suite in root.findall("testsuite"):
+            test_suite_name = test_suite.attrib["name"]
+            for test_case in test_suite.findall("testcase"):
+                test_case_summary = {}
+                test_case_summary["name"] = f"{self.name}::{test_suite_name}.{test_case.attrib['name']}"
+                test_case_summary["module"] = Path(self.results_file_path).stem
+                test_case_summary["time"] = test_case.attrib["time"]
+
+                # Failures are saved as children nodes instead of attributes
+                failures = test_case.findall("failure") + test_case.findall("error")
+                if failures:
+                    test_case_summary["result"] = "failed"
+                else:
+                    status = test_case.attrib.get("status", "")
+                    result = test_case.attrib.get("result", "")
+
+                    if status == "run" or result == "completed":
+                        test_case_summary["result"] = "passed"
+                    elif status == "skipped" or result == "suppressed":
+                        test_case_summary["result"] = "skipped"
+                summary["cases"].append(test_case_summary)
+        
+        return summary
 
 
 def get_optional_json_property(json_object, property_name, default_value):
@@ -254,15 +261,6 @@ def parse_test_groups(tests_json_path, test_filter, results_dir, run_disabled):
         ))
     
     return test_groups
-
-
-def summarize_results(test_groups, results_dir):
-    if not results_dir:
-        return
-
-    for test_group in test_groups:
-        summary = test_group.summarize()
-        print(summary)
 
 
 def main():
@@ -333,7 +331,10 @@ def main():
     if args.summarize:
         if not args.results_dir:
             raise Exception("You must specify a --results_dir when using the --summarize option.")
-        summarize_results(test_groups, args.results_dir)
+        for test_group in test_groups:
+            test_group.print_summary()
+
+    # Export to xUnit.
 
 if __name__ == "__main__":
     main()

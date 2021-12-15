@@ -54,23 +54,6 @@
                     "args": ["--dml_visible_devices", "0"]
                 }
             ]
-        },
-        {
-            "name": "Testing",
-            "timeout_seconds": 4,
-            "tests": [
-                {
-                    "name": "A",
-                    "file": "sleep.py",
-                    "args": ["--seconds", "2"],
-                    "timeout_seconds": 3
-                },
-                {
-                    "name": "B",
-                    "file": "sleep.py",
-                    "args": ["--seconds", "2"]
-                }
-            ]
         }
     ]
 }
