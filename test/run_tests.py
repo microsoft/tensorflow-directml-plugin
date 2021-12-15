@@ -45,6 +45,56 @@ class Test:
             with open(self.log_path, "w", encoding='utf-8') as log_file:
                 log_file.write(str(p.stdout))
 
+    def summarize(self):
+        if not Path(self.results_path).exists():
+            return None
+        
+        try:
+            summary = []
+            root = ET.parse(self.results_path).getroot()
+            for test_suite in root.findall("testsuite"):
+                test_suite_name = test_suite.attrib["name"]
+                for test_case in test_suite.findall("testcase"):
+                    test_case_name = test_case.attrib['name']
+                    json_test_case = {}
+                    json_test_case["Name"] = f"{test_suite_name}.{test_case_name}"
+                    json_test_case["Module"] = Path(self.results_path).stem
+                    json_test_case["Time"] = test_case.attrib["time"]
+
+                    # Failures are saved as children nodes instead of attributes
+                    failures = test_case.findall("failure") + test_case.findall("error")
+
+                    if failures:
+                        json_test_case["Result"] = "Fail"
+                        error_strings = []
+
+                        for failure in failures:
+                            failure_message = failure.attrib["message"]
+                            if re.match(r".+\.(cpp|h):\d+", failure_message) is None:
+                                error_strings.append(failure_message)
+                            else:
+                                file_path = re.sub(r"(.+):\d+", lambda match: match.group(1), failure_message)
+                                line_number = re.sub(r".+:(\d+)", lambda match: match.group(1), failure_message)
+                                message = re.sub(r"&#xA(.+)", lambda match: match.group(1), failure_message)
+                                error_strings.append(f"{message} [{file_path}:{line_number}]")
+
+                        json_test_case["Errors"] = "".join(error_strings).replace("&#xA", "     ")
+                    else:
+                        status = test_case.attrib.get("status", "")
+                        result = test_case.attrib.get("result", "")
+
+                    if status == "run" or result == "completed":
+                        json_test_case["Result"] = "Pass"
+                    elif status == "skipped" or result == "suppressed":
+                        json_test_case["Result"] = "Skipped"
+                    else:
+                        json_test_case["Result"] = "Blocked"
+                    summary.append(json_test_case)
+
+            return summary
+        except ET.ParseError:
+            return None
+
 
 class TestGroup:
     def __init__(self, name, tests):
@@ -62,6 +112,35 @@ class TestGroup:
             print(f"Test Group '{self.name}':")
             for test in self.tests:
                 test.run()
+
+    def summarize(self):
+        summary = {}
+        summary["Name"] = self.name
+        summary["Time"] = 0.0
+        # summary["Tests"] = []
+        summary["Counts"] = {}
+        summary["Counts"]["Total"] = 0
+        summary["Counts"]["Passed"] = 0
+        summary["Counts"]["Failed"] = 0
+        summary["Counts"]["Skipped"] = 0
+        summary["Counts"]["Blocked"] = 0
+
+        # if test was expected to output a file but it doesn't exist (or is empty) then it's a test errro
+        for test in self.tests:
+            test_summary = test.summarize()
+            if test_summary:
+                for test_case in test_summary:
+                    summary["Counts"]["Total"] += 1
+                    if test_case["Result"] == "Pass":
+                        summary["Counts"]["Passed"] += 1
+                    elif test_case["Result"] == "Fail":
+                        summary["Counts"]["Failed"] += 1
+                    elif test_case["Result"] == "Skipped":
+                        summary["Counts"]["Skipped"] += 1
+                    else:
+                        summary["Counts"]["Blocked"] += 1
+        
+        return summary
 
 
 # Parses tests.json to build a list of test groups to execute.
@@ -111,12 +190,8 @@ def summarize_results(test_groups, results_dir):
         return
 
     for test_group in test_groups:
-        pass
-        # test_results_path = Path(test_group.results_path)
-        # print(test_results_path)
-        # print(test_results_path.exists())
-
-    # if test was expected to output a file but it doesn't exist (or is empty) then it's a test errro
+        summary = test_group.summarize()
+        print(summary)
 
 def main():
     parser = argparse.ArgumentParser()
