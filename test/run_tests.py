@@ -1,8 +1,10 @@
+from genericpath import exists
 import subprocess
 import json
 import argparse
 from pathlib import Path
 import xml.etree.ElementTree as ET
+import os
 
 class Test:
     def __init__(self, test_group, command_line, timeout_seconds, results_path):
@@ -10,12 +12,38 @@ class Test:
         self.command_line = command_line
         self.timeout_seconds = timeout_seconds
         self.results_path = results_path
+        if results_path:
+            self.log_path = Path(results_path).parent / f"{Path(results_path).stem}.txt"
     
     def show(self):
-        print(f"[{self.test_group}] {self.command_line}")
+        print(f"[{self.test_group}] {self.command_line} {self.log_path}")
 
     def run(self):
-        subprocess.run(self.command_line, timeout=self.timeout_seconds)
+        print(f"Running Test: [{self.test_group}] {self.command_line}")
+        environ = os.environ.copy()
+        environ['PYTHONIOENCODING'] = 'utf-8'
+        p = None
+        try:
+            p = subprocess.run(
+                self.command_line, 
+                timeout=self.timeout_seconds,
+                stdin=subprocess.DEVNULL if self.log_path else None,
+                stdout=subprocess.PIPE if self.log_path else None,
+                stderr=subprocess.STDOUT if self.log_path else None,
+                universal_newlines=True,
+                encoding='utf-8',
+                env=environ,
+            )
+        except subprocess.TimeoutExpired:
+            print("Test timed out!")
+
+        if p and self.log_path:
+            results_subdir = Path(self.log_path).parent
+            if not results_subdir.exists():
+                results_subdir.mkdir(exist_ok=True, parents=True)
+            with open(self.log_path, "w", encoding='utf-8') as log_file:
+                log_file.write(str(p.stdout))
+
 
 # Parses tests.json to build a list of command lines to execute.
 def parse_tests(tests_root_dir, results_dir = None):
@@ -52,7 +80,15 @@ def parse_tests(tests_root_dir, results_dir = None):
     
     return test_processes
 
-def summarize_results(tests):
+def summarize_results(tests, results_dir):
+    if not results_dir:
+        return
+
+    for test in tests:
+        test_results_path = Path(test.results_path)
+        print(test_results_path)
+        print(test_results_path.exists())
+
     # if test was expected to output a file but it doesn't exist (or is empty) then it's a test errro
 
     pass
@@ -89,8 +125,7 @@ def main():
             test.run()
 
     # Merge and summarize test results.
-    if not args.show:
-        summarize_results(tests)
+    summarize_results(tests, args.results_dir)
 
 if __name__ == "__main__":
     main()
