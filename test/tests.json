@@ -57,11 +57,12 @@
         },
         {
             "name": "Testing",
+            "timeout_seconds": 4,
             "tests": [
                 {
                     "name": "A",
                     "file": "sleep.py",
-                    "args": ["--seconds", "5"],
+                    "args": ["--seconds", "2"],
                     "timeout_seconds": 3
                 },
                 {

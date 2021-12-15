@@ -49,7 +49,9 @@ class TestGroup:
             self.tests_timed_out = []
             start_time = time.time()
             for test in self.tests:
-                test.run()
+                elapsed_time = time.time() - start_time
+                remaining_time = self.timeout_seconds - elapsed_time
+                test.run(remaining_time)
                 if test.timed_out:
                     self.tests_timed_out.append(test.name)
             end_time = time.time()
@@ -116,15 +118,23 @@ class Test:
     def show(self):
         print(f"{self.name}: {self.command_line}")
 
-    def run(self):
-        print(f"Running '{self.name}'")
+    def run(self, remaining_time_in_test_group):
+        self.timed_out = False
+        timeout_seconds = remaining_time_in_test_group
+        if self.timeout_seconds:
+            timeout_seconds = min(self.timeout_seconds, timeout_seconds)
+        if timeout_seconds <= 0:
+            self.timed_out = True
+            return
+
+        print(f"Running '{self.name}' with a timeout of {timeout_seconds} seconds")
         environ = os.environ.copy()
         environ['PYTHONIOENCODING'] = 'utf-8'
         p = None
         try:
             p = subprocess.run(
                 self.command_line, 
-                timeout=self.timeout_seconds,
+                timeout=timeout_seconds,
                 stdin=subprocess.DEVNULL if self.log_file_path else None,
                 stdout=subprocess.PIPE if self.log_file_path else None,
                 stderr=subprocess.STDOUT if self.log_file_path else None,
