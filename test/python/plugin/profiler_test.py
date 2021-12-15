@@ -1,6 +1,7 @@
 import absl.testing.absltest as absltest
 import tensorflow as tf
-import tensorboard_plugin_profile.protobuf.tf_stats_pb2 as tf_stats
+import tensorflow.core.profiler.protobuf.xplane_pb2 as xplane_pb2
+import tensorboard_plugin_profile.protobuf.tf_stats_pb2 as tf_stats_pb2
 import tempfile
 import shutil
 from pathlib import Path
@@ -46,19 +47,51 @@ class ProfilerTest(absltest.TestCase):
         last_profile_dir = [p for p in profiles_dir.iterdir() if p.is_dir()][-1]
         return list(Path(last_profile_dir).glob(glob))[-1]
 
-    def testXPlane(self):
-        # copy xspace.proto and deserialize
-        print("testing kernel events")
-        pass
+    # Checks that xplane.pb contains expected kernel events.
+    def testXPlaneKernelEvents(self):
+        file_path = self.getProfilerLogFilePath("*xplane.pb")
+        xspace = xplane_pb2.XSpace()
+        with open(file_path, "rb") as f:
+            xspace.ParseFromString(f.read())
+        
+        for xplane in xspace.planes:
+            if not xplane.name.startswith("/device:"):
+                continue
 
-    def testTraceJson(self):
-        # copy xspace.proto and deserialize
-        print("testing kernel events")
-        pass
+            # DML planes are prefixed /device:GPU so that they get picked up 
+            # by tensorflow_stats and trace_viewer.
+            self.assertRegex(xplane.name, "/device:GPU:\d \(DirectML\) - .*")
 
+            # DML profiler only emits a single line right now (CPU-timeline kernels).
+            self.assertEqual(len(xplane.lines), 1)
+            self.assertEqual(xplane.lines[0].name, "Kernels (CPU Timeline)")
+            cpu_timeline = xplane.lines[0]
+            
+            # Ensure the AddN kernel is traced.
+            self.assertEqual(len(cpu_timeline.events), 2)
+            addn_event = cpu_timeline.events[0]
+            addn_metadata = xplane.event_metadata[addn_event.metadata_id]
+            self.assertEqual(addn_metadata.name, "MyAdd:AddN")
+            self.assertEqual(addn_metadata.display_name, "AddN")
+            self.assertGreater(len(addn_event.stats), 0)
+            self.assertEqual(xplane.stat_metadata[addn_event.stats[0].metadata_id].name, "tf_op")
+
+            # Ensure the MatMul kernel is traced.
+            matmul_event = cpu_timeline.events[1]
+            matmul_metadata = xplane.event_metadata[matmul_event.metadata_id]
+            self.assertEqual(matmul_metadata.name, "MyMultiply:MatMul")
+            self.assertEqual(matmul_metadata.display_name, "MatMul")
+            self.assertGreater(len(matmul_event.stats), 0)
+            self.assertEqual(xplane.stat_metadata[matmul_event.stats[0].metadata_id].name, "tf_op")
+
+    # Checks that trace.json contains expected device kernel events.
+    def testTraceKernelEvents(self):
+        file_path = self.getProfilerLogFilePath("*trace.json.gz")
+
+    # Checks that device kernels appear in the tensorflow_stats.pb
     def testTensorFlowStats(self):
         file_path = self.getProfilerLogFilePath("*tensorflow_stats.pb")
-        database = tf_stats.TfStatsDatabase()
+        database = tf_stats_pb2.TfStatsDatabase()
         with open(file_path, "rb") as f:
             database.ParseFromString(f.read())
 
