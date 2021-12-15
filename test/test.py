@@ -23,12 +23,17 @@ import os
 import re
 import fnmatch
 import shutil
+import time
 
 class TestGroup:
-    def __init__(self, name, tests, timeout_seconds):
+    def __init__(self, name, tests, timeout_seconds, results_dir):
         self.name = name
         self.timeout_seconds = timeout_seconds
         self.tests = tests
+        self.results_dir = results_dir
+        self.results_file_path = None
+        if results_dir:
+            self.results_file_path = Path(results_dir) / f"{name}.json"
 
     def show(self):
         if self.tests:
@@ -40,36 +45,44 @@ class TestGroup:
 
     def run(self):
         if self.tests:
-            print(f"Test Group '{self.name}':")
+            start_time = time.time()
             for test in self.tests:
                 test.run()
+            end_time = time.time()
+            if self.results_file_path:
+                with open(self.results_file_path, "w") as file:
+                    json.dump({"time_seconds": end_time - start_time}, file)
 
     def summarize(self):
+        time_seconds = 0
+        if Path(self.results_file_path).exists():
+            with open(self.results_file_path, "r") as json_file:
+                json_data = json.load(json_file)
+                time_seconds = json_data["time_seconds"]
+
         summary = {}
-        summary["Name"] = self.name
-        summary["Time"] = 0.0
-        # summary["Tests"] = []
-        summary["Counts"] = {}
-        summary["Counts"]["Total"] = 0
-        summary["Counts"]["Passed"] = 0
-        summary["Counts"]["Failed"] = 0
-        summary["Counts"]["Skipped"] = 0
-        summary["Counts"]["Blocked"] = 0
+        summary["group"] = self.name
+        summary["time_seconds"] = time_seconds
+        summary["tests_ran"] = 0
+        summary["tests_passed"] = 0
+        summary["tests_failed"] = 0
+        summary["tests_skipped"] = 0
+        summary["tests_timed_out"] = 0
 
         # if test was expected to output a file but it doesn't exist (or is empty) then it's a test errro
         for test in self.tests:
             test_summary = test.summarize()
             if test_summary:
                 for test_case in test_summary:
-                    summary["Counts"]["Total"] += 1
+                    summary["tests_ran"] += 1
                     if test_case["Result"] == "Pass":
-                        summary["Counts"]["Passed"] += 1
+                        summary["tests_passed"] += 1
                     elif test_case["Result"] == "Fail":
-                        summary["Counts"]["Failed"] += 1
+                        summary["tests_failed"] += 1
                     elif test_case["Result"] == "Skipped":
-                        summary["Counts"]["Skipped"] += 1
+                        summary["tests_skipped"] += 1
                     else:
-                        summary["Counts"]["Blocked"] += 1
+                        summary["tests_timed_out"] += 1
         
         return summary
 
@@ -97,7 +110,7 @@ class Test:
         print(f"{self.name}: {self.command_line}")
 
     def run(self):
-        print(f"{self.name}: {self.command_line}")
+        print(f"Running '{self.name}'")
         environ = os.environ.copy()
         environ['PYTHONIOENCODING'] = 'utf-8'
         p = None
@@ -184,7 +197,7 @@ def parse_test_groups(tests_json_path, test_filter, results_dir, run_disabled):
     test_groups = []
     test_names = set()
 
-    with open(tests_json_path) as json_file:
+    with open(tests_json_path, "r") as json_file:
         json_data = json.load(json_file)
 
     for json_test_group in json_data["groups"]:
@@ -216,7 +229,12 @@ def parse_test_groups(tests_json_path, test_filter, results_dir, run_disabled):
                     results_dir
                 ))
         
-        test_groups.append(TestGroup(test_group_name, test_group_tests, test_group_timeout_seconds))
+        test_groups.append(TestGroup(
+            test_group_name, 
+            test_group_tests, 
+            test_group_timeout_seconds,
+            results_dir
+        ))
     
     return test_groups
 
@@ -262,7 +280,7 @@ def main():
     parser.add_argument(
         "--filter", "-f",
         type=str, 
-        default="",
+        default="*",
         help="Filters test names to select a subset of the tests."
     )
     parser.add_argument(
