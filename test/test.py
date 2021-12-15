@@ -1,3 +1,18 @@
+#!/usr/bin/env python
+# Copyright (c) Microsoft Corporation. All Rights Reserved.
+#
+# Use of this source code is governed by an MIT-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""Helper script to drive testing tensorflow-directml-plugin."""
+
 from genericpath import exists
 import subprocess
 import json
@@ -6,6 +21,8 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 import os
 import re
+import fnmatch
+import shutil
 
 class TestGroup:
     def __init__(self, name, tests, timeout_seconds):
@@ -189,7 +206,7 @@ def parse_test_groups(tests_json_path, test_filter, results_dir, run_disabled):
                 raise Exception(f"{tests_json_path} contains a duplicate test: {test_full_name}.")
             test_names.add(test_full_name)
 
-            if (not test_disabled or run_disabled) and re.match(test_filter, test_full_name):
+            if (not test_disabled or run_disabled) and fnmatch.fnmatch(test_full_name, test_filter):
                 test_group_tests.append(Test(
                     test_type,
                     test_file,
@@ -222,9 +239,19 @@ def main():
         help="Path to tests.json file."
     )
     parser.add_argument(
-        "--show", 
+        "--run", "-r",
         action="store_true", 
         help="Shows test commands instead of executing them."
+    )
+    parser.add_argument(
+        "--show", "-w",
+        action="store_true", 
+        help="Shows test commands instead of executing them."
+    )
+    parser.add_argument(
+        "--summarize", "-s",
+        action="store_true",
+        help="Summarizes test results."
     )
     parser.add_argument(
         "--results_dir", 
@@ -233,30 +260,44 @@ def main():
         help="Directory to save test results. If empty no result files are written."
     )
     parser.add_argument(
-        "--test_filter", 
+        "--filter", "-f",
         type=str, 
         default="",
         help="Filters test names to select a subset of the tests."
     )
     parser.add_argument(
-        "--run_disabled", 
+        "--run_disabled",
         action="store_true",
         help="Runs tests even if they are disabled."
+    )
+    parser.add_argument(
+        "--clean_results", "-x",
+        action="store_true",
+        help="Deletes the results_dir if it already exists."
     )
     args = parser.parse_args()
 
     # Parse tests from tests.json.
-    test_groups = parse_test_groups(args.tests_json, args.test_filter, args.results_dir, args.run_disabled)
+    test_groups = parse_test_groups(args.tests_json, args.filter, args.results_dir, args.run_disabled)
 
-    # Run or show all tests.
-    for test_group in test_groups:
-        if args.show:
+    # Show test commands.
+    if args.show:
+        for test_group in test_groups:
             test_group.show()
-        else:
+    
+    # Delete previous results, if any.
+    if args.clean_results and Path(args.results_dir).exists():
+        shutil.rmtree(args.results_dir)
+
+    # Execute tests.
+    if args.run:
+        for test_group in test_groups:
             test_group.run()
 
-    # Merge and summarize test results.
-    if not args.show:
+    # Summarize test results.
+    if args.summarize:
+        if not args.results_dir:
+            raise Exception("You must specify a --results_dir when using the --summarize option.")
         summarize_results(test_groups, args.results_dir)
 
 if __name__ == "__main__":
