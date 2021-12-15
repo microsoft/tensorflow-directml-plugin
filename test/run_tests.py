@@ -13,6 +13,7 @@ class Test:
         self.command_line = command_line
         self.timeout_seconds = timeout_seconds
         self.results_path = results_path
+        self.log_path = None
         if results_path:
             self.log_path = Path(results_path).parent / f"{Path(results_path).stem}.txt"
     
