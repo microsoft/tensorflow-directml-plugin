@@ -18,18 +18,17 @@
                     "file": "python/ops/gather_op_test.py"
                 },
                 {
-                    "file": "python/ops/matmul_op_test.py"
+                    "file": "python/ops/matmul_op_test.py",
+                    "disabled": true
                 }
             ]
         },
         {
             "name": "models",
-            "type": "python_abseil",
             "tests": []
         },
         {
-            "name": "plugin_python",
-            "type": "python_abseil",
+            "name": "plugin",
             "tests": [
                 {
                     "file": "python/plugin/profiler_test.py"

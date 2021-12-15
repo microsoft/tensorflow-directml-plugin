@@ -74,7 +74,7 @@ class Test:
                 self.args.append(f"--xml_output_file {self.results_file_path}")
             self.command_line = f"python {test_file_path} {' '.join(self.args)}"
         else:
-            raise f"Unknown test type: {type}"
+            raise Exception(f"Unknown test type: {type}")
 
     def show(self):
         print(f"{self.name}: {self.command_line}")
@@ -163,7 +163,7 @@ def get_optional_json_property(json_object, property_name, default_value):
 
 
 # Parses tests.json to build a list of test groups to execute.
-def parse_test_groups(tests_json_path, test_filter = "", results_dir = None):
+def parse_test_groups(tests_json_path, test_filter, results_dir, run_disabled):
     test_groups = []
     test_names = set()
 
@@ -186,10 +186,10 @@ def parse_test_groups(tests_json_path, test_filter = "", results_dir = None):
 
             # Ensure test names are unique across all test groups.
             if test_full_name in test_names:
-                raise f"{tests_json_path} contains a duplicate test: {test_full_name}."
+                raise Exception(f"{tests_json_path} contains a duplicate test: {test_full_name}.")
             test_names.add(test_full_name)
 
-            if not test_disabled and re.match(test_filter, test_full_name):
+            if (not test_disabled or run_disabled) and re.match(test_filter, test_full_name):
                 test_group_tests.append(Test(
                     test_type,
                     test_file,
@@ -238,10 +238,15 @@ def main():
         default="",
         help="Filters test names to select a subset of the tests."
     )
+    parser.add_argument(
+        "--run_disabled", 
+        action="store_true",
+        help="Runs tests even if they are disabled."
+    )
     args = parser.parse_args()
 
     # Parse tests from tests.json.
-    test_groups = parse_test_groups(args.tests_json, args.test_filter, args.results_dir)
+    test_groups = parse_test_groups(args.tests_json, args.test_filter, args.results_dir, args.run_disabled)
 
     # Run or show all tests.
     for test_group in test_groups:
