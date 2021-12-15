@@ -32,6 +32,26 @@
             "tests": [
                 {
                     "file": "python/plugin/profiler_test.py"
+                },
+                {
+                    "name": "dml_visible_devices_empty1",
+                    "file": "python/plugin/dml_visible_devices_test.py",
+                    "args": ["--dml_visible_devices", "-1"]
+                },
+                {
+                    "name": "dml_visible_devices_empty2",
+                    "file": "python/plugin/dml_visible_devices_test.py",
+                    "args": ["--dml_visible_devices", "-1,0"]
+                },
+                {
+                    "name": "dml_visible_devices_swapped",
+                    "file": "python/plugin/dml_visible_devices_test.py",
+                    "args": ["--dml_visible_devices", "1,0"]
+                },
+                {
+                    "name": "dml_visible_devices_single",
+                    "file": "python/plugin/dml_visible_devices_test.py",
+                    "args": ["--dml_visible_devices", "0"]
                 }
             ]
         }
