@@ -7,16 +7,73 @@ import xml.etree.ElementTree as ET
 import os
 import re
 
-class Test:
-    def __init__(self, test_group_name, command_line, timeout_seconds, results_path):
-        self.test_group_name = test_group_name
-        self.command_line = command_line
+class TestGroup:
+    def __init__(self, name, tests, timeout_seconds):
+        self.name = name
         self.timeout_seconds = timeout_seconds
-        self.results_path = results_path
-        self.log_path = None
-        if results_path:
-            self.log_path = Path(results_path).parent / f"{Path(results_path).stem}.txt"
-    
+        self.tests = tests
+
+    def show(self):
+        if self.tests:
+            print(f"Test Group '{self.name}':")
+            for test in self.tests:
+                test.show()
+
+    def run(self):
+        if self.tests:
+            print(f"Test Group '{self.name}':")
+            for test in self.tests:
+                test.run()
+
+    def summarize(self):
+        summary = {}
+        summary["Name"] = self.name
+        summary["Time"] = 0.0
+        # summary["Tests"] = []
+        summary["Counts"] = {}
+        summary["Counts"]["Total"] = 0
+        summary["Counts"]["Passed"] = 0
+        summary["Counts"]["Failed"] = 0
+        summary["Counts"]["Skipped"] = 0
+        summary["Counts"]["Blocked"] = 0
+
+        # if test was expected to output a file but it doesn't exist (or is empty) then it's a test errro
+        for test in self.tests:
+            test_summary = test.summarize()
+            if test_summary:
+                for test_case in test_summary:
+                    summary["Counts"]["Total"] += 1
+                    if test_case["Result"] == "Pass":
+                        summary["Counts"]["Passed"] += 1
+                    elif test_case["Result"] == "Fail":
+                        summary["Counts"]["Failed"] += 1
+                    elif test_case["Result"] == "Skipped":
+                        summary["Counts"]["Skipped"] += 1
+                    else:
+                        summary["Counts"]["Blocked"] += 1
+        
+        return summary
+
+
+class Test:
+    def __init__(self, type, test_file_path, name, args, timeout_seconds, results_dir):
+        self.type = type
+        self.test_file_path = test_file_path
+        self.name = name
+        self.args = args
+        self.timeout_seconds = timeout_seconds
+        self.results_file_path = None
+        self.log_file_path = None
+
+        if type == "py_abseil":
+            if results_dir:
+                self.results_file_path = Path(results_dir) / f"{name}.xml"
+                self.log_file_path = Path(results_dir) / f"{name}.txt"
+                self.args.append(f"--xml_output_file {self.results_file_path}")
+            self.command_line = f"python {test_file_path} {' '.join(self.args)}"
+        else:
+            raise f"Unknown test type: {type}"
+
     def show(self):
         print(f"    {self.command_line}")
 
@@ -97,92 +154,50 @@ class Test:
             return None
 
 
-class TestGroup:
-    def __init__(self, name, tests):
-        self.name = name
-        self.tests = tests
-
-    def show(self):
-        if self.tests:
-            print(f"Test Group '{self.name}':")
-            for test in self.tests:
-                test.show()
-
-    def run(self):
-        if self.tests:
-            print(f"Test Group '{self.name}':")
-            for test in self.tests:
-                test.run()
-
-    def summarize(self):
-        summary = {}
-        summary["Name"] = self.name
-        summary["Time"] = 0.0
-        # summary["Tests"] = []
-        summary["Counts"] = {}
-        summary["Counts"]["Total"] = 0
-        summary["Counts"]["Passed"] = 0
-        summary["Counts"]["Failed"] = 0
-        summary["Counts"]["Skipped"] = 0
-        summary["Counts"]["Blocked"] = 0
-
-        # if test was expected to output a file but it doesn't exist (or is empty) then it's a test errro
-        for test in self.tests:
-            test_summary = test.summarize()
-            if test_summary:
-                for test_case in test_summary:
-                    summary["Counts"]["Total"] += 1
-                    if test_case["Result"] == "Pass":
-                        summary["Counts"]["Passed"] += 1
-                    elif test_case["Result"] == "Fail":
-                        summary["Counts"]["Failed"] += 1
-                    elif test_case["Result"] == "Skipped":
-                        summary["Counts"]["Skipped"] += 1
-                    else:
-                        summary["Counts"]["Blocked"] += 1
-        
-        return summary
+def get_optional_json_property(json_object, property_name, default_value):
+    if property_name in json_object:
+        return json_object[property_name]
+    return default_value
 
 
 # Parses tests.json to build a list of test groups to execute.
-def parse_test_groups(tests_root_dir, test_group_filter = "", results_dir = None):
+def parse_test_groups(tests_json_path, test_filter = "", results_dir = None):
     test_groups = []
+    test_names = set()
 
-    with open(Path(tests_root_dir) / "tests.json") as json_file:
-        tests_metadata = json.load(json_file)
+    with open(tests_json_path) as json_file:
+        json_data = json.load(json_file)
 
-    for test_group_name in tests_metadata["groups"]:
-        if not re.match(test_group_filter, test_group_name):
-            continue
+    for json_test_group in json_data["groups"]:
+        test_group_name = json_test_group["name"]
+        test_group_tests = []
+        test_group_timeout_seconds = get_optional_json_property(json_test_group, "timeout_seconds", 300)
 
-        test_group_metadata = tests_metadata["groups"][test_group_name]
+        for json_test in json_test_group["tests"]:
+            test_type = "py_abseil"
+            test_file = Path(tests_json_path).parent / json_test["file"]
+            test_base_name = get_optional_json_property(json_test, "name", Path(test_file).stem)
+            test_full_name = f"{test_group_name}.{test_base_name}"
+            test_args = get_optional_json_property(json_test, "args", [])
+            test_disabled = get_optional_json_property(json_test, "disabled", False)
+            test_timeout_seconds = get_optional_json_property(json_test, "timeout_seconds", None)
 
-        tests = []
+            # Ensure test names are unique across all test groups.
+            if test_full_name in test_names:
+                raise f"{tests_json_path} contains a duplicate test: {test_full_name}."
+            test_names.add(test_full_name)
 
-        # Test groups of type 'python_abseil' point at a directory with .py test scripts.
-        if test_group_metadata["type"] == "python_abseil":
-            test_scripts_dir = tests_root_dir / Path(test_group_metadata["test_script_dir"])
-            for test_script_path in test_scripts_dir.glob("*.py"):
-                test_command_line = f"python {test_script_path}"
-
-                if "disabled_tests" in test_group_metadata and test_script_path.name in test_group_metadata["disabled_tests"]:
-                    continue
-
-                results_path = None
-                if results_dir:
-                    results_path = Path(results_dir) / test_group_name / f"{test_script_path.stem}.xml"
-                    test_command_line += f" --xml_output_file {results_path}"
-
-                tests.append(Test(
-                    test_group_name,
-                    test_command_line, 
-                    test_group_metadata["test_timeout_seconds"], 
-                    results_path
+            if not test_disabled and re.match(test_filter, test_full_name):
+                test_group_tests.append(Test(
+                    test_type,
+                    test_file,
+                    test_full_name,
+                    test_args,
+                    test_timeout_seconds,
+                    results_dir
                 ))
-
-            test_groups.append(TestGroup(test_group_name, tests))
-        else:
-            print("test_group test not supported")
+        
+        test_groups.append(TestGroup(test_group_name, test_group_tests, test_group_timeout_seconds))
     
     return test_groups
 
@@ -197,16 +212,10 @@ def summarize_results(test_groups, results_dir):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--test_group_filter", 
+        "--tests_json", 
         type=str, 
-        default="",
-        help="Filter to select a subset of the test groups."
-    )
-    parser.add_argument(
-        "--tests_dir", 
-        type=str, 
-        default=Path(__file__).resolve().parent,
-        help="Directory containing tests."
+        default=Path(__file__).resolve().parent / "tests.json",
+        help="Path to tests.json file."
     )
     parser.add_argument(
         "--show", 
@@ -219,10 +228,16 @@ def main():
         default=None, 
         help="Directory to save test results. If empty no result files are written."
     )
+    parser.add_argument(
+        "--test_filter", 
+        type=str, 
+        default="",
+        help="Filters test names to select a subset of the tests."
+    )
     args = parser.parse_args()
 
     # Parse tests from tests.json.
-    test_groups = parse_test_groups(args.tests_dir, args.test_group_filter, args.results_dir)
+    test_groups = parse_test_groups(args.tests_json, args.test_filter, args.results_dir)
 
     # Run or show all tests.
     for test_group in test_groups:

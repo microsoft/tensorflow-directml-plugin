@@ -1,6 +1,6 @@
 {
     "title": "Tests Metadata",
-    "description": "A model file",
+    "description": "Describes test content for tensorflow-directml-plugin",
     "type": "object",
     "required": [
         "groups"
