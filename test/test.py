@@ -63,26 +63,25 @@ class TestGroup:
         summary = {}
         summary["group"] = self.name
         summary["time_seconds"] = time_seconds
-        summary["tests_ran"] = 0
-        summary["tests_passed"] = 0
-        summary["tests_failed"] = 0
-        summary["tests_skipped"] = 0
+        summary["cases_ran"] = 0
+        summary["cases_passed"] = 0
+        summary["cases_failed"] = 0
+        summary["cases_skipped"] = 0
         summary["tests_timed_out"] = 0
 
-        # if test was expected to output a file but it doesn't exist (or is empty) then it's a test errro
         for test in self.tests:
             test_summary = test.summarize()
             if test_summary:
                 for test_case in test_summary:
-                    summary["tests_ran"] += 1
+                    summary["cases_ran"] += 1
                     if test_case["Result"] == "Pass":
-                        summary["tests_passed"] += 1
+                        summary["cases_passed"] += 1
                     elif test_case["Result"] == "Fail":
-                        summary["tests_failed"] += 1
+                        summary["cases_failed"] += 1
                     elif test_case["Result"] == "Skipped":
-                        summary["tests_skipped"] += 1
-                    else:
-                        summary["tests_timed_out"] += 1
+                        summary["cases_skipped"] += 1
+            else:
+                summary["tests_timed_out"] += 1
         
         return summary
 
