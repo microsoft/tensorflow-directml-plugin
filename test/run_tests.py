@@ -15,7 +15,9 @@ class TestGroup:
 
     def show(self):
         if self.tests:
-            print(f"Test Group '{self.name}':")
+            print('-'*80)
+            print(f"Test Group '{self.name}'")
+            print('-'*80)
             for test in self.tests:
                 test.show()
 
@@ -75,10 +77,10 @@ class Test:
             raise f"Unknown test type: {type}"
 
     def show(self):
-        print(f"    {self.command_line}")
+        print(f"{self.name}: {self.command_line}")
 
     def run(self):
-        print(f"    Test: {self.command_line}")
+        print(f"{self.name}: {self.command_line}")
         environ = os.environ.copy()
         environ['PYTHONIOENCODING'] = 'utf-8'
         p = None
@@ -86,9 +88,9 @@ class Test:
             p = subprocess.run(
                 self.command_line, 
                 timeout=self.timeout_seconds,
-                stdin=subprocess.DEVNULL if self.log_path else None,
-                stdout=subprocess.PIPE if self.log_path else None,
-                stderr=subprocess.STDOUT if self.log_path else None,
+                stdin=subprocess.DEVNULL if self.log_file_path else None,
+                stdout=subprocess.PIPE if self.log_file_path else None,
+                stderr=subprocess.STDOUT if self.log_file_path else None,
                 universal_newlines=True,
                 encoding='utf-8',
                 env=environ,
@@ -96,27 +98,27 @@ class Test:
         except subprocess.TimeoutExpired:
             print("Test timed out!")
 
-        if p and self.log_path:
-            results_subdir = Path(self.log_path).parent
+        if p and self.log_file_path:
+            results_subdir = Path(self.log_file_path).parent
             if not results_subdir.exists():
                 results_subdir.mkdir(exist_ok=True, parents=True)
-            with open(self.log_path, "w", encoding='utf-8') as log_file:
+            with open(self.log_file_path, "w", encoding='utf-8') as log_file:
                 log_file.write(str(p.stdout))
 
     def summarize(self):
-        if not Path(self.results_path).exists():
+        if not Path(self.results_file_path).exists():
             return None
         
         try:
             summary = []
-            root = ET.parse(self.results_path).getroot()
+            root = ET.parse(self.results_file_path).getroot()
             for test_suite in root.findall("testsuite"):
                 test_suite_name = test_suite.attrib["name"]
                 for test_case in test_suite.findall("testcase"):
                     test_case_name = test_case.attrib['name']
                     json_test_case = {}
                     json_test_case["Name"] = f"{test_suite_name}.{test_case_name}"
-                    json_test_case["Module"] = Path(self.results_path).stem
+                    json_test_case["Module"] = Path(self.results_file_path).stem
                     json_test_case["Time"] = test_case.attrib["time"]
 
                     # Failures are saved as children nodes instead of attributes
@@ -201,6 +203,7 @@ def parse_test_groups(tests_json_path, test_filter = "", results_dir = None):
     
     return test_groups
 
+
 def summarize_results(test_groups, results_dir):
     if not results_dir:
         return
@@ -208,6 +211,7 @@ def summarize_results(test_groups, results_dir):
     for test_group in test_groups:
         summary = test_group.summarize()
         print(summary)
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -247,7 +251,8 @@ def main():
             test_group.run()
 
     # Merge and summarize test results.
-    summarize_results(test_groups, args.results_dir)
+    if not args.show:
+        summarize_results(test_groups, args.results_dir)
 
 if __name__ == "__main__":
     main()
