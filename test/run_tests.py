@@ -83,12 +83,12 @@ class Test:
                         status = test_case.attrib.get("status", "")
                         result = test_case.attrib.get("result", "")
 
-                    if status == "run" or result == "completed":
-                        json_test_case["Result"] = "Pass"
-                    elif status == "skipped" or result == "suppressed":
-                        json_test_case["Result"] = "Skipped"
-                    else:
-                        json_test_case["Result"] = "Blocked"
+                        if status == "run" or result == "completed":
+                            json_test_case["Result"] = "Pass"
+                        elif status == "skipped" or result == "suppressed":
+                            json_test_case["Result"] = "Skipped"
+                        else:
+                            json_test_case["Result"] = "Blocked"
                     summary.append(json_test_case)
 
             return summary
