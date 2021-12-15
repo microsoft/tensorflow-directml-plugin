@@ -7,12 +7,12 @@ This directory contains tests for validating the DirectML plugin. Testing is don
 
 Tests are organized into *test groups*, which contain related tests written with the same testing framework (e.g. python + abseil). The groups are defined in tests.json. Here is a summary of the current test groups:
 
-| Test Group    | Type            | Purpose                                                                 |
-| ------------- | --------------- | ----------------------------------------------------------------------- |
-| ops           | Python + Abseil | Validates DirectML implementations of TF operators                      |
-| models        | Python + Abseil | Validates training/inference on specific models                         |
-| plugin_python | Python + Abseil | Validates specific features of the DML plugin (e.g. pluggable profiler) |
-| plugin_cpp    | C++ + GTest     | Validates internal pieces of the DML plugin (e.g. kernel cache)         |
+| Test Group    | Type          | Purpose                                                                 |
+| ------------- | ------------- | ----------------------------------------------------------------------- |
+| ops           | Python/Abseil | Validates DirectML implementations of TF operators                      |
+| models        | Python/Abseil | Validates training/inference on specific models                         |
+| plugin_python | Python/Abseil | Validates specific features of the DML plugin (e.g. pluggable profiler) |
+| plugin_cpp    | Native/GTest  | Validates internal pieces of the DML plugin (e.g. kernel cache)         |
 
 # Running Tests
 
@@ -52,29 +52,26 @@ python S:\tensorflow-directml-plugin\test\python\ops\concat_op_test.py -- Concat
 
 # Test JSON Metadata
 
-Tests are organized into *test groups*, which contain related tests written with the same testing framework (e.g. python + abseil). The groups are defined in tests.json. For example, the JSON below shows the "ops" test group. 
-
-```json
-{
-"ops": {
-    "type": "python_abseil",
-    "test_script_dir": "python/ops",
-    "timeout_minutes": 30,
-    "disabled_tests": [
-        "batch_matmul_op_test.py"
-    ]
-},
-```
-
-Every test group has the following required fields:
-- **type** (string): the type of test content. Valid values:
-  - *python_abseil*: python tests using the abseil testing framework
-- **timeout_minutes** (number): max duration in minutes to wait for all tests to complete.
-
 ## Test Type: python_abseil 
 
 Test groups of this type reference a directory of python scripts. Each python script is expected to contain abseil test classes. Test scripts should **not** be organized into subdirectories; only the top-level .py files will be considered for 
 
-Fields:
-- **test_script_dir** (string): path relative to the root test content directory containing the test scripts (.py files).
-- **disabled_tests** (string): 
+Example:
+```json
+{
+"ops": {
+    "type": "python_abseil",
+    "timeout_minutes": 30,
+    "test_script_dir": "python/ops",
+    "disabled_tests": [
+        "batch_matmul_op_test.py"
+    ]
+}
+```
+
+| Field           | Required | Type          | Description                                                                      |
+| --------------- | -------- | ------------- | -------------------------------------------------------------------------------- |
+| type            | Yes      | string        | Must be "python_abseil".                                                         |
+| timeout_minutes | Yes      | number        | Max number of minutes to wait for tests in the group to complete.                |
+| test_script_dir | Yes      | string        | Directory (relative to root test content directory) containing the test scripts. |
+| disabled_tests  | No       | array(string) | Names of scripts in test_script_dir to skip executing.                           |
