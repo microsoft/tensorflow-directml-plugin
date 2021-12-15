@@ -1,22 +1,40 @@
 {
-    "groups": {
-        "ops": {
-            "type": "python_abseil",
-            "test_script_dir": "python/ops",
-            "group_timeout_seconds": 300,
-            "disabled_tests": [
-                "batch_matmul_op_test.py"
+    "$schema": "./tests_schema.json",
+    "groups": [
+        {
+            "name": "ops",
+            "timeout_seconds": 300,
+            "tests": [
+                {
+                    "file": "python/ops/batch_matmul_op_test.py"
+                },
+                {
+                    "file": "python/ops/concat_op_test.py"
+                },
+                {
+                    "file": "python/ops/gather_nd_op_test.py"
+                },
+                {
+                    "file": "python/ops/gather_op_test.py"
+                },
+                {
+                    "file": "python/ops/matmul_op_test.py"
+                }
             ]
         },
-        "models": {
+        {
+            "name": "models",
             "type": "python_abseil",
-            "test_script_dir": "python/models",
-            "group_timeout_seconds": 300
+            "tests": []
         },
-        "plugin_python": {
+        {
+            "name": "plugin_python",
             "type": "python_abseil",
-            "test_script_dir": "python/plugin",
-            "group_timeout_seconds": 300
+            "tests": [
+                {
+                    "file": "python/plugin/profiler_test.py"
+                }
+            ]
         }
-    }
+    ]
 }

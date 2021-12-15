@@ -56,6 +56,9 @@ python S:\tensorflow-directml-plugin\test\python\ops\concat_op_test.py -- Concat
 
 Test groups of this type reference a directory of python scripts. 
 
+- The full name of a test is "<group_name>.<test_name>". Tests without an explicit name use the stem of their filename.
+- If the test file ends with .py it is assumed to be a python/abseil test.
+- If the test file ends with .exe or has no extension it is assumed to be a google test executable.
 - Each python top-level python file is expected to contain abseil test classes. 
 - Only the top-level .py files will be considered as tests; the test group **does not recurse** into subdirectories. 
 - You may have helper files in subdirectories that are imported/used by the top-level .py files.

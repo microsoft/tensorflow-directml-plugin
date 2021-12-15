@@ -1,0 +1,79 @@
+{
+    "title": "Tests Metadata",
+    "description": "A model file",
+    "type": "object",
+    "required": [
+        "groups"
+    ],
+    "properties": {
+        "groups": {
+            "type": "array",
+            "description": "Test groups to execute",
+            "items": {
+                "$ref": "#/$defs/test_group"
+            }
+        }
+    },
+    "$defs": {
+        "test_group": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the test group"
+                },
+                "tests": {
+                    "type": "array",
+                    "description": "Tests to execute in the test group",
+                    "items": {
+                        "$ref": "#/$defs/test"
+                    }
+                },
+                "timeout_seconds": {
+                    "type": "number",
+                    "description": "Max number of seconds to wait for all tests in the group to complete.",
+                    "default": 300
+                }
+            },
+            "required": [
+                "name",
+                "tests"
+            ]
+        },
+        "test": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "py_abseil",
+                        "gtest"
+                    ],
+                    "description": "Type of test the file references."
+                },
+                "file": {
+                    "type": "string",
+                    "description": "Path to test file to execute"
+                },
+                "args": {
+                    "type": "array",
+                    "description": "Additional command-line arguments to use when executing the test file",
+                    "items": "string"
+                },
+                "disabled": {
+                    "type": "boolean",
+                    "description": "Skip executing the test file",
+                    "default": false
+                },
+                "timeout_seconds": {
+                    "type": "number",
+                    "description": "Max number of seconds to wait for the test to complete.",
+                    "default": 30
+                }
+            },
+            "required": [
+                "file"
+            ]
+        }
+    }
+}
