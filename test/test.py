@@ -32,6 +32,7 @@ class TestGroup:
         self.tests = tests
         self.results_dir = results_dir
         self.results_file_path = None
+        self.tests_timed_out = []
         if results_dir:
             self.results_file_path = Path(results_dir) / f"{name}.json"
 
@@ -45,20 +46,28 @@ class TestGroup:
 
     def run(self):
         if self.tests:
+            self.tests_timed_out = []
             start_time = time.time()
             for test in self.tests:
                 test.run()
+                if test.timed_out:
+                    self.tests_timed_out.append(test.name)
             end_time = time.time()
             if self.results_file_path:
                 with open(self.results_file_path, "w") as file:
-                    json.dump({"time_seconds": end_time - start_time}, file)
+                    summary = {}
+                    summary["time_seconds"] = end_time - start_time
+                    summary["tests_timed_out"] = self.tests_timed_out
+                    json.dump(summary, file)
 
     def summarize(self):
         time_seconds = 0
+        tests_timed_out = []
         if Path(self.results_file_path).exists():
             with open(self.results_file_path, "r") as json_file:
                 json_data = json.load(json_file)
                 time_seconds = json_data["time_seconds"]
+                tests_timed_out = json_data["tests_timed_out"]
 
         summary = {}
         summary["group"] = self.name
@@ -67,7 +76,7 @@ class TestGroup:
         summary["cases_passed"] = 0
         summary["cases_failed"] = 0
         summary["cases_skipped"] = 0
-        summary["tests_timed_out"] = 0
+        summary["tests_timed_out"] = tests_timed_out
 
         for test in self.tests:
             test_summary = test.summarize()
@@ -80,8 +89,6 @@ class TestGroup:
                         summary["cases_failed"] += 1
                     elif test_case["Result"] == "Skipped":
                         summary["cases_skipped"] += 1
-            else:
-                summary["tests_timed_out"] += 1
         
         return summary
 
@@ -95,6 +102,7 @@ class Test:
         self.timeout_seconds = timeout_seconds
         self.results_file_path = None
         self.log_file_path = None
+        self.timed_out = False
 
         if type == "py_abseil":
             if results_dir:
@@ -125,7 +133,7 @@ class Test:
                 env=environ,
             )
         except subprocess.TimeoutExpired:
-            print("Test timed out!")
+            self.timed_out = True
 
         if p and self.log_file_path:
             results_subdir = Path(self.log_file_path).parent
