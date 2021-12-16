@@ -99,7 +99,8 @@ class TestGroup:
             return
         summary = self.summarize()
         
-        print('-' * 80)
+        print()
+        print('=' * 80)
         print(f"Test Group         : {summary['group']}")
         print(f"Test Cases Ran     : {summary['cases_ran']}")
         print(f"Test Cases Passed  : {summary['cases_passed']}")
@@ -110,7 +111,7 @@ class TestGroup:
             for i in range(0, len(summary["failed_case_names"])):
                 failed_case = summary["failed_case_names"][i]
                 print(f"{i}: {failed_case}")
-        print('-' * 80)
+        print('=' * 80)
         print()
 
 
@@ -330,7 +331,7 @@ def main():
         # Delete previous results, if any.
         if Path(args.results_dir).exists():
             shutil.rmtree(args.results_dir)
-            
+
         for test_group in test_groups:
             test_group.run()
 

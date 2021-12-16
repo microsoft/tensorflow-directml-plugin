@@ -19,8 +19,7 @@
                     "file": "ops/gather_op_test.py"
                 },
                 {
-                    "file": "ops/matmul_op_test.py",
-                    "disabled": true
+                    "file": "ops/matmul_op_test.py"
                 }
             ]
         },
