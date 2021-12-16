@@ -121,6 +121,7 @@ jobs:
     - ${{if contains(artifact, '-linux-') }}:
       - task: PowerShell@2
         displayName: Setup Test Environment
+        condition: contains(variables.agentTestConfigs, '${{artifact}}')
         inputs:
           targetType: inline
           script: |
@@ -130,8 +131,9 @@ jobs:
 
     - ${{if contains(artifact, '-win-') }}:
       - task: PowerShell@2
-        displayName: Setup Test Environment
+        displayName: Setup ${{artifact}}
         name: test_env
+        condition: contains(variables.agentTestConfigs, '${{artifact}}')
         inputs:
           targetType: filePath
           filePath: pipelines/create_test_env.ps1
@@ -140,7 +142,8 @@ jobs:
             -TensorFlowPackage ${{parameters.tensorflowPackage}}
 
       - task: PowerShell@2
-        displayName: Test
+        displayName: Test ${{artifact}}
+        condition: contains(variables.agentTestConfigs, '${{artifact}}')
         inputs:
           targetType: inline
           script: |

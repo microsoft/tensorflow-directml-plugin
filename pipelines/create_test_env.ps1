@@ -30,4 +30,4 @@ pip install $PluginPackage
 pip list
 
 $ActivateCmd = "$InstallDir/shell/condabin/conda-hook.ps1; conda activate $TestEnvPath"
-echo "##vso[task.setVariable variable=activateCommand;isOutput=true]$activate_cmd"
+echo "##vso[task.setVariable variable=activateCommand;isOutput=true]$ActivateCmd"
