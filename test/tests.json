@@ -3,7 +3,7 @@
     "groups": [
         {
             "name": "ops",
-            "timeout_seconds": 300,
+            "timeout_seconds": 1800,
             "tests": [
                 {
                     "file": "ops/batch_matmul_op_test.py",
@@ -29,6 +29,7 @@
         },
         {
             "name": "plugin",
+            "timeout_seconds": 300,
             "tests": [
                 {
                     "file": "plugin/profiler_test.py"

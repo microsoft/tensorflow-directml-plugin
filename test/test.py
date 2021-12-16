@@ -24,6 +24,7 @@ import fnmatch
 import shutil
 import time
 import tempfile
+import os
 
 class TestGroup:
     def __init__(self, name, tests, timeout_seconds, results_dir):
@@ -102,6 +103,7 @@ class TestGroup:
         print()
         print('=' * 80)
         print(f"Test Group         : {summary['group']}")
+        print(f"Test Duration      : {summary['time_seconds']} seconds")
         print(f"Test Cases Ran     : {summary['cases_ran']}")
         print(f"Test Cases Passed  : {summary['cases_passed']}")
         print(f"Test Cases Skipped : {summary['cases_skipped']}")
@@ -331,6 +333,7 @@ def main():
         # Delete previous results, if any.
         if Path(args.results_dir).exists():
             shutil.rmtree(args.results_dir)
+            os.makedirs(args.results_dir)
 
         for test_group in test_groups:
             test_group.run()
