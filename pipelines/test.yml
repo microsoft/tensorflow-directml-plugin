@@ -29,7 +29,7 @@ jobs:
   - task: PowerShell@2
     inputs:
       targetType: filePath
-      filePath: pipelines/CreateTestMatrix.ps1
+      filePath: pipelines/create_test_matrix.ps1
       arguments: >
         -AccessToken "$(accessToken)"
         -AgentPoolNames ${{join(', ', parameters.agentPool)}}
@@ -180,60 +180,60 @@ jobs:
 #-------------------------------------------------------------------------------------------------------------------
 # Summarize Results
 #-------------------------------------------------------------------------------------------------------------------
-# - job: summarize
-#   displayName: Summarize Results
-#   dependsOn: test
-#   pool: ${{parameters.agentPool}}
-#   timeoutInMinutes: 30
-#   condition: succeededOrFailed()
-#   continueOnError: true
-#   variables:
-#     testArtifactsPath: $(System.ArtifactsDirectory)/${{parameters.resultsArtifactName}}
-#     testSummariesPath: $(System.ArtifactsDirectory)/summaries
-#   workspace:
-#     clean: all
-#   steps:
-#   - checkout: self
-#     fetchDepth: 1
+- job: summarize
+  displayName: Summarize Results
+  dependsOn: test
+  pool: ${{parameters.agentPool}}
+  timeoutInMinutes: 30
+  condition: succeededOrFailed()
+  continueOnError: true
+  variables:
+    testArtifactsPath: $(System.ArtifactsDirectory)/${{parameters.resultsArtifactName}}
+    testSummariesPath: $(System.ArtifactsDirectory)/summaries
+  workspace:
+    clean: all
+  steps:
+  - checkout: self
+    fetchDepth: 1
 
-#   - task: DownloadBuildArtifacts@0
-#     displayName: Download Test Results
-#     inputs:
-#       buildType: current
-#       artifactName: ${{parameters.resultsArtifactName}}
+  - task: DownloadBuildArtifacts@0
+    displayName: Download Test Results
+    inputs:
+      buildType: current
+      artifactName: ${{parameters.resultsArtifactName}}
 
-#   - task: PowerShell@2
-#     displayName: Create Test Summary (JSON)
-#     inputs:
-#       targetType: filePath
-#       filePath: pipelines/CreateTestSummaryJson.ps1
-#       arguments: -TestArtifactsPath $(testArtifactsPath) -OutputPath $(testSummariesPath)/test_summary.json
+  - task: PowerShell@2
+    displayName: Create Test Summary (JSON)
+    inputs:
+      targetType: filePath
+      filePath: pipelines/create_test_summary_json.ps1
+      arguments: -TestArtifactsPath $(testArtifactsPath) -OutputPath $(testSummariesPath)/test_summary.json
 
-#   - task: PowerShell@2
-#     displayName: Create Test Summary (XML)
-#     inputs:
-#       targetType: filePath
-#       filePath: pipelines/CreateTestSummaryXml.ps1
-#       arguments: -TestArtifactsPath $(testArtifactsPath) -OutputPath $(testSummariesPath)/test_summary.xml
+  - task: PowerShell@2
+    displayName: Create Test Summary (XML)
+    inputs:
+      targetType: filePath
+      filePath: pipelines/create_test_summary_xml.ps1
+      arguments: -TestArtifactsPath $(testArtifactsPath) -OutputPath $(testSummariesPath)/test_summary.xml
 
-#   - task: PowerShell@2
-#     displayName: Create Agent Summary
-#     inputs:
-#       targetType: filePath
-#       filePath: pipelines/CreateAgentSummary.ps1
-#       arguments: -TestArtifactsPath $(testArtifactsPath) -OutputPath $(testSummariesPath)/agent_summary.json
+  - task: PowerShell@2
+    displayName: Create Agent Summary
+    inputs:
+      targetType: filePath
+      filePath: pipelines/create_agent_summary.ps1
+      arguments: -TestArtifactsPath $(testArtifactsPath) -OutputPath $(testSummariesPath)/agent_summary.json
 
-#   - task: PublishBuildArtifacts@1
-#     displayName: Upload Summaries
-#     inputs:
-#       pathToPublish: $(testSummariesPath)
-#       artifactName: ${{parameters.resultsArtifactName}}
+  - task: PublishBuildArtifacts@1
+    displayName: Upload Summaries
+    inputs:
+      pathToPublish: $(testSummariesPath)
+      artifactName: ${{parameters.resultsArtifactName}}
 
-#   - task: PublishTestResults@2
-#     displayName: Publish Test Results
-#     inputs:
-#       testResultsFormat: XUnit
-#       testResultsFiles: test_summary.xml
-#       searchFolder: $(testSummariesPath)
-#       mergeTestResults: true
-#       testRunTitle: 'test.$(Build.BuildNumber)'
+  - task: PublishTestResults@2
+    displayName: Publish Test Results
+    inputs:
+      testResultsFormat: XUnit
+      testResultsFiles: test_summary.xml
+      searchFolder: $(testSummariesPath)
+      mergeTestResults: true
+      testRunTitle: 'test.$(Build.BuildNumber)'

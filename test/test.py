@@ -35,7 +35,6 @@ class TestGroup:
         self.tests = tests
         self.results_dir = results_dir
         self.results_file_path = None
-        self.tests_timed_out = []
         self.results_file_path = Path(results_dir) / f"run.{name}.json"
         self.summary_file_path = Path(results_dir) / f"summary.{name}.json"
 
@@ -49,30 +48,36 @@ class TestGroup:
 
     def run(self):
         if self.tests:
-            self.tests_timed_out = []
+            tests_timed_out = []
+            tests_aborted = []
             start_time = time.time()
             for test in self.tests:
                 elapsed_time = time.time() - start_time
                 remaining_time = self.timeout_seconds - elapsed_time
                 test.run(remaining_time)
                 if test.timed_out:
-                    self.tests_timed_out.append(test.name)
+                    tests_timed_out.append(test.name)
+                if test.aborted:
+                    tests_aborted.append(test.name)
             end_time = time.time()
             if self.results_file_path:
                 with open(self.results_file_path, "w") as file:
                     summary = {}
                     summary["time_seconds"] = end_time - start_time
-                    summary["tests_timed_out"] = self.tests_timed_out
+                    summary["tests_timed_out"] = tests_timed_out
+                    summary["tests_aborted"] = tests_aborted
                     json.dump(summary, file)
 
     def summarize(self):
         time_seconds = 0
         tests_timed_out = []
+        tests_aborted = []
         if Path(self.results_file_path).exists():
             with open(self.results_file_path, "r") as json_file:
                 json_data = json.load(json_file)
                 time_seconds = json_data["time_seconds"]
                 tests_timed_out = json_data["tests_timed_out"]
+                tests_aborted = json_data["tests_aborted"]
 
         summary = {}
         summary["group"] = self.name
@@ -81,6 +86,7 @@ class TestGroup:
         summary["cases_failed"] = []
         summary["cases_skipped"] = []
         summary["tests_timed_out"] = tests_timed_out
+        summary["tests_aborted"] = tests_aborted
 
         for test in self.tests:
             test_summary = test.summarize()
@@ -105,6 +111,8 @@ class TestGroup:
         cases_passed_count = len(summary["cases_passed"])
         cases_failed_count = len(summary["cases_failed"])
         cases_skipped_count = len(summary["cases_skipped"])
+        tests_timed_out = summary["tests_timed_out"]
+        tests_aborted = summary["tests_aborted"]
         cases_ran_count = cases_passed_count + cases_failed_count + cases_skipped_count
         
         print()
@@ -115,11 +123,26 @@ class TestGroup:
         print(f"Test Cases Passed  : {cases_passed_count}")
         print(f"Test Cases Skipped : {cases_skipped_count}")
         print(f"Test Cases Failed  : {cases_failed_count}")
+        print(f"Tests Timed Out    : {len(tests_timed_out)}")
+        print(f"Tests Aborted      : {len(tests_aborted)}")
         if cases_failed_count > 0:
-            print("Failing Test Cases : ")
+            print()
+            print("Failing Test Cases: ")
             for i in range(0, cases_failed_count):
                 failed_case = summary["cases_failed"][i]
                 print(f"{i}: {failed_case}")
+        if len(tests_timed_out) > 0:
+            print()
+            print("Timed-Out Tests: ")
+            for i in range(0, len(tests_timed_out)):
+                test = tests_timed_out[i]
+                print(f"{i}: {test}")
+        if len(tests_aborted) > 0:
+            print()
+            print("Aborted Tests: ")
+            for i in range(0, len(tests_aborted)):
+                test = tests_aborted[i]
+                print(f"{i}: {test}")
         print('=' * 80)
         print()
 
@@ -132,6 +155,7 @@ class Test:
         self.args = args
         self.timeout_seconds = timeout_seconds
         self.timed_out = False
+        self.aborted = False
 
         self.log_file_path = None
         if redirect_output:
@@ -150,6 +174,7 @@ class Test:
 
     def run(self, remaining_time_in_test_group):
         self.timed_out = False
+        self.aborted = False
         timeout_seconds = remaining_time_in_test_group
         if self.timeout_seconds:
             timeout_seconds = min(self.timeout_seconds, timeout_seconds)
@@ -176,6 +201,9 @@ class Test:
             )
         except subprocess.TimeoutExpired:
             self.timed_out = True
+        
+        if p.returncode != 0:
+            self.aborted = True
 
         if p and self.log_file_path:
             results_subdir = Path(self.log_file_path).parent

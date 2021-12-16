@@ -25,6 +25,7 @@ Start-Process $DownloadPath -ArgumentList '/NoRegistry=1', '/InstallationType=Ju
 conda create --prefix $TestEnvPath python=$PyVersionMajorDotMinor -y
 conda activate $TestEnvPath
 pip install $TensorFlowPackage
+# pip install tensorboard_plugin_profile
 pip install $PluginPackage
 pip list
 

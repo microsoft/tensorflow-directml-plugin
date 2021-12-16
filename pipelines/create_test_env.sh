@@ -28,6 +28,7 @@ conda create --prefix $test_env_path python=$py_version_major_dot_minor -y
 
 conda activate $test_env_path
 pip install $tensorflow_package
+pip install tensorboard_plugin_profile
 pip install $plugin_package
 pip list
 
