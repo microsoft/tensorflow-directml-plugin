@@ -136,9 +136,17 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            $ScriptPath = "$(Build.SourcesDirectory)/pipelines/create_test_env.sh" -replace '\\','/'
+            $ScriptPath = "$(Build.SourcesDirectory)/test/test.py" -replace '\\','/'
             $ScriptPathWsl = wsl wslpath -a $ScriptPath
-            cmd /c "wsl $(test_env_linux.activateCommand); python --version"
+
+            # Results are written to Linux filesystem ($ResultsDirLinux) and copied to Windows ($ResultsDirWin)
+            $ResultsDirLinux = "/tmp/tfdml_plugin_pipeline/results/$(agentName)/${{artifact}}"
+            $ResultsDirWin = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}" -replace '\\','/'
+            $ResultsDirWinWsl = wsl wslpath -a $ResultsDirWin
+            New-Item -ItemType Directory $ResultsDirWin -Force | Out-Null
+
+            cmd /c "wsl $(test_env_linux.activateCommand); python $ScriptPathWsl --run --summarize --redirect_output --results_dir $ResultsDirLinux --groups ${{join(', ', parameters.testGroups)}}"
+            wsl cp -r $ResultsDirLinux $ResultsDirWinWsl
 
     - ${{if contains(artifact, '-win-') }}:
       - task: PowerShell@2
