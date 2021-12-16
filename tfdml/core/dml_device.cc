@@ -30,7 +30,13 @@ limitations under the License.
 namespace tfdml
 {
 
-DmlDevice::DmlDevice(const DmlDeviceState* state) : state_(state)
+DmlDevice::DmlDevice(
+    const DmlDeviceState* state,
+    uint32_t device_ordinal,
+    uint32_t adapter_index)
+    : state_(state),
+      device_ordinal_(device_ordinal),
+      adapter_index_(adapter_index)
 {
     device_context_ = absl::make_unique<DMLDeviceContext>(
         state_->execution_context.get(),

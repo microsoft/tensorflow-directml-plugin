@@ -10,48 +10,16 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tensorflow/c/experimental/pluggable_profiler/pluggable_profiler.h"
-#include "tfdml/core/dml_device_cache.h"
 #include "tfdml/core/dml_tracing.h"
-
-// {D113B493-BBA2-4993-8608-D706A73B91CE}
-static constexpr GUID PIX_EVAL_CAPTURABLE_WORK_GUID = {
-    0xd113b493,
-    0xbba2,
-    0x4993,
-    {0x86, 0x08, 0xd7, 0x06, 0xa7, 0x3b, 0x91, 0xce}};
 
 void profiler_start(const TP_Profiler* profiler, TF_Status* status)
 {
-    DmlTracing::Instance().LogSessionRunStart();
-    auto& device_cache = tfdml::DmlDeviceCache::Instance();
-
-    for (uint32_t i = 0; i < device_cache.GetAdapterCount(); ++i)
-    {
-        const auto* state = device_cache.GetOrCreateDeviceState(i);
-
-        if (state->sharing_contract)
-        {
-            state->sharing_contract->BeginCapturableWork(
-                PIX_EVAL_CAPTURABLE_WORK_GUID);
-        }
-    }
+    DmlTracing::Instance().StartProfiler();
 }
 
 void profiler_stop(const TP_Profiler* profiler, TF_Status* status)
 {
-    DmlTracing::Instance().LogSessionRunEnd();
-    auto& device_cache = tfdml::DmlDeviceCache::Instance();
-
-    for (uint32_t i = 0; i < device_cache.GetAdapterCount(); ++i)
-    {
-        const auto* state = device_cache.GetOrCreateDeviceState(i);
-
-        if (state->sharing_contract)
-        {
-            state->sharing_contract->EndCapturableWork(
-                PIX_EVAL_CAPTURABLE_WORK_GUID);
-        }
-    }
+    DmlTracing::Instance().StopProfiler();
 }
 
 void profiler_collect_data_xspace(
@@ -60,9 +28,31 @@ void profiler_collect_data_xspace(
     size_t* size_in_bytes,
     TF_Status* status)
 {
-    // We don't need xspace data for PIX
-    *size_in_bytes = 0;
-    TF_SetStatus(status, TF_OK, "");
+    auto& xspace = DmlTracing::Instance().GetXSpace();
+
+    // The first call to this function is to query the XSpace size in bytes, so
+    // the buffer pointer will be null.
+    if (buffer == nullptr)
+    {
+        *size_in_bytes = xspace.ByteSizeLong();
+        TF_SetStatus(status, TF_OK, "");
+        return;
+    }
+
+    // The second call to this function occurs after an appropriately sized
+    // buffer is reserved for the XSpace.
+    bool success = xspace.SerializeToArray(buffer, *size_in_bytes);
+    if (success)
+    {
+        TF_SetStatus(status, TF_OK, "");
+    }
+    else
+    {
+        TF_SetStatus(
+            status,
+            TF_FAILED_PRECONDITION,
+            "Failed to serialize XSpace into buffer.");
+    }
 }
 
 void profiler_destroy_profiler(TP_Profiler* profiler)

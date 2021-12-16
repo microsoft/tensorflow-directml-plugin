@@ -16,6 +16,8 @@ limitations under the License.
 
 #include "tfdml/kernels/pch.h"
 
+#include "tfdml/core/dml_tracing.h"
+
 namespace tfdml
 {
 class DmlAssignVariableOp : public OpKernel
@@ -38,6 +40,12 @@ class DmlAssignVariableOp : public OpKernel
 
     void Compute(OpKernelContext* context)
     {
+        DmlDevice* dml_device = static_cast<DmlDevice*>(context->device());
+        DmlTracing::KernelComputeEventScope event_scope(
+            dml_device->GetDeviceOrdinal(),
+            context->op_kernel().type_string(),
+            context->op_kernel().name());
+
         OP_REQUIRES(
             context,
             dtype_ == context->input(1).dtype(),

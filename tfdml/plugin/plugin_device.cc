@@ -63,13 +63,14 @@ void plugin_create_device(
     const auto* device_state =
         device_cache.GetOrCreateDeviceState(adapter_index);
 
-    params->device->device_handle = new DmlDevice(device_state);
     params->device->ordinal = params->ordinal;
     params->device->device_vendor =
         GetVendorName(device_state->adapter->VendorID());
     params->device->hardware_name = device_state->adapter->Name().c_str();
     params->device->struct_size = SP_DEVICE_STRUCT_SIZE;
 
+    params->device->device_handle =
+        new DmlDevice(device_state, params->ordinal, adapter_index);
     TF_SetStatus(status, TF_OK, "");
 }
 

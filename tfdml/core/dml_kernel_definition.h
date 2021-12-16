@@ -21,6 +21,7 @@ limitations under the License.
 #include "absl/types/span.h"
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/c/tf_datatype.h"
+#include "tfdml/core/dml_ops_common.h"
 #include "tfdml/runtime_adapter/macros.h"
 #include "tfdml/runtime_adapter/node_def.h"
 #include "tfdml/runtime_adapter/op_defs.h"
