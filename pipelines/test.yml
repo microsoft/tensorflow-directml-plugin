@@ -64,7 +64,7 @@ jobs:
   workspace:
     clean: all
   steps:
-  - checkout: none
+  # - checkout: none
 
   - task: PowerShell@2
     name: vars
@@ -145,7 +145,8 @@ jobs:
           targetType: inline
           script: |
             Invoke-Expression '$(test_env.activateCommand)'
-            python $(Pipeline.Workspace)/pluginBuild/${{artifact}}/test/test.py --run --filter plugin.*
+            # python $(Pipeline.Workspace)/pluginBuild/${{artifact}}/test/test.py --run --filter plugin.*
+            python $(Build.SourcesDirectory)/test/test.py --run --filter plugin.*
 
     # - task: PowerShell@2
     #   displayName: Test ${{artifact}}
