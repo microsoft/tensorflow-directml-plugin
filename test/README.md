@@ -27,16 +27,18 @@ The output from each test will, by default, appear in the console. This is usefu
 > python .\test.py --run --summarize --redirect_output
 ```
 
-Finally, you can run a subset of the tests with the `--filter` and `--test_groups` options. The `--test_groups` option is a coarse-grained filter mainly used for nightly testing. The following example shows how to restrict testing to the `plugin` and `ops` test groups:
+Finally, you can run a subset of the tests with the `--groups` and `--tests` options. 
+
+The `--groups` option is a coarse-grained filter mainly used for nightly testing. The following example shows how to restrict testing to the `plugin` and `ops` test groups:
 
 ```
-> python .\test.py --run --summarize --test_groups ops, plugin
+> python .\test.py --run --summarize --groups ops, plugin
 ```
 
-The `--filter` option is useful for running a very specific subset of tests (usually for debugging). The following example shows only running tests starting with the name `plugin.dml_visible_devices`:
+The `--tests` option is a fine-grained filter mainly used for debugging. The following example shows only running tests containing "devices" in the name, regardless of group:
 
 ```
-> python .\test.py --run --summarize --filter plugin.dml_visible_devices*
+> python .\test.py --run --summarize --tests *devices*
 ```
 
 Many of the options above have short-hand aliases. Run `python test.py --help` for more details.
@@ -100,10 +102,10 @@ The full name of each test case has the format `<group>.<test>::<test_class>.<te
 
 # Debugging Tests
 
-When debugging you will often want to run a single failing test in isolation under a debugger. Since `test.py` launches subprocesses for each test, you may find it easier to launch the actual test executable. You can find the full command line used to test with the `--show` option. In combination with the `--filter` option you can limit this to show only the command line for tests you're interested in:
+When debugging you will often want to run a single failing test in isolation under a debugger. Since `test.py` launches subprocesses for each test, you may find it easier to launch the actual test executable. You can find the full command line used to test with the `--show` option. In combination with the `--tests` option you can limit this to show only the command line for tests you're interested in:
 
 ```
-> python .\test.py --show --filter plugin.profiler_test
+> python .\test.py --show --tests plugin.profiler_test
 plugin.profiler_test: python S:\tensorflow-directml-plugin\test\plugin\profiler_test.py --xml_output_file C:\Users\justoeck\AppData\Local\Temp\tfdml_plugin_tests\plugin.profiler_test.xml
 ```
 

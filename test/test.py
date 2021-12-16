@@ -311,16 +311,16 @@ def main():
         help="Directory to save test results."
     )
     parser.add_argument(
-        "--filter", "-f",
+        "--tests", "-t",
         type=str, 
         default="*",
-        help="Filters test names to select a subset of the tests."
+        help="Filters tests. This is an fnmatch filter."
     )
     parser.add_argument(
-        "--test_groups", "-g",
+        "--groups", "-g",
         type=str, 
         nargs='+',
-        help="Executes a subset of the test groups."
+        help="Filters test groups. This is a comma-separated list of group names."
     )
     parser.add_argument(
         "--run_disabled",
@@ -337,8 +337,8 @@ def main():
     # Parse tests from tests.json.
     test_groups = parse_test_groups(
         args.tests_json, 
-        args.filter, 
-        args.test_groups,
+        args.tests, 
+        args.groups,
         args.results_dir, 
         args.run_disabled, 
         args.redirect_output
