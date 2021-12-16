@@ -112,25 +112,40 @@ jobs:
       artifact: ${{artifact}}
       displayName: Download ${{artifact}}
       condition: contains(variables.agentTestConfigs, '${{artifact}}')
-      patterns: |
-        ${{artifact}}/*.whl
 
     # - download: current
     #   artifact: ${{artifact}}
     #   displayName: Download ${{artifact}}
     #   condition: contains(variables.agentTestConfigs, '${{artifact}}')
 
-  - task: PowerShell@2
-    displayName: Create Conda Environment
-    inputs:
-      targetType: inline
-      script: |
-        $OutputDir = "$(System.ArtifactsDirectory)/agent_info/$(agentName)"
-        New-Item -ItemType Directory -Path $OutputDir | Out-Null
-        Start-Process dxdiag -ArgumentList "/x $OutputDir/dxdiag.xml" -Wait
-        $EnvironmentVariables = @{}
-        Get-ChildItem "env:" | ForEach-Object { $EnvironmentVariables[$_.Name] = $_.Value }
-        $EnvironmentVariables | ConvertTo-Json | Out-File "$OutputDir\environment_vars.json" -Encoding utf8
+    - ${{if contains(parameters.artifact, '-linux-') }}:
+      - task: PowerShell@2
+        displayName: Setup Test Environment
+        inputs:
+          targetType: inline
+          script: |
+            $PyVersionMajorDotMinor = '${{artifact}}' -replace '.*-cp(\d)(\d)', '$1.$2'
+            $TestEnvPath = "$(System.ArtifactsDirectory)/test_env"
+            # TODO: wsl create conda env 
+
+    - ${{if contains(parameters.artifact, '-win-') }}:
+      - task: PowerShell@2
+        displayName: Setup Test Environment
+        name: test_env
+        inputs:
+          targetType: filePath
+          filePath: pipelines/create_test_env.ps1
+          arguments: >
+            -ArtifactPath $(Pipeline.Workspace)/pluginBuild/${{artifact}} 
+            -TensorFlowPackage ${{parameters.tensorflowPackage}}
+
+      - task: PowerShell@2
+        displayName: Test
+        inputs:
+          targetType: inline
+          script: |
+            Invoke-Expression '$(test_env.activateCommand)'
+            python $(Pipeline.Workspace)/pluginBuild/${{artifact}}/test/test.py --run --filter plugin.*
 
     # - task: PowerShell@2
     #   displayName: Test ${{artifact}}
