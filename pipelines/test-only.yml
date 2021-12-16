@@ -30,7 +30,7 @@ parameters:
   default: [ops, plugin]
 
 - name: testTensorflowPackage
-  displayName: Email Results To
+  displayName: TensorFlow Package Version
   type: string
   default: tensorflow-cpu==2.7.0
 
