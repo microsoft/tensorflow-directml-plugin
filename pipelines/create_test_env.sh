@@ -3,14 +3,16 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT License.
 
-test_artifact_path=$2
-tensorflow_package=$3
+test_artifact_path=$1
+tensorflow_package=$2
 
 # Windows agents use the agent artifacts directory for the conda installation, but
 # this is slow in WSL (filesystem networking overhead). Instead the agent will use
 # a temp directory in the native Linux filesystem.
-tmp_testing_root="/tmp/tfdml_plugin_ci"
+tmp_testing_root="/tmp/tfdml_plugin_pipeline"
 rm -rf "$tmp_testing_root"
+mkdir "$tmp_testing_root"
+cd $tmp_testing_root
 
 install_dir="$tmp_testing_root/miniconda3"
 plugin_package=$(ls $test_artifact_path/tensorflow_directml_plugin*.whl)
