@@ -1,0 +1,60 @@
+{
+    "$schema": "./tests_schema.json",
+    "groups": [
+        {
+            "name": "ops",
+            "timeout_seconds": 1800,
+            "tests": [
+                {
+                    "file": "ops/batch_matmul_op_test.py",
+                    "disabled": true
+                },
+                {
+                    "file": "ops/concat_op_test.py"
+                },
+                {
+                    "file": "ops/gather_nd_op_test.py"
+                },
+                {
+                    "file": "ops/gather_op_test.py"
+                },
+                {
+                    "file": "ops/matmul_op_test.py"
+                }
+            ]
+        },
+        {
+            "name": "models",
+            "tests": []
+        },
+        {
+            "name": "plugin",
+            "timeout_seconds": 300,
+            "tests": [
+                {
+                    "file": "plugin/profiler_test.py"
+                },
+                {
+                    "name": "dml_visible_devices_empty1",
+                    "file": "plugin/dml_visible_devices_test.py",
+                    "args": ["--dml_visible_devices", "-1"]
+                },
+                {
+                    "name": "dml_visible_devices_empty2",
+                    "file": "plugin/dml_visible_devices_test.py",
+                    "args": ["--dml_visible_devices", "-1,0"]
+                },
+                {
+                    "name": "dml_visible_devices_swapped",
+                    "file": "plugin/dml_visible_devices_test.py",
+                    "args": ["--dml_visible_devices", "1,0"]
+                },
+                {
+                    "name": "dml_visible_devices_single",
+                    "file": "plugin/dml_visible_devices_test.py",
+                    "args": ["--dml_visible_devices", "0"]
+                }
+            ]
+        }
+    ]
+}
