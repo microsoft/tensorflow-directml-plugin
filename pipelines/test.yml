@@ -151,7 +151,7 @@ jobs:
           targetType: filePath
           filePath: pipelines/create_test_env.ps1
           arguments: >
-            -ArtifactPath $(Pipeline.Workspace)/pluginBuild/${{artifact}} 
+            -TestArtifactPath $(Pipeline.Workspace)/pluginBuild/${{artifact}} 
             -TensorFlowPackage ${{parameters.tensorflowPackage}}
 
       - task: PowerShell@2
