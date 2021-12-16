@@ -144,7 +144,6 @@ jobs:
       - task: PowerShell@2
         displayName: Test ${{artifact}}
         condition: contains(variables.agentTestConfigs, '${{artifact}}')
-        errorActionPreference: continue
         inputs:
           targetType: inline
           script: |
