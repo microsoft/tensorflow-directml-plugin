@@ -42,7 +42,6 @@ parameters:
 stages:
 - stage: testStage
   displayName: Test
-  dependsOn: buildStage
   jobs:
   - template: test.yml
     parameters:
