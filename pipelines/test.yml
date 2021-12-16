@@ -149,7 +149,7 @@ jobs:
           targetType: inline
           script: |
             Invoke-Expression '$(test_env.activateCommand)'
-            python $(Build.SourcesDirectory)/test/test.py --run --summarize --redirect_output --results_dir $(Build.ArtifactsDirectory)/results/${{artifact}} --groups ${{parameters.testGroups}}
+            python $(Build.SourcesDirectory)/test/test.py --run --summarize --redirect_output --results_dir $(Build.ArtifactsDirectory)/results/${{artifact}} --groups ${{join(', ', parameters.testGroups)}}
 
       - task: PublishBuildArtifacts@1
         displayName: Publish ${{artifact}}
