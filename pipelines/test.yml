@@ -119,7 +119,7 @@ jobs:
     - ${{if contains(artifact, '-linux-') }}:
       - task: PowerShell@2
         displayName: Setup ${{artifact}}
-        name: test_env
+        name: test_env_linux
         condition: contains(variables.agentTestConfigs, '${{artifact}}')
         inputs:
           targetType: inline
@@ -140,12 +140,12 @@ jobs:
           script: |
             $ScriptPath = "$(Build.SourcesDirectory)/pipelines/create_test_env.sh" -replace '\\','/'
             $ScriptPathWsl = wsl -u root wslpath -a $ScriptPath
-            cmd /c "wsl -u root $(test_env.activateCommand); python --version"
+            cmd /c "wsl -u root $(test_env_linux.activateCommand); python --version"
 
     - ${{if contains(artifact, '-win-') }}:
       - task: PowerShell@2
         displayName: Setup ${{artifact}}
-        name: test_env
+        name: test_env_win
         condition: contains(variables.agentTestConfigs, '${{artifact}}')
         inputs:
           targetType: filePath
@@ -160,7 +160,7 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            Invoke-Expression '$(test_env.activateCommand)'
+            Invoke-Expression '$(test_env_win.activateCommand)'
             python $(Build.SourcesDirectory)/test/test.py --run --summarize --redirect_output --results_dir $(System.ArtifactsDirectory)/results/${{artifact}} --groups ${{join(', ', parameters.testGroups)}}
 
       - task: PublishBuildArtifacts@1
