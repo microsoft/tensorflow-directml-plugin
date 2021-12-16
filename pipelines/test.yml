@@ -64,8 +64,6 @@ jobs:
   workspace:
     clean: all
   steps:
-  # - checkout: none
-
   - task: PowerShell@2
     name: vars
     displayName: Initialize Variables
@@ -125,9 +123,11 @@ jobs:
         inputs:
           targetType: inline
           script: |
-            $PyVersionMajorDotMinor = '${{artifact}}' -replace '.*-cp(\d)(\d)', '$1.$2'
-            $TestEnvPath = "$(System.ArtifactsDirectory)/test_env"
-            # TODO: wsl create conda env 
+            $ScriptPath = "$(Build.SourcesDirectory)/pipelines/create_test_env.sh" -replace '\\','/'
+            $ScriptPathWsl = wsl -u root wslpath -a $ScriptPath
+            $ArtifactsPath = "$(System.ArtifactsDirectory)" -replace '\\','/'
+            $ArtifactsPathWsl = wsl -u root wslpath -a $ArtifactsPath
+            wsl -u root bash $ScriptPathWsl $ArtifactsPathWsl
 
     - ${{if contains(artifact, '-win-') }}:
       - task: PowerShell@2
