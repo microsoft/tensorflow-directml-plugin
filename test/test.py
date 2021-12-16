@@ -20,10 +20,10 @@ import argparse
 from pathlib import Path
 import xml.etree.ElementTree as ET
 import os
-import re
 import fnmatch
 import shutil
 import time
+import tempfile
 
 class TestGroup:
     def __init__(self, name, tests, timeout_seconds, results_dir):
@@ -33,8 +33,7 @@ class TestGroup:
         self.results_dir = results_dir
         self.results_file_path = None
         self.tests_timed_out = []
-        if results_dir:
-            self.results_file_path = Path(results_dir) / f"{name}.json"
+        self.results_file_path = Path(results_dir) / f"{name}.json"
 
     def show(self):
         if self.tests:
@@ -116,21 +115,22 @@ class TestGroup:
 
 
 class Test:
-    def __init__(self, type, test_file_path, name, args, timeout_seconds, results_dir):
+    def __init__(self, type, test_file_path, name, args, timeout_seconds, results_dir, redirect_output):
         self.type = type
         self.test_file_path = test_file_path
         self.name = name
         self.args = args
         self.timeout_seconds = timeout_seconds
-        self.results_file_path = None
-        self.log_file_path = None
         self.timed_out = False
 
+        self.log_file_path = None
+        if redirect_output:
+            self.log_file_path = Path(results_dir) / f"{name}.txt"
+
+        self.results_file_path = None
         if type == "py_abseil":
-            if results_dir:
-                self.results_file_path = Path(results_dir) / f"{name}.xml"
-                self.log_file_path = Path(results_dir) / f"{name}.txt"
-                self.args.append(f"--xml_output_file {self.results_file_path}")
+            self.results_file_path = Path(results_dir) / f"{name}.xml"
+            self.args.append(f"--xml_output_file {self.results_file_path}")
             self.command_line = f"python {test_file_path} {' '.join(self.args)}"
         else:
             raise Exception(f"Unknown test type: {type}")
@@ -217,7 +217,7 @@ def get_optional_json_property(json_object, property_name, default_value):
 
 
 # Parses tests.json to build a list of test groups to execute.
-def parse_test_groups(tests_json_path, test_filter, results_dir, run_disabled):
+def parse_test_groups(tests_json_path, test_filter, results_dir, run_disabled, redirect_output):
     test_groups = []
     test_names = set()
 
@@ -250,7 +250,8 @@ def parse_test_groups(tests_json_path, test_filter, results_dir, run_disabled):
                     test_full_name,
                     test_args,
                     test_timeout_seconds,
-                    results_dir
+                    results_dir,
+                    redirect_output
                 ))
         
         test_groups.append(TestGroup(
@@ -289,8 +290,8 @@ def main():
     parser.add_argument(
         "--results_dir", 
         type=str, 
-        default=None, 
-        help="Directory to save test results. If empty no result files are written."
+        default=Path(tempfile.gettempdir()) / "tfdml_plugin_tests", 
+        help="Directory to save test results."
     )
     parser.add_argument(
         "--filter", "-f",
@@ -304,33 +305,37 @@ def main():
         help="Runs tests even if they are disabled."
     )
     parser.add_argument(
-        "--clean_results", "-x",
+        "--redirect_output",
         action="store_true",
-        help="Deletes the results_dir if it already exists."
+        help="Redirects test console output to log files in the results directory."
     )
     args = parser.parse_args()
 
     # Parse tests from tests.json.
-    test_groups = parse_test_groups(args.tests_json, args.filter, args.results_dir, args.run_disabled)
+    test_groups = parse_test_groups(
+        args.tests_json, 
+        args.filter, 
+        args.results_dir, 
+        args.run_disabled, 
+        args.redirect_output
+    )
 
     # Show test commands.
     if args.show:
         for test_group in test_groups:
             test_group.show()
     
-    # Delete previous results, if any.
-    if args.clean_results and Path(args.results_dir).exists():
-        shutil.rmtree(args.results_dir)
-
     # Execute tests.
     if args.run:
+        # Delete previous results, if any.
+        if Path(args.results_dir).exists():
+            shutil.rmtree(args.results_dir)
+            
         for test_group in test_groups:
             test_group.run()
 
     # Summarize test results.
     if args.summarize:
-        if not args.results_dir:
-            raise Exception("You must specify a --results_dir when using the --summarize option.")
         for test_group in test_groups:
             test_group.print_summary()
 

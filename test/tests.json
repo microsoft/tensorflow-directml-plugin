@@ -6,7 +6,8 @@
             "timeout_seconds": 300,
             "tests": [
                 {
-                    "file": "ops/batch_matmul_op_test.py"
+                    "file": "ops/batch_matmul_op_test.py",
+                    "disabled": true
                 },
                 {
                     "file": "ops/concat_op_test.py"
