@@ -50,7 +50,7 @@ void plugin_create_device(
     TF_Status* const status)
 {
     auto& device_cache = DmlDeviceCache::Instance();
-    uint32_t adapter_index = params->device->ordinal;
+    uint32_t adapter_index = params->ordinal;
     Status map_status =
         device_cache.MapDeviceIdToAdapterIndex(adapter_index, adapter_index);
 
@@ -62,7 +62,14 @@ void plugin_create_device(
 
     const auto* device_state =
         device_cache.GetOrCreateDeviceState(adapter_index);
+
     params->device->device_handle = new DmlDevice(device_state);
+    params->device->ordinal = params->ordinal;
+    params->device->device_vendor =
+        GetVendorName(device_state->adapter->VendorID());
+    params->device->hardware_name = device_state->adapter->Name().c_str();
+    params->device->struct_size = SP_DEVICE_STRUCT_SIZE;
+
     TF_SetStatus(status, TF_OK, "");
 }
 
