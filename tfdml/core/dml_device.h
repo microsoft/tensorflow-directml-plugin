@@ -36,10 +36,7 @@ struct DmlDeviceState;
 class DmlDevice : public Device
 {
   public:
-    DmlDevice(
-        const DmlDeviceState* state,
-        uint32_t device_ordinal,
-        uint32_t adapter_index);
+    DmlDevice(const DmlDeviceState* state, uint32_t device_ordinal);
 
     ID3D12Device* GetD3D12Device() const;
     IDMLDevice* GetDmlDevice() const;
@@ -53,7 +50,6 @@ class DmlDevice : public Device
     DMLDeviceContext* GetDeviceContext() const;
     Status Sync();
     inline uint32_t GetDeviceOrdinal() const { return device_ordinal_; }
-    inline uint32_t GetAdapterIndex() const { return adapter_index_; }
 
     void CopyTensorInSameDevice(
         const Tensor* input_tensor,
@@ -67,7 +63,6 @@ class DmlDevice : public Device
     const DmlDeviceState* state_; // Weak; owned by the device factory
     std::unique_ptr<DMLDeviceContext> device_context_;
     uint32_t device_ordinal_;
-    uint32_t adapter_index_;
 };
 
 } // namespace tfdml
