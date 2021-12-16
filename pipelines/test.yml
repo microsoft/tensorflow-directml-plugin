@@ -159,7 +159,8 @@ jobs:
           targetType: inline
           script: |
             Invoke-Expression '$(test_env_win.activateCommand)'
-            python $(Build.SourcesDirectory)/test/test.py --run --summarize --redirect_output --results_dir $(System.ArtifactsDirectory)/results/${{artifact}} --groups ${{join(', ', parameters.testGroups)}}
+            $ResultsDir = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}"
+            python $(Build.SourcesDirectory)/test/test.py --run --summarize --redirect_output --results_dir $ResultsDir --groups ${{join(', ', parameters.testGroups)}}
 
       - task: PublishBuildArtifacts@1
         displayName: Publish ${{artifact}}
