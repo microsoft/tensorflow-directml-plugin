@@ -120,7 +120,7 @@ jobs:
 
     - ${{if contains(artifact, '-linux-') }}:
       - task: PowerShell@2
-        displayName: Setup Test Environment
+        displayName: Setup ${{artifact}}
         condition: contains(variables.agentTestConfigs, '${{artifact}}')
         inputs:
           targetType: inline
@@ -144,35 +144,19 @@ jobs:
       - task: PowerShell@2
         displayName: Test ${{artifact}}
         condition: contains(variables.agentTestConfigs, '${{artifact}}')
+        errorActionPreference: continue
         inputs:
           targetType: inline
           script: |
             Invoke-Expression '$(test_env.activateCommand)'
-            # python $(Pipeline.Workspace)/pluginBuild/${{artifact}}/test/test.py --run --filter plugin.*
-            python $(Build.SourcesDirectory)/test/test.py --run --filter plugin.*
+            python $(Build.SourcesDirectory)/test/test.py --run --summarize --redirect_output --results_dir $(Build.ArtifactsDirectory)/results/${{artifact}} --filter plugin.* 
 
-    # - task: PowerShell@2
-    #   displayName: Test ${{artifact}}
-    #   condition: contains(variables.agentTestConfigs, '${{artifact}}')
-    #   env:
-    #     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    #   inputs:
-    #     targetType: filePath
-    #     filePath: $(Pipeline.Workspace)/${{artifact}}/TestAgent.ps1
-    #     arguments: >
-    #       -TestGroups $(vars.${{replace(artifact,'-','_')}}_testGroups)
-    #       -BuildArtifactsPath $(Pipeline.Workspace)/${{artifact}}
-    #       -TestArtifactsPath $(System.ArtifactsDirectory)/test/$(agentName)/${{artifact}}
-    #       -AccessToken $(System.AccessToken)
-    #       -RunOnWsl $(vars.${{replace(artifact,'-','_')}}_runOnWsl)
-    #     errorActionPreference: continue
-
-    # - task: PublishBuildArtifacts@1
-    #   displayName: Upload ${{artifact}} Test Results
-    #   condition: contains(variables.agentTestConfigs, '${{artifact}}')
-    #   inputs:
-    #     pathToPublish: $(System.ArtifactsDirectory)/test
-    #     artifactName: ${{parameters.resultsArtifactName}}
+      - task: PublishBuildArtifacts@1
+        displayName: Publish ${{artifact}}
+        condition: contains(variables.agentTestConfigs, '${{artifact}}')
+        inputs:
+          pathToPublish: $(Build.ArtifactsDirectory)/results
+          artifactName: ${{parameters.resultsArtifactName}}
 
 #-------------------------------------------------------------------------------------------------------------------
 # Summarize Results

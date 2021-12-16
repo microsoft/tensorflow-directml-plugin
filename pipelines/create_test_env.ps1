@@ -1,5 +1,5 @@
-# Creates a miniconda python environment suitable for testing a specific artifact (e.g. x64-win-release-cp38).
-# Exports the 'activateCommand' pipeline variable, which can be used by subsequent tasks to activate the environment.
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
 param
 (
     [string]$StagingDirectory = $env:BUILD_STAGINGDIRECTORY,

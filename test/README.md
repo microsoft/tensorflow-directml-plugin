@@ -27,11 +27,19 @@ The output from each test will, by default, appear in the console. This is usefu
 > python .\test.py --run --summarize --redirect_output
 ```
 
-Finally, you can run a subset of the tests with the `--filter` option. The following example shows only running tests in the `plugin` test group:
+Finally, you can run a subset of the tests with the `--filter` and `--test_groups` options. The `--test_groups` option is a coarse-grained filter mainly used for nightly testing. The following example shows how to restrict testing to the `plugin` and `ops` test groups:
 
 ```
-> python .\test.py --run --summarize --filter plugin.*
+> python .\test.py --run --summarize --test_groups ops, plugin
 ```
+
+The `--filter` option is useful for running a very specific subset of tests (usually for debugging). The following example shows only running tests starting with the name `plugin.dml_visible_devices`:
+
+```
+> python .\test.py --run --summarize --filter plugin.dml_visible_devices*
+```
+
+Many of the options above have short-hand aliases. Run `python test.py --help` for more details.
 
 # Viewing Test Results
 

@@ -227,7 +227,7 @@ def get_optional_json_property(json_object, property_name, default_value):
 
 
 # Parses tests.json to build a list of test groups to execute.
-def parse_test_groups(tests_json_path, test_filter, results_dir, run_disabled, redirect_output):
+def parse_test_groups(tests_json_path, test_filter, allowed_test_groups, results_dir, run_disabled, redirect_output):
     test_groups = []
     test_names = set()
 
@@ -236,6 +236,10 @@ def parse_test_groups(tests_json_path, test_filter, results_dir, run_disabled, r
 
     for json_test_group in json_data["groups"]:
         test_group_name = json_test_group["name"]
+        
+        if allowed_test_groups and test_group_name not in allowed_test_groups:
+            continue
+
         test_group_tests = []
         test_group_timeout_seconds = get_optional_json_property(json_test_group, "timeout_seconds", 300)
 
@@ -313,6 +317,12 @@ def main():
         help="Filters test names to select a subset of the tests."
     )
     parser.add_argument(
+        "--test_groups", "-g",
+        type=str, 
+        nargs='+',
+        help="Executes a subset of the test groups."
+    )
+    parser.add_argument(
         "--run_disabled",
         action="store_true",
         help="Runs tests even if they are disabled."
@@ -328,6 +338,7 @@ def main():
     test_groups = parse_test_groups(
         args.tests_json, 
         args.filter, 
+        args.test_groups,
         args.results_dir, 
         args.run_disabled, 
         args.redirect_output
