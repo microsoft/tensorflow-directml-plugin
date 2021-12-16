@@ -25,6 +25,7 @@ import shutil
 import time
 import tempfile
 import os
+import re
 
 class TestGroup:
     def __init__(self, name, tests, timeout_seconds, results_dir):
@@ -34,7 +35,8 @@ class TestGroup:
         self.results_dir = results_dir
         self.results_file_path = None
         self.tests_timed_out = []
-        self.results_file_path = Path(results_dir) / f"{name}.json"
+        self.results_file_path = Path(results_dir) / f"run.{name}.json"
+        self.summary_file_path = Path(results_dir) / f"summary.{name}.json"
 
     def show(self):
         if self.tests:
@@ -74,44 +76,48 @@ class TestGroup:
         summary = {}
         summary["group"] = self.name
         summary["time_seconds"] = time_seconds
-        summary["cases_ran"] = 0
-        summary["cases_passed"] = 0
-        summary["cases_failed"] = 0
-        summary["cases_skipped"] = 0
+        summary["cases_passed"] = []
+        summary["cases_failed"] = []
+        summary["cases_skipped"] = []
         summary["tests_timed_out"] = tests_timed_out
-        summary["failed_case_names"] = []
 
         for test in self.tests:
             test_summary = test.summarize()
             for test_case in test_summary["cases"]:
-                summary["cases_ran"] += 1
                 if test_case["result"] == "passed":
-                    summary["cases_passed"] += 1
+                    summary["cases_passed"].append(test_case["name"])
                 elif test_case["result"] == "failed":
-                    summary["cases_failed"] += 1
-                    summary["failed_case_names"].append(test_case["name"])
+                    summary["cases_failed"].append(test_case["name"])
                 elif test_case["result"] == "skipped":
-                    summary["cases_skipped"] += 1
+                    summary["cases_skipped"].append(test_case["name"])
         
+        with open(self.summary_file_path, "w") as json_file:
+            json.dump(summary, json_file)
+
         return summary
 
     def print_summary(self):
         if not self.tests:
             return
         summary = self.summarize()
+
+        cases_passed_count = len(summary["cases_passed"])
+        cases_failed_count = len(summary["cases_failed"])
+        cases_skipped_count = len(summary["cases_skipped"])
+        cases_ran_count = cases_passed_count + cases_failed_count + cases_skipped_count
         
         print()
         print('=' * 80)
         print(f"Test Group         : {summary['group']}")
         print(f"Test Duration      : {summary['time_seconds']} seconds")
-        print(f"Test Cases Ran     : {summary['cases_ran']}")
-        print(f"Test Cases Passed  : {summary['cases_passed']}")
-        print(f"Test Cases Skipped : {summary['cases_skipped']}")
-        print(f"Test Cases Failed  : {summary['cases_failed']}")
-        if len(summary["failed_case_names"]) > 0:
+        print(f"Test Cases Ran     : {cases_ran_count}")
+        print(f"Test Cases Passed  : {cases_passed_count}")
+        print(f"Test Cases Skipped : {cases_skipped_count}")
+        print(f"Test Cases Failed  : {cases_failed_count}")
+        if cases_failed_count > 0:
             print("Failing Test Cases : ")
-            for i in range(0, len(summary["failed_case_names"])):
-                failed_case = summary["failed_case_names"][i]
+            for i in range(0, cases_failed_count):
+                failed_case = summary["cases_failed"][i]
                 print(f"{i}: {failed_case}")
         print('=' * 80)
         print()
@@ -128,11 +134,11 @@ class Test:
 
         self.log_file_path = None
         if redirect_output:
-            self.log_file_path = Path(results_dir) / f"{name}.txt"
+            self.log_file_path = Path(results_dir) / f"log.{name}.txt"
 
         self.results_file_path = None
         if type == "py_abseil":
-            self.results_file_path = Path(results_dir) / f"{name}.xml"
+            self.results_file_path = Path(results_dir) / f"test.{name}.xml"
             self.args.append(f"--xml_output_file {self.results_file_path}")
             self.command_line = f"python {test_file_path} {' '.join(self.args)}"
         else:
@@ -237,6 +243,9 @@ def parse_test_groups(tests_json_path, test_filter, results_dir, run_disabled, r
             test_type = "py_abseil"
             test_file = Path(tests_json_path).parent / json_test["file"]
             test_base_name = get_optional_json_property(json_test, "name", Path(test_file).stem)
+            if not re.match("^\w+$", test_base_name):
+                raise Exception(f"'{test_base_name}' is an invalid test name. Test names must only contain word characters: a-z, A-Z, 0-9, and '_'.")
+
             test_full_name = f"{test_group_name}.{test_base_name}"
             test_args = get_optional_json_property(json_test, "args", [])
             test_disabled = get_optional_json_property(json_test, "disabled", False)
@@ -344,7 +353,6 @@ def main():
         for test_group in test_groups:
             test_group.print_summary()
 
-    # Export to xUnit.
 
 if __name__ == "__main__":
     main()

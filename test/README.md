@@ -1,6 +1,6 @@
 # Testing TensorFlow-DirectML-Plugin
 
-This directory contains tests for validating the DirectML plugin. Testing is done with a combination of python scripts and native test executables. The python tests should be run in a python environment with the tensorflow-directml-plugin package installed. All testing is driven by the following two files:
+This directory contains tests for validating the DirectML plugin. Testing is done with a combination of python scripts and native test executables. The python tests should be run in a python environment with the `tensorflow-directml-plugin` and `tensorflow >= 2.7.0` packages installed. All testing is driven by the following two files:
 
 - [test.py](run_tests.py) : main script that will execute all test content (python and native tests) and summarize the results. Uses tests.json to drive testing.
 - [tests.json](tests.json) : describes the test content and how it should be executed.
@@ -35,27 +35,44 @@ Finally, you can run a subset of the tests with the `--filter` option. The follo
 
 # Viewing Test Results
 
-Whenever `test.py` is launched with the `--run` option it will generate result files: one file for each test group, and one file for each test. By default these files are output to `%TEMP%/tfdml_plugin_tests` (Windows) or `/tmp/tfdml_plugin_tests` (Linux). You can control the output location directory with the `--results_dir` parameter. Be aware that this directory is deleted between runs with the `--run` argument. Below is an example of what this directory may contain:
+Whenever `test.py` is launched with the `--run` option it will generate result files, which are output to `%TEMP%/tfdml_plugin_tests` (Windows) or `/tmp/tfdml_plugin_tests` (Linux). You can control the output location directory with the `--results_dir` parameter. Be aware that this directory is deleted between runs with the `--run` argument. Below is an example of what this directory may contain:
 
 ```
-ops.concat_op_test.xml
-ops.gather_nd_op_test.xml
-ops.gather_op_test.xml
-ops.json
-plugin.dml_visible_devices_empty1.xml
-plugin.dml_visible_devices_empty2.xml
-plugin.dml_visible_devices_single.xml
-plugin.dml_visible_devices_swapped.xml
-plugin.json
-plugin.profiler_test.xml
+log.ops.concat_op_test.txt
+log.ops.gather_nd_op_test.txt
+log.ops.gather_op_test.txt
+log.ops.matmul_op_test.txt
+log.plugin.dml_visible_devices_empty1.txt
+log.plugin.dml_visible_devices_empty2.txt
+log.plugin.dml_visible_devices_single.txt
+log.plugin.dml_visible_devices_swapped.txt
+log.plugin.profiler_test.txt
+run.ops.json
+run.plugin.json
+summary.ops.json
+summary.plugin.json
+test.ops.concat_op_test.xml
+test.ops.gather_nd_op_test.xml
+test.ops.gather_op_test.xml
+test.ops.matmul_op_test.xml
+test.plugin.dml_visible_devices_empty1.xml
+test.plugin.dml_visible_devices_empty2.xml
+test.plugin.dml_visible_devices_single.xml
+test.plugin.dml_visible_devices_swapped.xml
+test.plugin.profiler_test.xml
 ```
 
-There is a JSON file for each test group (`ops.json` and `plugin.json` above). This JSON file contains data on the execution of the group as a whole (duration, timed-out tests, etc.). Additionally, there is a log file each test within each test group; the name of each file is `<test_group>.<test_name>.xml` (for Python/Abseil tests). 
+You may see the following types of results:
+
+- `test.<group>.<test>.xml` : Abseil Testing results for a single test.
+- `log.<group>.<test>.txt` : console output for a single test (if output is redirected).
+- `run.<group>.json` : group-level runtime stats, like execution duration and timed-out tests.
+- `summary.<group>.json` : overall results for the entire group (if `--summarize` used).
 
 You can inspect the result files manually to see the detailed errors and results. However, the `--summarize` option can be used to parse the result files and give you a high-level summary. You may see output like the following:
 
 ```
---------------------------------------------------------------------------------
+================================================================================
 Test Group         : plugin
 Test Cases Ran     : 7
 Test Cases Passed  : 5
@@ -64,14 +81,14 @@ Test Cases Failed  : 2
 Failing Test Cases :
 0: plugin.profiler_test::ProfilerTest.testTraceKernelEvents
 1: plugin.profiler_test::ProfilerTest.testXPlaneKernelEvents
---------------------------------------------------------------------------------
+================================================================================
 ```
 
 The above output indicates the `plugin` test group encountered two failing test cases:
 - plugin.profiler_test::ProfilerTest.testTraceKernelEvents
 - plugin.profiler_test::ProfilerTest.testXPlaneKernelEvents
 
-The full name of each test case has the format `<test_group>.<test_name>::<test_class>.<test_method>`. In this example you would want to open `plugin.profiler_test.xml` to see the full error messages.
+The full name of each test case has the format `<group>.<test>::<test_class>.<test_method>`. In this example you would want to open `test.plugin.profiler_test.xml` to see the full error messages.
 
 # Debugging Tests
 
