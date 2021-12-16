@@ -283,7 +283,7 @@ DmlDeviceCache::DmlDeviceCache()
             "The first available device in order of performance was selected "
             "by default. To select a different device, set the "
             "DML_VISIBLE_DEVICES environment variable to its index (e.g. "
-            "DML_VISIBLE_DEVICES=\"1\").");
+            "DML_VISIBLE_DEVICES=1).");
 
         adapters_ = {adapters[0]};
     }
