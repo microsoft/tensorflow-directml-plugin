@@ -1,0 +1,51 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+name: $(Date:yyMMdd-HHmm)$(Rev:.r).$(SourceBranchName)
+
+# No CI trigger; run on a schedule only.
+trigger: none
+
+# Do not trigger on PRs.
+pr: none
+
+resources:
+  pipelines:
+  - pipeline: pluginBuild
+    source: TF2 Plugin Build
+    branch: main
+    trigger: 
+      branches:
+      - main
+
+parameters:
+- name: testArtifacts
+  displayName: Test Artifacts
+  type: object
+  default: [x64-win-release-cp37, x64-linux-release-cp37]
+
+- name: testGroups
+  displayName: Test Groups
+  type: object
+  default: [ops, plugin]
+
+- name: testTensorflowPackage
+  displayName: Email Results To
+  type: string
+  default: tensorflow-cpu==2.7.0
+
+- name: enableTests
+  displayName: Enable Tests
+  type: boolean
+  default: true
+
+stages:
+- stage: testStage
+  displayName: Test
+  dependsOn: buildStage
+  jobs:
+  - template: test.yml
+    parameters:
+      testGroups: ${{parameters.testGroups}}
+      artifacts: ${{parameters.testArtifacts}}
+      tensorflowPackage: ${{parameters.testTensorflowPackage}}
