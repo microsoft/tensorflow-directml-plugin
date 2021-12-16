@@ -164,6 +164,7 @@ class Test:
                 universal_newlines=True,
                 encoding='utf-8',
                 env=environ,
+                shell=True
             )
         except subprocess.TimeoutExpired:
             self.timed_out = True
