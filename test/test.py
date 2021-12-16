@@ -26,6 +26,7 @@ import time
 import tempfile
 import os
 import re
+import sys
 
 class TestGroup:
     def __init__(self, name, tests, timeout_seconds, results_dir):
@@ -157,6 +158,7 @@ class Test:
             return
 
         print(f"Running '{self.name}' with a timeout of {timeout_seconds} seconds")
+        sys.stdout.flush()
         environ = os.environ.copy()
         environ['PYTHONIOENCODING'] = 'utf-8'
         p = None
