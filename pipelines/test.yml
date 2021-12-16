@@ -118,7 +118,7 @@ jobs:
     #   displayName: Download ${{artifact}}
     #   condition: contains(variables.agentTestConfigs, '${{artifact}}')
 
-    - ${{if contains(parameters.artifact, '-linux-') }}:
+    - ${{if contains(artifact, '-linux-') }}:
       - task: PowerShell@2
         displayName: Setup Test Environment
         inputs:
@@ -128,7 +128,7 @@ jobs:
             $TestEnvPath = "$(System.ArtifactsDirectory)/test_env"
             # TODO: wsl create conda env 
 
-    - ${{if contains(parameters.artifact, '-win-') }}:
+    - ${{if contains(artifact, '-win-') }}:
       - task: PowerShell@2
         displayName: Setup Test Environment
         name: test_env
