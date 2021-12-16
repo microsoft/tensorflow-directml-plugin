@@ -146,7 +146,7 @@ jobs:
             New-Item -ItemType Directory $ResultsDirWin -Force | Out-Null
 
             cmd /c "wsl $(test_env_linux.activateCommand); python $ScriptPathWsl --run --summarize --redirect_output --results_dir $ResultsDirLinux --groups ${{join(' ', parameters.testGroups)}}"
-            wsl cp -r $ResultsDirLinux $ResultsDirWinWsl
+            wsl cp -r $ResultsDirLinux/* $ResultsDirWinWsl
 
     - ${{if contains(artifact, '-win-') }}:
       - task: PowerShell@2
