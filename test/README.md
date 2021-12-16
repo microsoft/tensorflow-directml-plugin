@@ -90,75 +90,29 @@ If you want to scope down the testing even further you can limit the Abseil test
 python S:\tensorflow-directml-plugin\test\plugin\profiler_test.py -- ProfilerTest.testTraceKernelEvents
 ```
 
-# Test JSON Metadata
+# Test Metadata (tests.json)
 
-Test groups of this type reference a directory of python scripts. 
+The [tests.json](tests.json) file describes all of the test content available to run using `test.py`. The schema for this file is [tests_schema.json](tests_schema.json). 
 
-- The full name of a test is "<group_name>.<test_name>". Tests without an explicit name use the stem of their filename.
-- If the test file ends with .py it is assumed to be a python/abseil test.
-- If the test file ends with .exe or has no extension it is assumed to be a google test executable.
-- Each python top-level python file is expected to contain abseil test classes. 
-- Only the top-level .py files will be considered as tests; the test group **does not recurse** into subdirectories. 
-- You may have helper files in subdirectories that are imported/used by the top-level .py files.
+Below is a summary of the properties associated with each test group:
 
-**Fields**
+| Field           | Required | Type        | Default | Description                                                           |
+| --------------- | -------- | ----------- | ------- | --------------------------------------------------------------------- |
+| name            | Yes      | string      |         | Unique name for the group of tests.                                   |
+| tests           | Yes      | array(test) |         | List of tests (may be python, gtest, etc.).                           |
+| timeout_seconds | No       | number      | 300     | Max number of seconds to wait for all tests in the group to complete. |
 
-| Field                         | Required | Type                | Default | Description                                                                  |
-| ----------------------------- | -------- | ------------------- | ------- | ---------------------------------------------------------------------------- |
-| type                          | Yes      | string              |         | Must be "python_abseil".                                                     |
-| test_script_dir               | Yes      | string              |         | Directory (relative to tests.json) containing the test scripts.              |
-| group_timeout_seconds         | No       | number              | 900     | Max number of seconds to wait for all tests in the group to complete.        |
-| default_test_timeout_seconds  | No       | number              | 30      | Max number of seconds each test script can run before being terminated.      |
-| override_test_timeout_seconds | No       | map(string, number) | {}      | Max number of seconds specific test scripts can run before being terminated. |
-| disabled_tests                | No       | array(string)       | []      | Names of scripts in test_script_dir to skip executing.                       |
+Below is a summary of the properties associated with each test:
 
-**Example**
+| Field           | Required | Type          | Default     | Description                                                                                                                            |
+| --------------- | -------- | ------------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| name            | No       | string        | *Generated* | Unique name for the test. If omitted, the test's base filename will be used.                                                           |
+| file            | Yes      | string        |             | Path to the test script/executable relative to tests.json.                                                                             |
+| type            | No       | string        | *Inferred*  | Type of test referenced by the file property. May be `py_abseil` or `gtest`. If omitted, the type is inferred from the file extension. |
+| args            | No       | array(string) | []          | Command-line arguments to append when running the test.                                                                                |
+| disabled        | No       | boolean       | false       | Skip executing the test file.                                                                                                          |
+| timeout_seconds | No       | number        | null        | Max number of seconds to wait for the tests to complete. If omitted, the test will run up to the test group's timeout.                 |
 
-Consider a directory structure with the following files:
-```
-tests/
-│   tests.json
-│
-├───basic_tests/
-│   │   bar.py
-│   │   broken_test.py
-│   │   foo.py
-│   │   slow_test.py
-│   │
-│   └───helpers/
-│           common.py
-│
-└───native/
-        ...
-```
-
-The `tests.json` may look like the following:
-
-```json
-{
-    "groups": {
-        "basic_tests": {
-            "type": "python_abseil",
-            "test_script_dir": "basic_tests",
-            "group_timeout_seconds": 100,
-            "default_test_timeout_seconds": 15,
-            "override_test_timeout_seconds": {
-                "slow_test.py": 120
-            },
-            "disabled_tests": [
-                "broken_test.py"
-            ]
-        },
-        "native": {
-            ...
-        }
-    }
-}
-```
-
-Running the `basic_tests` test group, as defined above, will execute three tests: 
-- `bar.py` (given 15 seconds to complete)
-- `foo.py` (given 15 seconds to complete)
-- `slow_test.py` (given 120 seconds to complete)
-
-All three tests combined have a max duration of 150 seconds, but the test group is only given 100 seconds to complete. Any tests that have not started within the `group_test_timeout_seconds` duration will not be executed. Any tests that have not completed within the `group_test_timeout_seconds` duration will be terminated.
+A few tips:
+- Every test must have a unique name. The `name` property is useful if you want to run the same test file with different arguments.
+- You should not provide any arguments for logging result files in tests.json itself; this is handled automatically by `test.py`.
