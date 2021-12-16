@@ -420,12 +420,7 @@ const tensorflow::profiler::XSpace& DmlTracing::GetXSpace()
             continue;
         }
 
-        uint32_t adapter_index;
-        if (!device_cache.GetAdapterIndexFromDeviceId(i, &adapter_index).ok())
-        {
-            continue;
-        }
-        auto& adapter = device_cache.GetAdapter(adapter_index);
+        auto& adapter = device_cache.GetAdapter(i);
 
         auto xplane = xspace_.add_planes();
         XPlaneBuilder plane(xplane);

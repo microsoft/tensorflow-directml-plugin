@@ -50,20 +50,17 @@ void plugin_create_device(
     TF_Status* const status)
 {
     auto& device_cache = DmlDeviceCache::Instance();
-    uint32_t adapter_index = params->device->ordinal;
-    Status map_status =
-        device_cache.MapDeviceIdToAdapterIndex(adapter_index, adapter_index);
-
-    if (!map_status.ok())
-    {
-        TF_SetStatus(status, map_status.code(), map_status.error_message());
-        return;
-    }
-
     const auto* device_state =
-        device_cache.GetOrCreateDeviceState(adapter_index);
+        device_cache.GetOrCreateDeviceState(params->ordinal);
+
+    params->device->ordinal = params->ordinal;
+    params->device->device_vendor =
+        GetVendorName(device_state->adapter->VendorID());
+    params->device->hardware_name = device_state->adapter->Name().c_str();
+    params->device->struct_size = SP_DEVICE_STRUCT_SIZE;
+
     params->device->device_handle =
-        new DmlDevice(device_state, params->device->ordinal, adapter_index);
+        new DmlDevice(device_state, params->ordinal);
     TF_SetStatus(status, TF_OK, "");
 }
 
@@ -144,21 +141,7 @@ TF_Bool plugin_device_memory_usage(
     int64_t* total)
 {
     auto& device_cache = DmlDeviceCache::Instance();
-    uint32_t adapter_index;
-    Status status = device_cache.GetAdapterIndexFromDeviceId(
-        device->ordinal,
-        &adapter_index);
-
-    if (!status.ok())
-    {
-        TF_Log(
-            TF_ERROR,
-            "Unable to query the adapter index from device index '%d'",
-            device->ordinal);
-        return false;
-    }
-
-    const DmlAdapter& adapter = device_cache.GetAdapter(adapter_index);
+    const DmlAdapter& adapter = device_cache.GetAdapter(device->ordinal);
 
     uint64_t total_gpu_memory = adapter.GetTotalDedicatedMemory();
 
