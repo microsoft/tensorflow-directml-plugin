@@ -66,29 +66,36 @@ class TestGroup:
             if self.results_file_path:
                 with open(self.results_file_path, "w") as file:
                     summary = {}
-                    summary["start_time_seconds"] = start_time
-                    summary["time_seconds"] = end_time - start_time
+                    summary["start_timestamp_seconds"] = start_time
+                    summary["end_timestamp_seconds"] = end_time
+                    summary["duration_seconds"] = end_time - start_time
                     summary["tests_completed"] = tests_completed
                     summary["tests_exited_abnormally"] = tests_exited_abnormally
                     summary["tests_timed_out"] = tests_timed_out
                     json.dump(summary, file)
 
     def summarize(self):
-        time_seconds = 0
+        start_timestamp_seconds = 0
+        end_timestamp_seconds = 0
+        duration_seconds = 0
         tests_completed = []
         tests_exited_abnormally = []
         tests_timed_out = []
         if Path(self.results_file_path).exists():
             with open(self.results_file_path, "r") as json_file:
                 json_data = json.load(json_file)
-                time_seconds = json_data["time_seconds"]
+                start_timestamp_seconds = json_data["start_timestamp_seconds"]
+                end_timestamp_seconds = json_data["end_timestamp_seconds"]
+                duration_seconds = json_data["duration_seconds"]
                 tests_completed = json_data["tests_completed"]
                 tests_exited_abnormally = json_data["tests_exited_abnormally"]
                 tests_timed_out = json_data["tests_timed_out"]
 
         summary = {}
         summary["group"] = self.name
-        summary["time_seconds"] = time_seconds
+        summary["start_timestamp_seconds"] = start_timestamp_seconds
+        summary["end_timestamp_seconds"] = end_timestamp_seconds
+        summary["duration_seconds"] = duration_seconds
         summary["cases_total_count"] = 0
         summary["cases_passed"] = []
         summary["cases_failed"] = []
@@ -148,7 +155,7 @@ class TestGroup:
         print()
         print('=' * 80)
         print(f"Test Group      : {summary['group']}")
-        print(f"Test Duration   : {summary['time_seconds']} seconds")
+        print(f"Test Duration   : {summary['duration_seconds']} seconds")
         print(f"Tests Total     : {summary['tests_total_count']} ({summary['cases_total_count']} cases)")
         print(f"Tests Passed    : {len(summary['tests_passed'])} ({len(summary['cases_passed'])} cases)")
         print(f"Tests Skipped   : {len(summary['tests_skipped'])} ({len(summary['cases_skipped'])} cases)")

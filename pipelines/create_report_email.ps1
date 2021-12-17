@@ -327,7 +327,7 @@ if ($TestsArtifactsExist)
 
             if ($AgentJob.agentHasResults)
             {
-                $Time = New-TimeSpan -Seconds $AgentJob.time_seconds
+                $Time = New-TimeSpan -Seconds $AgentJob.duration_seconds
             }
             else
             {

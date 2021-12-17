@@ -49,7 +49,9 @@ foreach ($Job in $TestMatrix)
             $SummaryEntry["tests_failed_count"] = $EnvSummary.tests_failed.count
             $SummaryEntry["tests_skipped_count"] = $EnvSummary.tests_skipped.count
             $SummaryEntry["tests_timed_out_count"] = $EnvSummary.tests_timed_out.count
-            $SummaryEntry["time_seconds"] = $EnvSummary.time_seconds
+            $SummaryEntry["start_timestamp_seconds"] = $EnvSummary.start_timestamp_seconds
+            $SummaryEntry["end_timestamp_seconds"] = $EnvSummary.end_timestamp_seconds
+            $SummaryEntry["duration_seconds"] = $EnvSummary.duration_seconds
         }
         
         $Summary[$Group] += $SummaryEntry
