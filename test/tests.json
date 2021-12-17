@@ -57,11 +57,20 @@
             ]
         },
         {
-            "name": "sleepy",
+            "name": "examples",
             "timeout_seconds": 5,
             "tests": [
                 {
-                    "file": "plugin/sleep.py"
+                    "file": "example/buggy.py"
+                },
+                {
+                    "file": "example/good_test.py"
+                },
+                {
+                    "file": "example/not_good_test.py"
+                },
+                {
+                    "file": "example/slow_test.py"
                 }
             ]
         }

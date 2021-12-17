@@ -130,14 +130,16 @@ class TestGroup:
         print(f"Tests Timed Out : {summary['tests_timed_out_count']}")
         if summary['tests_failed_count'] > 0:
             print()
+            print("Failed Tests:")
             i = 0
             for test in summary['tests']:
-                i = 0
                 if test["result"] == "failed":
                     print(f"{i}: {test['name']}")
-                    if len(test["failed_cases"]) > 0:
-                        for case in test["failed_cases"]:
-                            print(case)
+                    if len(test["cases_failed"]) > 0:
+                        for j in range(0, len(test["cases_failed"])):
+                            print(f"{i}.{j}: {test['cases_failed'][j]}")
+                    i += 1
+
         print('=' * 80)
         print()
 
@@ -248,7 +250,7 @@ class Test:
         summary["cases_skipped_count"] = 0
         summary["cases_failed"] = []
 
-        if Path(self.results_file_path).exists() and run_state == "completed":
+        if Path(self.results_file_path).exists() and run_state != "timed_out":
             try:
                 root = ET.parse(self.results_file_path).getroot()
                 for test_suite in root.findall("testsuite"):

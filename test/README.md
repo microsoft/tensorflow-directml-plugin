@@ -32,7 +32,7 @@ Finally, you can run a subset of the tests with the `--groups` and `--tests` opt
 The `--groups` option is a coarse-grained filter mainly used for nightly testing. The following example shows how to restrict testing to the `plugin` and `ops` test groups:
 
 ```
-> python .\test.py --run --summarize --groups ops, plugin
+> python .\test.py --run --summarize --groups ops plugin
 ```
 
 The `--tests` option is a fine-grained filter mainly used for debugging. The following example shows only running tests containing "devices" in the name, regardless of group:
@@ -48,55 +48,48 @@ Many of the options above have short-hand aliases. Run `python test.py --help` f
 Whenever `test.py` is launched with the `--run` option it will generate result files, which are output to `%TEMP%/tfdml_plugin_tests` (Windows) or `/tmp/tfdml_plugin_tests` (Linux). You can control the output location directory with the `--results_dir` parameter. Be aware that this directory is deleted between runs with the `--run` argument. Below is an example of what this directory may contain:
 
 ```
-log.ops.concat_op_test.txt
-log.ops.gather_nd_op_test.txt
-log.ops.gather_op_test.txt
-log.ops.matmul_op_test.txt
-log.plugin.dml_visible_devices_empty1.txt
-log.plugin.dml_visible_devices_empty2.txt
-log.plugin.dml_visible_devices_single.txt
-log.plugin.dml_visible_devices_swapped.txt
-log.plugin.profiler_test.txt
-run.ops.json
-run.plugin.json
-summary.ops.json
-summary.plugin.json
-test.ops.concat_op_test.xml
-test.ops.gather_nd_op_test.xml
-test.ops.gather_op_test.xml
-test.ops.matmul_op_test.xml
-test.plugin.dml_visible_devices_empty1.xml
-test.plugin.dml_visible_devices_empty2.xml
-test.plugin.dml_visible_devices_single.xml
-test.plugin.dml_visible_devices_swapped.xml
-test.plugin.profiler_test.xml
+log.examples.buggy.txt
+log.examples.good_test.txt
+log.examples.not_good_test.txt
+run.examples.buggy.json
+run.examples.good_test.json
+run.examples.json
+run.examples.not_good_test.json
+run.examples.slow_test.json
+summary.examples.json
+test.examples.buggy.xml
+test.examples.good_test.xml
+test.examples.not_good_test.xml
+test.examples.slow_test.xml
 ```
 
 You may see the following types of results:
 
 - `test.<group>.<test>.xml` : Abseil Testing results for a single test.
 - `log.<group>.<test>.txt` : console output for a single test (if output is redirected).
-- `run.<group>.json` : group-level runtime stats, like execution duration and timed-out tests.
+- `run.<group>.json` : group-level runtime stats, like execution duration.
+- `run.<group>.<test>.json` : test-level runtime stats, like execution duration and exit code.
 - `summary.<group>.json` : overall results for the entire group (if `--summarize` used).
 
 You can inspect the result files manually to see the detailed errors and results. However, the `--summarize` option can be used to parse the result files and give you a high-level summary. You may see output like the following:
 
 ```
 ================================================================================
-Test Group      : plugin
-Test Duration   : 17.735952138900757 seconds
-Tests Total     : 5 (6 cases)
-Tests Passed    : 4 (4 cases)
-Tests Skipped   : 0 (3 cases)
-Tests Failed    : 1 (2 cases)
-Tests Timed Out : 0
+Test Group      : examples
+Test Duration   : 5.007527589797974 seconds
+Tests Total     : 4 (10 cases)
+Tests Passed    : 1 (5 cases)
+Tests Skipped   : 0 (1 cases)
+Tests Failed    : 2 (4 cases)
+Tests Timed Out : 1
 
 Failed Tests:
-0: plugin.profiler_test
-
-Failed Test Cases :
-0: plugin.profiler_test::ProfilerTest.testTraceKernelEvents
-1: plugin.profiler_test::ProfilerTest.testXPlaneKernelEvents
+0: examples.buggy
+0.0: examples.buggy::BuggyTest1.testCase1
+0.1: examples.buggy::BuggyTest2.testBravo
+0.2: examples.buggy::BuggyTest2.testCharlie
+1: examples.not_good_test
+1.0: examples.not_good_test::ThisTestFails.testCaseA
 ================================================================================
 ```
 
