@@ -66,6 +66,7 @@ class TestGroup:
             if self.results_file_path:
                 with open(self.results_file_path, "w") as file:
                     summary = {}
+                    summary["start_time_seconds"] = start_time
                     summary["time_seconds"] = end_time - start_time
                     summary["tests_completed"] = tests_completed
                     summary["tests_exited_abnormally"] = tests_exited_abnormally
