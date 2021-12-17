@@ -48,3 +48,13 @@ stages:
       testGroups: ${{parameters.testGroups}}
       artifacts: ${{parameters.testArtifacts}}
       tensorflowPackage: ${{parameters.testTensorflowPackage}}
+
+- stage: reportStage
+  displayName: Report Results
+    dependsOn: [testStage]
+  condition: succeededOrFailed()
+  pool: DirectML_TF2_Windows_Pool
+  jobs:
+  - template: report.yml
+    parameters:
+      emailTo: ${{parameters.emailTo}}

@@ -8,6 +8,12 @@ parameters:
 - name: buildMetadataArtifactName
   type: string
   default: build
+- name: testResultsArtifactName
+  type: string
+  default: test
+- name: enableTests
+  type: boolean
+  default: true
 
 jobs:
 - job: report
@@ -27,6 +33,20 @@ jobs:
       downloadType: single
       artifactName: ${{parameters.buildMetadataArtifactName}}
 
+  - ${{if parameters.enableTests}}:
+    - task: DownloadBuildArtifacts@0
+      displayName: Download Test Summaries
+      continueOnError: true
+      inputs:
+        buildType: current
+        downloadType: single
+        artifactName: ${{parameters.testResultsArtifactName}}
+        itemPattern: |
+          ${{parameters.testResultsArtifactName}}/matrix.json
+          ${{parameters.testResultsArtifactName}}/test_summary.json
+          ${{parameters.testResultsArtifactName}}/test_summary.xml
+          ${{parameters.testResultsArtifactName}}/agent_summary.json
+
   - task: PowerShell@2
     name: createHtml
     displayName: Create Report HTML
@@ -37,6 +57,7 @@ jobs:
       targetType: filePath
       filePath: pipelines/CreateReportEmail.ps1
       arguments: >
+        -TestArtifactsPath $(System.ArtifactsDirectory)/${{parameters.testResultsArtifactName}}
         -BuildArtifactsPath $(System.ArtifactsDirectory)/${{parameters.buildMetadataArtifactName}}
         -PipelineRunID $(Build.BuildID)
         -AccessToken $(System.AccessToken)

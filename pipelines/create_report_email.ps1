@@ -7,6 +7,7 @@ Creates and emails an HTML build pipeline report.
 #>
 param
 (
+    [Parameter(Mandatory)][string]$TestArtifactsPath,
     [Parameter(Mandatory)][string]$BuildArtifactsPath,
     [Parameter(Mandatory)][string]$PipelineRunID,
     [Parameter(Mandatory)][string]$AccessToken,
