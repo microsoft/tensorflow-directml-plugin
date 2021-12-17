@@ -48,56 +48,92 @@ class TestGroup:
 
     def run(self):
         if self.tests:
+            tests_completed = []
+            tests_exited_abnormally = []
             tests_timed_out = []
-            tests_failed = []
             start_time = time.time()
             for test in self.tests:
                 elapsed_time = time.time() - start_time
                 remaining_time = self.timeout_seconds - elapsed_time
                 test.run(remaining_time)
-                if test.timed_out:
+                if test.exit_state == "completed":
+                    tests_completed.append(test.name)
+                if test.exit_state == "exited_abnormally":
+                    tests_exited_abnormally.append(test.name)
+                if test.exit_state == "timed_out":
                     tests_timed_out.append(test.name)
-                if test.failed:
-                    tests_failed.append(test.name)
             end_time = time.time()
             if self.results_file_path:
                 with open(self.results_file_path, "w") as file:
                     summary = {}
                     summary["time_seconds"] = end_time - start_time
+                    summary["tests_completed"] = tests_completed
+                    summary["tests_exited_abnormally"] = tests_exited_abnormally
                     summary["tests_timed_out"] = tests_timed_out
-                    summary["tests_failed"] = tests_failed
                     json.dump(summary, file)
 
     def summarize(self):
         time_seconds = 0
+        tests_completed = []
+        tests_exited_abnormally = []
         tests_timed_out = []
-        tests_failed = []
         if Path(self.results_file_path).exists():
             with open(self.results_file_path, "r") as json_file:
                 json_data = json.load(json_file)
                 time_seconds = json_data["time_seconds"]
+                tests_completed = json_data["tests_completed"]
+                tests_exited_abnormally = json_data["tests_exited_abnormally"]
                 tests_timed_out = json_data["tests_timed_out"]
-                tests_failed = json_data["tests_failed"]
 
         summary = {}
         summary["group"] = self.name
         summary["time_seconds"] = time_seconds
+        summary["cases_total_count"] = 0
         summary["cases_passed"] = []
         summary["cases_failed"] = []
         summary["cases_skipped"] = []
+        summary["tests_total_count"] = 0
+        summary["tests_passed"] = []
+        summary["tests_failed"] = []
+        summary["tests_skipped"] = []
         summary["tests_timed_out"] = tests_timed_out
-        summary["tests_failed"] = tests_failed
 
         for test in self.tests:
             test_summary = test.summarize()
+
+            has_failed_case = False
+            has_passed_case = False
+
             for test_case in test_summary["cases"]:
                 if test_case["result"] == "passed":
+                    has_passed_case = True
                     summary["cases_passed"].append(test_case["name"])
                 elif test_case["result"] == "failed":
+                    has_failed_case = True
                     summary["cases_failed"].append(test_case["name"])
                 elif test_case["result"] == "skipped":
                     summary["cases_skipped"].append(test_case["name"])
+            
+            if test.name in tests_exited_abnormally:
+                summary["tests_failed"].append(test.name)
+
+            if test.name in tests_completed:
+                if has_failed_case:
+                    summary["tests_failed"].append(test.name)
+                elif has_passed_case:
+                    summary["tests_passed"].append(test.name)
+                else:
+                    summary["tests_skipped"].append(test.name)
         
+        summary["tests_total_count"] += len(summary["tests_passed"]) 
+        summary["tests_total_count"] += len(summary["tests_failed"]) 
+        summary["tests_total_count"] += len(summary["tests_skipped"]) 
+        summary["tests_total_count"] += len(summary["tests_timed_out"])
+
+        summary["cases_total_count"] += len(summary["cases_passed"]) 
+        summary["cases_total_count"] += len(summary["cases_failed"]) 
+        summary["cases_total_count"] += len(summary["cases_skipped"]) 
+
         with open(self.summary_file_path, "w") as json_file:
             json.dump(summary, json_file)
 
@@ -108,41 +144,33 @@ class TestGroup:
             return
         summary = self.summarize()
 
-        cases_passed_count = len(summary["cases_passed"])
-        cases_failed_count = len(summary["cases_failed"])
-        cases_skipped_count = len(summary["cases_skipped"])
-        tests_timed_out = summary["tests_timed_out"]
-        tests_failed = summary["tests_failed"]
-        cases_ran_count = cases_passed_count + cases_failed_count + cases_skipped_count
-        
         print()
         print('=' * 80)
-        print(f"Test Group         : {summary['group']}")
-        print(f"Test Duration      : {summary['time_seconds']} seconds")
-        print(f"Test Cases Ran     : {cases_ran_count}")
-        print(f"Test Cases Passed  : {cases_passed_count}")
-        print(f"Test Cases Skipped : {cases_skipped_count}")
-        print(f"Test Cases Failed  : {cases_failed_count}")
-        print(f"Tests Timed Out    : {len(tests_timed_out)}")
-        print(f"Tests Failed       : {len(tests_failed)}")
-        if cases_failed_count > 0:
-            print()
-            print("Failing Test Cases: ")
-            for i in range(0, cases_failed_count):
-                failed_case = summary["cases_failed"][i]
-                print(f"{i}: {failed_case}")
-        if len(tests_timed_out) > 0:
+        print(f"Test Group      : {summary['group']}")
+        print(f"Test Duration   : {summary['time_seconds']} seconds")
+        print(f"Tests Total     : {summary['tests_total_count']} ({summary['cases_total_count']} cases)")
+        print(f"Tests Passed    : {len(summary['tests_passed'])} ({len(summary['cases_passed'])} cases)")
+        print(f"Tests Skipped   : {len(summary['tests_skipped'])} ({len(summary['cases_skipped'])} cases)")
+        print(f"Tests Failed    : {len(summary['tests_failed'])} ({len(summary['cases_failed'])} cases)")
+        print(f"Tests Timed Out : {len(summary['tests_timed_out'])}")
+        if len(summary['tests_timed_out']) > 0:
             print()
             print("Timed-Out Tests: ")
-            for i in range(0, len(tests_timed_out)):
-                test = tests_timed_out[i]
+            for i in range(0, len(summary['tests_timed_out'])):
+                test = summary['tests_timed_out'][i]
                 print(f"{i}: {test}")
-        if len(tests_failed) > 0:
+        if len(summary['tests_failed']) > 0:
             print()
             print("Failed Tests: ")
-            for i in range(0, len(tests_failed)):
-                test = tests_failed[i]
+            for i in range(0, len(summary['tests_failed'])):
+                test = summary['tests_failed'][i]
                 print(f"{i}: {test}")
+        if len(summary["cases_failed"]) > 0:
+            print()
+            print("Failed Test Cases: ")
+            for i in range(0, len(summary["cases_failed"])):
+                failed_case = summary["cases_failed"][i]
+                print(f"{i}: {failed_case}")
         print('=' * 80)
         print()
 
@@ -154,8 +182,7 @@ class Test:
         self.name = name
         self.args = args
         self.timeout_seconds = timeout_seconds
-        self.timed_out = False
-        self.failed = False
+        self.exit_state = 'exited_abnormally'
 
         self.log_file_path = None
         if redirect_output:
@@ -173,13 +200,11 @@ class Test:
         print(f"{self.name}: {self.command_line}")
 
     def run(self, remaining_time_in_test_group):
-        self.timed_out = False
-        self.failed = False
+        self.exit_state = 'timed_out'
         timeout_seconds = remaining_time_in_test_group
         if self.timeout_seconds:
             timeout_seconds = min(self.timeout_seconds, timeout_seconds)
         if timeout_seconds <= 0:
-            self.timed_out = True
             return
 
         print(f"Running '{self.name}' with a timeout of {timeout_seconds} seconds")
@@ -200,10 +225,12 @@ class Test:
                 shell=True
             )
         except subprocess.TimeoutExpired:
-            self.timed_out = True
+            self.exit_state = 'timed_out'
         
         if p.returncode != 0:
-            self.failed = True
+            self.exit_state = 'exited_abnormally'
+        else:
+            self.exit_state = 'completed'
 
         if p and self.log_file_path:
             results_subdir = Path(self.log_file_path).parent
