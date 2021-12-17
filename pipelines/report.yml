@@ -23,6 +23,11 @@ jobs:
   timeoutInMinutes: 30
   displayName: Report Results
   condition: succeededOrFailed()
+  variables:
+    ${{if eq(parameters.pluginBuildPipeline, 'current')}}:
+      buildArtifactsPath: $(System.ArtifactsDirectory)/${{parameters.buildMetadataArtifactName}}
+    ${{if ne(parameters.pluginBuildPipeline, 'current')}}:
+      buildArtifactsPath: $(Pipeline.Workspace)/${{parameters.pluginBuildPipeline}}/${{parameters.buildMetadataArtifactName}}
   workspace:
     clean: all
   steps:
@@ -58,7 +63,7 @@ jobs:
       filePath: pipelines/create_report_email.ps1
       arguments: >
         -TestArtifactsPath $(System.ArtifactsDirectory)/${{parameters.testResultsArtifactName}}
-        -BuildArtifactsPath $(Pipeline.Workspace)/${{parameters.buildMetadataArtifactName}}
+        -BuildArtifactsPath $(buildArtifactsPath)
         -PipelineRunID $(Build.BuildID)
         -AccessToken $(System.AccessToken)
         -OutputHtmlPath $(System.ArtifactsDirectory)/results.html
