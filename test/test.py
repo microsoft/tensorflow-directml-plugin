@@ -34,8 +34,7 @@ class TestGroup:
         self.timeout_seconds = timeout_seconds
         self.tests = tests
         self.results_dir = results_dir
-        self.results_file_path = None
-        self.results_file_path = Path(results_dir) / f"run.{name}.json"
+        self.run_results_file_path = Path(results_dir) / f"run.{name}.json"
         self.summary_file_path = Path(results_dir) / f"summary.{name}.json"
 
     def show(self):
@@ -48,99 +47,51 @@ class TestGroup:
 
     def run(self):
         if self.tests:
-            tests_completed = []
-            tests_exited_abnormally = []
-            tests_timed_out = []
             start_time = time.time()
             for test in self.tests:
                 elapsed_time = time.time() - start_time
                 remaining_time = self.timeout_seconds - elapsed_time
                 test.run(remaining_time)
-                if test.exit_state == "completed":
-                    tests_completed.append(test.name)
-                if test.exit_state == "exited_abnormally":
-                    tests_exited_abnormally.append(test.name)
-                if test.exit_state == "timed_out":
-                    tests_timed_out.append(test.name)
             end_time = time.time()
-            if self.results_file_path:
-                with open(self.results_file_path, "w") as file:
-                    summary = {}
-                    summary["start_timestamp_seconds"] = start_time
-                    summary["end_timestamp_seconds"] = end_time
-                    summary["duration_seconds"] = end_time - start_time
-                    summary["tests_completed"] = tests_completed
-                    summary["tests_exited_abnormally"] = tests_exited_abnormally
-                    summary["tests_timed_out"] = tests_timed_out
-                    json.dump(summary, file)
+
+            with open(self.run_results_file_path, "w") as file:
+                summary = {}
+                summary["name"] = self.name
+                summary["start_timestamp_seconds"] = start_time
+                summary["end_timestamp_seconds"] = end_time
+                summary["duration_seconds"] = end_time - start_time
+                json.dump(summary, file)
 
     def summarize(self):
+        # Fetch last run metadata.
         start_timestamp_seconds = 0
         end_timestamp_seconds = 0
         duration_seconds = 0
-        tests_completed = []
-        tests_exited_abnormally = []
-        tests_timed_out = []
-        if Path(self.results_file_path).exists():
-            with open(self.results_file_path, "r") as json_file:
+        if Path(self.run_results_file_path).exists():
+            with open(self.run_results_file_path, "r") as json_file:
                 json_data = json.load(json_file)
                 start_timestamp_seconds = json_data["start_timestamp_seconds"]
                 end_timestamp_seconds = json_data["end_timestamp_seconds"]
                 duration_seconds = json_data["duration_seconds"]
-                tests_completed = json_data["tests_completed"]
-                tests_exited_abnormally = json_data["tests_exited_abnormally"]
-                tests_timed_out = json_data["tests_timed_out"]
 
         summary = {}
-        summary["group"] = self.name
+        summary["name"] = self.name
         summary["start_timestamp_seconds"] = start_timestamp_seconds
         summary["end_timestamp_seconds"] = end_timestamp_seconds
         summary["duration_seconds"] = duration_seconds
         summary["cases_total_count"] = 0
-        summary["cases_passed"] = []
-        summary["cases_failed"] = []
-        summary["cases_skipped"] = []
-        summary["tests_total_count"] = 0
-        summary["tests_passed"] = []
-        summary["tests_failed"] = []
-        summary["tests_skipped"] = []
-        summary["tests_timed_out"] = tests_timed_out
+        summary["cases_passed_count"] = 0
+        summary["cases_failed_count"] = 0
+        summary["cases_skipped_count"] = 0
+        summary["tests"] = []
 
         for test in self.tests:
             test_summary = test.summarize()
-
-            has_failed_case = False
-            has_passed_case = False
-
-            for test_case in test_summary["cases"]:
-                if test_case["result"] == "passed":
-                    has_passed_case = True
-                    summary["cases_passed"].append(test_case["name"])
-                elif test_case["result"] == "failed":
-                    has_failed_case = True
-                    summary["cases_failed"].append(test_case["name"])
-                elif test_case["result"] == "skipped":
-                    summary["cases_skipped"].append(test_case["name"])
-            
-            if test.name in tests_exited_abnormally:
-                summary["tests_failed"].append(test.name)
-
-            if test.name in tests_completed:
-                if has_failed_case:
-                    summary["tests_failed"].append(test.name)
-                elif has_passed_case:
-                    summary["tests_passed"].append(test.name)
-                else:
-                    summary["tests_skipped"].append(test.name)
-        
-        summary["tests_total_count"] += len(summary["tests_passed"]) 
-        summary["tests_total_count"] += len(summary["tests_failed"]) 
-        summary["tests_total_count"] += len(summary["tests_skipped"]) 
-        summary["tests_total_count"] += len(summary["tests_timed_out"])
-
-        summary["cases_total_count"] += len(summary["cases_passed"]) 
-        summary["cases_total_count"] += len(summary["cases_failed"]) 
-        summary["cases_total_count"] += len(summary["cases_skipped"]) 
+            summary["cases_total_count"] += test_summary["cases_total_count"]
+            summary["cases_passed_count"] += test_summary["cases_passed_count"]
+            summary["cases_failed_count"] += test_summary["cases_failed_count"]
+            summary["cases_skipped_count"] += test_summary["cases_skipped_count"]
+            summary["tests"].append(test_summary)
 
         with open(self.summary_file_path, "w") as json_file:
             json.dump(summary, json_file)
@@ -190,7 +141,7 @@ class Test:
         self.name = name
         self.args = args
         self.timeout_seconds = timeout_seconds
-        self.exit_state = 'exited_abnormally'
+        self.run_results_file_path = Path(results_dir) / f"run.{name}.json"
 
         self.log_file_path = None
         if redirect_output:
@@ -208,80 +159,126 @@ class Test:
         print(f"{self.name}: {self.command_line}")
 
     def run(self, remaining_time_in_test_group):
-        self.exit_state = 'timed_out'
+        run_state = 'not_run'
+
         timeout_seconds = remaining_time_in_test_group
         if self.timeout_seconds:
             timeout_seconds = min(self.timeout_seconds, timeout_seconds)
+
+        # Run the test.
+        start_time = time.time()
         if timeout_seconds <= 0:
-            return
-
-        print(f"Running '{self.name}' with a timeout of {timeout_seconds} seconds")
-        sys.stdout.flush()
-        environ = os.environ.copy()
-        environ['PYTHONIOENCODING'] = 'utf-8'
-        p = None
-        try:
-            p = subprocess.run(
-                self.command_line, 
-                timeout=timeout_seconds,
-                stdin=subprocess.DEVNULL if self.log_file_path else None,
-                stdout=subprocess.PIPE if self.log_file_path else None,
-                stderr=subprocess.STDOUT if self.log_file_path else None,
-                universal_newlines=True,
-                encoding='utf-8',
-                env=environ,
-                shell=True
-            )
-        except subprocess.TimeoutExpired:
-            self.exit_state = 'timed_out'
-        
-        if p.returncode != 0:
-            self.exit_state = 'exited_abnormally'
+            run_state = 'timed_out'
         else:
-            self.exit_state = 'completed'
+            print(f"Running '{self.name}' with a timeout of {timeout_seconds} seconds")
+            sys.stdout.flush()
+            environ = os.environ.copy()
+            environ['PYTHONIOENCODING'] = 'utf-8'
+            p = None
+            try:
+                p = subprocess.run(
+                    self.command_line, 
+                    timeout=timeout_seconds,
+                    stdin=subprocess.DEVNULL if self.log_file_path else None,
+                    stdout=subprocess.PIPE if self.log_file_path else None,
+                    stderr=subprocess.STDOUT if self.log_file_path else None,
+                    universal_newlines=True,
+                    encoding='utf-8',
+                    env=environ,
+                    shell=True
+                )
+            except subprocess.TimeoutExpired:
+                run_state = 'timed_out'
+        
+            if p.returncode != 0:
+                run_state = 'exited_abnormally'
+            else:
+                run_state = 'completed'
 
-        if p and self.log_file_path:
-            results_subdir = Path(self.log_file_path).parent
-            if not results_subdir.exists():
-                results_subdir.mkdir(exist_ok=True, parents=True)
-            with open(self.log_file_path, "w", encoding='utf-8') as log_file:
-                log_file.write(str(p.stdout))
+            if p and self.log_file_path:
+                results_subdir = Path(self.log_file_path).parent
+                if not results_subdir.exists():
+                    results_subdir.mkdir(exist_ok=True, parents=True)
+                with open(self.log_file_path, "w", encoding='utf-8') as log_file:
+                    log_file.write(str(p.stdout))
+        end_time = time.time()
+
+        # Write run results JSON.
+        with open(self.run_results_file_path, "w") as file:
+            summary = {}
+            summary["name"] = self.name
+            summary["start_timestamp_seconds"] = start_time
+            summary["end_timestamp_seconds"] = end_time
+            summary["duration_seconds"] = end_time - start_time
+            summary["run_state"] = run_state
+            json.dump(summary, file)
 
     def summarize(self):
+        # Fetch last run metadata.
+        start_timestamp_seconds = 0
+        end_timestamp_seconds = 0
+        duration_seconds = 0
+        run_state = "unknown"
+        if Path(self.run_results_file_path).exists():
+            with open(self.run_results_file_path, "r") as json_file:
+                json_data = json.load(json_file)
+                start_timestamp_seconds = json_data["start_timestamp_seconds"]
+                end_timestamp_seconds = json_data["end_timestamp_seconds"]
+                duration_seconds = json_data["duration_seconds"]
+                run_state = json_data["run_state"]
+
         summary = {}
         summary["name"] = self.name
-        summary["cases"] = []
+        summary["result"] = "unknown"
+        summary["start_timestamp_seconds"] = start_timestamp_seconds
+        summary["end_timestamp_seconds"] = end_timestamp_seconds
+        summary["duration_seconds"] = duration_seconds
+        summary["cases_total_count"] = 0
+        summary["cases_passed_count"] = 0
+        summary["cases_failed_count"] = 0
+        summary["cases_skipped_count"] = 0
+        summary["cases_failed"] = []
 
         if not Path(self.results_file_path).exists():
-            return summary
-        
-        try:
-            root = ET.parse(self.results_file_path).getroot()
-        except:
-            return summary
+            print(f"WARNING: missing results file for {self.name}")
+        else:
+            try:
+                root = ET.parse(self.results_file_path).getroot()
+                for test_suite in root.findall("testsuite"):
+                    test_suite_name = test_suite.attrib["name"]
+                    for test_case in test_suite.findall("testcase"):
+                        case_name = f"{self.name}::{test_suite_name}.{test_case.attrib['name']}"
 
-        for test_suite in root.findall("testsuite"):
-            test_suite_name = test_suite.attrib["name"]
-            for test_case in test_suite.findall("testcase"):
-                test_case_summary = {}
-                test_case_summary["name"] = f"{self.name}::{test_suite_name}.{test_case.attrib['name']}"
-                test_case_summary["module"] = Path(self.results_file_path).stem
-                test_case_summary["time"] = test_case.attrib["time"]
+                        summary["cases_total_count"] += 1
 
-                # Failures are saved as children nodes instead of attributes
-                failures = test_case.findall("failure") + test_case.findall("error")
-                if failures:
-                    test_case_summary["result"] = "failed"
-                else:
-                    status = test_case.attrib.get("status", "")
-                    result = test_case.attrib.get("result", "")
+                        # Failures are saved as children nodes instead of attributes
+                        failures = test_case.findall("failure") + test_case.findall("error")
+                        if failures:
+                            summary["cases_failed_count"] += 1
+                            summary["cases_failed"].append(case_name)
+                        else:
+                            status = test_case.attrib.get("status", "")
+                            result = test_case.attrib.get("result", "")
 
-                    if status == "run" or result == "completed":
-                        test_case_summary["result"] = "passed"
-                    elif status == "skipped" or result == "suppressed":
-                        test_case_summary["result"] = "skipped"
-                summary["cases"].append(test_case_summary)
-        
+                            if status == "run" or result == "completed":
+                                summary["cases_passed_count"] += 1
+                            elif status == "skipped" or result == "suppressed":
+                                summary["cases_skipped_count"] += 1
+            except:
+                print(f"WARNING: could not parse results file for {self.name}")
+
+        if run_state == "timed_out":
+            summary["result"] = "timed_out"
+        elif run_state == "exited_abnormally":
+            summary["result"] = "failed"
+        else:
+            if summary["cases_skipped_count"] > 0:
+                summary["result"] = "skipped"
+            if summary["cases_passed_count"] > 0:
+                summary["result"] = "passed"
+            if summary["cases_failed_count"] > 0:
+                summary["result"] = "failed"
+
         return summary
 
 
