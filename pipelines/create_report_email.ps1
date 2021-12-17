@@ -89,8 +89,8 @@ if ($TestsArtifactsExist)
     $AgentSummary = Get-Content "$TestArtifactsPath/agent_summary.json" -Raw | ConvertFrom-Json
 
     $TestGroups = ($TestSummary | Get-Member -MemberType NoteProperty).Name
-    $HasPassedTests = ($TestGroups | % { $TestSummary.$_.tests_passed } | Measure-Object -sum).sum -gt 0
-    $HasFailures = ($TestGroups | % { $TestSummary.$_.tests_failed } | Measure-Object -sum).sum -gt 0
+    $HasPassedTests = ($TestGroups | % { $TestSummary.$_.tests_passed_count } | Measure-Object -sum).sum -gt 0
+    $HasFailures = ($TestGroups | % { $TestSummary.$_.tests_failed_count } | Measure-Object -sum).sum -gt 0
     
     if ($HasFailures)
     {
@@ -286,10 +286,10 @@ if ($TestsArtifactsExist)
         'System' ,
         'Build',
         'Total',
-        'Passed Cases',
-        'Failed Tests',
-        'Failed Cases',
-        'Skipped Cases',
+        'Passed',
+        'Failed',
+        'Skipped',
+        'Timed Out',
         'Time'
 
     $HeadersStyle = "border: 1px solid gray; background-color: white; color:black"
@@ -305,11 +305,9 @@ if ($TestsArtifactsExist)
         $FirstGroupRow = $True
 
         # Determine group cell color.
-        $GroupHasFailures = ($TestGroupSummary.tests_failed | Measure-Object -sum).sum -gt 0
-        $GroupHasPassed = ($TestGroupSummary.tests_passed | Measure-Object -sum).sum -gt 0
-        if     ($GroupHasFailures) { $GroupColor = $Red }
-        elseif ($GroupHasPassed)   { $GroupColor = $Green }
-        else                       { $GroupColor = $Gray }
+        if     ($TestGroupSummary.tests_failed_count -gt 0) { $GroupColor = $Red }
+        elseif ($TestGroupSummary.tests_passed_count -gt 0) { $GroupColor = $Green }
+        else                                                { $GroupColor = $Gray }
 
         $AgentJobs = $TestGroupSummary | Sort-Object -Property agent
         $CurrentAgentName = $null
@@ -323,13 +321,13 @@ if ($TestsArtifactsExist)
             $AgentInfo = $AgentSummary.$AgentName
 
             # Determine agent cell color.
-            if     ($AgentJob.tests_failed -gt 0) { $AgentColor = $Red }
-            elseif ($AgentJob.tests_passed -gt 0)                                  { $AgentColor = $Green }
-            else                                                                   { $AgentColor = $Gray }
+            if     ($AgentJob.tests_failed_count -gt 0) { $AgentColor = $Red }
+            elseif ($AgentJob.tests_passed_count -gt 0) { $AgentColor = $Green }
+            else                                        { $AgentColor = $Gray }
 
             if ($AgentJob.agentHasResults)
             {
-                $Time = $AgentJob.time
+                $Time = $AgentJob.time_seconds
             }
             else
             {
@@ -350,8 +348,8 @@ if ($TestsArtifactsExist)
             $Html += "<tr>"
 
             # Determine result cell color.
-            if     ($AgentJob.tests_failed)       { $ResultColor = $Red }
-            elseif ($AgentJob.tests_passed -gt 0) { $ResultColor = $Green }
+            if     ($AgentJob.tests_failed_count)       { $ResultColor = $Red }
+            elseif ($AgentJob.tests_passed_count -gt 0) { $ResultColor = $Green }
             else                                  { $ResultColor = $Gray }
 
             if ($FirstGroupRow)
@@ -374,7 +372,7 @@ if ($TestsArtifactsExist)
                 }
                 else
                 {
-                    if (!$AgentJob.AgentEnabled)
+                    if (!$AgentJob.agentWasEnabled)
                     {
                         $SystemInfo = "DISABLED"
                     }
@@ -389,22 +387,12 @@ if ($TestsArtifactsExist)
 
             $CellStyle = "border:1px solid gray; background-color: $ResultColor"
     
-            $Html += "<td style=`"$CellStyle`">$($BuildArtifact)</td>"
-
-            if ($AgentJob.tests_failed.Errors -gt 0)
-            {
-                $Html += "<td style=`"$CellStyle`">Yes</a></td>"
-            }
-            else
-            {
-                $Html += "<td style=`"$CellStyle`">No</td>"
-            }
-
-            $Html += "<td style=`"$CellStyle`">$($AgentResult.Counts.Total)</td>"
-            $Html += "<td style=`"$CellStyle`">$($AgentResult.Counts.Pass)</td>"
-            $Html += "<td style=`"$CellStyle`">$($AgentResult.Counts.Fail)</td>"
-            $Html += "<td style=`"$CellStyle`">$($AgentResult.Counts.Blocked)</td>"
-            $Html += "<td style=`"$CellStyle`">$($AgentResult.Counts.Skipped)</td>"
+            $Html += "<td style=`"$CellStyle`">$($AgentJob.build)</td>"
+            $Html += "<td style=`"$CellStyle`">$($AgentJob.tests_total_count)</td>"
+            $Html += "<td style=`"$CellStyle`">$($AgentJob.tests_passed_count)</td>"
+            $Html += "<td style=`"$CellStyle`">$($AgentJob.tests_failed_count)</td>"
+            $Html += "<td style=`"$CellStyle`">$($AgentJob.tests_skipped_count)</td>"
+            $Html += "<td style=`"$CellStyle`">$($AgentJob.tests_timed_out_count)</td>"
             $Html += "<td style=`"$CellStyle`">$Time</td>"
             $Html += "</tr>"
         }
