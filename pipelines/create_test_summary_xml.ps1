@@ -81,16 +81,14 @@ foreach ($Group in $Groups)
             if ($RelatedCases -and (Test-Path $CaseResultsFile))
             {
                 # Prefer to list failure messages from the Abseil test log.
-                $TestFailureMessages[$Test].Add('-'*80) | Out-Null
-                $TestFailureMessages[$Test].Add("Failed on $AgentName ($BuildName): Cases Failed") | Out-Null
-                $TestFailureMessages[$Test].Add('-'*80) | Out-Null
+                $TestFailureMessages[$Test].Add("# $AgentName ($BuildName): Cases Failed") | Out-Null
     
                 [xml]$TestResultsXml = Get-Content $CaseResultsFile
 
                 $RelatedCasesToReport = $RelatedCases | Select-Object -First $MaxTestCasesReportedPerTestFailure
                 foreach ($Case in $RelatedCasesToReport)
                 {
-                    $TestFailureMessages[$Test].Add("- $Case") | Out-Null
+                    $TestFailureMessages[$Test].Add("## $Case") | Out-Null
     
                     if ($Case -match ".*::(\w+).(.*)")
                     {
@@ -120,9 +118,7 @@ foreach ($Group in $Groups)
             elseif (Test-Path $LogResultsFile)
             {
                 # The Abseil test log may not exist if the test aborted. Use the log instead (max 50 lines).
-                $TestFailureMessages[$Test].Add('-'*80) | Out-Null
-                $TestFailureMessages[$Test].Add("Failed on $AgentName ($BuildName): Test Aborted") | Out-Null
-                $TestFailureMessages[$Test].Add('-'*80) | Out-Null
+                $TestFailureMessages[$Test].Add("# $AgentName ($BuildName): Aborted") | Out-Null
 
                 $Log = Get-Content $LogResultsFile
                 $Lines = $Log | Select-Object -First $MaxLogLinesReportedPerTestFailure
@@ -137,9 +133,7 @@ foreach ($Group in $Groups)
             }
             else
             {
-                $TestFailureMessages[$Test].Add('-'*80) | Out-Null
-                $TestFailureMessages[$Test].Add("Failed on $AgentName ($BuildName): Unknown Reasons") | Out-Null
-                $TestFailureMessages[$Test].Add('-'*80) | Out-Null
+                $TestFailureMessages[$Test].Add("# Failed on $AgentName ($BuildName): Unknown Reasons") | Out-Null
             }
         }
     }
