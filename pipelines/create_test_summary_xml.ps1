@@ -34,10 +34,22 @@ foreach ($Group in $Groups)
 {
     $TestResults = @{}
     $TestFailureMessages = @{}
+    $FirstStartTime = -1
+    $LastEndTime = -1
+    
     $GroupSummaryFiles = $AllSummaryFiles | Where-Object Name -eq "summary.${Group}.json"
     foreach ($AgentSummaryFile in $GroupSummaryFiles)
     {
         Write-Host "Parsing $AgentSummaryFile"
+
+        if (($FirstStartTime -eq -1) -or ($AgentSummaryFile.start_timestamp_seconds -lt $FirstStartTime))
+        {
+            $FirstStartTime = $AgentSummaryFile.start_timestamp_seconds
+        }
+        if (($LastEndTime -eq -1) -or ($AgentSummaryFile.end_timestamp_seconds -gt $LastEndTime))
+        {
+            $LastEndTime = $AgentSummaryFile.end_timestamp_seconds
+        }
 
         $Summary = Get-Content $AgentSummaryFile.FullName -Raw | ConvertFrom-Json
         $BuildName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Leaf
@@ -88,7 +100,7 @@ foreach ($Group in $Groups)
                 $RelatedCasesToReport = $RelatedCases | Select-Object -First $MaxTestCasesReportedPerTestFailure
                 foreach ($Case in $RelatedCasesToReport)
                 {
-                    $TestFailureMessages[$Test].Add($Case) | Out-Null
+                    $TestFailureMessages[$Test].Add("<b>$Case</b>") | Out-Null
     
                     if ($Case -match ".*::(\w+).(.*)")
                     {
@@ -99,16 +111,12 @@ foreach ($Group in $Groups)
                         $ErrorMessage = $CaseResults.error.message
                         if ($ErrorMessage)
                         {
-                            $TestFailureMessages[$Test].Add('```') | Out-Null
                             $TestFailureMessages[$Test].Add($ErrorMessage) | Out-Null
-                            $TestFailureMessages[$Test].Add('```') | Out-Null
                         }
                         $FailureMessage = $CaseResults.failure.message
                         if ($FailureMessage)
                         {
-                            $TestFailureMessages[$Test].Add('```') | Out-Null
                             $TestFailureMessages[$Test].Add($FailureMessage) | Out-Null
-                            $TestFailureMessages[$Test].Add('```') | Out-Null
                         }
                     }
                 }
@@ -159,11 +167,15 @@ foreach ($Group in $Groups)
         }
     }
 
+    $StartDateTime = (Get-Date -Date "01/01/1970").AddSeconds($FirstStartTime)
+    $EndDateTime = (Get-Date -Date "01/01/1970").AddSeconds($LastEndTime)
+    $RunTime = $EndDateTime - $StartDateTime
+
     $XmlWriter.WriteStartElement("assembly")
     $XmlWriter.WriteAttributeString("name", $Group)
     $XmlWriter.WriteAttributeString("test-framework", "abseil")
-    $XmlWriter.WriteAttributeString("run-date", "abseil")
-    $XmlWriter.WriteAttributeString("run-time", "abseil")
+    $XmlWriter.WriteAttributeString("run-date", $StartDateTime.ToString('yyyy-MM-dd'))
+    $XmlWriter.WriteAttributeString("run-time", $RunTime)
     $XmlWriter.WriteAttributeString("total", $Total)
     $XmlWriter.WriteAttributeString("passed", $Passed)
     $XmlWriter.WriteAttributeString("failed", $Failed)
