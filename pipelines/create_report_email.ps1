@@ -331,18 +331,7 @@ if ($TestsArtifactsExist)
             }
             else
             {
-                if (!$AgentJob.agentWasEnabled)
-                {
-                    $Time = 'DISABLED'
-                }
-                elseif (!$AgentJob.agentWasOnline)
-                {
-                    $Time = 'OFFLINE'
-                }
-                else
-                {
-                    $Time = $null
-                }
+                $Time = $null
             }
 
             $Html += "<tr>"
@@ -378,7 +367,7 @@ if ($TestsArtifactsExist)
                     }
                     else
                     {
-                        $SystemInfo = "UNKNOWN"
+                        $SystemInfo = "MISSING RESULTS"
                     }
                 }
 
