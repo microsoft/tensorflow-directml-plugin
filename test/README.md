@@ -83,20 +83,28 @@ You can inspect the result files manually to see the detailed errors and results
 
 ```
 ================================================================================
-Test Group         : plugin
-Test Cases Ran     : 7
-Test Cases Passed  : 5
-Test Cases Skipped : 0
-Test Cases Failed  : 2
-Failing Test Cases :
+Test Group      : plugin
+Test Duration   : 17.735952138900757 seconds
+Tests Total     : 5 (6 cases)
+Tests Passed    : 4 (4 cases)
+Tests Skipped   : 0 (3 cases)
+Tests Failed    : 1 (2 cases)
+Tests Timed Out : 0
+
+Failed Tests:
+0: plugin.profiler_test
+
+Failed Test Cases :
 0: plugin.profiler_test::ProfilerTest.testTraceKernelEvents
 1: plugin.profiler_test::ProfilerTest.testXPlaneKernelEvents
 ================================================================================
 ```
 
-The above output indicates the `plugin` test group encountered two failing test cases:
-- plugin.profiler_test::ProfilerTest.testTraceKernelEvents
-- plugin.profiler_test::ProfilerTest.testXPlaneKernelEvents
+Results are reported both in terms of *tests* (e.g. `plugin.profiler_test`) and *test cases* (e.g. `plugin.profiler_test::ProfilerTest.testTraceKernelEvents`). Tests comprise one or more cases; however, it's possible for a test to fail to launch or timeout and thus report no case results. Similarly, a test is only considered *skipped* if it runs to completion without a single passing or failing test case.
+
+The above output indicates the `plugin` test group encountered two failing test cases from the same test:
+- `plugin.profiler_test::ProfilerTest.testTraceKernelEvents`
+- `plugin.profiler_test::ProfilerTest.testXPlaneKernelEvents`
 
 The full name of each test case has the format `<group>.<test>::<test_class>.<test_method>`. In this example you would want to open `test.plugin.profiler_test.xml` to see the full error messages.
 

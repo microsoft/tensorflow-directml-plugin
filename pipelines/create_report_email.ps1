@@ -89,8 +89,8 @@ if ($TestsArtifactsExist)
     $AgentSummary = Get-Content "$TestArtifactsPath/agent_summary.json" -Raw | ConvertFrom-Json
 
     $TestGroups = ($TestSummary | Get-Member -MemberType NoteProperty).Name
-    $HasPassedTests = ($TestGroups | % { $TestSummary.$_.cases_passed} | Measure-Object -sum).sum -gt 0
-    $HasFailures = ($TestGroups | % { $TestSummary.$_.cases_failed + $TestSummary.$_.tests_failed } | Measure-Object -sum).sum -gt 0
+    $HasPassedTests = ($TestGroups | % { $TestSummary.$_.tests_passed } | Measure-Object -sum).sum -gt 0
+    $HasFailures = ($TestGroups | % { $TestSummary.$_.tests_failed } | Measure-Object -sum).sum -gt 0
     
     if ($HasFailures)
     {
@@ -305,8 +305,8 @@ if ($TestsArtifactsExist)
         $FirstGroupRow = $True
 
         # Determine group cell color.
-        $GroupHasFailures = ($TestGroupSummary.cases_failed + $TestGroupSummary.tests_failed | Measure-Object -sum).sum -gt 0
-        $GroupHasPassed = ($TestGroupSummary.cases_passed | Measure-Object -sum).sum -gt 0
+        $GroupHasFailures = ($TestGroupSummary.tests_failed | Measure-Object -sum).sum -gt 0
+        $GroupHasPassed = ($TestGroupSummary.tests_passed | Measure-Object -sum).sum -gt 0
         if     ($GroupHasFailures) { $GroupColor = $Red }
         elseif ($GroupHasPassed)   { $GroupColor = $Green }
         else                       { $GroupColor = $Gray }
@@ -323,8 +323,8 @@ if ($TestsArtifactsExist)
             $AgentInfo = $AgentSummary.$AgentName
 
             # Determine agent cell color.
-            if     ($AgentJob.cases_failed -gt 0 -or $AgentJob.tests_failed -gt 0) { $AgentColor = $Red }
-            elseif ($AgentJob.cases_passed -gt 0)                                  { $AgentColor = $Green }
+            if     ($AgentJob.tests_failed -gt 0) { $AgentColor = $Red }
+            elseif ($AgentJob.tests_passed -gt 0)                                  { $AgentColor = $Green }
             else                                                                   { $AgentColor = $Gray }
 
             if ($AgentJob.agentHasResults)
@@ -350,9 +350,9 @@ if ($TestsArtifactsExist)
             $Html += "<tr>"
 
             # Determine result cell color.
-            if     ($AgentJob.cases_failed -gt 0 -or $AgentJob.tests_failed -gt 0) { $ResultColor = $Red }
-            elseif ($AgentJob.Counts.cases_passed -gt 0)                           { $ResultColor = $Green }
-            else                                                                   { $ResultColor = $Gray }
+            if     ($AgentJob.tests_failed)       { $ResultColor = $Red }
+            elseif ($AgentJob.tests_passed -gt 0) { $ResultColor = $Green }
+            else                                  { $ResultColor = $Gray }
 
             if ($FirstGroupRow)
             {
@@ -391,7 +391,7 @@ if ($TestsArtifactsExist)
     
             $Html += "<td style=`"$CellStyle`">$($BuildArtifact)</td>"
 
-            if ($AgentResults.cases_failed.Errors -gt 0)
+            if ($AgentJob.tests_failed.Errors -gt 0)
             {
                 $Html += "<td style=`"$CellStyle`">Yes</a></td>"
             }
