@@ -42,16 +42,17 @@ foreach ($Group in $Groups)
     {
         Write-Host "Parsing $AgentSummaryFile"
 
-        if (($FirstStartTime -eq -1) -or ($AgentSummaryFile.start_timestamp_seconds -lt $FirstStartTime))
+        $Summary = Get-Content $AgentSummaryFile.FullName -Raw | ConvertFrom-Json
+
+        if (($FirstStartTime -eq -1) -or ($Summary.start_timestamp_seconds -lt $FirstStartTime))
         {
-            $FirstStartTime = $AgentSummaryFile.start_timestamp_seconds
+            $FirstStartTime = $Summary.start_timestamp_seconds
         }
-        if (($LastEndTime -eq -1) -or ($AgentSummaryFile.end_timestamp_seconds -gt $LastEndTime))
+        if (($LastEndTime -eq -1) -or ($Summary.end_timestamp_seconds -gt $LastEndTime))
         {
-            $LastEndTime = $AgentSummaryFile.end_timestamp_seconds
+            $LastEndTime = $Summary.end_timestamp_seconds
         }
 
-        $Summary = Get-Content $AgentSummaryFile.FullName -Raw | ConvertFrom-Json
         $BuildName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Leaf
         $AgentName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Parent | Split-Path -Leaf
 
@@ -159,9 +160,9 @@ foreach ($Group in $Groups)
     foreach ($Test in $TestResults.Keys)
     {
         $State = $TestResults[$Test]
-        if ($State -eq 'passed') { $Passed += 1}
-        if ($State -eq 'skipped') { $Skipped += 1}
-        if ($State -eq 'failed') 
+        if ($State -eq 'Pass') { $Passed += 1}
+        if ($State -eq 'Skip') { $Skipped += 1}
+        if ($State -eq 'Fail') 
         { 
             $Failed += 1
         }
