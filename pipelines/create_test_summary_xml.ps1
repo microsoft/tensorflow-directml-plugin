@@ -99,12 +99,16 @@ foreach ($Group in $Groups)
                         $ErrorMessage = $CaseResults.error.message
                         if ($ErrorMessage)
                         {
+                            $TestFailureMessages[$Test].Add('```') | Out-Null
                             $TestFailureMessages[$Test].Add($ErrorMessage) | Out-Null
+                            $TestFailureMessages[$Test].Add('```') | Out-Null
                         }
                         $FailureMessage = $CaseResults.failure.message
                         if ($FailureMessage)
                         {
+                            $TestFailureMessages[$Test].Add('```') | Out-Null
                             $TestFailureMessages[$Test].Add($FailureMessage) | Out-Null
+                            $TestFailureMessages[$Test].Add('```') | Out-Null
                         }
                     }
                 }
@@ -122,6 +126,7 @@ foreach ($Group in $Groups)
 
                 $Log = Get-Content $LogResultsFile
                 $Lines = $Log | Select-Object -First $MaxLogLinesReportedPerTestFailure
+                $TestFailureMessages[$Test].Add('```') | Out-Null
                 foreach ($Line in $Lines)
                 {
                     $TestFailureMessages[$Test].Add($Line) | Out-Null
@@ -130,6 +135,7 @@ foreach ($Group in $Groups)
                 {
                     $TestFailureMessages[$Test].Add("... (results truncated. See '$AgentName/$BuildName/log.$Test.txt' for full log.)") | Out-Null
                 }
+                $TestFailureMessages[$Test].Add('```') | Out-Null
             }
             else
             {
