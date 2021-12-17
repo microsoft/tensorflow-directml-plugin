@@ -51,7 +51,7 @@ stages:
 
 - stage: reportStage
   displayName: Report Results
-    dependsOn: [testStage]
+  dependsOn: [testStage]
   condition: succeededOrFailed()
   pool: DirectML_TF2_Windows_Pool
   jobs:
