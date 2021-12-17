@@ -67,3 +67,86 @@ proto_library(
     srcs = ["tensorflow/include/tensorflow/core/profiler/protobuf/xplane.proto"],
     strip_import_prefix = "tensorflow/include",
 )
+
+cc_proto_library(
+    name = "graph_cc_proto",
+    deps = [":graph_proto"],
+)
+
+proto_library(
+    name = "graph_proto",
+    srcs = ["tensorflow/include/tensorflow/core/framework/graph.proto"],
+    strip_import_prefix = "tensorflow/include",
+    deps = [
+        ":function_proto",
+        ":node_def_proto",
+        ":versions_proto",
+    ],
+)
+
+proto_library(
+    name = "function_proto",
+    srcs = ["tensorflow/include/tensorflow/core/framework/function.proto"],
+    strip_import_prefix = "tensorflow/include",
+    deps = [
+        ":attr_value_proto",
+        ":node_def_proto",
+        ":op_def_proto",
+    ],
+)
+
+proto_library(
+    name = "op_def_proto",
+    srcs = ["tensorflow/include/tensorflow/core/framework/op_def.proto"],
+    strip_import_prefix = "tensorflow/include",
+    deps = [
+        ":attr_value_proto",
+        ":full_type_proto",
+        ":resource_handle_proto",
+        ":types_proto",
+    ],
+)
+
+proto_library(
+    name = "node_def_proto",
+    srcs = ["tensorflow/include/tensorflow/core/framework/node_def.proto"],
+    strip_import_prefix = "tensorflow/include",
+    deps = [
+        ":attr_value_proto",
+        ":full_type_proto",
+    ],
+)
+
+proto_library(
+    name = "versions_proto",
+    srcs = ["tensorflow/include/tensorflow/core/framework/versions.proto"],
+    strip_import_prefix = "tensorflow/include",
+)
+
+proto_library(
+    name = "attr_value_proto",
+    srcs = ["tensorflow/include/tensorflow/core/framework/attr_value.proto"],
+    strip_import_prefix = "tensorflow/include",
+    deps = [
+        ":tensor_proto",
+        ":tensor_shape_proto",
+        ":types_proto",
+    ],
+)
+
+proto_library(
+    name = "full_type_proto",
+    srcs = ["tensorflow/include/tensorflow/core/framework/full_type.proto"],
+    strip_import_prefix = "tensorflow/include",
+)
+
+proto_library(
+    name = "tensor_proto",
+    srcs = ["tensorflow/include/tensorflow/core/framework/tensor.proto"],
+    strip_import_prefix = "tensorflow/include",
+    deps = [
+        ":resource_handle_proto",
+        ":tensor_shape_proto",
+        ":types_proto",
+    ],
+)

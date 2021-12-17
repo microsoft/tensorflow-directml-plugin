@@ -252,13 +252,57 @@ cc_library(
     alwayslink = True,
 )
 
+cc_library(
+    name = "optimizer",
+    srcs = [
+        "optimizer/dml_graph_optimizer.cc",
+    ],
+    hdrs = [
+        "optimizer/dml_graph_optimizer.h",
+    ],
+    linkstatic = 1,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tfdml:runtime_adapter",
+        "@dml_redist//:headers",
+        "@directml//:directmlx",
+        "@directx_headers//:directx_headers",
+        "@directx_headers//:directx_guids",
+        "@directx_headers//:directx_winadapter",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/base:config",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/container:hash_function_defaults",
+        "@com_google_absl//absl/container:inlined_vector",
+        "@com_google_absl//absl/container:raw_hash_map",
+        "@com_google_absl//absl/container:raw_hash_set",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/synchronization",
+        "@com_google_absl//absl/time",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:span",
+        "@com_google_absl//absl/types:variant",
+        "@tensorflow//:headers",
+        "@tensorflow//:lib",
+        "@tensorflow//:resource_handle_cc_proto",
+        "@tensorflow//:xplane_cc_proto",
+        "@tensorflow//:graph_cc_proto",
+    ] + if_windows(["@pix//:headers"]),
+    alwayslink = 1,
+)
+
 # Target to build the TF plugin module.
 cc_binary(
     name = "tfdml_plugin",
     srcs = [
         "plugin/plugin_device.cc",
         "plugin/plugin_kernel.cc",
+        "plugin/plugin_optimizer.cc",
         "plugin/plugin_profiler.cc",
+        "plugin/plugin_version.h",
     ],
     features = ["windows_export_all_symbols"],
     linkshared = True,
@@ -266,6 +310,7 @@ cc_binary(
     deps = [
         "//tfdml:core",
         "//tfdml:kernels",
+        "//tfdml:optimizer",
         "@directml//:directmlx",
         "@directx_headers",
         "@directx_headers//:directx_guids",
