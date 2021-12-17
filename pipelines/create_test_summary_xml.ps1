@@ -46,7 +46,7 @@ foreach ($Group in $Groups)
             $State = $TestResults[$Test]
             if (!$State -or (($State -ne 'passed') -and ($State -ne 'failed'))) 
             { 
-                $TestResults[$Test] = 'skipped' 
+                $TestResults[$Test] = 'Skip' 
             }
         }
 
@@ -55,19 +55,52 @@ foreach ($Group in $Groups)
             $State = $TestResults[$Test]
             if (!$State -or ($State -ne 'failed')) 
             { 
-                $TestResults[$Test] = 'passed' 
+                $TestResults[$Test] = 'Pass' 
             }
+        }
+
+        foreach ($Test in $Summary.tests_timed_out)
+        {
+            $TestResults[$Test] = 'Fail'
+            if (!$TestFailureMessages[$Test]) { $TestFailureMessages[$Test] = [Collections.ArrayList]::new() }
+            $TestFailureMessages[$Test].Add("Timed Out on $AgentName ($BuildName):")
         }
 
         foreach ($Test in $Summary.tests_failed)
         {
-            $TestResults[$Test] = 'failed'
+            $TestResults[$Test] = 'Fail'
+
             if (!$TestFailureMessages[$Test]) { $TestFailureMessages[$Test] = [Collections.ArrayList]::new() }
+            $TestFailureMessages[$Test].Add('-'*80)
             $TestFailureMessages[$Test].Add("Failed on $AgentName ($BuildName):")
+            $TestFailureMessages[$Test].Add('-'*80)
             $RelatedCases = $Summary.cases_failed -match "^$($Test)::"
+
+            if ($RelatedCases)
+            {
+                $TestResultFile = "$TestArtifactsPath/$AgentName/$BuildName/test.$Test.xml"
+                if (Test-Path $TestResultFile)
+                {
+                    [xml]$TestResultsXml = Get-Content $TestResultFile
+                }
+            }
+
             foreach ($Case in $RelatedCases)
             {
-                $TestFailureMessages[$Test].Add("  $Case")
+                $TestFailureMessages[$Test].Add("- $Case")
+
+                if ($Case -match ".*::(\w+).(.*)")
+                {
+                    $TestClass = $Matches[1]
+                    $TestMethod = $Matches[2]
+                    $ClassResults = $TestResultsXml.testsuites.testsuite | ? name -eq $TestClass
+                    $CaseResults = $ClassResults.testcase | ? name -eq $TestMethod
+                    $ErrorMessage = $CaseResults.error.message
+                    if ($ErrorMessage)
+                    {
+                        $TestFailureMessages[$Test].Add("$ErrorMessage")
+                    }
+                }
             }
         }
     }
