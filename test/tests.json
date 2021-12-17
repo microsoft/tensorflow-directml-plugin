@@ -55,6 +55,15 @@
                     "args": ["--dml_visible_devices", "0"]
                 }
             ]
+        },
+        {
+            "name": "sleepy",
+            "timeout_seconds": 5,
+            "tests": [
+                {
+                    "file": "plugin/sleep.py"
+                }
+            ]
         }
     ]
 }

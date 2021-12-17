@@ -79,6 +79,11 @@ class TestGroup:
         summary["start_timestamp_seconds"] = start_timestamp_seconds
         summary["end_timestamp_seconds"] = end_timestamp_seconds
         summary["duration_seconds"] = duration_seconds
+        summary["tests_total_count"] = 0
+        summary["tests_passed_count"] = 0
+        summary["tests_failed_count"] = 0
+        summary["tests_skipped_count"] = 0
+        summary["tests_timed_out_count"] = 0
         summary["cases_total_count"] = 0
         summary["cases_passed_count"] = 0
         summary["cases_failed_count"] = 0
@@ -87,6 +92,17 @@ class TestGroup:
 
         for test in self.tests:
             test_summary = test.summarize()
+
+            summary["tests_total_count"] += 1
+            if test_summary["result"] == "passed":
+                summary["tests_passed_count"] += 1
+            elif test_summary["result"] == "failed":
+                summary["tests_failed_count"] += 1
+            elif test_summary["result"] == "skipped":
+                summary["tests_skipped_count"] += 1
+            elif test_summary["result"] == "timed_out":
+                summary["tests_timed_out_count"] += 1
+
             summary["cases_total_count"] += test_summary["cases_total_count"]
             summary["cases_passed_count"] += test_summary["cases_passed_count"]
             summary["cases_failed_count"] += test_summary["cases_failed_count"]
@@ -105,31 +121,23 @@ class TestGroup:
 
         print()
         print('=' * 80)
-        print(f"Test Group      : {summary['group']}")
+        print(f"Test Group      : {summary['name']}")
         print(f"Test Duration   : {summary['duration_seconds']} seconds")
         print(f"Tests Total     : {summary['tests_total_count']} ({summary['cases_total_count']} cases)")
-        print(f"Tests Passed    : {len(summary['tests_passed'])} ({len(summary['cases_passed'])} cases)")
-        print(f"Tests Skipped   : {len(summary['tests_skipped'])} ({len(summary['cases_skipped'])} cases)")
-        print(f"Tests Failed    : {len(summary['tests_failed'])} ({len(summary['cases_failed'])} cases)")
-        print(f"Tests Timed Out : {len(summary['tests_timed_out'])}")
-        if len(summary['tests_timed_out']) > 0:
+        print(f"Tests Passed    : {summary['tests_passed_count']} ({summary['cases_passed_count']} cases)")
+        print(f"Tests Skipped   : {summary['tests_skipped_count']} ({summary['cases_skipped_count']} cases)")
+        print(f"Tests Failed    : {summary['tests_failed_count']} ({summary['cases_failed_count']} cases)")
+        print(f"Tests Timed Out : {summary['tests_timed_out_count']}")
+        if summary['tests_failed_count'] > 0:
             print()
-            print("Timed-Out Tests: ")
-            for i in range(0, len(summary['tests_timed_out'])):
-                test = summary['tests_timed_out'][i]
-                print(f"{i}: {test}")
-        if len(summary['tests_failed']) > 0:
-            print()
-            print("Failed Tests: ")
-            for i in range(0, len(summary['tests_failed'])):
-                test = summary['tests_failed'][i]
-                print(f"{i}: {test}")
-        if len(summary["cases_failed"]) > 0:
-            print()
-            print("Failed Test Cases: ")
-            for i in range(0, len(summary["cases_failed"])):
-                failed_case = summary["cases_failed"][i]
-                print(f"{i}: {failed_case}")
+            i = 0
+            for test in summary['tests']:
+                i = 0
+                if test["result"] == "failed":
+                    print(f"{i}: {test['name']}")
+                    if len(test["failed_cases"]) > 0:
+                        for case in test["failed_cases"]:
+                            print(case)
         print('=' * 80)
         print()
 
@@ -190,10 +198,11 @@ class Test:
             except subprocess.TimeoutExpired:
                 run_state = 'timed_out'
         
-            if p.returncode != 0:
-                run_state = 'exited_abnormally'
-            else:
-                run_state = 'completed'
+            if p:
+                if p.returncode != 0:
+                    run_state = 'exited_abnormally'
+                else:
+                    run_state = 'completed'
 
             if p and self.log_file_path:
                 results_subdir = Path(self.log_file_path).parent
@@ -239,9 +248,7 @@ class Test:
         summary["cases_skipped_count"] = 0
         summary["cases_failed"] = []
 
-        if not Path(self.results_file_path).exists():
-            print(f"WARNING: missing results file for {self.name}")
-        else:
+        if Path(self.results_file_path).exists() and run_state == "completed":
             try:
                 root = ET.parse(self.results_file_path).getroot()
                 for test_suite in root.findall("testsuite"):
