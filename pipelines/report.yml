@@ -70,3 +70,8 @@ jobs:
       subject: $(createHtml.emailSubject)
       bodyFile: $(System.ArtifactsDirectory)/results.html
       isHtml: true
+  - task: PublishBuildArtifacts@1
+    displayName: Upload Report
+    inputs:
+      pathToPublish: $(System.ArtifactsDirectory)/results.html
+      artifactName: ${{parameters.testResultsArtifactName}}
