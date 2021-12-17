@@ -58,7 +58,7 @@ jobs:
       filePath: pipelines/create_report_email.ps1
       arguments: >
         -TestArtifactsPath $(System.ArtifactsDirectory)/${{parameters.testResultsArtifactName}}
-        -BuildArtifactsPath $(System.ArtifactsDirectory)/${{parameters.buildMetadataArtifactName}}
+        -BuildArtifactsPath $(Pipeline.Workspace)/${{parameters.buildMetadataArtifactName}}
         -PipelineRunID $(Build.BuildID)
         -AccessToken $(System.AccessToken)
         -OutputHtmlPath $(System.ArtifactsDirectory)/results.html
