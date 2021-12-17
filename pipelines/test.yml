@@ -17,6 +17,9 @@ parameters:
 - name: tensorflowPackage
   type: string
   default: tensorflow==2.7.0
+- name: pluginBuildPipeline
+  type: string
+  default: current
 
 jobs:
 #-------------------------------------------------------------------------------------------------------------------
@@ -106,15 +109,10 @@ jobs:
       artifactName: ${{parameters.resultsArtifactName}}
 
   - ${{each artifact in parameters.artifacts}}:
-    - download: pluginBuild
+    - download: ${{parameters.pluginBuildPipeline}}
       artifact: ${{artifact}}
       displayName: Download ${{artifact}}
       condition: contains(variables.agentTestConfigs, '${{artifact}}')
-
-    # - download: current
-    #   artifact: ${{artifact}}
-    #   displayName: Download ${{artifact}}
-    #   condition: contains(variables.agentTestConfigs, '${{artifact}}')
 
     - ${{if contains(artifact, '-linux-') }}:
       - task: PowerShell@2

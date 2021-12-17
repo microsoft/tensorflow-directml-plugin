@@ -14,6 +14,9 @@ parameters:
 - name: enableTests
   type: boolean
   default: true
+- name: pluginBuildPipeline
+  type: string
+  default: current
 
 jobs:
 - job: report
@@ -26,16 +29,9 @@ jobs:
   - checkout: self
     fetchDepth: 1
 
-  - download: pluginBuild
+  - download: ${{parameters.pluginBuildPipeline}}
     artifact: ${{parameters.buildMetadataArtifactName}}
     displayName: Download Build Metadata
-
-  # - task: DownloadBuildArtifacts@0
-  #   displayName: Download Build Metadata
-  #   inputs:
-  #     buildType: current
-  #     downloadType: single
-  #     artifactName: ${{parameters.buildMetadataArtifactName}}
 
   - ${{if parameters.enableTests}}:
     - task: DownloadBuildArtifacts@0

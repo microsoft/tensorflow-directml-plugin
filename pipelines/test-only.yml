@@ -48,6 +48,7 @@ stages:
       testGroups: ${{parameters.testGroups}}
       artifacts: ${{parameters.testArtifacts}}
       tensorflowPackage: ${{parameters.testTensorflowPackage}}
+      pluginBuildPipeline: pluginBuild
 
 - stage: reportStage
   displayName: Report Results
@@ -58,3 +59,4 @@ stages:
   - template: report.yml
     parameters:
       emailTo: justoeck@microsoft.com
+      pluginBuildPipeline: pluginBuild
