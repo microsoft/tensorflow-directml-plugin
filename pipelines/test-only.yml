@@ -57,4 +57,4 @@ stages:
   jobs:
   - template: report.yml
     parameters:
-      emailTo: ${{parameters.emailTo}}
+      emailTo: justoeck@microsoft.com
