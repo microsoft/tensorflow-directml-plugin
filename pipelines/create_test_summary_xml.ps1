@@ -3,24 +3,13 @@
 
 <#
 .SYNOPSIS
-Converts an aggregate of all JSON test summaries into the xUnit format for VSTS.
+Converts an aggregate of all JSON test group summaries into the xUnit format for ADO.
 
 .DESCRIPTION
 This script then reads all the JSON results, builds an aggregate summary, and outputs an 
 xUnit-formatted file that VSTS can use to display test results in the browser.
 
-This script uses the following rules to aggregate the results:
-- Test groups are reported as test assemblies.
-- Test modules are reported as test collections.
-- A test result is 'pass' if it passes on at least one agent, and has not failed on any agents.
-- A test result is 'fail' if at least one agent fails the test.
-- A test result is 'skipped' if all agents report either 'skipped' or 'blocked' in TAEF.
-- A failing test's "errors" element contains the errors for all failing agents.
-- The run date & time are the earliest run date and time from all agents.
-- Test times are the median time from all agent test times.
-- Assembly (test group) times are reported as the median of all agent group times.
-
-xUnit schema: https://xunit.github.io/docs/format-xml-v2.html
+xUnit schema: https://xunit.net/docs/format-xml-v2
 #>
 param
 (
@@ -42,14 +31,15 @@ $XmlWriter.WriteStartElement("assemblies")
 foreach ($Group in $Groups)
 {
     $TestResults = @{}
+    $TestFailureMessages = @{}
     $GroupSummaryFiles = $AllSummaryFiles | Where-Object Name -eq "summary.${Group}.json"
     foreach ($AgentSummaryFile in $GroupSummaryFiles)
     {
         Write-Host "Parsing $AgentSummaryFile"
 
         $Summary = Get-Content $AgentSummaryFile.FullName -Raw | ConvertFrom-Json
-        # $BuildName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Leaf
-        # $AgentName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Parent | Split-Path -Leaf
+        $BuildName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Leaf
+        $AgentName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Parent | Split-Path -Leaf
 
         foreach ($Test in $Summary.tests_skipped)
         {
@@ -71,7 +61,14 @@ foreach ($Group in $Groups)
 
         foreach ($Test in $Summary.tests_failed)
         {
-            $TestResults[$Test] = 'failed' 
+            $TestResults[$Test] = 'failed'
+            if (!$TestFailureMessages[$Test]) { $TestFailureMessages[$Test] = [Collections.ArrayList]::new() }
+            $TestFailureMessages[$Test].Add("Failed on $AgentName ($BuildName):")
+            $RelatedCases = $Summary.cases_failed -match "^$($Test)::"
+            foreach ($Case in $RelatedCases)
+            {
+                $TestFailureMessages[$Test].Add("  $Case")
+            }
         }
     }
 
@@ -91,7 +88,7 @@ foreach ($Group in $Groups)
     }
 
     $XmlWriter.WriteStartElement("assembly")
-    $XmlWriter.WriteAttributeString("name", "autopilot::$($this.Name)")
+    $XmlWriter.WriteAttributeString("name", $Group)
     $XmlWriter.WriteAttributeString("test-framework", "abseil")
     $XmlWriter.WriteAttributeString("total", $Total)
     $XmlWriter.WriteAttributeString("passed", $Passed)
@@ -100,7 +97,7 @@ foreach ($Group in $Groups)
     $XmlWriter.WriteAttributeString("errors", 0)
 
     $XmlWriter.WriteStartElement("collection")
-    $XmlWriter.WriteAttributeString("name", $this.Name)
+    $XmlWriter.WriteAttributeString("name", $Group)
     $XmlWriter.WriteAttributeString("total", $Total)
     $XmlWriter.WriteAttributeString("passed", $Passed)
     $XmlWriter.WriteAttributeString("failed", $Failed)
@@ -113,17 +110,17 @@ foreach ($Group in $Groups)
         $XmlWriter.WriteStartElement("test")
         $XmlWriter.WriteAttributeString("name", $Test)
         $XmlWriter.WriteAttributeString("method", $Test)
-        # $XmlWriter.WriteAttributeString("time", $this.MedianTime)
         $XmlWriter.WriteAttributeString("result", $State)
 
-        # if (($this.State -ne 'Pass') -and ($this.State -ne 'Skipped'))
-        # {
-        #     $XmlWriter.WriteStartElement("failure")
-        #     $XmlWriter.WriteStartElement("message")
-        #     $XmlWriter.WriteCData(($this.Errors -join "`n`n"))
-        #     $XmlWriter.WriteEndElement() # message
-        #     $XmlWriter.WriteEndElement() # failure
-        # }
+        $FailureMessage = $TestFailureMessages[$Test]
+        if ($FailureMessage)
+        {
+            $XmlWriter.WriteStartElement("failure")
+            $XmlWriter.WriteStartElement("message")
+            $XmlWriter.WriteCData(($FailureMessage -join "`n"))
+            $XmlWriter.WriteEndElement() # message
+            $XmlWriter.WriteEndElement() # failure
+        }
 
         $XmlWriter.WriteEndElement() # test
     }
