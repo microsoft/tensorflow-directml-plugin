@@ -287,6 +287,10 @@ DmlDeviceCache::DmlDeviceCache()
 
         adapters_ = {adapters[0]};
     }
+    else
+    {
+        adapters_ = std::move(adapters);
+    }
 
     device_states_.resize(adapters_.size());
 }
