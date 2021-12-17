@@ -55,7 +55,7 @@ jobs:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
     inputs:
       targetType: filePath
-      filePath: pipelines/CreateReportEmail.ps1
+      filePath: pipelines/create_report_email.ps1
       arguments: >
         -TestArtifactsPath $(System.ArtifactsDirectory)/${{parameters.testResultsArtifactName}}
         -BuildArtifactsPath $(System.ArtifactsDirectory)/${{parameters.buildMetadataArtifactName}}
