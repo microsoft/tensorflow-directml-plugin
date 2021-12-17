@@ -209,12 +209,12 @@ jobs:
       filePath: pipelines/create_test_summary_json.ps1
       arguments: -TestArtifactsPath $(testArtifactsPath) -OutputPath $(testSummariesPath)/test_summary.json
 
-  - task: PowerShell@2
-    displayName: Create Test Summary (XML)
-    inputs:
-      targetType: filePath
-      filePath: pipelines/create_test_summary_xml.ps1
-      arguments: -TestArtifactsPath $(testArtifactsPath) -OutputPath $(testSummariesPath)/test_summary.xml
+  # - task: PowerShell@2
+  #   displayName: Create Test Summary (XML)
+  #   inputs:
+  #     targetType: filePath
+  #     filePath: pipelines/create_test_summary_xml.ps1
+  #     arguments: -TestArtifactsPath $(testArtifactsPath) -OutputPath $(testSummariesPath)/test_summary.xml
 
   - task: PowerShell@2
     displayName: Create Agent Summary
@@ -229,11 +229,11 @@ jobs:
       pathToPublish: $(testSummariesPath)
       artifactName: ${{parameters.resultsArtifactName}}
 
-  - task: PublishTestResults@2
-    displayName: Publish Test Results
-    inputs:
-      testResultsFormat: XUnit
-      testResultsFiles: test_summary.xml
-      searchFolder: $(testSummariesPath)
-      mergeTestResults: true
-      testRunTitle: 'test.$(Build.BuildNumber)'
+  # - task: PublishTestResults@2
+  #   displayName: Publish Test Results
+  #   inputs:
+  #     testResultsFormat: XUnit
+  #     testResultsFiles: test_summary.xml
+  #     searchFolder: $(testSummariesPath)
+  #     mergeTestResults: true
+  #     testRunTitle: 'test.$(Build.BuildNumber)'
