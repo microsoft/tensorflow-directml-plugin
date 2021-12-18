@@ -99,8 +99,8 @@ foreach ($Group in $Groups)
                     $TestFailureMessages[$Test.name] = [Collections.ArrayList]::new() 
                 }
 
-                $CaseResultsFile = "$TestArtifactsPath/$AgentName/$BuildName/test.$Test.xml"
-                $LogResultsFile = "$TestArtifactsPath/$AgentName/$BuildName/log.$Test.txt"
+                $CaseResultsFile = "$TestArtifactsPath/$AgentName/$BuildName/test.$($Test.name).xml"
+                $LogResultsFile = "$TestArtifactsPath/$AgentName/$BuildName/log.$($Test.name).txt"
     
                 if ($Test.cases_failed -and (Test-Path $CaseResultsFile))
                 {
