@@ -45,10 +45,10 @@ foreach ($Job in $TestMatrix)
         {
             $EnvSummary = (Get-Content $ResultsPath -Raw) | ConvertFrom-Json
             $SummaryEntry["tests_total_count"] = $EnvSummary.tests_total_count
-            $SummaryEntry["tests_passed_count"] = $EnvSummary.tests_passed.count
-            $SummaryEntry["tests_failed_count"] = $EnvSummary.tests_failed.count
-            $SummaryEntry["tests_skipped_count"] = $EnvSummary.tests_skipped.count
-            $SummaryEntry["tests_timed_out_count"] = $EnvSummary.tests_timed_out.count
+            $SummaryEntry["tests_passed_count"] = $EnvSummary.tests_passed_count
+            $SummaryEntry["tests_failed_count"] = $EnvSummary.tests_failed_count
+            $SummaryEntry["tests_skipped_count"] = $EnvSummary.tests_skipped_count
+            $SummaryEntry["tests_timed_out_count"] = $EnvSummary.tests_timed_out_count
             $SummaryEntry["start_timestamp_seconds"] = $EnvSummary.start_timestamp_seconds
             $SummaryEntry["end_timestamp_seconds"] = $EnvSummary.end_timestamp_seconds
             $SummaryEntry["duration_seconds"] = $EnvSummary.duration_seconds

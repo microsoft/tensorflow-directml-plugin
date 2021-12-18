@@ -105,14 +105,14 @@ foreach ($Group in $Groups)
                 if ($Test.cases_failed -and (Test-Path $CaseResultsFile))
                 {
                     # Prefer to list failure messages from the Abseil test log.
-                    $TestFailureMessages[$Test].Add("## $AgentName ($BuildName): Cases Failed") | Out-Null
+                    $TestFailureMessages[$Test.name].Add("## $AgentName ($BuildName): Cases Failed") | Out-Null
         
                     [xml]$TestResultsXml = Get-Content $CaseResultsFile
     
                     $RelatedCasesToReport = $Test.cases_failed | Select-Object -First $MaxTestCasesReportedPerTestFailure
                     foreach ($Case in $RelatedCasesToReport)
                     {
-                        $TestFailureMessages[$Test].Add("<b>$Case</b>") | Out-Null
+                        $TestFailureMessages[$Test.name].Add("<b>$Case</b>") | Out-Null
         
                         if ($Case -match ".*::(\w+).(.*)")
                         {
@@ -123,12 +123,12 @@ foreach ($Group in $Groups)
                             $ErrorMessage = $CaseResults.error.message
                             if ($ErrorMessage)
                             {
-                                $TestFailureMessages[$Test].Add($ErrorMessage) | Out-Null
+                                $TestFailureMessages[$Test.name].Add($ErrorMessage) | Out-Null
                             }
                             $FailureMessage = $CaseResults.failure.message
                             if ($FailureMessage)
                             {
-                                $TestFailureMessages[$Test].Add($FailureMessage) | Out-Null
+                                $TestFailureMessages[$Test.name].Add($FailureMessage) | Out-Null
                             }
                         }
                     }
@@ -136,30 +136,30 @@ foreach ($Group in $Groups)
                     if ($Test.cases_failed.Count -gt $RelatedCasesToReport.Count)
                     {
                         $AdditionalCount = $Test.cases_failed.Count - $RelatedCasesToReport.Count
-                        $TestFailureMessages[$Test].Add("... (results truncated. See '$AgentName/$BuildName/test.$Test.xml' for $AdditionalCount additional failures.)") | Out-Null
+                        $TestFailureMessages[$Test.name].Add("... (results truncated. See '$AgentName/$BuildName/test.$Test.xml' for $AdditionalCount additional failures.)") | Out-Null
                     }
                 }
                 elseif (Test-Path $LogResultsFile)
                 {
                     # The Abseil test log may not exist if the test aborted. Use the log instead (max 50 lines).
-                    $TestFailureMessages[$Test].Add("## $AgentName ($BuildName): Aborted") | Out-Null
+                    $TestFailureMessages[$Test.name].Add("## $AgentName ($BuildName): Aborted") | Out-Null
     
                     $Log = Get-Content $LogResultsFile
                     $Lines = $Log | Select-Object -First $MaxLogLinesReportedPerTestFailure
-                    $TestFailureMessages[$Test].Add('```') | Out-Null
+                    $TestFailureMessages[$Test.name].Add('```') | Out-Null
                     foreach ($Line in $Lines)
                     {
-                        $TestFailureMessages[$Test].Add($Line) | Out-Null
+                        $TestFailureMessages[$Test.name].Add($Line) | Out-Null
                     }
                     if ($Log.Count -gt $MaxLogLinesReportedPerTestFailure)
                     {
-                        $TestFailureMessages[$Test].Add("... (results truncated. See '$AgentName/$BuildName/log.$Test.txt' for full log.)") | Out-Null
+                        $TestFailureMessages[$Test.name].Add("... (results truncated. See '$AgentName/$BuildName/log.$Test.txt' for full log.)") | Out-Null
                     }
-                    $TestFailureMessages[$Test].Add('```') | Out-Null
+                    $TestFailureMessages[$Test.name].Add('```') | Out-Null
                 }
                 else
                 {
-                    $TestFailureMessages[$Test].Add("## $AgentName ($BuildName): Unknown Errors") | Out-Null
+                    $TestFailureMessages[$Test.name].Add("## $AgentName ($BuildName): Unknown Errors") | Out-Null
                 }
             }
         }
