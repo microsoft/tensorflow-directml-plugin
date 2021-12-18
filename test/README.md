@@ -5,13 +5,30 @@ This directory contains tests for validating the DirectML plugin. Testing is don
 - [test.py](run_tests.py) : main script that will execute all test content (python and native tests) and summarize the results. Uses tests.json to drive testing.
 - [tests.json](tests.json) : describes the test content and how it should be executed.
 
-Tests are organized into *test groups*, which contain related tests written with the same testing framework (e.g. python + abseil). The groups are defined in tests.json. Here is a summary of the current test groups:
+## Test Groups, Tests, and Test Cases
 
-| Test Group | Purpose                                                                 |
-| ---------- | ----------------------------------------------------------------------- |
-| ops        | Validates DirectML implementations of TF operators                      |
-| models     | Validates training/inference on specific models                         |
-| plugin     | Validates specific features of the DML plugin (e.g. pluggable profiler) |
+Tests are organized into three levels: *Test Group* > *Test* > *Test Case*:
+- A **test group** is a logically related set of tests. Each group comprises one or more tests.
+- A **test** is a single test script or executable file. Each test comprises one or more test cases. The name of a test is usually the basename of the script/executable file, but this is only a default; the same file may be reused by multiple tests so long as those tests have unique names.
+- A **test case** is the smallest unit of testing with a result (failed, passed, etc.).
+
+For example, `plugin.profiler_test::ProfilerTest.testTensorFlowStats` is the fully qualified name of a test case:
+- Test Group = `plugin`
+- Test = `profiler_test` (the test file also happens to be `profiler_test.py`)
+- Test Case = `ProfilerTest.testTensorFlowStats`
+
+The *test groups* and their associated *tests* are defined in `tests.json`. Test cases are determined at runtime when a test is launched.
+
+## Test Results
+
+Tests report a single status based on the outcome of their cases:
+
+| Result    | Meaning                                                                                              |
+| --------- | ---------------------------------------------------------------------------------------------------- |
+| passed    | At least one case passed. Some cases may have skipped. Zero cases failed.                            |
+| skipped   | All cases skipped.                                                                                   |
+| failed    | At least one case failed, the test crashed (i.e. encountered *errors*), or the test failed to start. |
+| timed_out | The test was terminated because it ran longer than max allowed duration.                             |
 
 # Running Tests
 

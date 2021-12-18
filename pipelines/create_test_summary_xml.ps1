@@ -88,7 +88,7 @@ foreach ($Group in $Groups)
                 { 
                     $TestFailureMessages[$Test.name] = [Collections.ArrayList]::new() 
                 }
-                $TestFailureMessages[$Test.name].Add("Timed Out on $AgentName ($BuildName):") | Out-Null
+                $TestFailureMessages[$Test.name].Add("# $AgentName ($BuildName): Timed Out") | Out-Null
             }
             elseif ($Test.result -eq 'failed')
             {
