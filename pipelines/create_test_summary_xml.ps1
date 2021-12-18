@@ -42,113 +42,125 @@ foreach ($Group in $Groups)
     {
         Write-Host "Parsing $AgentSummaryFile"
 
-        $Summary = Get-Content $AgentSummaryFile.FullName -Raw | ConvertFrom-Json
+        $AgentSummary = Get-Content $AgentSummaryFile.FullName -Raw | ConvertFrom-Json
 
-        if (($FirstStartTime -eq -1) -or ($Summary.start_timestamp_seconds -lt $FirstStartTime))
+        if (($FirstStartTime -eq -1) -or ($AgentSummary.start_timestamp_seconds -lt $FirstStartTime))
         {
-            $FirstStartTime = $Summary.start_timestamp_seconds
+            $FirstStartTime = $AgentSummary.start_timestamp_seconds
         }
-        if (($LastEndTime -eq -1) -or ($Summary.end_timestamp_seconds -gt $LastEndTime))
+        if (($LastEndTime -eq -1) -or ($AgentSummary.end_timestamp_seconds -gt $LastEndTime))
         {
-            $LastEndTime = $Summary.end_timestamp_seconds
+            $LastEndTime = $AgentSummary.end_timestamp_seconds
         }
 
         $BuildName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Leaf
         $AgentName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Parent | Split-Path -Leaf
 
-        foreach ($Test in $Summary.tests_skipped)
+        foreach ($Test in $AgentSummary.tests)
         {
-            $State = $TestResults[$Test]
-            if (!$State -or (($State -ne 'passed') -and ($State -ne 'failed'))) 
-            { 
-                $TestResults[$Test] = 'Skip' 
-            }
-        }
+            # The reported test result is a combination of the results on all agents.
+            # - All agents 'skipped' -> SKIP
+            # - At least one agent 'passed' and no agents 'failed' or 'timed_out' -> PASS
+            # - At least one agent 'failed' or 'timed_out' -> FAIL
 
-        foreach ($Test in $Summary.tests_passed)
-        {
-            $State = $TestResults[$Test]
-            if (!$State -or ($State -ne 'failed')) 
-            { 
-                $TestResults[$Test] = 'Pass' 
-            }
-        }
-
-        foreach ($Test in $Summary.tests_timed_out)
-        {
-            $TestResults[$Test] = 'Fail'
-            if (!$TestFailureMessages[$Test]) { $TestFailureMessages[$Test] = [Collections.ArrayList]::new() }
-            $TestFailureMessages[$Test].Add("Timed Out on $AgentName ($BuildName):")
-        }
-
-        foreach ($Test in $Summary.tests_failed)
-        {
-            $TestResults[$Test] = 'Fail'
-
-            if (!$TestFailureMessages[$Test]) { $TestFailureMessages[$Test] = [Collections.ArrayList]::new() }
-
-            $RelatedCases = $Summary.cases_failed -match "^$($Test)::"
-            $CaseResultsFile = "$TestArtifactsPath/$AgentName/$BuildName/test.$Test.xml"
-            $LogResultsFile = "$TestArtifactsPath/$AgentName/$BuildName/log.$Test.txt"
-
-            if ($RelatedCases -and (Test-Path $CaseResultsFile))
+            $CurrentTestState = $TestResults[$Test.name]
+            if ($Test.result -eq 'skipped')
             {
-                # Prefer to list failure messages from the Abseil test log.
-                $TestFailureMessages[$Test].Add("## $AgentName ($BuildName): Cases Failed") | Out-Null
-    
-                [xml]$TestResultsXml = Get-Content $CaseResultsFile
+                # A test may only be 'skipped' if all agents skip it.
+                if (!$CurrentTestState)
+                { 
+                    $TestResults[$Test.name] = 'Skip' 
+                }
+            }
+            elseif ($Test.result -eq 'passed')
+            {
+                # A test may be promoted from 'skipped' to 'passed', but any failure takes priority.
+                if ($CurrentTestState -ne 'Fail')
+                { 
+                    $TestResults[$Test.name] = 'Pass' 
+                }
+            }
+            elseif ($Test.result -eq 'timed_out')
+            {
+                # A timeout on any agent fails the test.
+                $TestResults[$Test.name] = 'Fail'
+                if (!$TestFailureMessages[$Test.name]) 
+                { 
+                    $TestFailureMessages[$Test.name] = [Collections.ArrayList]::new() 
+                }
+                $TestFailureMessages[$Test.name].Add("Timed Out on $AgentName ($BuildName):") | Out-Null
+            }
+            elseif ($Test.result -eq 'failed')
+            {
+                # A failure on any agent fails the test.
+                $TestResults[$Test.name] = 'Fail'
+                if (!$TestFailureMessages[$Test.name]) 
+                { 
+                    $TestFailureMessages[$Test.name] = [Collections.ArrayList]::new() 
+                }
 
-                $RelatedCasesToReport = $RelatedCases | Select-Object -First $MaxTestCasesReportedPerTestFailure
-                foreach ($Case in $RelatedCasesToReport)
-                {
-                    $TestFailureMessages[$Test].Add("<b>$Case</b>") | Out-Null
+                $CaseResultsFile = "$TestArtifactsPath/$AgentName/$BuildName/test.$Test.xml"
+                $LogResultsFile = "$TestArtifactsPath/$AgentName/$BuildName/log.$Test.txt"
     
-                    if ($Case -match ".*::(\w+).(.*)")
+                if ($Test.cases_failed -and (Test-Path $CaseResultsFile))
+                {
+                    # Prefer to list failure messages from the Abseil test log.
+                    $TestFailureMessages[$Test].Add("## $AgentName ($BuildName): Cases Failed") | Out-Null
+        
+                    [xml]$TestResultsXml = Get-Content $CaseResultsFile
+    
+                    $RelatedCasesToReport = $Test.cases_failed | Select-Object -First $MaxTestCasesReportedPerTestFailure
+                    foreach ($Case in $RelatedCasesToReport)
                     {
-                        $TestClass = $Matches[1]
-                        $TestMethod = $Matches[2]
-                        $ClassResults = $TestResultsXml.testsuites.testsuite | ? name -eq $TestClass
-                        $CaseResults = $ClassResults.testcase | ? name -eq $TestMethod
-                        $ErrorMessage = $CaseResults.error.message
-                        if ($ErrorMessage)
+                        $TestFailureMessages[$Test].Add("<b>$Case</b>") | Out-Null
+        
+                        if ($Case -match ".*::(\w+).(.*)")
                         {
-                            $TestFailureMessages[$Test].Add($ErrorMessage) | Out-Null
-                        }
-                        $FailureMessage = $CaseResults.failure.message
-                        if ($FailureMessage)
-                        {
-                            $TestFailureMessages[$Test].Add($FailureMessage) | Out-Null
+                            $TestClass = $Matches[1]
+                            $TestMethod = $Matches[2]
+                            $ClassResults = $TestResultsXml.testsuites.testsuite | ? name -eq $TestClass
+                            $CaseResults = $ClassResults.testcase | ? name -eq $TestMethod
+                            $ErrorMessage = $CaseResults.error.message
+                            if ($ErrorMessage)
+                            {
+                                $TestFailureMessages[$Test].Add($ErrorMessage) | Out-Null
+                            }
+                            $FailureMessage = $CaseResults.failure.message
+                            if ($FailureMessage)
+                            {
+                                $TestFailureMessages[$Test].Add($FailureMessage) | Out-Null
+                            }
                         }
                     }
+    
+                    if ($Test.cases_failed.Count -gt $RelatedCasesToReport.Count)
+                    {
+                        $AdditionalCount = $Test.cases_failed.Count - $RelatedCasesToReport.Count
+                        $TestFailureMessages[$Test].Add("... (results truncated. See '$AgentName/$BuildName/test.$Test.xml' for $AdditionalCount additional failures.)") | Out-Null
+                    }
                 }
-
-                if ($RelatedCases.Count -gt $RelatedCasesToReport.Count)
+                elseif (Test-Path $LogResultsFile)
                 {
-                    $AdditionalCount = $RelatedCases.Count - $RelatedCasesToReport.Count
-                    $TestFailureMessages[$Test].Add("... (results truncated. See '$AgentName/$BuildName/test.$Test.xml' for $AdditionalCount additional failures.)") | Out-Null
+                    # The Abseil test log may not exist if the test aborted. Use the log instead (max 50 lines).
+                    $TestFailureMessages[$Test].Add("## $AgentName ($BuildName): Aborted") | Out-Null
+    
+                    $Log = Get-Content $LogResultsFile
+                    $Lines = $Log | Select-Object -First $MaxLogLinesReportedPerTestFailure
+                    $TestFailureMessages[$Test].Add('```') | Out-Null
+                    foreach ($Line in $Lines)
+                    {
+                        $TestFailureMessages[$Test].Add($Line) | Out-Null
+                    }
+                    if ($Log.Count -gt $MaxLogLinesReportedPerTestFailure)
+                    {
+                        $TestFailureMessages[$Test].Add("... (results truncated. See '$AgentName/$BuildName/log.$Test.txt' for full log.)") | Out-Null
+                    }
+                    $TestFailureMessages[$Test].Add('```') | Out-Null
                 }
-            }
-            elseif (Test-Path $LogResultsFile)
-            {
-                # The Abseil test log may not exist if the test aborted. Use the log instead (max 50 lines).
-                $TestFailureMessages[$Test].Add("## $AgentName ($BuildName): Aborted") | Out-Null
-
-                $Log = Get-Content $LogResultsFile
-                $Lines = $Log | Select-Object -First $MaxLogLinesReportedPerTestFailure
-                $TestFailureMessages[$Test].Add('```') | Out-Null
-                foreach ($Line in $Lines)
+                else
                 {
-                    $TestFailureMessages[$Test].Add($Line) | Out-Null
+                    $TestFailureMessages[$Test].Add("## $AgentName ($BuildName): Unknown Errors") | Out-Null
                 }
-                if ($Log.Count -gt $MaxLogLinesReportedPerTestFailure)
-                {
-                    $TestFailureMessages[$Test].Add("... (results truncated. See '$AgentName/$BuildName/log.$Test.txt' for full log.)") | Out-Null
-                }
-                $TestFailureMessages[$Test].Add('```') | Out-Null
-            }
-            else
-            {
-                $TestFailureMessages[$Test].Add("## $AgentName ($BuildName): Unknown Errors") | Out-Null
             }
         }
     }

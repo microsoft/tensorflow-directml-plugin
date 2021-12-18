@@ -51,32 +51,62 @@ Whenever `test.py` is launched with the `--run` option it will generate result f
 log.examples.buggy.txt
 log.examples.good_test.txt
 log.examples.not_good_test.txt
+log.plugin.dml_visible_devices_empty1.txt
+log.plugin.dml_visible_devices_empty2.txt
+log.plugin.dml_visible_devices_single.txt
+log.plugin.dml_visible_devices_swapped.txt
+log.plugin.profiler_test.txt
 run.examples.buggy.json
 run.examples.good_test.json
 run.examples.json
 run.examples.not_good_test.json
 run.examples.slow_test.json
+run.plugin.dml_visible_devices_empty1.json
+run.plugin.dml_visible_devices_empty2.json
+run.plugin.dml_visible_devices_single.json
+run.plugin.dml_visible_devices_swapped.json
+run.plugin.json
+run.plugin.profiler_test.json
 summary.examples.json
+summary.plugin.json
 test.examples.buggy.xml
 test.examples.good_test.xml
 test.examples.not_good_test.xml
 test.examples.slow_test.xml
+test.plugin.dml_visible_devices_empty1.xml
+test.plugin.dml_visible_devices_empty2.xml
+test.plugin.dml_visible_devices_single.xml
+test.plugin.dml_visible_devices_swapped.xml
 ```
 
 You may see the following types of results:
 
-- `test.<group>.<test>.xml` : Abseil Testing results for a single test.
 - `log.<group>.<test>.txt` : console output for a single test (if output is redirected).
 - `run.<group>.json` : group-level runtime stats, like execution duration.
 - `run.<group>.<test>.json` : test-level runtime stats, like execution duration and exit code.
+- `test.<group>.<test>.xml` : Abseil Testing results for a single test.
 - `summary.<group>.json` : overall results for the entire group (if `--summarize` used).
 
 You can inspect the result files manually to see the detailed errors and results. However, the `--summarize` option can be used to parse the result files and give you a high-level summary. You may see output like the following:
 
 ```
 ================================================================================
+Test Group      : plugin
+Test Duration   : 18.850157976150513 seconds
+Tests Total     : 5 (4 cases)
+Tests Passed    : 4 (4 cases)
+Tests Skipped   : 0 (0 cases)
+Tests Failed    : 1 (0 cases)
+Tests Timed Out : 0
+
+Failed Tests:
+0: plugin.profiler_test
+================================================================================
+
+
+================================================================================
 Test Group      : examples
-Test Duration   : 5.007527589797974 seconds
+Test Duration   : 11.100826263427734 seconds
 Tests Total     : 4 (10 cases)
 Tests Passed    : 1 (5 cases)
 Tests Skipped   : 0 (1 cases)
