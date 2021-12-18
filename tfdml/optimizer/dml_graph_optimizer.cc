@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include "tensorflow/c/env.h"
 #include "tensorflow/c/experimental/grappler/grappler.h"
 #include "tensorflow/core/framework/graph.pb.h"
 #include "tfdml/runtime_adapter/status.h"
