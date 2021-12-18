@@ -68,7 +68,7 @@ jobs:
     ${{if eq(parameters.pluginBuildPipeline, 'current')}}:
       buildArtifactsPathRoot: $(Pipeline.Workspace)
     ${{if ne(parameters.pluginBuildPipeline, 'current')}}:
-      buildArtifactsPathRoot: "$(Pipeline.Workspace)/pluginBuild
+      buildArtifactsPathRoot: $(Pipeline.Workspace)/pluginBuild
   workspace:
     clean: all
   steps:
