@@ -55,24 +55,6 @@
                     "args": ["--dml_visible_devices", "0"]
                 }
             ]
-        },
-        {
-            "name": "examples",
-            "timeout_seconds": 5,
-            "tests": [
-                {
-                    "file": "example/buggy.py"
-                },
-                {
-                    "file": "example/good_test.py"
-                },
-                {
-                    "file": "example/not_good_test.py"
-                },
-                {
-                    "file": "example/slow_test.py"
-                }
-            ]
         }
     ]
 }
