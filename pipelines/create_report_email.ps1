@@ -361,6 +361,10 @@ if ($TestsArtifactsExist)
                     {
                         $SystemInfo = "DISABLED"
                     }
+                    elseif (!$AgentJob.agentWasOnline)
+                    {
+                        $SystemInfo = "OFFLINE"
+                    }
                     else
                     {
                         $SystemInfo = "MISSING RESULTS"
