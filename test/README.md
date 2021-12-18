@@ -104,7 +104,7 @@ You may see the following types of results:
 - `test.<group>.<test>.xml` : Abseil Testing results for a single test.
 - `summary.<group>.json` : overall results for the entire group (if `--summarize` used).
 
-You can inspect the result files manually to see the detailed errors and results. However, the `--summarize` option can be used to parse the result files and give you a high-level summary. You may see output like the following:
+You can inspect the result files manually to see the detailed errors and results. However, the `--summarize` option can be used to parse the result files and give you a high-level summary. You will see output like the following:
 
 ```
 ================================================================================
@@ -119,7 +119,6 @@ Tests Timed Out : 0
 Failed Tests:
 0: plugin.profiler_test
 ================================================================================
-
 
 ================================================================================
 Test Group      : examples
@@ -140,13 +139,7 @@ Failed Tests:
 ================================================================================
 ```
 
-Results are reported both in terms of *tests* (e.g. `plugin.profiler_test`) and *test cases* (e.g. `plugin.profiler_test::ProfilerTest.testTraceKernelEvents`). Tests comprise one or more cases; however, it's possible for a test to fail to launch or timeout and thus report no case results. Similarly, a test is only considered *skipped* if it runs to completion without a single passing or failing test case.
-
-The above output indicates the `plugin` test group encountered two failing test cases from the same test:
-- `plugin.profiler_test::ProfilerTest.testTraceKernelEvents`
-- `plugin.profiler_test::ProfilerTest.testXPlaneKernelEvents`
-
-The full name of each test case has the format `<group>.<test>::<test_class>.<test_method>`. In this example you would want to open `test.plugin.profiler_test.xml` to see the full error messages.
+Each failing test is listed (lines starting with a single digit, like `0:`, `1:`, etc.) along with the failing cases (lines starting with `0.0:`, `0.1:`, etc.). If a test fails to launch or record case results you will only get a test-level result for that test; this is why `plugin.profiler_test` shows as failed but has no failing cases. You will want to view the log files for tests that crash or terminate abnormally to see if there's any useful diagnostic information.
 
 # Debugging Tests
 
@@ -154,12 +147,12 @@ When debugging you will often want to run a single failing test in isolation und
 
 ```
 > python .\test.py --show --tests plugin.profiler_test
-plugin.profiler_test: python S:\tensorflow-directml-plugin\test\plugin\profiler_test.py --xml_output_file C:\Users\justoeck\AppData\Local\Temp\tfdml_plugin_tests\plugin.profiler_test.xml
+plugin.profiler_test: python S:\tensorflow-directml-plugin\test\plugin\profiler_test.py --xml_output_file C:\Users\justoeck\AppData\Local\Temp\tfdml_plugin_tests\test.plugin.profiler_test.xml
 ```
 
 Take note of the `--xml_output_file ...` portion of the command line; you don't need to include this when debugging as it is used to write the XML result file for Abseil tests. 
 
-If you want to scope down the testing even further you can limit the Abseil test to run a single method. For example, you can execute the following command line to debug the `testTraceKernelEvents` failure in the previous example:
+If you want to scope down the testing even further you can limit the Abseil test to run a single method. For example, you can execute the following command line to debug the `ProfilerTest.testTraceKernelEvents` case:
 
 ```
 python S:\tensorflow-directml-plugin\test\plugin\profiler_test.py -- ProfilerTest.testTraceKernelEvents
