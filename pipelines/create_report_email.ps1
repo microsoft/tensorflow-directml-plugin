@@ -15,10 +15,6 @@ param
     [string]$EmailTo
 )
 
-# TODO: REMOVE
-$env:SYSTEM_COLLECTIONURI = "https://dev.azure.com/microsoft/"
-$env:SYSTEM_TEAMPROJECT = "WindowsAI"
-
 if (!$AccessToken)
 {
     throw "This script requires a personal access token to use the REST API."
