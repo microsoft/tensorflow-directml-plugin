@@ -25,7 +25,7 @@ jobs:
   condition: succeededOrFailed()
   variables:
     ${{if eq(parameters.pluginBuildPipeline, 'current')}}:
-      buildArtifactsPath: $(System.ArtifactsDirectory)/${{parameters.buildMetadataArtifactName}}
+      buildArtifactsPath: $(Pipeline.Workspace)/${{parameters.buildMetadataArtifactName}}
     ${{if ne(parameters.pluginBuildPipeline, 'current')}}:
       buildArtifactsPath: $(Pipeline.Workspace)/${{parameters.pluginBuildPipeline}}/${{parameters.buildMetadataArtifactName}}
   workspace:
