@@ -405,6 +405,10 @@ def main():
     )
     args = parser.parse_args()
 
+    if not(args.run or args.show or args.summarize):
+        print("No mode specified. Did you intend to use --run, --summarize, or --show?")
+        return
+
     # Parse tests from tests.json.
     test_groups = parse_test_groups(
         args.tests_json, 
