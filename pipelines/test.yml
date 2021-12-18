@@ -66,9 +66,9 @@ jobs:
   continueOnError: true
   variables:
     ${{if eq(parameters.pluginBuildPipeline, 'current')}}:
-      buildArtifactsPath: "$(Pipeline.Workspace)/${{artifact}}"
+      buildArtifactsPathRoot: $(Pipeline.Workspace)
     ${{if ne(parameters.pluginBuildPipeline, 'current')}}:
-      buildArtifactsPath: "$(Pipeline.Workspace)/pluginBuild/${{artifact}}"
+      buildArtifactsPathRoot: "$(Pipeline.Workspace)/pluginBuild
   workspace:
     clean: all
   steps:
@@ -129,7 +129,7 @@ jobs:
           script: |
             $ScriptPath = "$(Build.SourcesDirectory)/pipelines/create_test_env.sh" -replace '\\','/'
             $ScriptPathWsl = wsl wslpath -a $ScriptPath
-            $TestArtifactPath = "$(buildArtifactsPath)" -replace '\\','/'
+            $TestArtifactPath = "$(buildArtifactsPathRoot)/${{artifact}}" -replace '\\','/'
             $TestArtifactPathWsl = wsl wslpath -a $TestArtifactPath
             wsl bash $ScriptPathWsl $TestArtifactPathWsl ${{parameters.tensorflowPackage}}
 
@@ -160,7 +160,7 @@ jobs:
           targetType: filePath
           filePath: pipelines/create_test_env.ps1
           arguments: >
-            -TestArtifactPath $(buildArtifactsPath)
+            -TestArtifactPath $(buildArtifactsPathRoot)/${{artifact}}
             -TensorFlowPackage ${{parameters.tensorflowPackage}}
 
       - task: PowerShell@2
