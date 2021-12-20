@@ -89,6 +89,7 @@ jobs:
   - powershell: |
       New-Item -Force -ItemType Directory "$(buildPubPath)"
       Copy-Item -Recurse "$(buildOutPath)/python_package/*" "$(buildPubPath)"
+      Copy-Item -Recurse "$(Build.SourcesDirectory)/test" "$(buildPubPath)"
     displayName: Stage Artifacts
   - task: PublishBuildArtifacts@1
     displayName: Publish Build Artifacts

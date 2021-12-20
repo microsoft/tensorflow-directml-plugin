@@ -45,11 +45,6 @@
                     "args": ["--dml_visible_devices", "-1,0"]
                 },
                 {
-                    "name": "dml_visible_devices_swapped",
-                    "file": "plugin/dml_visible_devices_test.py",
-                    "args": ["--dml_visible_devices", "1,0"]
-                },
-                {
                     "name": "dml_visible_devices_single",
                     "file": "plugin/dml_visible_devices_test.py",
                     "args": ["--dml_visible_devices", "0"]

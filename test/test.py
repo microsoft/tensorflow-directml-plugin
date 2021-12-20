@@ -25,6 +25,8 @@ import shutil
 import time
 import tempfile
 import os
+import re
+import sys
 
 class TestGroup:
     def __init__(self, name, tests, timeout_seconds, results_dir):
@@ -32,9 +34,8 @@ class TestGroup:
         self.timeout_seconds = timeout_seconds
         self.tests = tests
         self.results_dir = results_dir
-        self.results_file_path = None
-        self.tests_timed_out = []
-        self.results_file_path = Path(results_dir) / f"{name}.json"
+        self.run_results_file_path = Path(results_dir) / f"run.{name}.json"
+        self.summary_file_path = Path(results_dir) / f"summary.{name}.json"
 
     def show(self):
         if self.tests:
@@ -46,73 +47,99 @@ class TestGroup:
 
     def run(self):
         if self.tests:
-            self.tests_timed_out = []
             start_time = time.time()
             for test in self.tests:
                 elapsed_time = time.time() - start_time
                 remaining_time = self.timeout_seconds - elapsed_time
                 test.run(remaining_time)
-                if test.timed_out:
-                    self.tests_timed_out.append(test.name)
             end_time = time.time()
-            if self.results_file_path:
-                with open(self.results_file_path, "w") as file:
-                    summary = {}
-                    summary["time_seconds"] = end_time - start_time
-                    summary["tests_timed_out"] = self.tests_timed_out
-                    json.dump(summary, file)
+
+            with open(self.run_results_file_path, "w") as file:
+                summary = {}
+                summary["name"] = self.name
+                summary["start_timestamp_seconds"] = start_time
+                summary["end_timestamp_seconds"] = end_time
+                summary["duration_seconds"] = end_time - start_time
+                json.dump(summary, file)
 
     def summarize(self):
-        time_seconds = 0
-        tests_timed_out = []
-        if Path(self.results_file_path).exists():
-            with open(self.results_file_path, "r") as json_file:
+        # Fetch last run metadata.
+        start_timestamp_seconds = 0
+        end_timestamp_seconds = 0
+        duration_seconds = 0
+        if Path(self.run_results_file_path).exists():
+            with open(self.run_results_file_path, "r") as json_file:
                 json_data = json.load(json_file)
-                time_seconds = json_data["time_seconds"]
-                tests_timed_out = json_data["tests_timed_out"]
+                start_timestamp_seconds = json_data["start_timestamp_seconds"]
+                end_timestamp_seconds = json_data["end_timestamp_seconds"]
+                duration_seconds = json_data["duration_seconds"]
 
         summary = {}
-        summary["group"] = self.name
-        summary["time_seconds"] = time_seconds
-        summary["cases_ran"] = 0
-        summary["cases_passed"] = 0
-        summary["cases_failed"] = 0
-        summary["cases_skipped"] = 0
-        summary["tests_timed_out"] = tests_timed_out
-        summary["failed_case_names"] = []
+        summary["name"] = self.name
+        summary["start_timestamp_seconds"] = start_timestamp_seconds
+        summary["end_timestamp_seconds"] = end_timestamp_seconds
+        summary["duration_seconds"] = duration_seconds
+        summary["tests_total_count"] = 0
+        summary["tests_passed_count"] = 0
+        summary["tests_failed_count"] = 0
+        summary["tests_skipped_count"] = 0
+        summary["tests_timed_out_count"] = 0
+        summary["cases_total_count"] = 0
+        summary["cases_passed_count"] = 0
+        summary["cases_failed_count"] = 0
+        summary["cases_skipped_count"] = 0
+        summary["tests"] = []
 
         for test in self.tests:
             test_summary = test.summarize()
-            for test_case in test_summary["cases"]:
-                summary["cases_ran"] += 1
-                if test_case["result"] == "passed":
-                    summary["cases_passed"] += 1
-                elif test_case["result"] == "failed":
-                    summary["cases_failed"] += 1
-                    summary["failed_case_names"].append(test_case["name"])
-                elif test_case["result"] == "skipped":
-                    summary["cases_skipped"] += 1
-        
+
+            summary["tests_total_count"] += 1
+            if test_summary["result"] == "passed":
+                summary["tests_passed_count"] += 1
+            elif test_summary["result"] == "failed":
+                summary["tests_failed_count"] += 1
+            elif test_summary["result"] == "skipped":
+                summary["tests_skipped_count"] += 1
+            elif test_summary["result"] == "timed_out":
+                summary["tests_timed_out_count"] += 1
+
+            summary["cases_total_count"] += test_summary["cases_total_count"]
+            summary["cases_passed_count"] += test_summary["cases_passed_count"]
+            summary["cases_failed_count"] += test_summary["cases_failed_count"]
+            summary["cases_skipped_count"] += test_summary["cases_skipped_count"]
+            summary["tests"].append(test_summary)
+
+        with open(self.summary_file_path, "w") as json_file:
+            json.dump(summary, json_file)
+
         return summary
 
     def print_summary(self):
         if not self.tests:
             return
         summary = self.summarize()
-        
+
         print()
         print('=' * 80)
-        print(f"Test Group         : {summary['group']}")
-        print(f"Test Duration      : {summary['time_seconds']} seconds")
-        print(f"Test Cases Ran     : {summary['cases_ran']}")
-        print(f"Test Cases Passed  : {summary['cases_passed']}")
-        print(f"Test Cases Skipped : {summary['cases_skipped']}")
-        print(f"Test Cases Failed  : {summary['cases_failed']}")
-        if len(summary["failed_case_names"]) > 0:
-            print("Failing Test Cases : ")
-            for i in range(0, len(summary["failed_case_names"])):
-                failed_case = summary["failed_case_names"][i]
-                print(f"{i}: {failed_case}")
+        print(f"Test Group      : {summary['name']}")
+        print(f"Test Duration   : {summary['duration_seconds']} seconds")
+        print(f"Tests Total     : {summary['tests_total_count']} ({summary['cases_total_count']} cases)")
+        print(f"Tests Passed    : {summary['tests_passed_count']} ({summary['cases_passed_count']} cases)")
+        print(f"Tests Skipped   : {summary['tests_skipped_count']} ({summary['cases_skipped_count']} cases)")
+        print(f"Tests Failed    : {summary['tests_failed_count']} ({summary['cases_failed_count']} cases)")
+        print(f"Tests Timed Out : {summary['tests_timed_out_count']}")
+        if summary['tests_failed_count'] > 0:
+            print()
+            print("Failed Tests:")
+            i = 0
+            for test in summary['tests']:
+                if test["result"] == "failed":
+                    print(f"{i}: {test['name']}")
+                    if len(test["cases_failed"]) > 0:
+                        for j in range(0, len(test["cases_failed"])):
+                            print(f"{i}.{j}: {test['cases_failed'][j]}")
+                    i += 1
+
         print('=' * 80)
         print()
 
@@ -124,15 +151,15 @@ class Test:
         self.name = name
         self.args = args
         self.timeout_seconds = timeout_seconds
-        self.timed_out = False
+        self.run_results_file_path = Path(results_dir) / f"run.{name}.json"
 
         self.log_file_path = None
         if redirect_output:
-            self.log_file_path = Path(results_dir) / f"{name}.txt"
+            self.log_file_path = Path(results_dir) / f"log.{name}.txt"
 
         self.results_file_path = None
         if type == "py_abseil":
-            self.results_file_path = Path(results_dir) / f"{name}.xml"
+            self.results_file_path = Path(results_dir) / f"test.{name}.xml"
             self.args.append(f"--xml_output_file {self.results_file_path}")
             self.command_line = f"python {test_file_path} {' '.join(self.args)}"
         else:
@@ -142,75 +169,125 @@ class Test:
         print(f"{self.name}: {self.command_line}")
 
     def run(self, remaining_time_in_test_group):
-        self.timed_out = False
+        run_state = 'not_run'
+
         timeout_seconds = remaining_time_in_test_group
         if self.timeout_seconds:
             timeout_seconds = min(self.timeout_seconds, timeout_seconds)
+
+        # Run the test.
+        start_time = time.time()
         if timeout_seconds <= 0:
-            self.timed_out = True
-            return
+            run_state = 'timed_out'
+        else:
+            print(f"Running '{self.name}' with a timeout of {timeout_seconds} seconds")
+            sys.stdout.flush()
+            environ = os.environ.copy()
+            environ['PYTHONIOENCODING'] = 'utf-8'
+            p = None
+            try:
+                p = subprocess.run(
+                    self.command_line, 
+                    timeout=timeout_seconds,
+                    stdin=subprocess.DEVNULL if self.log_file_path else None,
+                    stdout=subprocess.PIPE if self.log_file_path else None,
+                    stderr=subprocess.STDOUT if self.log_file_path else None,
+                    universal_newlines=True,
+                    encoding='utf-8',
+                    env=environ,
+                    shell=True
+                )
+            except subprocess.TimeoutExpired:
+                run_state = 'timed_out'
+        
+            if p:
+                if p.returncode != 0:
+                    run_state = 'exited_abnormally'
+                else:
+                    run_state = 'completed'
 
-        print(f"Running '{self.name}' with a timeout of {timeout_seconds} seconds")
-        environ = os.environ.copy()
-        environ['PYTHONIOENCODING'] = 'utf-8'
-        p = None
-        try:
-            p = subprocess.run(
-                self.command_line, 
-                timeout=timeout_seconds,
-                stdin=subprocess.DEVNULL if self.log_file_path else None,
-                stdout=subprocess.PIPE if self.log_file_path else None,
-                stderr=subprocess.STDOUT if self.log_file_path else None,
-                universal_newlines=True,
-                encoding='utf-8',
-                env=environ,
-                shell=True
-            )
-        except subprocess.TimeoutExpired:
-            self.timed_out = True
+            if p and self.log_file_path:
+                results_subdir = Path(self.log_file_path).parent
+                if not results_subdir.exists():
+                    results_subdir.mkdir(exist_ok=True, parents=True)
+                with open(self.log_file_path, "w", encoding='utf-8') as log_file:
+                    log_file.write(str(p.stdout))
+        end_time = time.time()
 
-        if p and self.log_file_path:
-            results_subdir = Path(self.log_file_path).parent
-            if not results_subdir.exists():
-                results_subdir.mkdir(exist_ok=True, parents=True)
-            with open(self.log_file_path, "w", encoding='utf-8') as log_file:
-                log_file.write(str(p.stdout))
+        # Write run results JSON.
+        with open(self.run_results_file_path, "w") as file:
+            summary = {}
+            summary["name"] = self.name
+            summary["start_timestamp_seconds"] = start_time
+            summary["end_timestamp_seconds"] = end_time
+            summary["duration_seconds"] = end_time - start_time
+            summary["run_state"] = run_state
+            json.dump(summary, file)
 
     def summarize(self):
+        # Fetch last run metadata.
+        start_timestamp_seconds = 0
+        end_timestamp_seconds = 0
+        duration_seconds = 0
+        run_state = "unknown"
+        if Path(self.run_results_file_path).exists():
+            with open(self.run_results_file_path, "r") as json_file:
+                json_data = json.load(json_file)
+                start_timestamp_seconds = json_data["start_timestamp_seconds"]
+                end_timestamp_seconds = json_data["end_timestamp_seconds"]
+                duration_seconds = json_data["duration_seconds"]
+                run_state = json_data["run_state"]
+
         summary = {}
         summary["name"] = self.name
-        summary["cases"] = []
+        summary["result"] = "unknown"
+        summary["start_timestamp_seconds"] = start_timestamp_seconds
+        summary["end_timestamp_seconds"] = end_timestamp_seconds
+        summary["duration_seconds"] = duration_seconds
+        summary["cases_total_count"] = 0
+        summary["cases_passed_count"] = 0
+        summary["cases_failed_count"] = 0
+        summary["cases_skipped_count"] = 0
+        summary["cases_failed"] = []
 
-        if not Path(self.results_file_path).exists():
-            return summary
-        
-        try:
-            root = ET.parse(self.results_file_path).getroot()
-        except:
-            return summary
+        if Path(self.results_file_path).exists() and run_state != "timed_out":
+            try:
+                root = ET.parse(self.results_file_path).getroot()
+                for test_suite in root.findall("testsuite"):
+                    test_suite_name = test_suite.attrib["name"]
+                    for test_case in test_suite.findall("testcase"):
+                        case_name = f"{self.name}::{test_suite_name}.{test_case.attrib['name']}"
 
-        for test_suite in root.findall("testsuite"):
-            test_suite_name = test_suite.attrib["name"]
-            for test_case in test_suite.findall("testcase"):
-                test_case_summary = {}
-                test_case_summary["name"] = f"{self.name}::{test_suite_name}.{test_case.attrib['name']}"
-                test_case_summary["module"] = Path(self.results_file_path).stem
-                test_case_summary["time"] = test_case.attrib["time"]
+                        summary["cases_total_count"] += 1
 
-                # Failures are saved as children nodes instead of attributes
-                failures = test_case.findall("failure") + test_case.findall("error")
-                if failures:
-                    test_case_summary["result"] = "failed"
-                else:
-                    status = test_case.attrib.get("status", "")
-                    result = test_case.attrib.get("result", "")
+                        # Failures are saved as children nodes instead of attributes
+                        failures = test_case.findall("failure") + test_case.findall("error")
+                        if failures:
+                            summary["cases_failed_count"] += 1
+                            summary["cases_failed"].append(case_name)
+                        else:
+                            status = test_case.attrib.get("status", "")
+                            result = test_case.attrib.get("result", "")
 
-                    if status == "run" or result == "completed":
-                        test_case_summary["result"] = "passed"
-                    elif status == "skipped" or result == "suppressed":
-                        test_case_summary["result"] = "skipped"
-                summary["cases"].append(test_case_summary)
-        
+                            if status == "run" or result == "completed":
+                                summary["cases_passed_count"] += 1
+                            elif status == "skipped" or result == "suppressed":
+                                summary["cases_skipped_count"] += 1
+            except:
+                print(f"WARNING: could not parse results file for {self.name}")
+
+        if run_state == "timed_out":
+            summary["result"] = "timed_out"
+        elif run_state == "exited_abnormally":
+            summary["result"] = "failed"
+        else:
+            if summary["cases_skipped_count"] > 0:
+                summary["result"] = "skipped"
+            if summary["cases_passed_count"] > 0:
+                summary["result"] = "passed"
+            if summary["cases_failed_count"] > 0:
+                summary["result"] = "failed"
+
         return summary
 
 
@@ -221,7 +298,7 @@ def get_optional_json_property(json_object, property_name, default_value):
 
 
 # Parses tests.json to build a list of test groups to execute.
-def parse_test_groups(tests_json_path, test_filter, results_dir, run_disabled, redirect_output):
+def parse_test_groups(tests_json_path, test_filter, allowed_test_groups, results_dir, run_disabled, redirect_output):
     test_groups = []
     test_names = set()
 
@@ -230,6 +307,10 @@ def parse_test_groups(tests_json_path, test_filter, results_dir, run_disabled, r
 
     for json_test_group in json_data["groups"]:
         test_group_name = json_test_group["name"]
+        
+        if allowed_test_groups and test_group_name not in allowed_test_groups:
+            continue
+
         test_group_tests = []
         test_group_timeout_seconds = get_optional_json_property(json_test_group, "timeout_seconds", 300)
 
@@ -237,6 +318,9 @@ def parse_test_groups(tests_json_path, test_filter, results_dir, run_disabled, r
             test_type = "py_abseil"
             test_file = Path(tests_json_path).parent / json_test["file"]
             test_base_name = get_optional_json_property(json_test, "name", Path(test_file).stem)
+            if not re.match("^\w+$", test_base_name):
+                raise Exception(f"'{test_base_name}' is an invalid test name. Test names must only contain word characters: a-z, A-Z, 0-9, and '_'.")
+
             test_full_name = f"{test_group_name}.{test_base_name}"
             test_args = get_optional_json_property(json_test, "args", [])
             test_disabled = get_optional_json_property(json_test, "disabled", False)
@@ -298,10 +382,16 @@ def main():
         help="Directory to save test results."
     )
     parser.add_argument(
-        "--filter", "-f",
+        "--tests", "-t",
         type=str, 
         default="*",
-        help="Filters test names to select a subset of the tests."
+        help="Filters tests. This is an fnmatch filter."
+    )
+    parser.add_argument(
+        "--groups", "-g",
+        type=str, 
+        nargs='+',
+        help="Filters test groups. This is a comma-separated list of group names."
     )
     parser.add_argument(
         "--run_disabled",
@@ -315,10 +405,15 @@ def main():
     )
     args = parser.parse_args()
 
+    if not(args.run or args.show or args.summarize):
+        print("No mode specified. Did you intend to use --run, --summarize, or --show?")
+        return
+
     # Parse tests from tests.json.
     test_groups = parse_test_groups(
         args.tests_json, 
-        args.filter, 
+        args.tests, 
+        args.groups,
         args.results_dir, 
         args.run_disabled, 
         args.redirect_output
@@ -344,7 +439,6 @@ def main():
         for test_group in test_groups:
             test_group.print_summary()
 
-    # Export to xUnit.
 
 if __name__ == "__main__":
     main()

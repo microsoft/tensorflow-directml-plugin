@@ -28,6 +28,26 @@ parameters:
   - x64-linux-release-cp38
   - x64-linux-release-cp39
 
+- name: testArtifacts
+  displayName: Test Artifacts
+  type: object
+  default: [x64-win-release-cp37, x64-linux-release-cp37]
+
+- name: testGroups
+  displayName: Test Groups
+  type: object
+  default: [ops, plugin]
+
+- name: testTensorflowPackage
+  displayName: TensorFlow Package Version
+  type: string
+  default: tensorflow-cpu==2.7.0
+
+- name: enableTests
+  displayName: Enable Tests
+  type: boolean
+  default: true
+
 - name: emailTo
   displayName: Email Results To
   type: string
@@ -49,9 +69,23 @@ stages:
         artifact: ${{artifact}}
         releaseBuild: ${{parameters.releaseBuild}}
 
+- ${{if parameters.enableTests}}:
+  - stage: testStage
+    displayName: Test
+    dependsOn: buildStage
+    jobs:
+    - template: test.yml
+      parameters:
+        testGroups: ${{parameters.testGroups}}
+        artifacts: ${{parameters.testArtifacts}}
+        tensorflowPackage: ${{parameters.testTensorflowPackage}}
+
 - stage: reportStage
   displayName: Report Results
-  dependsOn: [buildStage]
+  ${{if parameters.enableTests}}:
+    dependsOn: [buildStage, testStage]
+  ${{if not(parameters.enableTests)}}:
+    dependsOn: [buildStage]
   condition: succeededOrFailed()
   pool: DirectML_TF2_Windows_Pool
   jobs:

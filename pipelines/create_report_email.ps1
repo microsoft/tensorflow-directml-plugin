@@ -7,6 +7,7 @@ Creates and emails an HTML build pipeline report.
 #>
 param
 (
+    [Parameter(Mandatory)][string]$TestArtifactsPath,
     [Parameter(Mandatory)][string]$BuildArtifactsPath,
     [Parameter(Mandatory)][string]$PipelineRunID,
     [Parameter(Mandatory)][string]$AccessToken,
@@ -75,6 +76,30 @@ elseif ($SucceededBuildCount -eq $MetadataItems.Count)
 else
 {
     $BuildResult = 'Partially Succeeded'
+}
+
+$TestsArtifactsExist = Get-ChildItem $TestArtifactsPath -ErrorAction Ignore
+if ($TestsArtifactsExist)
+{
+    $TestSummary = Get-Content "$TestArtifactsPath/test_summary.json" -Raw | ConvertFrom-Json
+    $AgentSummary = Get-Content "$TestArtifactsPath/agent_summary.json" -Raw | ConvertFrom-Json
+
+    $TestGroups = ($TestSummary | Get-Member -MemberType NoteProperty).Name
+    $HasPassedTests = ($TestGroups | % { $TestSummary.$_.tests_passed_count } | Measure-Object -sum).sum -gt 0
+    $HasFailures = ($TestGroups | % { $TestSummary.$_.tests_failed_count } | Measure-Object -sum).sum -gt 0
+    
+    if ($HasFailures)
+    {
+        $TestRunResult = 'Failed'
+    }
+    elseif ($HasPassedTests)
+    {
+        $TestRunResult = 'Skipped'
+    }
+    else
+    {
+        $TestRunResult = 'Succeeded'
+    }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -218,6 +243,152 @@ foreach ($BuildName in ($BuildMetadata.Keys | Sort-Object))
 }
 
 $Html += "</table><br>"
+
+$Html | Out-File $OutputHtmlPath -Encoding utf8
+Write-Host "##vso[task.uploadsummary]$(Resolve-Path $OutputHtmlPath)"
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Test Results Banner
+#
+# Example:
+#
+# | -----------------|
+# | Tests SUCCEEDED  |
+# | -----------------|
+#
+# ---------------------------------------------------------------------------------------------------------------------
+
+if ($TestsArtifactsExist)
+{
+    switch ($TestRunResult)
+    {
+        'Succeeded' { $Color = $Green }
+        'Failed' { $Color = $Red }
+        default { $Color = $Yellow }
+    }
+
+    $Html += "<h1 style=`"text-align:center; border:1px solid gray; background:$Color`">Tests $($TestRunResult.ToUpper())</h1>"
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Test Results
+# ---------------------------------------------------------------------------------------------------------------------
+
+if ($TestsArtifactsExist)
+{
+    $Headers = 
+        'Group',
+        'Agent',
+        'System' ,
+        'Build',
+        'Total',
+        'Passed',
+        'Failed',
+        'Skipped',
+        'Timed Out',
+        'Time'
+
+    $HeadersStyle = "border: 1px solid gray; background-color: white; color:black"
+    $HeaderTags = $Headers | ForEach-Object { "<th style=`"$HeadersStyle`">$_</th>" }
+
+    $Html += "<table style=`"border-collapse:collapse; text-align:center; width:100%`">"
+    $Html += "<tr>$HeaderTags</tr>"
+
+    foreach ($TestGroup in $TestGroups)
+    {
+        $TestGroupSummary = $TestSummary.$TestGroup
+        $TestGroupArtifactCount = $TestGroupSummary.Count
+        $FirstGroupRow = $True
+
+        # Determine group cell color.
+        if     ($TestGroupSummary.tests_failed_count -gt 0) { $GroupColor = $Red }
+        elseif ($TestGroupSummary.tests_passed_count -gt 0) { $GroupColor = $Green }
+        else                                                { $GroupColor = $Gray }
+
+        $AgentJobs = $TestGroupSummary | Sort-Object -Property agent
+        $CurrentAgentName = $null
+        foreach ($AgentJob in $AgentJobs)
+        {
+            $AgentName = $AgentJob.agent
+            $FirstAgentRow = $CurrentAgentName -ne $AgentName
+            $CurrentAgentName = $AgentName
+            $AgentArtifactsCount = ($AgentJobs | ? agent -eq $AgentName).count
+
+            $AgentInfo = $AgentSummary.$AgentName
+
+            # Determine agent cell color.
+            if     ($AgentJob.tests_failed_count -gt 0) { $AgentColor = $Red }
+            elseif ($AgentJob.tests_passed_count -gt 0) { $AgentColor = $Green }
+            else                                        { $AgentColor = $Gray }
+
+            if ($AgentJob.agentHasResults)
+            {
+                $Time = New-TimeSpan -Seconds $AgentJob.duration_seconds
+            }
+            else
+            {
+                $Time = $null
+            }
+
+            $Html += "<tr>"
+
+            # Determine result cell color.
+            if     ($AgentJob.tests_failed_count)       { $ResultColor = $Red }
+            elseif ($AgentJob.tests_passed_count -gt 0) { $ResultColor = $Green }
+            else                                  { $ResultColor = $Gray }
+
+            if ($FirstGroupRow)
+            {
+                $FirstGroupRow = $False
+                $CellStyle = "border:1px solid gray; background-color: $GroupColor"
+                $Html += "<td rowspan=`"$TestGroupArtifactCount`" colspan=`"1`" style=`"$CellStyle`">$TestGroup</td>"
+            }
+
+            $CellStyle = "border:1px solid gray; background-color: $AgentColor"
+            if ($FirstAgentRow)
+            {
+                $FirstAgentRow = $False
+
+                $Html += "<td rowspan=`"$($AgentArtifactsCount)`" style=`"$CellStyle`">$($AgentName)</td>"
+
+                if ($AgentInfo)
+                {
+                    $SystemInfo = "$($AgentInfo.DisplayAdapter)<br>$($AgentInfo.DisplayDriver)"
+                }
+                else
+                {
+                    if (!$AgentJob.agentWasEnabled)
+                    {
+                        $SystemInfo = "DISABLED"
+                    }
+                    elseif (!$AgentJob.agentWasOnline)
+                    {
+                        $SystemInfo = "OFFLINE"
+                    }
+                    else
+                    {
+                        $SystemInfo = "MISSING RESULTS"
+                    }
+                }
+
+                $Html += "<td rowspan=`"$($AgentArtifactsCount)`" style=`"$CellStyle; text-align: left`">$SystemInfo</td>"
+            }
+
+            $CellStyle = "border:1px solid gray; background-color: $ResultColor"
+    
+            $Html += "<td style=`"$CellStyle`">$($AgentJob.build)</td>"
+            $Html += "<td style=`"$CellStyle`">$($AgentJob.tests_total_count)</td>"
+            $Html += "<td style=`"$CellStyle`">$($AgentJob.tests_passed_count)</td>"
+            $Html += "<td style=`"$CellStyle`">$($AgentJob.tests_failed_count)</td>"
+            $Html += "<td style=`"$CellStyle`">$($AgentJob.tests_skipped_count)</td>"
+            $Html += "<td style=`"$CellStyle`">$($AgentJob.tests_timed_out_count)</td>"
+            $Html += "<td style=`"$CellStyle`">$Time</td>"
+            $Html += "</tr>"
+        }
+    }
+
+    $Html += "</table><br>"
+}
 
 $Html | Out-File $OutputHtmlPath -Encoding utf8
 Write-Host "##vso[task.uploadsummary]$(Resolve-Path $OutputHtmlPath)"
