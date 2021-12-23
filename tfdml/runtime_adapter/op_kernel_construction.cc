@@ -12,8 +12,8 @@ limitations under the License.
 ==============================================================================*/
 
 #include "op_kernel_construction.h"
-
 #include "tensorflow/c/kernels.h"
+#include "tfdml/runtime_adapter/padding.h"
 
 namespace tfdml
 {
@@ -141,6 +141,38 @@ AttributeValue OpKernelConstruction::TryGetAttributeValue(
     case AttributeType::ListTensor:
     default: return absl::nullopt;
     }
+}
+
+bool OpKernelConstruction::HasAttr(const char* attr_name) const
+{
+    Status status;
+    bool hasAttr =
+        TF_OpKernelConstruction_HasAttr(context_, attr_name, status.raw());
+    CHECK(status.ok());
+    return hasAttr;
+}
+
+Status OpKernelConstruction::GetPaddingFromString(
+    absl::string_view str_value,
+    Padding* value)
+{
+    if (str_value == "SAME")
+    {
+        *value = SAME;
+    }
+    else if (str_value == "VALID")
+    {
+        *value = VALID;
+    }
+    else if (str_value == "EXPLICIT")
+    {
+        *value = EXPLICIT;
+    }
+    else
+    {
+        return errors::NotFound(str_value, " is not an allowed padding type");
+    }
+    return Status::OK();
 }
 
 } // namespace tfdml

@@ -60,9 +60,6 @@ static TF_Tensor* init_empty_tensor()
 
 TF_Tensor* Tensor::shallow_copy(const Tensor& other)
 {
-    if (other.dtype() == TF_RESOURCE)
-    {
-    }
     TF_Tensor* copy_tensor = nullptr;
 
     int num_dims = TF_NumDims(other.tensor_.get());
@@ -146,13 +143,18 @@ Tensor::Tensor(TF_Tensor* tensor)
 
     if (dtype() == TF_RESOURCE)
     {
-        auto serialized_view = tensor_data();
-        std::string serialized_data(
-            serialized_view.data(),
-            serialized_view.size());
+        // TODO: Enable when TF_RESOURCE deserialization across ABI is enabled
+        // https://github.com/tensorflow/tensorflow/issues/53531
+        LogFatal("TF_RESOURCE is not currently supported in "
+                 "tensorflow-directml-plugin");
 
-        resource_handle_ = std::make_shared<tensorflow::ResourceHandleProto>();
-        CHECK(resource_handle_->ParseFromString(serialized_data));
+        // auto serialized_view = tensor_data();
+        // std::string serialized_data(
+        //     serialized_view.data(),
+        //     serialized_view.size());
+        // resource_handle_ =
+        // std::make_shared<tensorflow::ResourceHandleProto>();
+        // CHECK(resource_handle_->ParseFromString(serialized_data));
     }
 }
 

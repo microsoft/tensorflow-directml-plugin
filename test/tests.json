@@ -13,6 +13,33 @@
                     "file": "ops/concat_op_test.py"
                 },
                 {
+                    "file": "ops/conv_ops_3d_test.py"
+                },
+                {
+                    "file": "ops/conv_ops_test.py"
+                },
+                {
+                    "file": "ops/conv1d_test.py"
+                },
+                {
+                    "file": "ops/conv1d_transpose_test.py"
+                },
+                {
+                    "file": "ops/conv2d_backprop_filter_grad_test.py"
+                },
+                {
+                    "file": "ops/conv2d_transpose_test.py"
+                },
+                {
+                    "file": "ops/conv3d_backprop_filter_v2_grad_test.py"
+                },
+                {
+                    "file": "ops/conv3d_transpose_test.py"
+                },
+                {
+                    "file": "ops/depthwise_conv_op_test.py"
+                },
+                {
                     "file": "ops/gather_nd_op_test.py"
                 },
                 {
@@ -37,17 +64,26 @@
                 {
                     "name": "dml_visible_devices_empty1",
                     "file": "plugin/dml_visible_devices_test.py",
-                    "args": ["--dml_visible_devices", "-1"]
+                    "args": [
+                        "--dml_visible_devices",
+                        "-1"
+                    ]
                 },
                 {
                     "name": "dml_visible_devices_empty2",
                     "file": "plugin/dml_visible_devices_test.py",
-                    "args": ["--dml_visible_devices", "-1,0"]
+                    "args": [
+                        "--dml_visible_devices",
+                        "-1,0"
+                    ]
                 },
                 {
                     "name": "dml_visible_devices_single",
                     "file": "plugin/dml_visible_devices_test.py",
-                    "args": ["--dml_visible_devices", "0"]
+                    "args": [
+                        "--dml_visible_devices",
+                        "0"
+                    ]
                 }
             ]
         }

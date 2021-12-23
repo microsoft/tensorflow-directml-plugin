@@ -23,6 +23,8 @@ limitations under the License.
 
 namespace tfdml
 {
+TensorShape::TensorShape() : num_elements_(0) {}
+
 TensorShape::TensorShape(std::initializer_list<int64_t> dim_sizes)
     : TensorShape(absl::Span<const int64_t>(dim_sizes))
 {

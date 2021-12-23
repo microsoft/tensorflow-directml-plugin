@@ -29,11 +29,15 @@ namespace tfdml
 class TensorShape
 {
   public:
-    TensorShape() = default;
+    TensorShape();
     TensorShape(const tensorflow::TensorShapeProto& proto);
     TensorShape(std::initializer_list<int64_t> dim_sizes);
     TensorShape(absl::Span<const int64_t> dim_sizes);
     TensorShape(absl::InlinedVector<int64_t, 5>&& dim_sizes);
+
+    // Maximum number of dimensions in a tensor.
+    // It's 254 because 255 = kUnknownRank is used to represent unknown rank.
+    static constexpr int MaxDimensions() { return 254; }
 
     void AddDim(int64_t dim_size);
     void InsertDim(int index, int64_t dim_size);

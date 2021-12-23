@@ -43,7 +43,9 @@ TFDML_ATTRIBUTE_NORETURN void LogFatal(const char* fmt, TArgs... args)
 
 #define CHECK(condition)                                                       \
     if (!(condition))                                                          \
-        LogFatal("Check failed: " #condition);
+    {                                                                          \
+        LogFatal("Check failed: " #condition);                                 \
+    }
 
 #define TF_CHECK_OK(val) CHECK(val.ok())
 

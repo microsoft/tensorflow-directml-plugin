@@ -178,11 +178,6 @@ dml::TensorPolicy GetEmulatedInt64TensorPolicy();
 namespace dml_util
 {
 
-D3D12BufferRegion CreateBufferForDeviceMemory(
-    const DmlDevice* device,
-    const SP_DeviceMemoryBase* data,
-    uint64_t size_in_bytes);
-
 // Calls D3D12BufferRegion::GetBufferBinding on each of the buffers and returns
 // the result.
 absl::InlinedVector<absl::optional<DML_BUFFER_BINDING>, 8> GetBufferBindings(
