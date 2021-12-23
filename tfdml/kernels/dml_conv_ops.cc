@@ -1128,7 +1128,8 @@ class DmlConv2DKernel : public DmlKernel
     }
 };
 
-template <typename T> class DmlFusedConv2DKernel : public DmlKernel
+template <typename T>
+class DmlFusedConv2DKernel : public DmlKernel
 {
   public:
     using InitHelper = FusedConvInitHelper;
@@ -2171,7 +2172,8 @@ class DmlDepthwiseConv2DBackpropInputKernel : public DmlKernel
     }
 };
 
-template <bool HasDataFormatAttribute> struct Conv3DAttributes
+template <bool HasDataFormatAttribute>
+struct Conv3DAttributes
 {
     explicit Conv3DAttributes(OpKernelConstruction* context)
     {

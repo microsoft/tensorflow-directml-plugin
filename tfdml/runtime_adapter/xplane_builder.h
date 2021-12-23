@@ -38,7 +38,8 @@ namespace profiler
 
 class XPlaneBuilder;
 
-template <typename T> class XStatsBuilder
+template <typename T>
+class XStatsBuilder
 {
   public:
     explicit XStatsBuilder(T* stats_owner, XPlaneBuilder* stats_metadata_owner)
@@ -318,8 +319,7 @@ class XLineBuilder
 
     void SetNameIfEmpty(absl::string_view name)
     {
-        if (line_->name().empty())
-            SetName(name);
+        if (line_->name().empty()) SetName(name);
     }
 
     int64_t TimestampNs() const { return line_->timestamp_ns(); }

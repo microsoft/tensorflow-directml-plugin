@@ -52,7 +52,8 @@ namespace errors
 //   switch (status.code()) { case error::INVALID_ARGUMENT: ... }
 
 #define DECLARE_ERROR(FUNC, CODE)                                              \
-    template <typename... Args>::tfdml::Status FUNC(Args... args)              \
+    template <typename... Args>                                                \
+    ::tfdml::Status FUNC(Args... args)                                         \
     {                                                                          \
         return ::tfdml::Status(CODE, absl::StrCat(args...));                   \
     }                                                                          \

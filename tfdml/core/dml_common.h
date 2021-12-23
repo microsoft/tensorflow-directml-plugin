@@ -72,7 +72,8 @@ using absl::optional;
 using absl::variant;
 using absl::visit;
 
-template <typename T, size_t N> using small_vector = absl::InlinedVector<T, N>;
+template <typename T, size_t N>
+using small_vector = absl::InlinedVector<T, N>;
 } // namespace dml
 
 using byte = unsigned char;

@@ -54,8 +54,7 @@ TFDML_ATTRIBUTE_NORETURN void LogFatal(const char* fmt, TArgs... args)
     do                                                                         \
     {                                                                          \
         ::tfdml::Status _status = (__VA_ARGS__);                               \
-        if (!_status.ok())                                                     \
-            return _status;                                                    \
+        if (!_status.ok()) return _status;                                     \
     } while (0)
 
 // The TF_ARRAYSIZE(arr) macro returns the # of elements in an array arr.

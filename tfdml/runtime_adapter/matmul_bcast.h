@@ -35,8 +35,7 @@ class MatMulBCast
 
     MatMulBCast(const Vec& x, const Vec& y)
     {
-        if (std::max(x.size(), y.size()) == 2)
-            return;
+        if (std::max(x.size(), y.size()) == 2) return;
         const Vec x_resized(x.begin(), x.end() - 2);
         const Vec y_resized(y.begin(), y.end() - 2);
 

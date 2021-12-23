@@ -54,7 +54,8 @@ class TensorShape
     friend bool operator==(const TensorShape& a, const TensorShape& b);
     friend bool operator!=(const TensorShape& a, const TensorShape& b);
 
-    template <typename H> friend H AbslHashValue(H h, const TensorShape& shape)
+    template <typename H>
+    friend H AbslHashValue(H h, const TensorShape& shape)
     {
         auto result = H::combine(std::move(h), shape.dim_sizes_);
         return result;

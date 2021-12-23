@@ -103,8 +103,7 @@ TF_Tensor* Tensor::shallow_copy(const Tensor& other)
 
 bool Tensor::CopyFrom(const Tensor& other, const TensorShape& shape)
 {
-    if (other.NumElements() != shape.num_elements())
-        return false;
+    if (other.NumElements() != shape.num_elements()) return false;
 
     auto new_tensor = MakeTensor(init_empty_tensor());
 

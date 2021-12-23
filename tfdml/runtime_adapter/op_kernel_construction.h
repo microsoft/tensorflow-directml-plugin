@@ -37,7 +37,8 @@ class OpKernelConstruction
 
     bool HasAttr(const char* attr_name) const;
 
-    template <typename T> Status GetAttr(const char* attr_name, T* value) const;
+    template <typename T>
+    Status GetAttr(const char* attr_name, T* value) const;
 
     template <>
     Status GetAttr<TF_DataType>(const char* attr_name, TF_DataType* value) const
@@ -78,7 +79,8 @@ class OpKernelConstruction
         return status;
     }
 
-    template <> Status GetAttr<float>(const char* attr_name, float* value) const
+    template <>
+    Status GetAttr<float>(const char* attr_name, float* value) const
     {
         CHECK(value != nullptr);
         Status status;
@@ -90,7 +92,8 @@ class OpKernelConstruction
         return status;
     }
 
-    template <> Status GetAttr<bool>(const char* attr_name, bool* value) const
+    template <>
+    Status GetAttr<bool>(const char* attr_name, bool* value) const
     {
         CHECK(value != nullptr);
         TF_Bool tf_bool_value;

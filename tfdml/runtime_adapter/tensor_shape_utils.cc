@@ -28,12 +28,9 @@ namespace tfdml
 // If any of the arguments is negative, return negative too.
 int64_t MultiplyWithoutOverflow(int64_t x, int64_t y)
 {
-    if (x < 0)
-        return -1;
-    if (y < 0)
-        return -1;
-    if (x == 0)
-        return 0;
+    if (x < 0) return -1;
+    if (y < 0) return -1;
+    if (x == 0) return 0;
 
     // Multiply in uint64 rather than int64 since signed overflow is undefined.
     // Negative values will wrap around to large unsigned values in the casts
@@ -46,8 +43,7 @@ int64_t MultiplyWithoutOverflow(int64_t x, int64_t y)
     if ((ux | uy) >> 32 != 0)
     {
         // Otherwise, detect overflow using a division
-        if (uxy / ux != uy)
-            return -1;
+        if (uxy / ux != uy) return -1;
     }
 
     // Cast back to signed. A negative value will signal an error.

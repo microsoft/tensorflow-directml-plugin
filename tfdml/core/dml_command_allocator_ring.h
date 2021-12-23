@@ -22,7 +22,8 @@ namespace tfdml
 // A fixed-size ring of command allocators. Each time an allocator is retrieved,
 // the allocator will be reset if its previously recorded commands have finished
 // executing on the GPU.
-template <size_t allocator_count> class DmlCommandAllocatorRing
+template <size_t allocator_count>
+class DmlCommandAllocatorRing
 {
   public:
     DmlCommandAllocatorRing(

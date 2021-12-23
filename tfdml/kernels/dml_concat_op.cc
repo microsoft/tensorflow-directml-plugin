@@ -191,7 +191,8 @@ class ConcatShapeHelper : public ShapeHelper
     }
 };
 
-template <AxisArgumentName AxisArgName> class DmlConcatKernel : public DmlKernel
+template <AxisArgumentName AxisArgName>
+class DmlConcatKernel : public DmlKernel
 {
   public:
     using InitHelper = InitHelper<AxisArgName>;

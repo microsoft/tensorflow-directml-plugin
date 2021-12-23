@@ -24,3 +24,5 @@ ConstructorInitializerAllOnOneLineOrOnePerLine: true
 BreakBeforeBraces: Custom
 BraceWrapping:
   BeforeLambdaBody: true
+AlwaysBreakTemplateDeclarations: Yes
+AllowShortIfStatementsOnASingleLine: WithoutElse

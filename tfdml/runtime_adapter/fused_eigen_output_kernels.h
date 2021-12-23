@@ -77,7 +77,8 @@ using ContractionOutputMapper =
 // Returns input expression without any transformations.
 struct Identity
 {
-    template <typename XprType> static auto apply(XprType expr) -> XprType
+    template <typename XprType>
+    static auto apply(XprType expr) -> XprType
     {
         return expr;
     };
@@ -147,7 +148,8 @@ struct LeakyRelu
     };
 };
 
-template <typename T> struct BiasAddArgs
+template <typename T>
+struct BiasAddArgs
 {
     const T* bias_add_data = nullptr;
     float leakyrelu_alpha;
@@ -162,7 +164,8 @@ template <typename T> struct BiasAddArgs
     }
 };
 
-template <typename T> struct FusedBatchNormArgs
+template <typename T>
+struct FusedBatchNormArgs
 {
     const T* scale_data = nullptr;
     const T* offset_data = nullptr;
