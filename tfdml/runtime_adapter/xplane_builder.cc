@@ -97,15 +97,13 @@ XEventMetadata* XPlaneBuilder::GetOrCreateEventMetadata(std::string&& name)
 XEventMetadata* XPlaneBuilder::GetEventMetadata(absl::string_view name) const
 {
     auto result = event_metadata_by_name_.find(name);
-    if (result == event_metadata_by_name_.end()) return nullptr;
-    return result->second;
+    return result == event_metadata_by_name_.end() ? nullptr : result->second;
 }
 
 XStatMetadata* XPlaneBuilder::GetStatMetadata(absl::string_view name) const
 {
     auto result = stat_metadata_by_name_.find(name);
-    if (result == stat_metadata_by_name_.end()) return nullptr;
-    return result->second;
+    return result == stat_metadata_by_name_.end() ? nullptr : result->second;
 }
 
 XStatMetadata* XPlaneBuilder::GetOrCreateStatMetadata(int64_t metadata_id)
