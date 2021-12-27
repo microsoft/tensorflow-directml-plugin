@@ -94,8 +94,7 @@ StatusOr<DmlGpuEvent> DmlReadbackHeap::ReadbackFromGpu(
     auto done_callback = [this, dst, readback_heap, offset_in_chunk, done_event]
     {
         // The device could have been removed before the callback is called
-        if (!execution_context_->GetCommandRecorderStatus().ok())
-            return;
+        if (!execution_context_->GetCommandRecorderStatus().ok()) return;
 
         void* readback_heap_data = nullptr;
         DML_CHECK_SUCCEEDED(

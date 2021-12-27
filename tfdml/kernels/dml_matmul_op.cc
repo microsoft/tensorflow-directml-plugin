@@ -142,10 +142,8 @@ class BaseBatchMatMulInitHelper : public InitializationHelper
         collapsed_in1_shape_.AddDim(in1_rows);
         collapsed_in1_shape_.AddDim(in1_cols);
 
-        if (attr->adj_x)
-            std::swap(in0_rows, in0_cols);
-        if (attr->adj_y)
-            std::swap(in1_rows, in1_cols);
+        if (attr->adj_x) std::swap(in0_rows, in0_cols);
+        if (attr->adj_y) std::swap(in1_rows, in1_cols);
 
         collapsed_output_shape_ = BCast::ToShape(batches_bcast.output_shape());
         collapsed_output_shape_.AddDim(in0_rows);
@@ -391,7 +389,8 @@ class DmlMatMulKernel : public DmlKernel
     }
 };
 
-template <typename TInitHelper> class DmlBatchMatMulKernel : public DmlKernel
+template <typename TInitHelper>
+class DmlBatchMatMulKernel : public DmlKernel
 {
   public:
     using InitHelper = TInitHelper;

@@ -71,7 +71,8 @@ struct AttributeDesc
 // underlying type of int, but this helper is preferred over static_cast in case
 // the codegen changes or a handwritten custom DML op def uses the wrong type by
 // mistake.
-template <typename E> constexpr int ConvertOpDefEnumToIndex(E enum_value)
+template <typename E>
+constexpr int ConvertOpDefEnumToIndex(E enum_value)
 {
     auto index = std::underlying_type_t<E>(enum_value);
     static_assert(

@@ -32,8 +32,7 @@ struct DmlGpuEvent
     // Blocks until IsSignaled returns true.
     void WaitForSignal() const
     {
-        if (IsSignaled())
-            return; // early-out
+        if (IsSignaled()) return; // early-out
 
             // Workaround for Bug 25381212: Supplying a null HANDLE to
             // SetEventOnCompletion causes the capture layer to deadlock during

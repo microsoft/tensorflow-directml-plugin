@@ -22,7 +22,8 @@ namespace tfdml
 {
 
 // Constructs a std::set from a span of values.
-template <typename T> std::set<T> AsSet(absl::Span<const T> vals)
+template <typename T>
+std::set<T> AsSet(absl::Span<const T> vals)
 {
     return std::set<T>(vals.begin(), vals.end());
 }

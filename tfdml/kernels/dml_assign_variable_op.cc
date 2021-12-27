@@ -113,6 +113,7 @@ void RegisterKernels_AssignVariableOp()
     K::WithTypeConstraint<T, TF_FLOAT>::Register();
     K::WithTypeConstraint<T, TF_DOUBLE>::Register();
     K::WithTypeConstraint<T, TF_INT64>::Register();
+    K::WithTypeConstraint<T, TF_UINT32>::Register();
 }
 
 } // namespace tfdml

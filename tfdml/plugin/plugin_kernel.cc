@@ -18,6 +18,7 @@ namespace tfdml
 void RegisterKernels_AddN();
 void RegisterKernels_AssignVariableOp();
 void RegisterKernels_Concat();
+void RegisterKernels_Conv();
 void RegisterKernels_Gather();
 void RegisterKernels_GatherNd();
 void RegisterKernels_MatMul();
@@ -29,8 +30,13 @@ void TF_InitKernel()
     // D3D12 adapter capabilities (for example).
 
     tfdml::RegisterKernels_AddN();
-    tfdml::RegisterKernels_AssignVariableOp();
+
+    // TODO: Enable when TF_RESOURCE deserialization across ABI is enabled
+    // https://github.com/tensorflow/tensorflow/issues/53531
+    // tfdml::RegisterKernels_AssignVariableOp();
+
     tfdml::RegisterKernels_Concat();
+    tfdml::RegisterKernels_Conv();
     tfdml::RegisterKernels_Gather();
     tfdml::RegisterKernels_GatherNd();
     tfdml::RegisterKernels_MatMul();

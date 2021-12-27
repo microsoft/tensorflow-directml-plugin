@@ -198,7 +198,8 @@ class GatherNdInitHelper : public InitializationHelper
     mutable bool locked_ = false;
 };
 
-template <typename TIndex> class GatherNdShapeHelper : public ShapeHelper
+template <typename TIndex>
+class GatherNdShapeHelper : public ShapeHelper
 {
   public:
     std::vector<TensorShape> GetOutputShapes(
@@ -212,7 +213,8 @@ template <typename TIndex> class GatherNdShapeHelper : public ShapeHelper
     }
 };
 
-template <typename TIndex> class DmlGatherNdKernel : public DmlKernel
+template <typename TIndex>
+class DmlGatherNdKernel : public DmlKernel
 {
   public:
     using InitHelper = GatherNdInitHelper<TIndex>;
@@ -416,24 +418,24 @@ using K = typename KernelDefinition<Op, DmlKernelWrapper<DmlGatherNdKernel<TInde
     ::template WithTypeConstraint<Op::Attribute::Tindices, DataTypeToEnum<TIndex>()>;
 // clang-format on
 
-template <TF_DataType T, TF_DataType... Ts> void RegisterGatherNd()
+template <TF_DataType T, TF_DataType... Ts>
+void RegisterGatherNd()
 {
     using Op = ops::GatherNd;
     K<Op, Op::Attribute::Tparams, T, int32_t>::Register();
     K<Op, Op::Attribute::Tparams, T, int64_t>::Register();
-    if constexpr (sizeof...(Ts) > 0)
-        RegisterGatherNd<Ts...>();
+    if constexpr (sizeof...(Ts) > 0) RegisterGatherNd<Ts...>();
 }
 
-template <TF_DataType T, TF_DataType... Ts> void RegisterResourceGatherNd()
+template <TF_DataType T, TF_DataType... Ts>
+void RegisterResourceGatherNd()
 {
     using Op = ops::ResourceGatherNd;
     K<Op, Op::Attribute::dtype, T, int32_t>::template WithHostMemoryArgument<
         Op::Argument::resource>::Register();
     K<Op, Op::Attribute::dtype, T, int64_t>::template WithHostMemoryArgument<
         Op::Argument::resource>::Register();
-    if constexpr (sizeof...(Ts) > 0)
-        RegisterResourceGatherNd<Ts...>();
+    if constexpr (sizeof...(Ts) > 0) RegisterResourceGatherNd<Ts...>();
 }
 
 void RegisterKernels_GatherNd()

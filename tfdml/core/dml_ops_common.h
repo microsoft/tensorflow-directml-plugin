@@ -243,9 +243,11 @@ class DmlKernel
     absl::InlinedVector<absl::optional<uint32_t>, 8> output_refs_forwarding_;
 };
 
-template <typename T> struct TfTensorTypeTraits;
+template <typename T>
+struct TfTensorTypeTraits;
 
-template <> struct TfTensorTypeTraits<Eigen::half>
+template <>
+struct TfTensorTypeTraits<Eigen::half>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type =
         DML_TENSOR_DATA_TYPE_FLOAT16;
@@ -261,7 +263,8 @@ template <> struct TfTensorTypeTraits<Eigen::half>
     }
 };
 
-template <> struct TfTensorTypeTraits<float>
+template <>
+struct TfTensorTypeTraits<float>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type =
         DML_TENSOR_DATA_TYPE_FLOAT32;
@@ -274,7 +277,8 @@ template <> struct TfTensorTypeTraits<float>
     }
 };
 
-template <> struct TfTensorTypeTraits<uint8_t>
+template <>
+struct TfTensorTypeTraits<uint8_t>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type = DML_TENSOR_DATA_TYPE_UINT8;
     static DML_SCALAR_UNION ToDmlScalar(uint8_t val)
@@ -285,7 +289,8 @@ template <> struct TfTensorTypeTraits<uint8_t>
     }
 };
 
-template <> struct TfTensorTypeTraits<uint16_t>
+template <>
+struct TfTensorTypeTraits<uint16_t>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type =
         DML_TENSOR_DATA_TYPE_UINT16;
@@ -297,7 +302,8 @@ template <> struct TfTensorTypeTraits<uint16_t>
     }
 };
 
-template <> struct TfTensorTypeTraits<uint32_t>
+template <>
+struct TfTensorTypeTraits<uint32_t>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type =
         DML_TENSOR_DATA_TYPE_UINT32;
@@ -309,7 +315,8 @@ template <> struct TfTensorTypeTraits<uint32_t>
     }
 };
 
-template <> struct TfTensorTypeTraits<int32_t>
+template <>
+struct TfTensorTypeTraits<int32_t>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type = DML_TENSOR_DATA_TYPE_INT32;
     static DML_SCALAR_UNION ToDmlScalar(int32_t val)
@@ -320,7 +327,8 @@ template <> struct TfTensorTypeTraits<int32_t>
     }
 };
 
-template <> struct TfTensorTypeTraits<int64_t>
+template <>
+struct TfTensorTypeTraits<int64_t>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type = DML_TENSOR_DATA_TYPE_INT64;
     static DML_SCALAR_UNION ToDmlScalar(int64_t val)

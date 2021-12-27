@@ -36,7 +36,8 @@ namespace tfdml
 {
 
 // Type that contains zero or more op arguments.
-template <typename Op, typename Op::Argument...> struct OpArgumentList;
+template <typename Op, typename Op::Argument...>
+struct OpArgumentList;
 
 // Type that describes a data-type constraint imposed on an op attribute.
 template <typename Op, typename Op::Attribute Attribute, TF_DataType DataType>

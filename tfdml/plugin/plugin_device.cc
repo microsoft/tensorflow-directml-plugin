@@ -484,7 +484,9 @@ void plugin_mem_zero(
     DmlDevice* dml_device = static_cast<DmlDevice*>(device->device_handle);
 
     D3D12BufferRegion dst =
-        dml_util::CreateBufferForDeviceMemory(dml_device, location, size);
+        dml_device->GetDeviceContext()->GetBufferForDeviceMemory(
+            location,
+            size);
 
     (void)dml_device->GetDeviceContext()->ZeroBuffer(dst);
 
@@ -514,7 +516,9 @@ void plugin_memset(
     DmlDevice* dml_device = static_cast<DmlDevice*>(device->device_handle);
 
     D3D12BufferRegion dst =
-        dml_util::CreateBufferForDeviceMemory(dml_device, location, size);
+        dml_device->GetDeviceContext()->GetBufferForDeviceMemory(
+            location,
+            size);
 
     auto pattern_bytes = absl::Span<const uint8_t>(
         reinterpret_cast<const uint8_t*>(&pattern),

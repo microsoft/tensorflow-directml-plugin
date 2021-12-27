@@ -209,7 +209,8 @@ class GatherInitializationHelper : public InitializationHelper
     RefCountPtr<Var> params_resource_;
 };
 
-template <typename TIndex> class GatherShapeHelper : public ShapeHelper
+template <typename TIndex>
+class GatherShapeHelper : public ShapeHelper
 {
   public:
     std::vector<TensorShape> GetOutputShapes(
@@ -329,7 +330,8 @@ SimpleGather SimplifyGather(
     return desc;
 }
 
-template <typename TIndex> class DmlGatherKernel : public DmlKernel
+template <typename TIndex>
+class DmlGatherKernel : public DmlKernel
 {
   public:
     using InitHelper = GatherInitializationHelper<TIndex>;
@@ -437,42 +439,45 @@ using K = typename KernelDefinition<Op, DmlKernelWrapper<DmlGatherKernel<TIndex>
     ::template WithTypeConstraint<Op::Attribute::Tindices, DataTypeToEnum<TIndex>()>;
 // clang-format on
 
-template <TF_DataType T, TF_DataType... Ts> void RegisterGather()
+template <TF_DataType T, TF_DataType... Ts>
+void RegisterGather()
 {
     using Op = ops::Gather;
     K<Op, Op::Attribute::Tparams, T, int32_t>::Register();
     K<Op, Op::Attribute::Tparams, T, int64_t>::Register();
-    if constexpr (sizeof...(Ts) > 0)
-        RegisterGather<Ts...>();
+    if constexpr (sizeof...(Ts) > 0) RegisterGather<Ts...>();
 }
 
-template <TF_DataType T, TF_DataType... Ts> void RegisterGatherV2()
+template <TF_DataType T, TF_DataType... Ts>
+void RegisterGatherV2()
 {
     using Op = ops::GatherV2;
     K<Op, Op::Attribute::Tparams, T, int32_t>::template WithHostMemoryArgument<
         Op::Argument::axis>::Register();
     K<Op, Op::Attribute::Tparams, T, int64_t>::template WithHostMemoryArgument<
         Op::Argument::axis>::Register();
-    if constexpr (sizeof...(Ts) > 0)
-        RegisterGatherV2<Ts...>();
+    if constexpr (sizeof...(Ts) > 0) RegisterGatherV2<Ts...>();
 }
 
-template <TF_DataType T, TF_DataType... Ts> void RegisterResourceGather()
+template <TF_DataType T, TF_DataType... Ts>
+void RegisterResourceGather()
 {
     using Op = ops::ResourceGather;
     K<Op, Op::Attribute::dtype, T, int32_t, DmlKernelCachePolicy::Never>::
         template WithHostMemoryArgument<Op::Argument::resource>::Register();
     K<Op, Op::Attribute::dtype, T, int64_t, DmlKernelCachePolicy::Never>::
         template WithHostMemoryArgument<Op::Argument::resource>::Register();
-    if constexpr (sizeof...(Ts) > 0)
-        RegisterResourceGather<Ts...>();
+    if constexpr (sizeof...(Ts) > 0) RegisterResourceGather<Ts...>();
 }
 
 void RegisterKernels_Gather()
 {
     RegisterGather<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64>();
     RegisterGatherV2<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64>();
-    RegisterResourceGather<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT64>();
+
+    // TODO: Enable when TF_RESOURCE deserialization across ABI is enabled
+    // https://github.com/tensorflow/tensorflow/issues/53531
+    // RegisterResourceGather<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT64>();
 }
 
 } // namespace tfdml

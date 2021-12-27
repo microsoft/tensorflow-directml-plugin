@@ -86,7 +86,8 @@ class DmlKernelConstruction
     const TensorShape& GetOutputTensorShape(uint32_t index) const;
 
     // See OpKernelConstruction::GetAttr
-    template <typename T> Status GetAttr(const char* attr_name, T* value) const;
+    template <typename T>
+    Status GetAttr(const char* attr_name, T* value) const;
 
     template <>
     Status GetAttr<int32_t>(const char* attr_name, int32_t* value) const
@@ -136,7 +137,8 @@ class DmlKernelContext
     OpKernelContext* GetOpKernelContext() const;
     DMLDeviceContext* GetDmlDeviceContext() const;
 
-    template <typename T> const T* GetInitializationHelper() const
+    template <typename T>
+    const T* GetInitializationHelper() const
     {
         return static_cast<const T*>(init_helper_);
     }

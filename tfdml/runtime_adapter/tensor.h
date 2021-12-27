@@ -50,9 +50,14 @@ class Tensor
     const TF_Tensor* raw() const;
     bool CopyFrom(const Tensor& other, const TensorShape& shape);
 
-    template <typename T> T* base() { return reinterpret_cast<T*>(raw_data()); }
+    template <typename T>
+    T* base()
+    {
+        return reinterpret_cast<T*>(raw_data());
+    }
 
-    template <typename T> const T* base() const
+    template <typename T>
+    const T* base() const
     {
         return reinterpret_cast<T*>(raw_data());
     }
@@ -72,7 +77,8 @@ class Tensor
 
     std::string DebugString() const;
 
-    template <typename H> friend H AbslHashValue(H h, const Tensor& tensor)
+    template <typename H>
+    friend H AbslHashValue(H h, const Tensor& tensor)
     {
         auto result = H::combine(
             std::move(h),

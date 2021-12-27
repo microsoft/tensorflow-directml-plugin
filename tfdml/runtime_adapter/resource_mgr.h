@@ -118,7 +118,8 @@ class ScopedStepContainer
     const std::function<void(const std::string&)> cleanup_;
 };
 
-template <typename T> void CheckDeriveFromResourceBase()
+template <typename T>
+void CheckDeriveFromResourceBase()
 {
     static_assert(
         std::is_base_of<ResourceBase, T>::value,
@@ -174,13 +175,11 @@ class ResourceMgr
         {
             std::shared_lock<std::shared_mutex> l(mu_);
             s = LookupInternal<T, use_dynamic_cast>(container, name, resource);
-            if (s.ok())
-                return s;
+            if (s.ok()) return s;
         }
         std::unique_lock<std::shared_mutex> l(mu_);
         s = LookupInternal<T, use_dynamic_cast>(container, name, resource);
-        if (s.ok())
-            return s;
+        if (s.ok()) return s;
         TF_RETURN_IF_ERROR(creator(resource));
         s = DoCreate(container, std::type_index(typeid(T)), name, *resource);
         if (!s.ok())
@@ -368,12 +367,14 @@ class ResourceDeleter
 // Implementation details below.
 
 // Simple wrapper to allow conditional dynamic / static casts.
-template <typename T, bool use_dynamic_cast> struct TypeCastFunctor
+template <typename T, bool use_dynamic_cast>
+struct TypeCastFunctor
 {
     static T* Cast(ResourceBase* r) { return static_cast<T*>(r); }
 };
 
-template <typename T> struct TypeCastFunctor<T, true>
+template <typename T>
+struct TypeCastFunctor<T, true>
 {
     static T* Cast(ResourceBase* r) { return dynamic_cast<T*>(r); }
 };
