@@ -1143,7 +1143,6 @@ class DmlFusedConv2DKernel : public DmlKernel
 
         // 2D conv requires 4D tensors
         static const uint32_t kDimensionCount = 4;
-        static const uint32_t kSpatialDimensionCount = 2;
 
         CHECK(ctx->GetInputTensorShape(0).dims() == kDimensionCount);
         CHECK(ctx->GetInputTensorShape(1).dims() == kDimensionCount);
@@ -1426,7 +1425,7 @@ class DmlConv2DBackpropInputKernel : public DmlKernel
         CHECK(ctx->GetInputTensorShape(2).dims() == kDimensionCount);
         CHECK(ctx->GetOutputTensorShape(0).dims() == kDimensionCount);
 
-        auto& input_sizes = ctx->GetConstantInputTensor(0);
+        const auto& input_sizes = ctx->GetConstantInputTensor(0);
         TensorShape input_shape = TensorShapeUtils::MakeShape(input_sizes);
 
         DmlKernelParams params;
@@ -1530,7 +1529,7 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
         CHECK(ctx->GetInputTensorShape(2).dims() == kDimensionCount);
         CHECK(ctx->GetOutputTensorShape(0).dims() == kDimensionCount);
 
-        auto& filter_sizes = ctx->GetConstantInputTensor(1);
+        const auto& filter_sizes = ctx->GetConstantInputTensor(1);
         TensorShape filter_shape = TensorShapeUtils::MakeShape(filter_sizes);
 
         const Conv2DParameters& conv_params = init_helper->GetParams();
@@ -1597,6 +1596,22 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
             axis = input_output_layout[0];
             input_output_layout[0] = input_output_layout[1];
             input_output_layout[1] = axis;
+            break;
+
+        case FORMAT_NCHW_VECT_C:
+            LogFatal("FORMAT_NCHW_VECT_C is not supported for DML devices.");
+            break;
+
+        case FORMAT_NHWC_VECT_W:
+            LogFatal("FORMAT_NHWC_VECT_W is not supported for DML devices.");
+            break;
+
+        case FORMAT_HWNC:
+            LogFatal("FORMAT_HWNC is not supported for DML devices.");
+            break;
+
+        case FORMAT_HWCN:
+            LogFatal("FORMAT_HWCN is not supported for DML devices.");
             break;
         }
 
@@ -2028,6 +2043,18 @@ class DmlDepthwiseConv2DBackpropFilterKernel : public DmlKernel
                 init_helper->GetOutWidth(),    // W
                 init_helper->GetOutChannels(), // N
             };
+            break;
+        case FORMAT_NCHW_VECT_C:
+            LogFatal("FORMAT_NCHW_VECT_C is not supported for DML devices.");
+            break;
+        case FORMAT_NHWC_VECT_W:
+            LogFatal("FORMAT_NHWC_VECT_W is not supported for DML devices.");
+            break;
+        case FORMAT_HWNC:
+            LogFatal("FORMAT_HWNC is not supported for DML devices.");
+            break;
+        case FORMAT_HWCN:
+            LogFatal("FORMAT_HWCN is not supported for DML devices.");
             break;
         }
 
@@ -2676,7 +2703,7 @@ class DmlConv3DBackpropInputKernel : public DmlKernel
         static const uint32_t kDimensionCount = 5;
         static const uint32_t kSpatialDimensionCount = 3;
 
-        auto& input_sizes = ctx->GetConstantInputTensor(0);
+        const auto& input_sizes = ctx->GetConstantInputTensor(0);
         TensorShape input_shape = TensorShapeUtils::MakeShape(input_sizes);
 
         DmlKernelParams params;
@@ -2752,7 +2779,7 @@ class DmlConv3DBackpropFilterKernel : public DmlKernel
         static const uint32_t kDimensionCount = 5;
         static const uint32_t kSpatialDimensionCount = 3;
 
-        auto& filter_sizes = ctx->GetConstantInputTensor(1);
+        const auto& filter_sizes = ctx->GetConstantInputTensor(1);
         TensorShape filter_shape = TensorShapeUtils::MakeShape(filter_sizes);
 
         DmlKernelParams params;
@@ -2789,6 +2816,22 @@ class DmlConv3DBackpropFilterKernel : public DmlKernel
 
         case FORMAT_NCHW:
             std::swap(input_output_layout[0], input_output_layout[1]);
+            break;
+
+        case FORMAT_NCHW_VECT_C:
+            LogFatal("FORMAT_NCHW_VECT_C is not supported for DML devices.");
+            break;
+
+        case FORMAT_NHWC_VECT_W:
+            LogFatal("FORMAT_NHWC_VECT_W is not supported for DML devices.");
+            break;
+
+        case FORMAT_HWNC:
+            LogFatal("FORMAT_HWNC is not supported for DML devices.");
+            break;
+
+        case FORMAT_HWCN:
+            LogFatal("FORMAT_HWCN is not supported for DML devices.");
             break;
         }
 

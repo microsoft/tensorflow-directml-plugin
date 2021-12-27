@@ -112,13 +112,12 @@ struct Relu6
 struct Elu
 {
     template <typename XprType>
-    static auto apply(XprType expr)
-        -> decltype((expr < std::declval<typename XprType::Scalar>())
-                        .select(
-                            expr.exp() -
-                                expr.constant(
-                                    std::declval<typename XprType::Scalar>()),
-                            expr))
+    static auto apply(XprType expr) -> decltype(
+        (expr < std::declval<typename XprType::Scalar>())
+            .select(
+                expr.exp() -
+                    expr.constant(std::declval<typename XprType::Scalar>()),
+                expr))
     {
         return (expr < static_cast<typename XprType::Scalar>(0))
             .select(
@@ -132,13 +131,11 @@ struct Elu
 struct LeakyRelu
 {
     template <typename XprType>
-    static auto apply(XprType expr, const float leakyrelu_alpha)
-        -> decltype((expr < std::declval<typename XprType::Scalar>())
-                        .select(
-                            expr *
-                                expr.constant(
-                                    std::declval<typename XprType::Scalar>()),
-                            expr))
+    static auto apply(XprType expr, const float leakyrelu_alpha) -> decltype(
+        (expr < std::declval<typename XprType::Scalar>())
+            .select(
+                expr * expr.constant(std::declval<typename XprType::Scalar>()),
+                expr))
     {
         return (expr < static_cast<typename XprType::Scalar>(0))
             .select(

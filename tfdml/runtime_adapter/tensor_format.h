@@ -17,7 +17,6 @@ limitations under the License.
 
 #include "tfdml/runtime_adapter/tensor.h"
 #include "tfdml/runtime_adapter/tensor_shape.h"
-#include <xstring>
 
 namespace tfdml
 {
