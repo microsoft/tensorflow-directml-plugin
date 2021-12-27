@@ -2829,7 +2829,7 @@ class DmlConv3DBackpropFilterKernel : public DmlKernel
     }
 };
 
-void DepthwiseConv2dNative()
+void RegisterDepthwiseConv2dNative()
 {
     using K = KernelDefinition<
         ops::DepthwiseConv2dNative,
@@ -2842,7 +2842,7 @@ void DepthwiseConv2dNative()
         TF_HALF>();
 }
 
-void Conv2D()
+void RegisterConv2D()
 {
     using K = KernelDefinition<
         ops::Conv2D,
@@ -2851,7 +2851,7 @@ void Conv2D()
     RegisterWithTypes<K, ops::Conv2D::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
-void FusedConv2D()
+void RegisterFusedConv2D()
 {
     // FusedConv2D only supports float32
     using K = KernelDefinition<
@@ -2861,7 +2861,7 @@ void FusedConv2D()
     RegisterWithTypes<K, ops::_FusedConv2D::Attribute::T, TF_FLOAT>();
 }
 
-void Conv2DBackpropInput()
+void RegisterConv2DBackpropInput()
 {
     using K = KernelDefinition<
         ops::Conv2DBackpropInput,
@@ -2877,7 +2877,7 @@ void Conv2DBackpropInput()
         TF_HALF>();
 }
 
-void Conv2DBackpropFilter()
+void RegisterConv2DBackpropFilter()
 {
     using K = KernelDefinition<
         ops::Conv2DBackpropFilter,
@@ -2894,7 +2894,7 @@ void Conv2DBackpropFilter()
         TF_HALF>();
 }
 
-void DepthwiseConv2dNativeBackpropFilter()
+void RegisterDepthwiseConv2dNativeBackpropFilter()
 {
     using K = KernelDefinition<
         ops::DepthwiseConv2dNativeBackpropFilter,
@@ -2911,7 +2911,7 @@ void DepthwiseConv2dNativeBackpropFilter()
         TF_HALF>();
 }
 
-void DepthwiseConv2dNativeBackpropInput()
+void RegisterDepthwiseConv2dNativeBackpropInput()
 {
     using K = KernelDefinition<
         ops::DepthwiseConv2dNativeBackpropInput,
@@ -2928,7 +2928,7 @@ void DepthwiseConv2dNativeBackpropInput()
         TF_HALF>();
 }
 
-void Conv3D()
+void RegisterConv3D()
 {
     using K = KernelDefinition<
         ops::Conv3D,
@@ -2937,7 +2937,7 @@ void Conv3D()
     RegisterWithTypes<K, ops::Conv3D::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
-void Conv3DBackpropInput()
+void RegisterConv3DBackpropInput()
 {
     using K = KernelDefinition<
         ops::Conv3DBackpropInput,
@@ -2952,7 +2952,7 @@ void Conv3DBackpropInput()
         TF_HALF>();
 }
 
-void Conv3DBackpropInputV2()
+void RegisterConv3DBackpropInputV2()
 {
     using K = KernelDefinition<
         ops::Conv3DBackpropInputV2,
@@ -2969,7 +2969,7 @@ void Conv3DBackpropInputV2()
         TF_HALF>();
 }
 
-void Conv3DBackpropFilter()
+void RegisterConv3DBackpropFilter()
 {
     using K = KernelDefinition<
         ops::Conv3DBackpropFilter,
@@ -2984,7 +2984,7 @@ void Conv3DBackpropFilter()
         TF_HALF>();
 }
 
-void Conv3DBackpropFilterV2()
+void RegisterConv3DBackpropFilterV2()
 {
     using K = KernelDefinition<
         ops::Conv3DBackpropFilterV2,
@@ -3003,18 +3003,18 @@ void Conv3DBackpropFilterV2()
 
 void RegisterKernels_Conv()
 {
-    DepthwiseConv2dNative();
-    Conv2D();
-    FusedConv2D();
-    Conv2DBackpropInput();
-    Conv2DBackpropFilter();
-    DepthwiseConv2dNativeBackpropFilter();
-    DepthwiseConv2dNativeBackpropInput();
-    Conv3D();
-    Conv3DBackpropInput();
-    Conv3DBackpropInputV2();
-    Conv3DBackpropFilter();
-    Conv3DBackpropFilterV2();
+    RegisterDepthwiseConv2dNative();
+    RegisterConv2D();
+    RegisterFusedConv2D();
+    RegisterConv2DBackpropInput();
+    RegisterConv2DBackpropFilter();
+    RegisterDepthwiseConv2dNativeBackpropFilter();
+    RegisterDepthwiseConv2dNativeBackpropInput();
+    RegisterConv3D();
+    RegisterConv3DBackpropInput();
+    RegisterConv3DBackpropInputV2();
+    RegisterConv3DBackpropFilter();
+    RegisterConv3DBackpropFilterV2();
 }
 
 } // namespace tfdml
