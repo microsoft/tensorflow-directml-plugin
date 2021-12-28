@@ -42,6 +42,7 @@ class TensorShape
     void AddDim(int64_t dim_size);
     void InsertDim(int index, int64_t dim_size);
     void RemoveLastDims(int num_dims);
+    void Clear();
     int64_t dim_size(int dim_index) const;
     int64_t dims() const;
     absl::InlinedVector<int64_t, 4> dim_sizes() const;

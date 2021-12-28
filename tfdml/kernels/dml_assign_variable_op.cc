@@ -102,7 +102,7 @@ class DmlAssignVariableOp : public OpKernel
 void RegisterKernels_AssignVariableOp()
 {
     using K = KernelDefinition<ops::AssignVariableOp, DmlAssignVariableOp>::
-        WithHostMemoryArgument<ops::AssignVariableOp::Argument::resource>;
+        WithHostMemoryArguments<ops::AssignVariableOp::Argument::resource>;
 
     // We deliberately register the same types here that CUDA does.
     constexpr auto T = ops::AssignVariableOp::Attribute::dtype;

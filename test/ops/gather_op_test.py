@@ -326,20 +326,10 @@ class GatherTest(test.TestCase, parameterized.TestCase):
     def gather_shape_inf_disabled(x, indices, axis):
       return array_ops.gather(x, indices, axis=axis)
 
-    @def_function.function(
-        autograph=False,
-        jit_compile=True,
-        input_signature=[
-            tensor_spec.TensorSpec(shape=None, dtype=dtypes.int32)
-        ] * 3)
-    def xla_gather(x, indices, axis):
-      return array_ops.gather(x, indices, axis=axis)
-
     params = [0, 1, 2]
     indices = 0
     functions = [("array_ops.gather", array_ops.gather), ("gather", gather),
-                 ("gather_shape_inf_disabled", gather_shape_inf_disabled),
-                 ("xla_gather", xla_gather)]
+                 ("gather_shape_inf_disabled", gather_shape_inf_disabled)]
     for bad_axis in (1, 2, -2):
       for fn_name, fn in functions:
         # Shape inference can validate axis for known params rank.

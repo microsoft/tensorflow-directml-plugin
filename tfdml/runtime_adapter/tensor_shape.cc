@@ -82,6 +82,12 @@ void TensorShape::RemoveLastDims(int num_dims)
     dim_sizes_.resize(dim_sizes_.size() - num_dims);
 }
 
+void TensorShape::Clear()
+{
+    dim_sizes_.clear();
+    num_elements_ = 0;
+}
+
 int64_t TensorShape::dim_size(int dim_index) const
 {
     assert(dim_index < dim_sizes_.size());

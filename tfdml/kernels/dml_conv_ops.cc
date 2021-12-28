@@ -2911,7 +2911,8 @@ void RegisterConv2DBackpropInput()
         DmlKernelWrapper<
             DmlConv2DBackpropInputKernel,
             GetOutputShapeFromDimsTensorHelper<int32_t, 0>>>::
-        WithHostMemoryArgument<ops::Conv2DBackpropInput::Argument::input_sizes>;
+        WithHostMemoryArguments<
+            ops::Conv2DBackpropInput::Argument::input_sizes>;
 
     RegisterWithTypes<
         K,
@@ -2927,7 +2928,7 @@ void RegisterConv2DBackpropFilter()
         DmlKernelWrapper<
             DmlConv2DBackpropFilterKernel,
             GetOutputShapeFromDimsTensorHelper<int32_t, 1>>>::
-        WithHostMemoryArgument<
+        WithHostMemoryArguments<
             ops::Conv2DBackpropFilter::Argument::filter_sizes>;
 
     RegisterWithTypes<
@@ -2944,7 +2945,7 @@ void RegisterDepthwiseConv2dNativeBackpropFilter()
         DmlKernelWrapper<
             DmlDepthwiseConv2DBackpropFilterKernel,
             GetOutputShapeFromDimsTensorHelper<int32_t, 1>>>::
-        WithHostMemoryArgument<
+        WithHostMemoryArguments<
             ops::DepthwiseConv2dNativeBackpropFilter::Argument::filter_sizes>;
 
     RegisterWithTypes<
@@ -2961,7 +2962,7 @@ void RegisterDepthwiseConv2dNativeBackpropInput()
         DmlKernelWrapper<
             DmlDepthwiseConv2DBackpropInputKernel,
             GetOutputShapeFromDimsTensorHelper<int32_t, 0>>>::
-        WithHostMemoryArgument<
+        WithHostMemoryArguments<
             ops::DepthwiseConv2dNativeBackpropInput::Argument::input_sizes>;
 
     RegisterWithTypes<
@@ -3002,7 +3003,7 @@ void RegisterConv3DBackpropInputV2()
         DmlKernelWrapper<
             DmlConv3DBackpropInputKernel<true>,
             GetOutputShapeFromDimsTensorHelper<int32_t, 0>>>::
-        WithHostMemoryArgument<
+        WithHostMemoryArguments<
             ops::Conv3DBackpropInputV2::Argument::input_sizes>;
 
     RegisterWithTypes<
@@ -3034,7 +3035,7 @@ void RegisterConv3DBackpropFilterV2()
         DmlKernelWrapper<
             DmlConv3DBackpropFilterKernel<true>,
             GetOutputShapeFromDimsTensorHelper<int32_t, 1>>>::
-        WithHostMemoryArgument<
+        WithHostMemoryArguments<
             ops::Conv3DBackpropFilterV2::Argument::filter_sizes>;
 
     RegisterWithTypes<
