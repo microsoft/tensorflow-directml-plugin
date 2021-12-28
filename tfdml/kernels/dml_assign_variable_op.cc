@@ -55,7 +55,7 @@ class DmlAssignVariableOp : public OpKernel
                 " and ",
                 DataTypeString(context->input(1).dtype())));
         RefCountPtr<Var> variable;
-        const Tensor& value = context->input(1);
+        const Tensor value = context->input(1);
         // Note: every resource-variable-manipulating op assumes copy-on-write
         // semantics, and creates a copy of the variable's Tensor if its
         // refcount is bigger than 1 when we try to modify it. This means we

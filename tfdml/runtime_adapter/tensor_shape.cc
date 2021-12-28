@@ -49,8 +49,9 @@ TensorShape::TensorShape(const tensorflow::TensorShapeProto& proto)
     for (const auto& d : proto.dim())
     {
         dim_sizes_.push_back(d.size());
-        num_elements_ *= d.size();
     }
+
+    UpdateNumElements();
 }
 
 bool operator==(const TensorShape& a, const TensorShape& b)
@@ -65,21 +66,22 @@ bool operator!=(const TensorShape& a, const TensorShape& b)
 
 void TensorShape::AddDim(int64_t dim_size)
 {
+    num_elements_ = dim_sizes_.empty() ? dim_size : num_elements_ * dim_size;
     dim_sizes_.push_back(dim_size);
-    num_elements_ *= dim_size;
 }
 
 void TensorShape::InsertDim(int index, int64_t dim_size)
 {
     assert(index <= dim_sizes_.size());
+    num_elements_ = dim_sizes_.empty() ? dim_size : num_elements_ * dim_size;
     dim_sizes_.insert(dim_sizes_.begin() + index, dim_size);
-    num_elements_ *= dim_size;
 }
 
 void TensorShape::RemoveLastDims(int num_dims)
 {
     assert(num_dims <= dim_sizes_.size());
     dim_sizes_.resize(dim_sizes_.size() - num_dims);
+    UpdateNumElements();
 }
 
 int64_t TensorShape::dim_size(int dim_index) const

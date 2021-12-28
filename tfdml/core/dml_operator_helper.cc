@@ -170,8 +170,10 @@ std::vector<TensorShape> BatchNormGradShapeHelper::GetOutputShapes(
     CHECK(ctx->num_inputs() == 5 || ctx->num_inputs() == 6);
     CHECK(ctx->num_outputs() == 5);
 
-    const TensorShape& x_shape = ctx->input(0).shape();
-    const TensorShape& scale_shape = ctx->input(2).shape();
+    const Tensor x = ctx->input(0);
+    const Tensor scale = ctx->input(2);
+    const TensorShape& x_shape = x.shape();
+    const TensorShape& scale_shape = scale.shape();
 
     // x_backprop, scale_backprop, offset_backprop, unused, unused
     // scale_backprop and offset_backprop are both 1D and have the same shape.
