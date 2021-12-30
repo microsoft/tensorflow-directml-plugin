@@ -133,7 +133,7 @@ void DmlKernelWrapperBase::Compute(OpKernelContext* ctx)
             if (inputIndexToForward)
             {
                 int inputIndex = inputIndexToForward.value();
-                const Tensor& input = ctx->input(inputIndex);
+                const Tensor input = ctx->input(inputIndex);
 
                 // Element counts must also match
                 if (input.NumElements() == output_shapes[i].num_elements())
@@ -160,7 +160,7 @@ void DmlKernelWrapperBase::Compute(OpKernelContext* ctx)
             {
                 int inputIndex = forwardIndices[i].first;
                 int outputIndex = forwardIndices[i].second;
-                const Tensor& input = ctx->input(inputIndex);
+                const Tensor input = ctx->input(inputIndex);
 
                 Tensor output;
                 // Copies underlying data pointer, but uses the output shape

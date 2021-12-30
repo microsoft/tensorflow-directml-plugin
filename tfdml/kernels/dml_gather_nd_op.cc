@@ -43,7 +43,7 @@ class GatherNdInitHelper : public InitializationHelper
         }
 
         const Tensor params = GetParamsTensor(ctx);
-        const Tensor& indices = ctx->input(1);
+        const Tensor indices = ctx->input(1);
 
         OP_REQUIRES(
             ctx,
@@ -149,7 +149,7 @@ class GatherNdInitHelper : public InitializationHelper
         absl::Span<const TensorShape> output_shapes) const final
     {
         const Tensor params = GetParamsTensor(ctx);
-        const Tensor& indices = ctx->input(1);
+        const Tensor indices = ctx->input(1);
 
         int64_t indices_leading_dims = 1;
         for (int i = 0; i < indices.dims() - 1; ++i)
