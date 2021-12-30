@@ -47,6 +47,12 @@
                 },
                 {
                     "file": "ops/matmul_op_test.py"
+                },
+                {
+                    "file": "ops/nn_batchnorm_test.py"
+                },
+                {
+                    "file": "ops/nn_fused_batchnorm_test.py"
                 }
             ]
         },
