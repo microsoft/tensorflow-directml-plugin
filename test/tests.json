@@ -6,6 +6,9 @@
             "timeout_seconds": 1800,
             "tests": [
                 {
+                    "file": "ops/argmax_op_test.py"
+                },
+                {
                     "file": "ops/batch_matmul_op_test.py",
                     "disabled": true
                 },
@@ -47,6 +50,24 @@
                 },
                 {
                     "file": "ops/matmul_op_test.py"
+                },
+                {
+                    "file": "ops/ragged_reduce_op_test.py"
+                },
+                {
+                    "file": "ops/reduce_join_op_test.py"
+                },
+                {
+                    "file": "ops/reduce_test.py"
+                },
+                {
+                    "file": "ops/reduction_ops_test_big.py"
+                },
+                {
+                    "file": "ops/reduction_ops_test.py"
+                },
+                {
+                    "file": "ops/strings_reduce_join_op_test.py"
                 }
             ]
         },
