@@ -15,7 +15,6 @@ limitations under the License.
 
 #include <memory>
 
-#include "absl/container/node_hash_map.h"
 #include "tfdml/core/dml_common.h"
 #include "tfdml/core/dml_gpu_event.h"
 #include "tfdml/core/dml_kernel_context.h"
@@ -149,7 +148,7 @@ class DmlKernelManager
   private:
     // A non-owning pointer to the key for the kernel which is used to keep
     // track of the least-recently-used kernel. This is a pointer into a
-    // kernel_cache_ element. This is okay because std::node_hash_map is
+    // kernel_cache_ element. This is okay because std::unordered_map is
     // guaranteed never to invalidate pointers/references to elements.
     using LruEntry = const DmlKernelKey*;
 
@@ -184,7 +183,7 @@ class DmlKernelManager
 
     // All of these members are protected by mutex_
 
-    mutable absl::node_hash_map<DmlKernelKey, CacheEntry> kernel_cache_;
+    mutable absl::flat_hash_map<DmlKernelKey, CacheEntry> kernel_cache_;
 
     // Ordered by most-recently to least-recently used.
     mutable std::list<LruEntry> lru_list_;
