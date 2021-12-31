@@ -149,7 +149,7 @@ class DmlKernelManager
   private:
     // A non-owning pointer to the key for the kernel which is used to keep
     // track of the least-recently-used kernel. This is a pointer into a
-    // kernel_cache_ element. This is okay because std::node_hash_map is
+    // kernel_cache_ element. This is okay because absl::node_hash_map is
     // guaranteed never to invalidate pointers/references to elements.
     using LruEntry = const DmlKernelKey*;
 
