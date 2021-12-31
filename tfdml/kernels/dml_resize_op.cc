@@ -184,8 +184,6 @@ class GetResizeShapeHelper : public ShapeHelper
         OpKernelContext* ctx,
         const InitializationHelper* initialization_helper) const
     {
-        const Tensor& input = ctx->input(0);
-
         auto init_helper =
             static_cast<const InitHelper*>(initialization_helper);
 
@@ -240,10 +238,6 @@ class DmlResizeKernel : public DmlKernel
         auto inputs = GetDmlTensorDescs(tensors.inputs);
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto result = dml::InputTensor(scope, 0, inputs[0]);
-
-        TF_DataType tf_input_data_type = ctx->GetInputDataType(0);
-        DML_TENSOR_DATA_TYPE dml_input_data_type =
-            result.GetOutputDesc().dataType;
 
         if (input_tensor_shape == output_tensor_shape)
         {
