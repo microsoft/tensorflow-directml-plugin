@@ -292,6 +292,13 @@ class DmlResizeKernel : public DmlKernel
                 output_pixel_offsets);
         }
 
+        // For Bilinear, the output is always in float32 but the input can be
+        // either float16 or float32
+        if (result.GetOutputDesc().dataType != output.desc.GetDmlDataType())
+        {
+            result = dml::Cast(result, output.desc.GetDmlDataType());
+        }
+
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
 

@@ -46,6 +46,15 @@
                     "file": "ops/gather_op_test.py"
                 },
                 {
+                    "file": "ops/image_grad_deterministic_test.py"
+                },
+                {
+                    "file": "ops/image_grad_test.py"
+                },
+                {
+                    "file": "ops/image_ops_test.py"
+                },
+                {
                     "file": "ops/matmul_op_test.py"
                 }
             ]
