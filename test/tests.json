@@ -47,6 +47,9 @@
                 },
                 {
                     "file": "ops/matmul_op_test.py"
+                },
+                {
+                    "file": "ops/transpose_op_test.py"
                 }
             ]
         },
