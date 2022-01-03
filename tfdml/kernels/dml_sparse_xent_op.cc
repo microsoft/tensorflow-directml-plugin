@@ -125,7 +125,6 @@ class DmlSparseXentKernel : public DmlKernel
         CHECK(ctx->GetOutputCount() == 2);
 
         const TensorShape& logits_shape = ctx->GetInputTensorShape(0);
-        const TensorShape& labels_shape = ctx->GetInputTensorShape(1);
 
         const uint32_t batch_size = logits_shape.dim_size(/*Batch Index*/ 0);
         const uint32_t num_classes = logits_shape.dim_size(/*Class Index*/ 1);
