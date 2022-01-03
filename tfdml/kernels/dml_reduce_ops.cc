@@ -368,7 +368,7 @@ class ReduceOutputShapeHelper : public ShapeHelper
 };
 
 template <typename T>
-static T EmptyKernelReturnValue(DML_REDUCE_FUNCTION reduce_function)
+T EmptyKernelReturnValue(DML_REDUCE_FUNCTION reduce_function)
 {
     switch (reduce_function)
     {
@@ -386,7 +386,7 @@ static T EmptyKernelReturnValue(DML_REDUCE_FUNCTION reduce_function)
 }
 
 template <>
-static bool EmptyKernelReturnValue(DML_REDUCE_FUNCTION reduce_function)
+bool EmptyKernelReturnValue(DML_REDUCE_FUNCTION reduce_function)
 {
     switch (reduce_function)
     {
@@ -408,8 +408,6 @@ class DmlReduceKernel : public DmlKernel
     {
         CHECK(ctx->GetInputCount() == 2);
         CHECK(ctx->GetOutputCount() == 1);
-
-        const Tensor& axes_tensor = ctx->GetConstantInputTensor(1);
 
         // Use TF's existing ReductionHelper to help compute axes for reduction.
         // The ReductionHelper does a couple of useful things.
