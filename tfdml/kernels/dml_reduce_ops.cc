@@ -396,7 +396,7 @@ static bool EmptyKernelReturnValue(DML_REDUCE_FUNCTION reduce_function)
     }
 }
 
-template <DML_REDUCE_FUNCTION reduce_function, typename TAxis>
+template <DML_REDUCE_FUNCTION reduce_function>
 class DmlReduceKernel : public DmlKernel
 {
   public:
@@ -728,24 +728,22 @@ class DmlReduceKernel : public DmlKernel
         reduce_function == DML_REDUCE_FUNCTION_ARGMAX;
 };
 
-template <DML_REDUCE_FUNCTION reduce_function, typename TAxis>
+template <DML_REDUCE_FUNCTION reduce_function>
 using DmlReduceWrapper = DmlKernelWrapper<
-    DmlReduceKernel<reduce_function, TAxis>,
+    DmlReduceKernel<reduce_function>,
     ReduceOutputShapeHelper<reduce_function>>;
 
 template <typename op, DML_REDUCE_FUNCTION reduce_function, TF_DataType Tidx>
-using HostReductionIndicesKernel = typename KernelDefinition<
-    op,
-    DmlReduceWrapper<reduce_function, EnumToDataType<Tidx>>>::
-    template WithHostMemoryArgument<op::Argument::reduction_indices>::
-        template WithTypeConstraint<op::Attribute::Tidx, Tidx>;
+using HostReductionIndicesKernel =
+    typename KernelDefinition<op, DmlReduceWrapper<reduce_function>>::
+        template WithHostMemoryArgument<op::Argument::reduction_indices>::
+            template WithTypeConstraint<op::Attribute::Tidx, Tidx>;
 
 template <typename op, DML_REDUCE_FUNCTION reduce_function, TF_DataType Tidx>
-using HostDimensionKernel = typename KernelDefinition<
-    op,
-    DmlReduceWrapper<reduce_function, EnumToDataType<Tidx>>>::
-    template WithHostMemoryArgument<op::Argument::dimension>::
-        template WithTypeConstraint<op::Attribute::Tidx, Tidx>;
+using HostDimensionKernel =
+    typename KernelDefinition<op, DmlReduceWrapper<reduce_function>>::
+        template WithHostMemoryArgument<op::Argument::dimension>::
+            template WithTypeConstraint<op::Attribute::Tidx, Tidx>;
 
 void RegisterSum()
 {
