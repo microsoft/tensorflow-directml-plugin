@@ -22,6 +22,7 @@ void RegisterKernels_Conv();
 void RegisterKernels_Gather();
 void RegisterKernels_GatherNd();
 void RegisterKernels_MatMul();
+void RegisterKernels_SparseXent();
 } // namespace tfdml
 
 void TF_InitKernel()
@@ -40,4 +41,5 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Gather();
     tfdml::RegisterKernels_GatherNd();
     tfdml::RegisterKernels_MatMul();
+    tfdml::RegisterKernels_SparseXent();
 }

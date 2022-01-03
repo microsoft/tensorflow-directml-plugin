@@ -47,6 +47,9 @@
                 },
                 {
                     "file": "ops/matmul_op_test.py"
+                },
+                {
+                    "file": "ops/sparse_xent_op_test.py"
                 }
             ]
         },
