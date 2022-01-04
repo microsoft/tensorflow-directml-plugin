@@ -135,12 +135,11 @@ class BiasAddTestBase(test.TestCase):
           np.random.rand(4, 4, 4, 2048).astype(t),
           np.random.rand(2048).astype(t))
 
-    # DML doesn't support 5D for this operator
-#   def test5DFloatTypes(self):
-#     for t in [np.float16, np.float32, np.float64]:
-#       self._testAll(
-#           np.random.rand(4, 3, 2, 3, 4).astype(t),
-#           np.random.rand(4).astype(t))
+  def test5DFloatTypes(self):
+    for t in [np.float16, np.float32, np.float64]:
+      self._testAll(
+          np.random.rand(4, 3, 2, 3, 4).astype(t),
+          np.random.rand(4).astype(t))
 
   def _random_tensor(self, shape, dtype):
     return constant_op.constant(2 * np.random.rand(*shape) - 1, dtype=dtype)
@@ -271,17 +270,16 @@ class BiasAddTestBase(test.TestCase):
                            np.random.rand(64).astype(dtype.as_numpy_dtype),
                            dtype, data_format, use_gpu)
 
-    # DML doesn't support 5D for this operator
-#   def testGradientTensor5D(self):
-#     for (data_format, use_gpu) in [("NHWC", False), ("NHWC", True),
-#                                    ("NCHW", False), ("NCHW", True)]:
-#       for dtype in (dtypes.float16, dtypes.float32, dtypes.float64):
-#         np_input = np.arange(
-#             1.0, 49.0,
-#             dtype=dtype.as_numpy_dtype).reshape([1, 2, 3, 4,
-#                                                  2]).astype(np.float32)
-#         bias = np.array([1.3, 2.4], dtype=dtype.as_numpy_dtype)
-#         self._testGradient(np_input, bias, dtype, data_format, use_gpu)
+  def testGradientTensor5D(self):
+    for (data_format, use_gpu) in [("NHWC", False), ("NHWC", True),
+                                   ("NCHW", False), ("NCHW", True)]:
+      for dtype in (dtypes.float16, dtypes.float32, dtypes.float64):
+        np_input = np.arange(
+            1.0, 49.0,
+            dtype=dtype.as_numpy_dtype).reshape([1, 2, 3, 4,
+                                                 2]).astype(np.float32)
+        bias = np.array([1.3, 2.4], dtype=dtype.as_numpy_dtype)
+        self._testGradient(np_input, bias, dtype, data_format, use_gpu)
 
   def test1x1Image(self):
     for (data_format, use_gpu) in [("NHWC", False), ("NCHW", False)]:

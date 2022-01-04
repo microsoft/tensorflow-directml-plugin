@@ -393,6 +393,15 @@ static void RegisterBiasAdd()
     RegisterWithTypes<K, ops::BiasAdd::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
+static void RegisterBiasAddV1()
+{
+    using K = KernelDefinition<
+        ops::BiasAddV1,
+        DmlKernelWrapper<DmlBiasAddKernel, GetOutputShapeAsInputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::BiasAddV1::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 static void RegisterBiasAddGrad()
 {
     using K = KernelDefinition<
@@ -405,6 +414,7 @@ static void RegisterBiasAddGrad()
 void RegisterKernels_BiasAdd()
 {
     RegisterBiasAdd();
+    RegisterBiasAddV1();
     RegisterBiasAddGrad();
 }
 
