@@ -47,6 +47,15 @@
                 },
                 {
                     "file": "ops/matmul_op_test.py"
+                },
+                {
+                    "file": "ops/pool_test.py"
+                },
+                {
+                    "file": "ops/pooling_ops_3d_test.py"
+                },
+                {
+                    "file": "ops/pooling_ops_test.py"
                 }
             ]
         },

@@ -245,6 +245,7 @@ cc_library(
         "kernels/dml_gather_nd_op.cc",
         "kernels/dml_gather_op.cc",
         "kernels/dml_matmul_op.cc",
+        "kernels/dml_pooling_ops.cc",
     ],
     hdrs = [
         "kernels/pch.h",
