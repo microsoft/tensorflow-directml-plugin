@@ -242,6 +242,7 @@ cc_library(
         "kernels/dml_assign_variable_op.cc",
         "kernels/dml_concat_op.cc",
         "kernels/dml_conv_ops.cc",
+        "kernels/dml_fill_op.cc",
         "kernels/dml_gather_nd_op.cc",
         "kernels/dml_gather_op.cc",
         "kernels/dml_matmul_op.cc",

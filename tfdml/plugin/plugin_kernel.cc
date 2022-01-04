@@ -19,6 +19,7 @@ void RegisterKernels_AddN();
 void RegisterKernels_AssignVariableOp();
 void RegisterKernels_Concat();
 void RegisterKernels_Conv();
+void RegisterKernels_Fill();
 void RegisterKernels_Gather();
 void RegisterKernels_GatherNd();
 void RegisterKernels_MatMul();
@@ -37,6 +38,7 @@ void TF_InitKernel()
 
     tfdml::RegisterKernels_Concat();
     tfdml::RegisterKernels_Conv();
+    tfdml::RegisterKernels_Fill();
     tfdml::RegisterKernels_Gather();
     tfdml::RegisterKernels_GatherNd();
     tfdml::RegisterKernels_MatMul();
