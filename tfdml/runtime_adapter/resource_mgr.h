@@ -441,7 +441,19 @@ Status LookupResource(
     return Status::OK();
 }
 
-const tensorflow::ResourceHandleProto& HandleFromInput(
+template <typename T>
+Status DeleteResource(
+    OpKernelContext* ctx,
+    const tensorflow::ResourceHandleProto& p)
+{
+    return ctx->resource_manager()->Delete<T>(p.container(), p.name());
+}
+
+Status DeleteResource(
+    OpKernelContext* ctx,
+    const tensorflow::ResourceHandleProto& p);
+
+std::shared_ptr<tensorflow::ResourceHandleProto> HandleFromInput(
     OpKernelContext* ctx,
     int input);
 

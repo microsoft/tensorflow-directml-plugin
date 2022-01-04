@@ -49,7 +49,7 @@ class GatherInitializationHelper : public InitializationHelper
                 ctx,
                 LookupResource(
                     ctx,
-                    HandleFromInput(ctx, 0),
+                    *HandleFromInput(ctx, 0),
                     &params_resource_));
             params_resource_->mu()->lock_shared();
         }
@@ -474,10 +474,7 @@ void RegisterKernels_Gather()
 {
     RegisterGather<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64>();
     RegisterGatherV2<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64>();
-
-    // TODO: Enable when TF_RESOURCE deserialization across ABI is enabled
-    // https://github.com/tensorflow/tensorflow/issues/53531
-    // RegisterResourceGather<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT64>();
+    RegisterResourceGather<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT64>();
 }
 
 } // namespace tfdml

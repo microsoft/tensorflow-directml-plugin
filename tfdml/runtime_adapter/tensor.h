@@ -39,7 +39,7 @@ class Tensor
     int64_t AllocatedBytes() const;
     absl::string_view tensor_data() const;
     TF_DataType dtype() const;
-    const TensorShape& shape() const;
+    TensorShape shape() const;
     int64_t NumElements() const;
     Tensor DeepCopy() const;
     int64_t TotalBytes() const;
@@ -62,19 +62,14 @@ class Tensor
         return reinterpret_cast<T*>(raw_data());
     }
 
+    // Resources should be returned by their shared pointer with the
+    // AsResource() function
     template <>
-    const tensorflow::ResourceHandleProto* base<
-        tensorflow::ResourceHandleProto>() const
-    {
-        return resource_handle_.get();
-    }
-
+    tensorflow::ResourceHandleProto* base();
     template <>
-    tensorflow::ResourceHandleProto* base<tensorflow::ResourceHandleProto>()
-    {
-        return resource_handle_.get();
-    }
+    const tensorflow::ResourceHandleProto* base() const;
 
+    std::shared_ptr<tensorflow::ResourceHandleProto> AsResource() const;
     std::string DebugString() const;
 
     template <typename H>

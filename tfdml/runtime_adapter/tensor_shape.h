@@ -50,6 +50,7 @@ class TensorShape
     const int64_t* data() const;
     std::string DebugString() const;
     void set_dim(int dim_index, int64_t dim);
+    bool IsSameSize(const TensorShape& b) const;
 
     friend bool operator==(const TensorShape& a, const TensorShape& b);
     friend bool operator!=(const TensorShape& a, const TensorShape& b);

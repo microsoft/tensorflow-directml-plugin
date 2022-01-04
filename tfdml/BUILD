@@ -35,6 +35,7 @@ cc_library(
         "runtime_adapter/tensor_format.cc",
         "runtime_adapter/tensor_shape.cc",
         "runtime_adapter/tensor_shape_utils.cc",
+        "runtime_adapter/training_op_helpers.cc",
         "runtime_adapter/types.cc",
         "runtime_adapter/xplane_builder.cc",
     ],
@@ -67,6 +68,7 @@ cc_library(
         "runtime_adapter/statusor.h",
         "runtime_adapter/stream.h",
         "runtime_adapter/tensor.h",
+        "runtime_adapter/training_op_helpers.h",
         "runtime_adapter/tensor_format.h",
         "runtime_adapter/tensor_shape.h",
         "runtime_adapter/tensor_shape_utils.h",
@@ -264,7 +266,12 @@ cc_binary(
     srcs = [
         "plugin/plugin_device.cc",
         "plugin/plugin_kernel.cc",
-        "plugin/plugin_profiler.cc",
+        # TODO: Enable when we bump TF to a version that supports TF_RESOURCE
+        # TF 2.7 added the profiler API, but since TF_RESOURCE serialization
+        # doesn't work in TF 2.7 or 2.8 we have to wait until this issue
+        # is resolved before using the profiler API
+        # https://github.com/tensorflow/tensorflow/issues/53531
+        # "plugin/plugin_profiler.cc",
     ],
     features = ["windows_export_all_symbols"],
     linkshared = True,

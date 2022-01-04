@@ -142,18 +142,12 @@ Tensor::Tensor(TF_Tensor* tensor)
 
     if (dtype() == TF_RESOURCE)
     {
-        // TODO: Enable when TF_RESOURCE deserialization across ABI is enabled
-        // https://github.com/tensorflow/tensorflow/issues/53531
-        LogFatal("TF_RESOURCE is not currently supported in "
-                 "tensorflow-directml-plugin");
-
-        // auto serialized_view = tensor_data();
-        // std::string serialized_data(
-        //     serialized_view.data(),
-        //     serialized_view.size());
-        // resource_handle_ =
-        // std::make_shared<tensorflow::ResourceHandleProto>();
-        // CHECK(resource_handle_->ParseFromString(serialized_data));
+        auto serialized_view = tensor_data();
+        std::string serialized_data(
+            serialized_view.data(),
+            serialized_view.size());
+        resource_handle_ = std::make_shared<tensorflow::ResourceHandleProto>();
+        CHECK(resource_handle_->ParseFromString(serialized_data));
     }
 }
 
@@ -207,7 +201,7 @@ absl::string_view Tensor::tensor_data() const
     return absl::string_view(tensor_data, tensor_size);
 }
 
-const TensorShape& Tensor::shape() const { return shape_; }
+TensorShape Tensor::shape() const { return shape_; }
 
 int64_t Tensor::dims() const { return shape_.dims(); }
 
@@ -274,5 +268,11 @@ Tensor Tensor::DeepCopy() const
 }
 
 const TF_Tensor* Tensor::raw() const { return tensor_.get(); }
+
+std::shared_ptr<tensorflow::ResourceHandleProto> Tensor::AsResource() const
+{
+    CHECK(resource_handle_);
+    return resource_handle_;
+}
 
 } // namespace tfdml

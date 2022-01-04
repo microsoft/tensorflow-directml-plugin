@@ -36,7 +36,7 @@ class GatherNdInitHelper : public InitializationHelper
                 ctx,
                 LookupResource(
                     ctx,
-                    HandleFromInput(ctx, 0),
+                    *HandleFromInput(ctx, 0),
                     &params_resource_));
             params_resource_->mu()->lock_shared();
             locked_ = true;

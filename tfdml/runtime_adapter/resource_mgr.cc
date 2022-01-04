@@ -230,11 +230,18 @@ Status ResourceMgr::Cleanup(const std::string& container)
     return Status::OK();
 }
 
-const tensorflow::ResourceHandleProto& HandleFromInput(
+Status DeleteResource(
+    OpKernelContext* ctx,
+    const tensorflow::ResourceHandleProto& p)
+{
+    return ctx->resource_manager()->Delete(p);
+}
+
+std::shared_ptr<tensorflow::ResourceHandleProto> HandleFromInput(
     OpKernelContext* ctx,
     int input)
 {
-    return ctx->input(input).base<tensorflow::ResourceHandleProto>()[0];
+    return ctx->input(input).AsResource();
 }
 
-} //  end namespace tfdml
+} //  namespace tfdml

@@ -16,7 +16,7 @@ limitations under the License.
 namespace tfdml
 {
 void RegisterKernels_AddN();
-void RegisterKernels_AssignVariableOp();
+void RegisterKernels_VariableOps();
 void RegisterKernels_Concat();
 void RegisterKernels_Conv();
 void RegisterKernels_Gather();
@@ -28,13 +28,8 @@ void TF_InitKernel()
 {
     // NOTE: we could add logic here to conditionally register kernels based on
     // D3D12 adapter capabilities (for example).
-
     tfdml::RegisterKernels_AddN();
-
-    // TODO: Enable when TF_RESOURCE deserialization across ABI is enabled
-    // https://github.com/tensorflow/tensorflow/issues/53531
-    // tfdml::RegisterKernels_AssignVariableOp();
-
+    tfdml::RegisterKernels_VariableOps();
     tfdml::RegisterKernels_Concat();
     tfdml::RegisterKernels_Conv();
     tfdml::RegisterKernels_Gather();

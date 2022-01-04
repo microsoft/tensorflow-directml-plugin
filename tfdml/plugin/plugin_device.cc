@@ -613,9 +613,14 @@ void plugin_create_stream_executor(
     params->stream_executor->synchronize_all_activity =
         plugin_synchronize_all_activity;
 
-    params->stream_executor->mem_zero = plugin_mem_zero;
-    params->stream_executor->memset = plugin_memset<uint8_t>;
-    params->stream_executor->memset32 = plugin_memset<uint32_t>;
+    // TODO: Enable when we bump TF to a version that supports TF_RESOURCE
+    // TF 2.7 added the profiler API, but since TF_RESOURCE serialization
+    // doesn't work in TF 2.7 or 2.8 we have to wait until this issue is
+    // resolved before using the profiler API
+    // https://github.com/tensorflow/tensorflow/issues/53531
+    // params->stream_executor->mem_zero = plugin_mem_zero;
+    // params->stream_executor->memset = plugin_memset<uint8_t>;
+    // params->stream_executor->memset32 = plugin_memset<uint32_t>;
 
     params->stream_executor->host_callback = plugin_host_callback;
 }

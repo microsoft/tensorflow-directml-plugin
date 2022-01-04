@@ -30,6 +30,10 @@ class Device
         const Tensor* cpu_tensor,
         Tensor* device_tensor) = 0;
 
+    virtual void CopyTensorInSameDevice(
+        const Tensor* input_tensor,
+        Tensor* output_tensor) = 0;
+
     // Returns the resource manager associated w/ this device.
     virtual ResourceMgr* resource_manager() { return rmgr_; }
 

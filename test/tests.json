@@ -59,7 +59,8 @@
             "timeout_seconds": 300,
             "tests": [
                 {
-                    "file": "plugin/profiler_test.py"
+                    "file": "plugin/profiler_test.py",
+                    "disabled": true
                 },
                 {
                     "name": "dml_visible_devices_empty1",
