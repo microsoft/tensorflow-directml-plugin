@@ -119,14 +119,6 @@ Status ResourceMgr::DoDelete(
     return Status::OK();
 }
 
-Status ResourceMgr::DoDelete(
-    const std::string& container,
-    std::type_index type,
-    const std::string& resource_name)
-{
-    return DoDelete(container, type.hash_code(), resource_name, type.name());
-}
-
 Status ResourceMgr::Delete(const tensorflow::ResourceHandleProto& handle)
 {
     return DoDelete(
@@ -138,8 +130,9 @@ Status ResourceMgr::Delete(const tensorflow::ResourceHandleProto& handle)
 
 Status ResourceMgr::DoLookup(
     const std::string& container,
-    std::type_index type,
-    const std::string& name,
+    uint64_t type_hash_code,
+    const std::string& type_name,
+    const std::string& resource_name,
     ResourceBase** resource) const
 {
     auto it = containers_.find(container);
@@ -152,10 +145,10 @@ Status ResourceMgr::DoLookup(
             " does not exist. (Could not find resource: ",
             container,
             "/",
-            name,
+            resource_name,
             ")");
     }
-    auto iter = b->find({type.hash_code(), name});
+    auto iter = b->find({type_hash_code, resource_name});
     auto r = iter == b->end() ? nullptr : iter->second;
     if (r == nullptr)
     {
@@ -163,9 +156,9 @@ Status ResourceMgr::DoLookup(
             "Resource ",
             container,
             "/",
-            name,
+            resource_name,
             "/",
-            type.name(),
+            type_name,
             " does not exist.");
     }
     *resource = const_cast<ResourceBase*>(r);
@@ -175,7 +168,8 @@ Status ResourceMgr::DoLookup(
 
 Status ResourceMgr::DoCreate(
     const std::string& container,
-    std::type_index type,
+    uint64_t hash_code,
+    const std::string& type_name,
     const std::string& name,
     ResourceBase* resource)
 {
@@ -184,9 +178,9 @@ Status ResourceMgr::DoCreate(
     {
         *b = new Container;
     }
-    if ((*b)->insert({{type.hash_code(), name}, resource}).second)
+    if ((*b)->insert({{hash_code, name}, resource}).second)
     {
-        TF_RETURN_IF_ERROR(InsertDebugTypeName(type.hash_code(), type.name()));
+        TF_RETURN_IF_ERROR(InsertDebugTypeName(hash_code, type_name));
         return Status::OK();
     }
     resource->Unref();
@@ -196,7 +190,7 @@ Status ResourceMgr::DoCreate(
         "/",
         name,
         "/",
-        type.name());
+        type_name);
 }
 
 Status ResourceMgr::Cleanup(const std::string& container)

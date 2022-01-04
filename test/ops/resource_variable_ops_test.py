@@ -19,6 +19,9 @@ import os
 import pickle
 import re
 
+import tensorflow as tf
+tf.debugging.set_log_device_placement(True)
+
 from absl.testing import parameterized
 import numpy as np
 input(os.getpid())

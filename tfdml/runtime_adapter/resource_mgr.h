@@ -136,12 +136,6 @@ class ResourceMgr
     // Returns the default container name for *this.
     const std::string& default_container() const { return default_container_; }
 
-    // Deletes the resource "name" from the "container".
-    //
-    // REQUIRES: std::is_base_of<ResourceBase, T>
-    template <typename T>
-    Status Delete(const std::string& container, const std::string& name);
-
     // Deletes the resource pointed by "handle".
     Status Delete(const tensorflow::ResourceHandleProto& handle);
 
@@ -160,12 +154,14 @@ class ResourceMgr
     Status Lookup(
         const std::string& container,
         const std::string& name,
+        uint64_t hash_code,
         T** resource) const;
 
     template <typename T, bool use_dynamic_cast = false>
     Status LookupOrCreate(
         const std::string& container,
         const std::string& name,
+        uint64_t hash_code,
         T** resource,
         std::function<Status(T**)> creator)
     {
@@ -174,14 +170,19 @@ class ResourceMgr
         Status s;
         {
             std::shared_lock<std::shared_mutex> l(mu_);
-            s = LookupInternal<T, use_dynamic_cast>(container, name, resource);
+            s = LookupInternal<T, use_dynamic_cast>(container, name, hash_code, resource);
             if (s.ok()) return s;
         }
         std::unique_lock<std::shared_mutex> l(mu_);
-        s = LookupInternal<T, use_dynamic_cast>(container, name, resource);
+        s = LookupInternal<T, use_dynamic_cast>(container, name, hash_code, resource);
         if (s.ok()) return s;
         TF_RETURN_IF_ERROR(creator(resource));
-        s = DoCreate(container, std::type_index(typeid(T)), name, *resource);
+        s = DoCreate(
+            container,
+            hash_code,
+            "ResourceBase",
+            name,
+            *resource);
         if (!s.ok())
         {
             return errors::Internal("LookupOrCreate failed unexpectedly");
@@ -203,13 +204,10 @@ class ResourceMgr
         uint64_t type_hash_code,
         const std::string& resource_name,
         const std::string& type_name);
-    Status DoDelete(
-        const std::string& container,
-        std::type_index type,
-        const std::string& resource_name);
     Status DoLookup(
         const std::string& container,
-        std::type_index type,
+        uint64_t hash_code,
+        const std::string& type_name,
         const std::string& name,
         ResourceBase** resource) const;
 
@@ -217,11 +215,13 @@ class ResourceMgr
     Status LookupInternal(
         const std::string& container,
         const std::string& name,
+        uint64_t hash_code,
         T** resource) const;
 
     Status DoCreate(
         const std::string& container,
-        std::type_index type,
+        uint64_t hash_code,
+        const std::string& type_name,
         const std::string& name,
         ResourceBase* resource);
 
@@ -250,8 +250,12 @@ Status LookupOrCreateResource(
     T** value,
     std::function<Status(T**)> creator)
 {
-    return ctx->resource_manager()
-        ->LookupOrCreate(p.container(), p.name(), value, creator);
+    return ctx->resource_manager()->LookupOrCreate(
+        p.container(),
+        p.name(),
+        p.hash_code(),
+        value,
+        creator);
 }
 
 template <typename T>
@@ -288,82 +292,6 @@ Status LookupResource(
     const tensorflow::ResourceHandleProto& p,
     RefCountPtr<T>* value);
 
-// This class is used to guarantee that an anonymous resource is deleted
-// (irrespective of whether a resource deleter op is called explicitly or
-// the execution encounters an error before the op runs).
-//
-// This is achieved by wrapping an instance of this class into a variant
-// tensor which is passed as an input to a resource deleter op. If the
-// execution encounters an error before the op runs, the tensor will be
-// destroyed, essentially triggering the iterator deletion.
-// NOTE: This is not a feature-complete implementation of the DT_VARIANT
-// specification. In particular, we cannot serialize the `ResourceMgr`
-// object, so the `Encode()` and `Decode()` methods are not implemented.
-class ResourceDeleter
-{
-  public:
-    ResourceDeleter() : deleter_() {}
-
-    ResourceDeleter(
-        tensorflow::ResourceHandleProto handle,
-        ResourceMgr* resource_manager)
-        : deleter_(std::make_shared<Helper>(handle, resource_manager))
-    {
-    }
-
-    ResourceDeleter(ResourceDeleter&& rhs) : deleter_(std::move(rhs.deleter_))
-    {
-        TF_VLog(3, "ResourceDeleter move constructor called.");
-    }
-
-    ResourceDeleter(const ResourceDeleter& rhs) : deleter_(rhs.deleter_)
-    {
-        TF_VLog(3, "ResourceDeleter copy constructor called.");
-    }
-
-    ResourceDeleter& operator=(const ResourceDeleter& rhs) = delete;
-
-    ResourceDeleter& operator=(ResourceDeleter&& rhs) = default;
-
-    virtual ~ResourceDeleter()
-    {
-        TF_VLog(3, "ResourceDeleter destructor called.");
-    }
-
-  private:
-    // Helper that performs reference counting for the parent class and deletes
-    // the iterator resource when the refcount goes to zero.
-    //
-    // NOTE: The object is borrowing a pointer to the resource manager.
-    // Consequently, the tensor containing this object should not escape the
-    // function in which was created (so that it is guaranteed that the resource
-    // manager will outlive it).
-    struct Helper
-    {
-        Helper(
-            tensorflow::ResourceHandleProto handle,
-            ResourceMgr* resource_manager)
-            : handle(handle),
-              resource_manager(resource_manager)
-        {
-        }
-
-        Helper(const Helper& rhs) = delete;
-        Helper(Helper&& rhs) = delete;
-
-        ~Helper()
-        {
-            TF_VLog(3, "Deleting Resource: %s", handle.DebugString().c_str());
-            resource_manager->Delete(handle);
-        }
-
-        tensorflow::ResourceHandleProto handle;
-        ResourceMgr* resource_manager; // not owned
-    };
-
-    std::shared_ptr<Helper> deleter_;
-};
-
 // Implementation details below.
 
 // Simple wrapper to allow conditional dynamic / static casts.
@@ -379,23 +307,15 @@ struct TypeCastFunctor<T, true>
     static T* Cast(ResourceBase* r) { return dynamic_cast<T*>(r); }
 };
 
-template <typename T>
-Status ResourceMgr::Delete(
-    const std::string& container,
-    const std::string& name)
-{
-    CheckDeriveFromResourceBase<T>();
-    return DoDelete(container, std::type_index(typeid(T)), name);
-}
-
 template <typename T, bool use_dynamic_cast>
 Status ResourceMgr::LookupInternal(
     const std::string& container,
     const std::string& name,
+    uint64_t hash_code,
     T** resource) const
 {
     ResourceBase* found = nullptr;
-    Status s = DoLookup(container, std::type_index(typeid(T)), name, &found);
+    Status s = DoLookup(container, hash_code, "ResourceBase", name, &found);
     if (s.ok())
     {
         // It's safe to down cast 'found' to T* since
@@ -409,11 +329,12 @@ template <typename T, bool use_dynamic_cast>
 Status ResourceMgr::Lookup(
     const std::string& container,
     const std::string& name,
+    uint64_t hash_code,
     T** resource) const
 {
     CheckDeriveFromResourceBase<T>();
     std::shared_lock<std::shared_mutex> l(mu_);
-    return LookupInternal<T, use_dynamic_cast>(container, name, resource);
+    return LookupInternal<T, use_dynamic_cast>(container, name, hash_code, resource);
 }
 
 template <typename T, bool use_dynamic_cast>
@@ -425,6 +346,7 @@ Status LookupResource(
     return ctx->resource_manager()->Lookup<T, use_dynamic_cast>(
         p.container(),
         p.name(),
+        p.hash_code(),
         value);
 }
 
