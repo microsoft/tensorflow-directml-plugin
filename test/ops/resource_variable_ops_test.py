@@ -19,9 +19,6 @@ import os
 import pickle
 import re
 
-import tensorflow as tf
-tf.debugging.set_log_device_placement(True)
-
 from absl.testing import parameterized
 import numpy as np
 input(os.getpid())
@@ -226,6 +223,8 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
   @test_util.run_deprecated_v1
   def testCachedValueReadBeforeWrite(self):
     with self.cached_session() as sess:
+      v1 = resource_variable_ops.ResourceVariable(0, dtype=dtypes.float64, caching_device="cpu:0")
+      self.evaluate(v1.initializer)
       v = resource_variable_ops.ResourceVariable(0.0, caching_device="cpu:0")
       self.evaluate(v.initializer)
       value, _ = sess.run([v, v.assign_add(1.0)])
@@ -1298,7 +1297,7 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
     with context.eager_mode():
       var = resource_variable_ops.ResourceVariable(initial_value=1.0,
                                                    name="var8")
-      var_handle = test_ops.make_weak_resource_handle(var._handle)
+      var_handle = var._handle
       del var
       with self.assertRaisesRegex(errors.NotFoundError,
                                   r"Resource .* does not exist."):

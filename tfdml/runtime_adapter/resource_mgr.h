@@ -170,19 +170,22 @@ class ResourceMgr
         Status s;
         {
             std::shared_lock<std::shared_mutex> l(mu_);
-            s = LookupInternal<T, use_dynamic_cast>(container, name, hash_code, resource);
+            s = LookupInternal<T, use_dynamic_cast>(
+                container,
+                name,
+                hash_code,
+                resource);
             if (s.ok()) return s;
         }
         std::unique_lock<std::shared_mutex> l(mu_);
-        s = LookupInternal<T, use_dynamic_cast>(container, name, hash_code, resource);
+        s = LookupInternal<T, use_dynamic_cast>(
+            container,
+            name,
+            hash_code,
+            resource);
         if (s.ok()) return s;
         TF_RETURN_IF_ERROR(creator(resource));
-        s = DoCreate(
-            container,
-            hash_code,
-            "ResourceBase",
-            name,
-            *resource);
+        s = DoCreate(container, hash_code, "ResourceBase", name, *resource);
         if (!s.ok())
         {
             return errors::Internal("LookupOrCreate failed unexpectedly");
@@ -334,7 +337,11 @@ Status ResourceMgr::Lookup(
 {
     CheckDeriveFromResourceBase<T>();
     std::shared_lock<std::shared_mutex> l(mu_);
-    return LookupInternal<T, use_dynamic_cast>(container, name, hash_code, resource);
+    return LookupInternal<T, use_dynamic_cast>(
+        container,
+        name,
+        hash_code,
+        resource);
 }
 
 template <typename T, bool use_dynamic_cast>

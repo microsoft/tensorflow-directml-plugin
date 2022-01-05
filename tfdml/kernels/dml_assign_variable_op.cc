@@ -79,14 +79,32 @@ class DmlAssignVariableOp : public OpKernel
                     return Status::OK();
                 }));
         std::unique_lock<std::shared_mutex> ml(*variable->mu());
-        OP_REQUIRES(
-            context,
-            variable->tensor()->dtype() == dtype_,
-            errors::InvalidArgument(
-                "Trying to assign variable with wrong dtype. Expected ",
-                DataTypeString(variable->tensor()->dtype()),
-                " got ",
-                DataTypeString(dtype_)));
+
+        // TODO: Fix this when we update to a more recent TF version that has
+        // better support for TF_RESOURCE
+        // In graph mode, DestroyResource isn't called and resources are
+        // expected to get cleaned up on session shutdown. The problem is that
+        // the pluggable device API doesn't currently expose a callback for
+        // session creation and shutdown, which doesn't give us the opportunity
+        // to clean the resources.
+        if (variable->tensor()->dtype() != dtype_)
+        {
+            Status status =
+                DeleteResource(context, *HandleFromInput(context, 0));
+            OP_REQUIRES_OK(
+                context,
+                LookupOrCreateResource<Var>(
+                    context,
+                    *HandleFromInput(context, 0),
+                    &variable,
+                    [this, &value](Var** ptr)
+                    {
+                        *ptr = new Var(dtype_);
+                        *(*ptr)->tensor() = value;
+                        (*ptr)->is_initialized = true;
+                        return Status::OK();
+                    }));
+        }
 
         *variable->tensor() = value;
         variable->is_initialized = true;
@@ -338,6 +356,35 @@ class DmlVariableShapeOp : public OpKernel
     }
 };
 
+class DmlVarIsInitializedOp : public OpKernel
+{
+  public:
+    explicit DmlVarIsInitializedOp(
+        OpKernelConstruction* c,
+        std::shared_ptr<const NodeDef> node_def)
+        : OpKernel(std::move(node_def))
+    {
+    }
+
+    void Compute(OpKernelContext* ctx)
+    {
+        StatusOr<Tensor> status_or_output =
+            ctx->allocate_output(0, TensorShape({}));
+        OP_REQUIRES_OK(ctx, status_or_output.status());
+        Tensor& output = status_or_output.ValueOrDie();
+        auto output_tensor = output.base<bool>();
+        RefCountPtr<Var> variable;
+        Status s = LookupResource(ctx, *HandleFromInput(ctx, 0), &variable);
+        if (!s.ok())
+        {
+            output_tensor[0] = false;
+            return;
+        }
+        std::unique_lock<std::shared_mutex> ml(*variable->mu());
+        output_tensor[0] = variable->is_initialized;
+    }
+};
+
 void RegisterAssignVariableOp()
 {
     using K = KernelDefinition<ops::AssignVariableOp, DmlAssignVariableOp>::
@@ -414,6 +461,14 @@ void RegisterVariableShapeOp()
                     ops::VariableShape::Argument::output>::Register();
 }
 
+void RegisterVarIsInitializedOp()
+{
+    KernelDefinition<ops::VarIsInitializedOp, DmlVarIsInitializedOp>::
+        WithHostMemoryArgument<ops::VarIsInitializedOp::Argument::resource>::
+            WithHostMemoryArgument<
+                ops::VarIsInitializedOp::Argument::is_initialized>::Register();
+}
+
 void RegisterKernels_VariableOps()
 {
     RegisterAssignVariableOp();
@@ -422,6 +477,7 @@ void RegisterKernels_VariableOps()
     RegisterReadVariableOp();
     RegisterDestroyResourceOp();
     RegisterVariableShapeOp();
+    RegisterVarIsInitializedOp();
 }
 
 } // namespace tfdml
