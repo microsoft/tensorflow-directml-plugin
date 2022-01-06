@@ -960,8 +960,21 @@ class FusedBatchNormGradInitializationHelper : public InitializationHelper
         std::shared_ptr<const Attributes> attr)
         : attr_(std::move(attr))
     {
+        const Tensor& y_backprop = ctx->input(0);
         const Tensor& x = ctx->input(1);
         const Tensor& scale = ctx->input(2);
+        const Tensor& reserved_space_1 = ctx->input(3);
+        const Tensor& reserved_space_2 = ctx->input(4);
+
+        OP_REQUIRES(
+            ctx,
+            x.shape() == y_backprop.shape(),
+            errors::InvalidArgument(
+                "x and y_backprop must have same shape, but x has shape ",
+                x.shape().DebugString(),
+                " and y_backprop has shape ",
+                y_backprop.shape().DebugString()));
+
         const auto num_channels = GetTensorDim(x, attr_->tensor_format, 'C');
         OP_REQUIRES(
             ctx,
@@ -970,6 +983,24 @@ class FusedBatchNormGradInitializationHelper : public InitializationHelper
                 "scale must have the same number of elements as the channels "
                 "of x, got ",
                 scale.NumElements(),
+                " and ",
+                num_channels));
+        OP_REQUIRES(
+            ctx,
+            reserved_space_1.NumElements() == num_channels,
+            errors::InvalidArgument(
+                "reserve_space_1 must have the same number of "
+                "elements as the channels of x, got ",
+                reserved_space_1.NumElements(),
+                " and ",
+                num_channels));
+        OP_REQUIRES(
+            ctx,
+            reserved_space_2.NumElements() == num_channels,
+            errors::InvalidArgument(
+                "reserve_space_2 must have the same number of "
+                "elements as the channels of x, got ",
+                reserved_space_2.NumElements(),
                 " and ",
                 num_channels));
     }
@@ -1396,14 +1427,14 @@ void RegisterBatchNormWithGlobalNormalizationGrad()
 void RegisterKernels_BatchNorm()
 {
     RegisterFusedBatchNorm();
-    // RegisterFusedBatchNormV2();
+    RegisterFusedBatchNormV2();
     RegisterFusedBatchNormV3();
-    // RegisterFusedBatchNormEx();
-    // RegisterBatchNormWithGlobalNormalization();
-    // RegisterFusedBatchNormGrad();
-    // RegisterFusedBatchNormGradV2();
-    // RegisterFusedBatchNormGradV3();
-    // RegisterBatchNormWithGlobalNormalizationGrad();
+    RegisterFusedBatchNormEx();
+    RegisterBatchNormWithGlobalNormalization();
+    RegisterFusedBatchNormGrad();
+    RegisterFusedBatchNormGradV2();
+    RegisterFusedBatchNormGradV3();
+    RegisterBatchNormWithGlobalNormalizationGrad();
 }
 
 } // namespace tfdml
