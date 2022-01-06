@@ -34,5 +34,6 @@ class TensorShapeUtils
     static bool IsVector(const TensorShape& shape);
     static bool IsVectorOrHigher(const TensorShape& shape);
     static bool IsMatrix(const TensorShape& shape);
+    static bool IsMatrixOrHigher(const TensorShape& shape);
 };
 } // namespace tfdml
