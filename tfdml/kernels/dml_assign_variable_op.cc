@@ -301,7 +301,7 @@ void RegisterAssignSubVariableOp()
     K::WithTypeConstraint<T, TF_INT64>::Register();
 }
 
-void RegisterKernels_VariableOps()
+void RegisterKernels_AssignVariableOps()
 {
     RegisterAssignVariableOp();
     RegisterAssignAddVariableOp();

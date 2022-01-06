@@ -16,7 +16,8 @@ limitations under the License.
 namespace tfdml
 {
 void RegisterKernels_AddN();
-void RegisterKernels_VariableOps();
+void RegisterKernels_AssignVariableOps();
+void RegisterKernels_BiasAdd();
 void RegisterKernels_Concat();
 void RegisterKernels_Conv();
 void RegisterKernels_Gather();
@@ -29,7 +30,8 @@ void TF_InitKernel()
     // NOTE: we could add logic here to conditionally register kernels based on
     // D3D12 adapter capabilities (for example).
     tfdml::RegisterKernels_AddN();
-    tfdml::RegisterKernels_VariableOps();
+    tfdml::RegisterKernels_AssignVariableOps();
+    tfdml::RegisterKernels_BiasAdd();
     tfdml::RegisterKernels_Concat();
     tfdml::RegisterKernels_Conv();
     tfdml::RegisterKernels_Gather();

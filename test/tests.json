@@ -10,6 +10,12 @@
                     "disabled": true
                 },
                 {
+                    "file": "ops/bias_op_deterministic_test.py"
+                },
+                {
+                    "file": "ops/bias_op_test.py"
+                },
+                {
                     "file": "ops/concat_op_test.py"
                 },
                 {
