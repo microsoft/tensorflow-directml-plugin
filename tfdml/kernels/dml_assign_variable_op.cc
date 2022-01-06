@@ -31,6 +31,10 @@ class DmlAssignVariableOp : public OpKernel
         : OpKernel(std::move(node_def))
     {
         OP_REQUIRES_OK(c, c->GetAttr("dtype", &dtype_));
+        if (c->HasAttr("validate_shape"))
+        {
+            OP_REQUIRES_OK(c, c->GetAttr("validate_shape", &validate_shape_));
+        }
     }
 
     void Compute(OpKernelContext* ctx)
@@ -47,11 +51,36 @@ class DmlAssignVariableOp : public OpKernel
                 " and ",
                 DataTypeString(ctx->input(value_index).dtype())));
 
+        if (validate_shape_)
+        {
+            constexpr bool is_variant = false;
+            Tensor var_tensor;
+            OP_REQUIRES_OK(
+                ctx,
+                ctx->GetInputTensorFromVariable(
+                    var_index,
+                    is_variant,
+                    &var_tensor));
+
+            Tensor value_tensor = ctx->input(value_index);
+
+            OP_REQUIRES(
+                ctx,
+                 var_tensor.shape().IsSameSize(value_tensor.shape()),
+                errors::InvalidArgument(
+                    "Trying to assign to variable with tensor with wrong shape."
+                    " Expected ",
+                    var_tensor.shape().DebugString(),
+                    " got ",
+                    value_tensor.shape().DebugString()));
+        }
+
         OP_REQUIRES_OK(ctx, ctx->AssignVariable(var_index, value_index));
     }
 
   private:
     TF_DataType dtype_;
+    bool validate_shape_ = false;
 };
 
 class DummyInitializationHelper : public InitializationHelper
@@ -82,16 +111,14 @@ class DmlUpdateVariableOpHelper : public DmlKernel
     explicit DmlUpdateVariableOpHelper(
         TF_OpKernelContext* ctx,
         DmlDevice* dml_device,
-        Tensor& var_tensor,
-        Tensor& value_tensor)
+        TF_DataType dtype,
+        int num_elements)
     {
         uint32_t tensor_sizes[] =
-            {1, 1, 1, static_cast<uint32_t>(value_tensor.NumElements())};
+            {1, 1, 1, static_cast<uint32_t>(num_elements)};
 
-        auto tensor_desc = DmlTensorDesc::Create(
-            value_tensor.dtype(),
-            tensor_sizes,
-            tensor_sizes);
+        auto tensor_desc =
+            DmlTensorDesc::Create(dtype, tensor_sizes, tensor_sizes);
 
         DmlTensorInfo lhs_info = {};
         lhs_info.kernel_index = 0;
@@ -112,7 +139,7 @@ class DmlUpdateVariableOpHelper : public DmlKernel
         auto result = Expression()(a, b);
 
         // TFDML #24881131
-        if (Is64BitSignedIntegerType(value_tensor.dtype()))
+        if (Is64BitSignedIntegerType(dtype))
         {
             result = dml::ConvertInt32ToInt64(result);
         }
@@ -135,8 +162,8 @@ class DmlUpdateVariableOpHelper : public DmlKernel
     StatusOr<DmlGpuEvent> Compute(
         TF_OpKernelContext* ctx,
         DmlDevice* dml_device,
-        Tensor& var_tensor,
-        Tensor& value_tensor) const
+        const TF_Tensor* var_tensor,
+        const TF_Tensor* value_tensor) const
     {
         D3D12BufferRegion var_resource =
             dml_device->GetDeviceContext()->GetBufferForTensor(var_tensor);
@@ -182,14 +209,11 @@ static void UpdateVariable(
     Device* device = static_cast<Device*>(stream->stream_handle);
     DmlDevice* dml_device = static_cast<DmlDevice*>(device);
 
-    Tensor var_tensor(var);
-    Tensor value_tensor(var);
-
     DmlUpdateVariableOpHelper<Expression> dml_kernel(
         ctx,
         dml_device,
-        var_tensor,
-        value_tensor);
+        TF_TensorType(value),
+        TF_TensorElementCount(value));
 
     if (!dml_kernel.GetStatus().ok())
     {
@@ -198,7 +222,7 @@ static void UpdateVariable(
     }
 
     StatusOr<DmlGpuEvent> status_or_event =
-        dml_kernel.Compute(ctx, dml_device, var_tensor, value_tensor);
+        dml_kernel.Compute(ctx, dml_device, var, value);
 
     if (!status_or_event.ok())
     {

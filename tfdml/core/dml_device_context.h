@@ -24,6 +24,7 @@ limitations under the License.
 
 struct SP_DeviceMemoryBase;
 struct TF_OpKernelContext;
+struct TF_Tensor;
 
 namespace tfdml
 {
@@ -140,6 +141,7 @@ class DMLDeviceContext
 
     // Retrives the D3D12 default heap buffer backing the specified tensor.
     D3D12BufferRegion GetBufferForTensor(const Tensor& tensor) const;
+    D3D12BufferRegion GetBufferForTensor(const TF_Tensor* tensor) const;
 
     // Retrives the D3D12 default heap buffer backing the specified device
     // memory.

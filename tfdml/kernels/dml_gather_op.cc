@@ -45,8 +45,6 @@ class GatherInitializationHelper : public InitializationHelper
     {
         if (ctx->input(0).dtype() == TF_RESOURCE)
         {
-            constexpr int lock_indices[1] = {0};
-            var_lock_.LockShared(lock_indices);
             constexpr bool is_variant = false;
             variable_tensor_.emplace();
             OP_REQUIRES_OK(
@@ -55,6 +53,9 @@ class GatherInitializationHelper : public InitializationHelper
                     0,
                     is_variant,
                     &*variable_tensor_));
+
+            constexpr int lock_indices[1] = {0};
+            var_lock_.LockShared(lock_indices);
         }
 
         const Tensor params = GetParamsTensor(ctx);

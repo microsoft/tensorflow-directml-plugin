@@ -15,8 +15,6 @@
 """Tests for convolution related functionality in tensorflow.ops.nn."""
 
 import numpy as np
-import os
-input(os.getpid())
 
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes

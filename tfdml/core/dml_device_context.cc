@@ -19,6 +19,7 @@ limitations under the License.
 #include "tfdml/core/dml_device.h"
 #include "tfdml/runtime_adapter/status.h"
 #include "tensorflow/include/tensorflow/c/kernels.h"
+#include "tensorflow/c/tf_tensor.h"
 
 namespace tfdml
 {
@@ -370,6 +371,14 @@ D3D12BufferRegion DMLDeviceContext::GetBufferForTensor(
 {
     const void* p = tensor.tensor_data().data();
     return GetBufferForOpaqueData(allocator_, p, tensor.TotalBytes());
+}
+
+D3D12BufferRegion DMLDeviceContext::GetBufferForTensor(
+    const TF_Tensor* tensor) const
+{
+    const void* p = TF_TensorData(tensor);
+    size_t total_bytes = TF_TensorByteSize(tensor);
+    return GetBufferForOpaqueData(allocator_, p, total_bytes);
 }
 
 D3D12BufferRegion DMLDeviceContext::GetBufferForDeviceMemory(

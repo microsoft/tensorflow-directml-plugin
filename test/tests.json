@@ -47,6 +47,9 @@
                 },
                 {
                     "file": "ops/matmul_op_test.py"
+                },
+                {
+                    "file": "ops/resource_variable_ops_test.py"
                 }
             ]
         },
