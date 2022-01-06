@@ -18,6 +18,7 @@ limitations under the License.
 #include "tensorflow/c/experimental/stream_executor/stream_executor.h"
 #include "tfdml/core/dml_device.h"
 #include "tfdml/runtime_adapter/status.h"
+#include "tensorflow/include/tensorflow/c/kernels.h"
 
 namespace tfdml
 {
@@ -313,6 +314,13 @@ void DMLDeviceContext::EnqueueCallbackForGpuEvent(
 
 DmlBuffer DMLDeviceContext::AllocateDefaultBuffer(
     OpKernelContext* op_kernel_context,
+    uint64_t num_bytes) const
+{
+    return DmlBuffer(op_kernel_context, allocator_, num_bytes);
+}
+
+DmlBuffer DMLDeviceContext::AllocateDefaultBuffer(
+    TF_OpKernelContext* op_kernel_context,
     uint64_t num_bytes) const
 {
     return DmlBuffer(op_kernel_context, allocator_, num_bytes);

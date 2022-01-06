@@ -46,10 +46,10 @@ def tfdml_plugin_workspace():
     tensorflow_pip_package(
         name = "tensorflow",
         build_file = clean_dep("//third_party:tensorflow.BUILD"),
-        linux_url = "https://files.pythonhosted.org/packages/ed/ed/01ca3c3661b66d84d5038b9f5682ccf0503ca5f5c93a616db059766c7cd5/tf_nightly_cpu-2.7.0.dev20210904-cp37-cp37m-manylinux2010_x86_64.whl",
-        linux_sha256 = "9f0fe4607dbe099883889562d73a6e2b56aade8744a9660bdc4de170a81fe58f",
-        windows_url = "https://files.pythonhosted.org/packages/34/76/4ad2ba3a3e1d87539e6723e827b4dfc5a80b5630f28f4549ada61a44cf0a/tf_nightly_cpu-2.7.0.dev20210904-cp37-cp37m-win_amd64.whl",
-        windows_sha256 = "1f87a6e0a230ec92c79fc76ed5fdd925f439be6597000d852d6ed813a790a0a9",
+        linux_url = "https://files.pythonhosted.org/packages/18/54/18711e080dead41e277d42b7f1816781150185d8a8fdae6b324776ca555d/tf_nightly_cpu-2.9.0.dev20220105-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl",
+        linux_sha256 = "f05991e921ca11a126dc228441f8955644e01066db0cc145e8a2bd50a8bb96cb",
+        windows_url = "https://files.pythonhosted.org/packages/58/73/6193d31c81dca7301329db8231a943e8cc84810a6578f4cc5979b76513ad/tf_nightly_cpu-2.9.0.dev20220105-cp37-cp37m-win_amd64.whl",
+        windows_sha256 = "c7db8ccdbc42ed52565128630e5a2dfe4b8332ac354fc97b3fd55f696147bda3",
     )
 
     http_archive(

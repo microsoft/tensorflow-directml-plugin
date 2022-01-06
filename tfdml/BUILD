@@ -20,7 +20,6 @@ cc_library(
         "runtime_adapter/allocator_retry.cc",
         "runtime_adapter/bcast.cc",
         "runtime_adapter/bfc_allocator.cc",
-        "runtime_adapter/device.cc",
         "runtime_adapter/env.cc",
         "runtime_adapter/env_var.cc",
         "runtime_adapter/fused_eigen_output_kernels.cc",
@@ -29,7 +28,6 @@ cc_library(
         "runtime_adapter/op_kernel_construction.cc",
         "runtime_adapter/op_kernel_context.cc",
         "runtime_adapter/padding.cc",
-        "runtime_adapter/resource_mgr.cc",
         "runtime_adapter/status.cc",
         "runtime_adapter/tensor.cc",
         "runtime_adapter/tensor_format.cc",
@@ -37,6 +35,7 @@ cc_library(
         "runtime_adapter/tensor_shape_utils.cc",
         "runtime_adapter/training_op_helpers.cc",
         "runtime_adapter/types.cc",
+        "runtime_adapter/variable_lock.cc",
         "runtime_adapter/xplane_builder.cc",
     ],
     hdrs = [
@@ -61,9 +60,6 @@ cc_library(
         "runtime_adapter/op_kernel_construction.h",
         "runtime_adapter/op_kernel_context.h",
         "runtime_adapter/padding.h",
-        "runtime_adapter/refcount.h",
-        "runtime_adapter/resource_mgr.h",
-        "runtime_adapter/resource_var.h",
         "runtime_adapter/status.h",
         "runtime_adapter/statusor.h",
         "runtime_adapter/stream.h",
@@ -73,6 +69,7 @@ cc_library(
         "runtime_adapter/tensor_shape_utils.h",
         "runtime_adapter/training_op_helpers.h",
         "runtime_adapter/types.h",
+        "runtime_adapter/variable_lock.h",
         "runtime_adapter/wide_char.h",
         "runtime_adapter/xplane_builder.h",
     ],
@@ -266,12 +263,7 @@ cc_binary(
     srcs = [
         "plugin/plugin_device.cc",
         "plugin/plugin_kernel.cc",
-        # TODO: Enable when we bump TF to a version that supports TF_RESOURCE
-        # TF 2.7 added the profiler API, but since TF_RESOURCE serialization
-        # doesn't work in TF 2.7 or 2.8 we have to wait until this issue
-        # is resolved before using the profiler API
-        # https://github.com/tensorflow/tensorflow/issues/53531
-        # "plugin/plugin_profiler.cc",
+        "plugin/plugin_profiler.cc",
     ],
     features = ["windows_export_all_symbols"],
     linkshared = True,

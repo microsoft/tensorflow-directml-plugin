@@ -58,49 +58,6 @@ static TF_Tensor* init_empty_tensor()
     return TF_AllocateTensor(TF_FLOAT, empty_sizes, 1, 0);
 }
 
-TF_Tensor* Tensor::shallow_copy(const Tensor& other)
-{
-    TF_Tensor* copy_tensor = nullptr;
-
-    int num_dims = TF_NumDims(other.tensor_.get());
-
-    std::vector<int64_t> sizes(num_dims);
-
-    for (int i = 0; i < num_dims; ++i)
-    {
-        sizes[i] = TF_Dim(other.tensor_.get(), i);
-    }
-
-    if (other.dtype() == TF_RESOURCE)
-    {
-        copy_tensor = TF_AllocateTensor(
-            TF_RESOURCE,
-            sizes.data(),
-            num_dims,
-            other.TotalBytes());
-    }
-    else
-    {
-        copy_tensor = init_empty_tensor();
-
-        Status status;
-        TF_TensorBitcastFrom(
-            other.tensor_.get(),
-            other.dtype(),
-            copy_tensor,
-            other.shape().data(),
-            other.shape().dims(),
-            status.raw());
-
-        if (!status.ok())
-        {
-            LogFatal(status.error_message());
-        }
-    }
-
-    return copy_tensor;
-}
-
 bool Tensor::CopyFrom(const Tensor& other, const TensorShape& shape)
 {
     if (other.NumElements() != shape.num_elements()) return false;
@@ -139,30 +96,18 @@ Tensor::Tensor(TF_Tensor* tensor)
     assert(tensor != nullptr);
     tensor_ = MakeTensor(tensor);
     shape_ = MakeShape(tensor);
-
-    if (dtype() == TF_RESOURCE)
-    {
-        auto serialized_view = tensor_data();
-        std::string serialized_data(
-            serialized_view.data(),
-            serialized_view.size());
-        resource_handle_ = std::make_shared<tensorflow::ResourceHandleProto>();
-        CHECK(resource_handle_->ParseFromString(serialized_data));
-    }
 }
 
 Tensor::Tensor(const Tensor& other)
-    : tensor_(MakeTensor(shallow_copy(other))),
-      shape_(other.shape()),
-      resource_handle_(other.resource_handle_)
+    : tensor_(MakeTensor(other.tensor_.get())),
+      shape_(other.shape())
 {
 }
 
 Tensor& Tensor::operator=(const Tensor& other)
 {
-    tensor_ = MakeTensor(shallow_copy(other));
+    tensor_ = MakeTensor(other.tensor_.get());
     shape_ = other.shape();
-    resource_handle_ = other.resource_handle_;
     return *this;
 }
 
@@ -170,9 +115,7 @@ Tensor& Tensor::operator=(Tensor&& other)
 {
     tensor_ = std::move(other.tensor_);
     shape_ = std::move(other.shape_);
-    resource_handle_ = std::move(other.resource_handle_);
     other.tensor_ = nullptr;
-    other.resource_handle_ = nullptr;
     return *this;
 }
 
@@ -268,11 +211,5 @@ Tensor Tensor::DeepCopy() const
 }
 
 const TF_Tensor* Tensor::raw() const { return tensor_.get(); }
-
-std::shared_ptr<tensorflow::ResourceHandleProto> Tensor::AsResource() const
-{
-    CHECK(resource_handle_);
-    return resource_handle_;
-}
 
 } // namespace tfdml

@@ -62,14 +62,6 @@ class Tensor
         return reinterpret_cast<T*>(raw_data());
     }
 
-    // Resources should be returned by their shared pointer with the
-    // AsResource() function
-    template <>
-    tensorflow::ResourceHandleProto* base();
-    template <>
-    const tensorflow::ResourceHandleProto* base() const;
-
-    std::shared_ptr<tensorflow::ResourceHandleProto> AsResource() const;
     std::string DebugString() const;
 
     template <typename H>
@@ -84,13 +76,7 @@ class Tensor
     }
 
   private:
-    static TF_Tensor* shallow_copy(const Tensor& other);
-
     std::shared_ptr<TF_Tensor> tensor_;
     TensorShape shape_;
-
-    // Resource handles are not directly stored in the tensor and are serialized
-    // instead, so we need somewhere to store the memory
-    std::shared_ptr<tensorflow::ResourceHandleProto> resource_handle_;
 };
 } // namespace tfdml

@@ -14,6 +14,7 @@ limitations under the License.
 #include "op_kernel_context.h"
 
 #include "tensorflow/c/kernels.h"
+#include "tensorflow/c/kernels_experimental.h"
 #include "tensorflow/c/tf_tensor.h"
 #include "tfdml/runtime_adapter/device.h"
 #include "tfdml/runtime_adapter/macros.h"
@@ -173,16 +174,100 @@ MemoryType OpKernelContext::output_memory_type(int index) const
     return op_kernel_->output_memory_type(index);
 }
 
-ResourceMgr* OpKernelContext::resource_manager() const
-{
-    return device_->resource_manager();
-}
-
 Status OpKernelContext::set_output(int index, const Tensor& tensor)
 {
     Status status;
     TF_SetOutput(context_, index, tensor.raw(), status.raw());
     return status;
 }
+
+static void CopyTensorInSameDevice(
+    TF_OpKernelContext* ctx,
+    TF_Tensor* source,
+    TF_Tensor* dest)
+{
+    Status status;
+    SP_Stream stream = TF_GetStream(ctx, status.raw());
+    CHECK(status.ok());
+
+    Device* device = static_cast<Device*>(stream->stream_handle);
+    Tensor input_tensor(source);
+    Tensor output_tensor(dest);
+    device->CopyTensorInSameDevice(&input_tensor, &output_tensor);
+}
+
+Status OpKernelContext::AssignVariable(int var_index, int value_index)
+{
+    Status status;
+    TF_AssignVariable(
+        context_,
+        var_index,
+        value_index,
+        CopyTensorInSameDevice,
+        status.raw());
+
+    return status;
+}
+
+Status OpKernelContext::AssignUpdateVariable(
+    int var_index,
+    int value_index,
+    void (*updateFunc)(
+        TF_OpKernelContext* ctx,
+        TF_Tensor* tensor,
+        TF_Tensor* value,
+        int Op))
+{
+    assert(var_index < num_inputs());
+    assert(value_index < num_inputs());
+    Status status;
+    TF_AssignUpdateVariable(
+        context_,
+        var_index,
+        value_index,
+        0,
+        input(value_index).dtype() == TF_VARIANT,
+        CopyTensorInSameDevice,
+        updateFunc,
+        status.raw());
+    return status;
+}
+
+Status OpKernelContext::GetInputTensorFromVariable(
+    int var_index,
+    bool is_variant,
+    Tensor* tensor)
+{
+    assert(var_index < num_inputs());
+    constexpr bool sparse = false;
+    static constexpr int64_t empty_sizes[1] = {0};
+    TF_Tensor* raw_tensor = TF_AllocateTensor(TF_FLOAT, empty_sizes, 1, 0);
+
+    // Lock holding is only relevant for mutable tensors, which is a deprecated
+    // feature and isn't supported for pluggable devices
+    constexpr bool lock_held = false;
+
+    Status status;
+    TF_GetInputTensorFromVariable(
+        context_,
+        var_index,
+        lock_held,
+        is_variant,
+        sparse,
+        CopyTensorInSameDevice,
+        &raw_tensor,
+        status.raw());
+
+    if (!status.ok())
+    {
+        return status;
+    }
+
+    *tensor = Tensor(raw_tensor);
+
+    return Status::OK();
+}
+
+TF_OpKernelContext* OpKernelContext::raw() const { return context_; }
 
 } // namespace tfdml

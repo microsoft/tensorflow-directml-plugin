@@ -17,6 +17,8 @@ limitations under the License.
 #include "dml_common.h"
 #include "tfdml/runtime_adapter/tensor.h"
 
+struct TF_OpKernelContext;
+
 namespace tfdml
 {
 
@@ -32,6 +34,11 @@ class DmlBuffer
   public:
     explicit DmlBuffer(
         OpKernelContext* op_kernel_context,
+        DmlAllocator* allocator,
+        uint64_t size_in_bytes);
+
+    explicit DmlBuffer(
+        TF_OpKernelContext* op_kernel_context,
         DmlAllocator* allocator,
         uint64_t size_in_bytes);
 
