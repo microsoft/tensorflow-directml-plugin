@@ -17,6 +17,7 @@ namespace tfdml
 {
 void RegisterKernels_AddN();
 void RegisterKernels_AssignVariableOp();
+void RegisterKernels_BatchNorm();
 void RegisterKernels_BiasAdd();
 void RegisterKernels_Concat();
 void RegisterKernels_Conv();
@@ -36,6 +37,7 @@ void TF_InitKernel()
     // https://github.com/tensorflow/tensorflow/issues/53531
     // tfdml::RegisterKernels_AssignVariableOp();
 
+    tfdml::RegisterKernels_BatchNorm();
     tfdml::RegisterKernels_BiasAdd();
     tfdml::RegisterKernels_Concat();
     tfdml::RegisterKernels_Conv();
