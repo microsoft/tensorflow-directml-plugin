@@ -76,6 +76,8 @@ class Tensor
     }
 
   private:
+    static TF_Tensor* shallow_copy(const Tensor& other);
+
     std::shared_ptr<TF_Tensor> tensor_;
     TensorShape shape_;
 };

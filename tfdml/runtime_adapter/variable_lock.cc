@@ -12,6 +12,7 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tfdml/runtime_adapter/variable_lock.h"
+#include "tensorflow/c/env.h"
 #include "tensorflow/c/kernels_experimental.h"
 #include "tfdml/runtime_adapter/device.h"
 #include "tfdml/runtime_adapter/op_kernel_context.h"
@@ -43,6 +44,28 @@ void VariableLock::LockShared(absl::Span<const int> input_indices)
     constexpr bool unique_lock = false;
     constexpr bool sparse = false;
     Status status;
+
+#ifdef _WIN32
+    void* tf_handle =
+        TF_LoadSharedLibrary("_pywrap_tensorflow_internal.pyd", status.raw());
+
+    CHECK(status.ok());
+
+    void* lock_variables_function = TF_GetSymbolFromLibrary(
+        tf_handle,
+        "TF_MaybeLockVariableInputMutexesInOrder",
+        status.raw());
+
+    CHECK(status.ok());
+
+    using TF_MaybeLockVariableInputMutexesInOrderFunction =
+        decltype(TF_MaybeLockVariableInputMutexesInOrder);
+
+    auto* TF_MaybeLockVariableInputMutexesInOrder =
+        static_cast<TF_MaybeLockVariableInputMutexesInOrderFunction*>(
+            lock_variables_function);
+#endif
+
     TF_MaybeLockVariableInputMutexesInOrder(
         ctx_->raw(),
         unique_lock,
@@ -58,6 +81,28 @@ void VariableLock::LockUnique(absl::Span<const int> input_indices)
     constexpr bool unique_lock = true;
     constexpr bool sparse = false;
     Status status;
+
+#ifdef _WIN32
+    void* tf_handle =
+        TF_LoadSharedLibrary("_pywrap_tensorflow_internal.pyd", status.raw());
+
+    CHECK(status.ok());
+
+    void* lock_variables_function = TF_GetSymbolFromLibrary(
+        tf_handle,
+        "TF_MaybeLockVariableInputMutexesInOrder",
+        status.raw());
+
+    CHECK(status.ok());
+
+    using TF_MaybeLockVariableInputMutexesInOrderFunction =
+        decltype(TF_MaybeLockVariableInputMutexesInOrder);
+
+    auto* TF_MaybeLockVariableInputMutexesInOrder =
+        static_cast<TF_MaybeLockVariableInputMutexesInOrderFunction*>(
+            lock_variables_function);
+#endif
+
     TF_MaybeLockVariableInputMutexesInOrder(
         ctx_->raw(),
         unique_lock,
@@ -72,6 +117,28 @@ void VariableLock::Unlock()
 {
     if (lock_holder_)
     {
+#ifdef _WIN32
+        Status status;
+        void* tf_handle =
+            TF_LoadSharedLibrary("_pywrap_tensorflow_internal.pyd", status.raw());
+
+        CHECK(status.ok());
+
+        void* unlock_variables_function = TF_GetSymbolFromLibrary(
+            tf_handle,
+            "TF_ReleaseVariableInputLockHolder",
+            status.raw());
+
+        CHECK(status.ok());
+
+        using TF_ReleaseVariableInputLockHolderFunction =
+            decltype(TF_ReleaseVariableInputLockHolder);
+
+        auto* TF_ReleaseVariableInputLockHolder =
+            static_cast<TF_ReleaseVariableInputLockHolderFunction*>(
+                unlock_variables_function);
+#endif
+
         TF_ReleaseVariableInputLockHolder(lock_holder_);
         lock_holder_ = nullptr;
     }

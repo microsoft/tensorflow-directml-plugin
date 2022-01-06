@@ -22,7 +22,7 @@ class Tensor;
 class Device
 {
   public:
-    virtual ~Device();
+    virtual ~Device() = default;
 
     virtual Status CopyCPUTensorToDevice(
         const Tensor* cpu_tensor,

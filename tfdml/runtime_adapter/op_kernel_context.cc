@@ -13,6 +13,7 @@ limitations under the License.
 
 #include "op_kernel_context.h"
 
+#include "tensorflow/c/env.h"
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/c/kernels_experimental.h"
 #include "tensorflow/c/tf_tensor.h"
@@ -199,6 +200,24 @@ static void CopyTensorInSameDevice(
 Status OpKernelContext::AssignVariable(int var_index, int value_index)
 {
     Status status;
+
+#ifdef _WIN32
+    void* tf_handle =
+        TF_LoadSharedLibrary("_pywrap_tensorflow_internal.pyd", status.raw());
+
+    CHECK(status.ok());
+
+    void* assign_variable_function =
+        TF_GetSymbolFromLibrary(tf_handle, "TF_AssignVariable", status.raw());
+
+    CHECK(status.ok());
+
+    using TF_AssignVariableFunction = decltype(TF_AssignVariable);
+
+    auto* TF_AssignVariable =
+        static_cast<TF_AssignVariableFunction*>(assign_variable_function);
+#endif
+
     TF_AssignVariable(
         context_,
         var_index,
@@ -221,6 +240,27 @@ Status OpKernelContext::AssignUpdateVariable(
     assert(var_index < num_inputs());
     assert(value_index < num_inputs());
     Status status;
+
+#ifdef _WIN32
+    void* tf_handle =
+        TF_LoadSharedLibrary("_pywrap_tensorflow_internal.pyd", status.raw());
+
+    CHECK(status.ok());
+
+    void* assign_update_variable_function = TF_GetSymbolFromLibrary(
+        tf_handle,
+        "TF_AssignUpdateVariable",
+        status.raw());
+
+    CHECK(status.ok());
+
+    using TF_AssignUpdateVariableFunction = decltype(TF_AssignUpdateVariable);
+
+    auto* TF_AssignUpdateVariable =
+        static_cast<TF_AssignUpdateVariableFunction*>(
+            assign_update_variable_function);
+#endif
+
     TF_AssignUpdateVariable(
         context_,
         var_index,
@@ -248,6 +288,28 @@ Status OpKernelContext::GetInputTensorFromVariable(
     constexpr bool lock_held = false;
 
     Status status;
+
+#ifdef _WIN32
+    void* tf_handle =
+        TF_LoadSharedLibrary("_pywrap_tensorflow_internal.pyd", status.raw());
+
+    CHECK(status.ok());
+
+    void* get_input_tensor_from_variable_function = TF_GetSymbolFromLibrary(
+        tf_handle,
+        "TF_GetInputTensorFromVariable",
+        status.raw());
+
+    CHECK(status.ok());
+
+    using TF_GetInputTensorFromVariableFunction =
+        decltype(TF_GetInputTensorFromVariable);
+
+    auto* TF_GetInputTensorFromVariable =
+        static_cast<TF_GetInputTensorFromVariableFunction*>(
+            get_input_tensor_from_variable_function);
+#endif
+
     TF_GetInputTensorFromVariable(
         context_,
         var_index,

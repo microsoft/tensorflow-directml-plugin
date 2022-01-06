@@ -58,6 +58,27 @@ static TF_Tensor* init_empty_tensor()
     return TF_AllocateTensor(TF_FLOAT, empty_sizes, 1, 0);
 }
 
+TF_Tensor* Tensor::shallow_copy(const Tensor& other)
+{
+    TF_Tensor* copy_tensor = init_empty_tensor();
+
+    Status status;
+    TF_TensorBitcastFrom(
+        other.tensor_.get(),
+        other.dtype(),
+        copy_tensor,
+        other.shape().data(),
+        other.shape().dims(),
+        status.raw());
+
+    if (!status.ok())
+    {
+        LogFatal(status.error_message());
+    }
+
+    return copy_tensor;
+}
+
 bool Tensor::CopyFrom(const Tensor& other, const TensorShape& shape)
 {
     if (other.NumElements() != shape.num_elements()) return false;
@@ -99,14 +120,14 @@ Tensor::Tensor(TF_Tensor* tensor)
 }
 
 Tensor::Tensor(const Tensor& other)
-    : tensor_(MakeTensor(other.tensor_.get())),
+    : tensor_(MakeTensor(shallow_copy(other))),
       shape_(other.shape())
 {
 }
 
 Tensor& Tensor::operator=(const Tensor& other)
 {
-    tensor_ = MakeTensor(other.tensor_.get());
+    tensor_ = MakeTensor(shallow_copy(other));
     shape_ = other.shape();
     return *this;
 }
