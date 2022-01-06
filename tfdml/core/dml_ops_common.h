@@ -30,7 +30,7 @@ limitations under the License.
 #include "tfdml/core/dml_tensor_desc.h"
 #include "tfdml/core/dml_util.h"
 
-class TF_OpKernelContext;
+struct TF_OpKernelContext;
 
 namespace tfdml
 {

@@ -77,6 +77,8 @@ template <typename Expression>
 class DmlUpdateVariableOpHelper : public DmlKernel
 {
   public:
+    using DmlKernel::Compute;
+
     explicit DmlUpdateVariableOpHelper(
         TF_OpKernelContext* ctx,
         DmlDevice* dml_device,
