@@ -17,6 +17,7 @@ namespace tfdml
 {
 void RegisterKernels_AddN();
 void RegisterKernels_AssignVariableOps();
+void RegisterKernels_BatchNorm();
 void RegisterKernels_BiasAdd();
 void RegisterKernels_Concat();
 void RegisterKernels_Conv();
@@ -31,6 +32,7 @@ void TF_InitKernel()
     // D3D12 adapter capabilities (for example).
     tfdml::RegisterKernels_AddN();
     tfdml::RegisterKernels_AssignVariableOps();
+    tfdml::RegisterKernels_BatchNorm();
     tfdml::RegisterKernels_BiasAdd();
     tfdml::RegisterKernels_Concat();
     tfdml::RegisterKernels_Conv();
