@@ -19,7 +19,7 @@ limitations under the License.
 #include <vector>
 
 #ifndef _WIN32
-#include "winadapter.h"
+#include <wsl/winadapter.h>
 #endif
 
 #include <directx/d3d12.h>
@@ -53,12 +53,12 @@ limitations under the License.
 #endif
 
 #include "DirectMLX.h"
-#include "d3dx12.h"
+#include "directx/d3dx12.h"
 
 // When building for Windows, this include will statically assert that the
 // declared IIDs match those found in the Windows SDK.
 // clang-format off
-#include "dxguids.h"
+#include "dxguids/dxguids.h"
 #include "dml_guids.h"
 // clang-format on
 

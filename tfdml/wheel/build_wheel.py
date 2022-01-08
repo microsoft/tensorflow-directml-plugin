@@ -10,8 +10,8 @@ from contextlib import contextmanager
 
 def parse_args():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--src', help='prepare sources in srcdir')
-  parser.add_argument('--dst', help='build wheel in dstdir')
+  parser.add_argument('--plugin_path', help='path to TFDML plugin library')
+  parser.add_argument('--build_dir', help='cmake build directory')
   return parser.parse_args()
 
 
@@ -29,20 +29,8 @@ def is_windows():
   return sys.platform == 'win32'
 
 
-def copy_dml_redist_files(dml_redist_dir):
-  if is_windows():
-    runfiles_manifest_path = 'bazel-bin/tfdml/wheel/build_wheel.exe.runfiles_manifest'
-  else:
-    runfiles_manifest_path = 'bazel-bin/tfdml/wheel/build_wheel.runfiles_manifest'
-
-  with open(runfiles_manifest_path, 'r') as manifest:
-    dml_config_path = re.search(
-        r'^dml_redist/.*?/include/DirectMLConfig\.h (.*)',
-        manifest.read(),
-        flags=re.MULTILINE).group(1)
-
-  # Locate path to root of DirectML redist files
-  dml_redist_root = os.path.split(os.path.split(dml_config_path)[0])[0]
+def copy_dml_redist_files(dst, dml_redist_dir, pix_dir):
+  dml_config_path = os.path.join(dml_redist_dir, "include/DirectMLConfig.h")
 
   # Copy library and licenses
   with open(dml_config_path, 'r') as dml_config:
@@ -53,57 +41,31 @@ def copy_dml_redist_files(dml_redist_dir):
     print(f'DML Version = {dml_version}')
 
     if is_windows():
-      lib_src = f'{dml_redist_root}/bin/x64-win/DirectML.dll'
-      lib_dst = f'{dml_redist_dir}/DirectML.{dml_version}.dll'
+      lib_src = f'{dml_redist_dir}/bin/x64-win/DirectML.dll'
+      lib_dst = f'{dst}/DirectML.{dml_version}.dll'
     else:
-      lib_src = f'{dml_redist_root}/bin/x64-linux/libdirectml.so'
-      lib_dst = f'{dml_redist_dir}/libdirectml.{dml_version}.so'
+      lib_src = f'{dml_redist_dir}/bin/x64-linux/libdirectml.so'
+      lib_dst = f'{dst}/libdirectml.{dml_version}.so'
 
     shutil.copy(lib_src, lib_dst)
-    shutil.copy(f'{dml_redist_root}/LICENSE.txt',
-                f'{dml_redist_dir}/DirectML_LICENSE.txt')
-    shutil.copy(f'{dml_redist_root}/ThirdPartyNotices.txt',
-                f'{dml_redist_dir}/DirectML_ThirdPartyNotices.txt')
+    shutil.copy(f'{dml_redist_dir}/LICENSE.txt',
+                f'{dst}/DirectML_LICENSE.txt')
+    shutil.copy(f'{dml_redist_dir}/ThirdPartyNotices.txt',
+                f'{dst}/DirectML_ThirdPartyNotices.txt')
 
     # Copy PIX event runtime
     if is_windows():
-      with open(runfiles_manifest_path, 'r') as manifest:
-        pix_event_runtime_dll_path = re.search(
-            r'^pix/.*?/WinPixEventRuntime\.dll (.*)',
-            manifest.read(),
-            flags=re.MULTILINE).group(1)
-        pix_event_runtime_root = os.path.split(
-            os.path.split(os.path.split(pix_event_runtime_dll_path)[0])[0])[0]
-        shutil.copy(pix_event_runtime_dll_path, dml_redist_dir)
-        shutil.copy(f'{pix_event_runtime_root}/license.txt',
-                    f'{dml_redist_dir}/WinPixEventRuntime_LICENSE.txt')
+        shutil.copy(f'{pix_dir}/bin/x64/WinPixEventRuntime.dll', dst)
+        shutil.copy(f'{pix_dir}/license.txt',
+                    f'{dst}/WinPixEventRuntime_LICENSE.txt')
         shutil.copy(
-            f'{pix_event_runtime_root}/ThirdPartyNotices.txt',
-            f'{dml_redist_dir}/WinPixEventRuntime_ThirdPartyNotices.txt')
+            f'{pix_dir}/ThirdPartyNotices.txt',
+            f'{dst}/WinPixEventRuntime_ThirdPartyNotices.txt')
 
 
-def prepare_src(src_dir):
+def prepare_src(src_dir, tfdml_plugin_path, cmake_build_dir):
   os.makedirs(src_dir)
   print(f'=== Preparing sources in dir {src_dir}')
-
-  if not os.path.exists('bazel-bin/tfdml'):
-    raise Exception(
-        'Could not find bazel-bin. Did you run from the root of the build tree?'
-    )
-
-  if is_windows():
-    runfiles_manifest_path = 'bazel-bin/tfdml/wheel/build_wheel.exe.runfiles_manifest'
-    tfdml_plugin_path_regex = r'^.*tfdml_plugin\.dll (.*tfdml_plugin\.dll)$'
-  else:
-    runfiles_manifest_path = 'bazel-bin/tfdml/wheel/build_wheel.runfiles_manifest'
-    tfdml_plugin_path_regex = r'^.*libtfdml_plugin\.so (.*tfdml_plugin\.so)$'
-
-  # Locate path to tfdml_plugin.dll or libtfdml_plugin.so in the manifest
-  with open(runfiles_manifest_path, 'r') as manifest:
-    tfdml_plugin_path = re.search(
-        tfdml_plugin_path_regex,
-        manifest.read(),
-        flags=re.MULTILINE).group(1)
 
   os.makedirs(f'{src_dir}/tensorflow-plugins')
   os.makedirs(f'{src_dir}/tensorflow-directml-plugin')
@@ -112,19 +74,23 @@ def prepare_src(src_dir):
   shutil.copy('tfdml/wheel/MANIFEST.in', src_dir)
   shutil.copy('tfdml/wheel/README', src_dir)
   shutil.copy('tfdml/wheel/setup.py', src_dir)
+  shutil.copy(f'{cmake_build_dir}/TFDML_WHEEL_NAME', src_dir)
+  shutil.copy(f'{cmake_build_dir}/TFDML_WHEEL_VERSION', src_dir)
   shutil.copy('tfdml/wheel/template_init.py', f'{src_dir}/tensorflow-directml-plugin/__init__.py')
   os.makedirs(f'{src_dir}/tensorflow-plugins/directml')
-  copy_dml_redist_files(f'{src_dir}/tensorflow-plugins/directml')
+  copy_dml_redist_files(
+    f'{src_dir}/tensorflow-plugins/directml',
+    f'{cmake_build_dir}/_deps/directml_redist-src',
+    f'{cmake_build_dir}/_deps/pix_event_runtime-src')
 
 
-def build_wheel(src_dir, dst_dir):
-  tf_src_dir = os.path.split(os.path.realpath('.'))[-1]
-  tf_path = os.path.realpath(f'bazel-{tf_src_dir}/external/tensorflow')
+def build_wheel(staging_dir, cmake_build_dir):
+  tf_path = os.path.join(cmake_build_dir, '_deps/tensorflow_whl-src')
 
   if not os.path.exists(tf_path):
     raise FileNotFoundError(f'{tf_path} could not be found')
 
-  with pushd(src_dir):
+  with pushd(staging_dir):
     try:
       os.remove('MANIFEST')
     except FileNotFoundError:
@@ -137,25 +103,25 @@ def build_wheel(src_dir, dst_dir):
                    env=env_copy,
                    check=True)
     try:
-      os.makedirs(dst_dir)
+      os.makedirs(cmake_build_dir)
     except FileExistsError:
       pass
 
     for file_name in os.listdir('dist'):
-      shutil.copy(os.path.join('dist', file_name), dst_dir)
+      shutil.copy(os.path.join('dist', file_name), cmake_build_dir)
 
-  print(f'=== Output wheel file is in: {dst_dir}')
+  print(f'=== Output wheel file is in: {cmake_build_dir}')
 
 
 def main():
   args = parse_args()
-  src_path = os.path.realpath(args.src)
+  staging_dir = os.path.join(args.build_dir, "build_wheel_staging")
   try:
-    prepare_src(src_path)
-    build_wheel(args.src, args.dst)
+    prepare_src(staging_dir, args.plugin_path, args.build_dir)
+    build_wheel(staging_dir, args.build_dir)
   finally:
     try:
-      shutil.rmtree(src_path)
+      shutil.rmtree(staging_dir)
     except FileNotFoundError:
       pass
 
