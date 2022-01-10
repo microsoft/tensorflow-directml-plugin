@@ -42,7 +42,7 @@ Status GetPaddingFromString(absl::string_view str_value, Padding* value)
 
 Status CheckValidPadding(
     Padding padding_type,
-    const std::vector<int64_t>& explicit_paddings,
+    absl::Span<const int64_t> explicit_paddings,
     int num_dims,
     TensorFormat data_format)
 {
