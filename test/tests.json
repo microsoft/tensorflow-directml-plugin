@@ -68,6 +68,9 @@
                 },
                 {
                     "file": "ops/nn_fused_batchnorm_test.py"
+                },
+                {
+                    "file": "ops/topk_op_test.py"
                 }
             ]
         },
