@@ -88,6 +88,8 @@ class Tensor
         return result;
     }
 
+    bool IsSameSize(const Tensor& other) const;
+
   private:
     static TF_Tensor* shallow_copy(const Tensor& other);
 
