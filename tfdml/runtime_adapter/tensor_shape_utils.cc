@@ -190,4 +190,9 @@ bool TensorShapeUtils::IsMatrix(const TensorShape& shape)
 {
     return shape.dims() == 2;
 }
+
+bool TensorShapeUtils::IsMatrixOrHigher(const TensorShape& shape)
+{
+    return shape.dims() >= 2;
+}
 } // namespace tfdml
