@@ -18,8 +18,6 @@ import itertools
 import sys
 
 import numpy as np
-import os
-input(os.getpid())
 
 from tensorflow.python.client import session
 from tensorflow.python.framework import constant_op
