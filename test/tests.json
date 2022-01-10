@@ -102,6 +102,9 @@
                     "file": "ops/strings_reduce_join_op_test.py"
                 },
                 {
+                    "file": "ops/topk_op_test.py"
+                },
+                {
                     "file": "ops/xent_op_test.py"
                 }
             ]

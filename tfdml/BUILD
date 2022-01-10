@@ -252,6 +252,7 @@ cc_library(
         "kernels/dml_reduce_ops.cc",
         "kernels/dml_resize_op.cc",
         "kernels/dml_sparse_xent_op.cc",
+        "kernels/dml_topk_op.cc",
         "kernels/dml_xent_op.cc",
     ],
     hdrs = [
