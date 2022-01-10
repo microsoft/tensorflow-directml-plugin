@@ -12,8 +12,6 @@
 # ==============================================================================
 """Tests for tensorflow.ops.tf.fill."""
 
-import numpy as np
-
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.platform import test
