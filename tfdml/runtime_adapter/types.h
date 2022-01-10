@@ -119,6 +119,11 @@ struct EnumToDataType<TF_QINT32>
     using T = Eigen::QInt32;
 };
 template <>
+struct EnumToDataType<TF_QUINT8>
+{
+    using T = Eigen::QUInt8;
+};
+template <>
 struct EnumToDataType<TF_COMPLEX64>
 {
     using T = std::complex<float>;
@@ -218,6 +223,11 @@ constexpr inline TF_DataType DataTypeToEnum<Eigen::QInt32>()
     return TF_QINT32;
 }
 template <>
+constexpr inline TF_DataType DataTypeToEnum<Eigen::QUInt8>()
+{
+    return TF_QUINT8;
+}
+template <>
 constexpr inline TF_DataType DataTypeToEnum<std::complex<float>>()
 {
     return TF_COMPLEX64;
@@ -229,5 +239,6 @@ constexpr inline TF_DataType DataTypeToEnum<std::complex<double>>()
 }
 
 std::string DataTypeString(TF_DataType dtype);
+int DataTypeSize(TF_DataType dtype);
 
 } // namespace tfdml
