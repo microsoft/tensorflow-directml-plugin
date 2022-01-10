@@ -9,8 +9,7 @@
                     "file": "ops/argmax_op_test.py"
                 },
                 {
-                    "file": "ops/batch_matmul_op_test.py",
-                    "disabled": true
+                    "file": "ops/batch_matmul_op_test.py"
                 },
                 {
                     "file": "ops/bias_op_deterministic_test.py"
