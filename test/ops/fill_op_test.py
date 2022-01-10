@@ -12,16 +12,13 @@
 # ==============================================================================
 """Tests for tensorflow.ops.tf.fill."""
 
-import tensorflow as tf
-tf.debugging.set_log_device_placement(True)
-
 import numpy as np
 
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.platform import test
 
-class GatherNdTest(test.TestCase):
+class FillTest(test.TestCase):
 
   @test_util.run_in_graph_and_eager_modes
   def testFill(self):
