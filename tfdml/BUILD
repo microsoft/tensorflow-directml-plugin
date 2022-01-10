@@ -248,7 +248,10 @@ cc_library(
         "kernels/dml_gather_nd_op.cc",
         "kernels/dml_gather_op.cc",
         "kernels/dml_matmul_op.cc",
+        "kernels/dml_pooling_ops.cc",
+        "kernels/dml_reduce_ops.cc",
         "kernels/dml_resize_op.cc",
+        "kernels/dml_sparse_xent_op.cc",
         "kernels/dml_xent_op.cc",
     ],
     hdrs = [

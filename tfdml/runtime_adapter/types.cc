@@ -53,4 +53,20 @@ std::string DataTypeString(TF_DataType dtype)
         return absl::StrCat("unknown dtype enum (", dtype, ")");
     }
 }
+
+bool DataTypeIsInteger(TF_DataType dtype)
+{
+    switch (dtype)
+    {
+    case TF_INT8:
+    case TF_UINT8:
+    case TF_INT16:
+    case TF_UINT16:
+    case TF_INT32:
+    case TF_UINT32:
+    case TF_INT64:
+    case TF_UINT64: return true;
+    default: return false;
+    }
+}
 } //  namespace tfdml
