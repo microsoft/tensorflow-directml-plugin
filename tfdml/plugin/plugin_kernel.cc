@@ -23,6 +23,7 @@ void RegisterKernels_Concat();
 void RegisterKernels_Conv();
 void RegisterKernels_Gather();
 void RegisterKernels_GatherNd();
+void RegisterKernels_LRN();
 void RegisterKernels_MatMul();
 void RegisterKernels_Pooling();
 void RegisterKernels_Reduce();
@@ -49,6 +50,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Conv();
     tfdml::RegisterKernels_Gather();
     tfdml::RegisterKernels_GatherNd();
+    tfdml::RegisterKernels_LRN();
     tfdml::RegisterKernels_MatMul();
     tfdml::RegisterKernels_Pooling();
     tfdml::RegisterKernels_Reduce();
