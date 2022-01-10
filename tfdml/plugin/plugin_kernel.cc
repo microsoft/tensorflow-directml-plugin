@@ -17,11 +17,15 @@ namespace tfdml
 {
 void RegisterKernels_AddN();
 void RegisterKernels_AssignVariableOp();
+void RegisterKernels_BatchNorm();
+void RegisterKernels_BiasAdd();
 void RegisterKernels_Concat();
 void RegisterKernels_Conv();
 void RegisterKernels_Gather();
 void RegisterKernels_GatherNd();
 void RegisterKernels_MatMul();
+void RegisterKernels_Reduce();
+void RegisterKernels_Resize();
 void RegisterKernels_SparseXent();
 } // namespace tfdml
 
@@ -36,10 +40,14 @@ void TF_InitKernel()
     // https://github.com/tensorflow/tensorflow/issues/53531
     // tfdml::RegisterKernels_AssignVariableOp();
 
+    tfdml::RegisterKernels_BatchNorm();
+    tfdml::RegisterKernels_BiasAdd();
     tfdml::RegisterKernels_Concat();
     tfdml::RegisterKernels_Conv();
     tfdml::RegisterKernels_Gather();
     tfdml::RegisterKernels_GatherNd();
     tfdml::RegisterKernels_MatMul();
+    tfdml::RegisterKernels_Reduce();
+    tfdml::RegisterKernels_Resize();
     tfdml::RegisterKernels_SparseXent();
 }
