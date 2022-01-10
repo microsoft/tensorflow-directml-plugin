@@ -247,6 +247,7 @@ cc_library(
         "kernels/dml_conv_ops.cc",
         "kernels/dml_gather_nd_op.cc",
         "kernels/dml_gather_op.cc",
+        "kernels/dml_lrn_ops.cc",
         "kernels/dml_matmul_op.cc",
         "kernels/dml_resize_op.cc",
     ],
