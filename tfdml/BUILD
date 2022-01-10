@@ -249,6 +249,7 @@ cc_library(
         "kernels/dml_gather_op.cc",
         "kernels/dml_matmul_op.cc",
         "kernels/dml_resize_op.cc",
+        "kernels/dml_xent_op.cc",
     ],
     hdrs = [
         "kernels/pch.h",

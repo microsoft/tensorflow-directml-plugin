@@ -275,4 +275,9 @@ Tensor Tensor::DeepCopy() const
 
 const TF_Tensor* Tensor::raw() const { return tensor_.get(); }
 
+bool Tensor::IsSameSize(const Tensor& other) const
+{
+    return shape_.IsSameSize(other.shape());
+}
+
 } // namespace tfdml
