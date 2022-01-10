@@ -179,7 +179,6 @@ void RegisterTopK()
     using K = KernelDefinition<
         ops::TopK,
         DmlKernelWrapper<DmlTopKKernel, TopKShapeHelper>>;
-    ;
 
     RegisterWithTypes<
         K,
