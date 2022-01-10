@@ -217,6 +217,7 @@ cc_library(
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/container:hash_function_defaults",
         "@com_google_absl//absl/container:inlined_vector",
+        "@com_google_absl//absl/container:node_hash_map",
         "@com_google_absl//absl/container:raw_hash_map",
         "@com_google_absl//absl/container:raw_hash_set",
         "@com_google_absl//absl/strings",
@@ -240,11 +241,15 @@ cc_library(
     srcs = [
         "kernels/dml_addn_op.cc",
         "kernels/dml_assign_variable_op.cc",
+        "kernels/dml_batch_norm_ops.cc",
+        "kernels/dml_bias_add_op.cc",
         "kernels/dml_concat_op.cc",
         "kernels/dml_conv_ops.cc",
         "kernels/dml_gather_nd_op.cc",
         "kernels/dml_gather_op.cc",
         "kernels/dml_matmul_op.cc",
+        "kernels/dml_reduce_ops.cc",
+        "kernels/dml_resize_op.cc",
     ],
     hdrs = [
         "kernels/pch.h",
