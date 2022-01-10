@@ -87,6 +87,9 @@
                     "file": "ops/reduction_ops_test.py"
                 },
                 {
+                    "file": "ops/sparse_xent_op_test.py"
+                },
+                {
                     "file": "ops/strings_reduce_join_op_test.py"
                 }
             ]
