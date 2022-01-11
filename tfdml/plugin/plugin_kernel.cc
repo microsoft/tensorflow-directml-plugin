@@ -17,13 +17,21 @@ namespace tfdml
 {
 void RegisterKernels_AddN();
 void RegisterKernels_AssignVariableOp();
+void RegisterKernels_BatchNorm();
 void RegisterKernels_BiasAdd();
 void RegisterKernels_Cast();
 void RegisterKernels_Concat();
 void RegisterKernels_Conv();
 void RegisterKernels_Gather();
 void RegisterKernels_GatherNd();
+void RegisterKernels_LRN();
 void RegisterKernels_MatMul();
+void RegisterKernels_Pooling();
+void RegisterKernels_Reduce();
+void RegisterKernels_Resize();
+void RegisterKernels_SparseXent();
+void RegisterKernels_TopK();
+void RegisterKernels_Xent();
 } // namespace tfdml
 
 void TF_InitKernel()
@@ -37,11 +45,19 @@ void TF_InitKernel()
     // https://github.com/tensorflow/tensorflow/issues/53531
     // tfdml::RegisterKernels_AssignVariableOp();
 
+    tfdml::RegisterKernels_BatchNorm();
     tfdml::RegisterKernels_BiasAdd();
     tfdml::RegisterKernels_Cast();
     tfdml::RegisterKernels_Concat();
     tfdml::RegisterKernels_Conv();
     tfdml::RegisterKernels_Gather();
     tfdml::RegisterKernels_GatherNd();
+    tfdml::RegisterKernels_LRN();
     tfdml::RegisterKernels_MatMul();
+    tfdml::RegisterKernels_Pooling();
+    tfdml::RegisterKernels_Reduce();
+    tfdml::RegisterKernels_Resize();
+    tfdml::RegisterKernels_SparseXent();
+    tfdml::RegisterKernels_TopK();
+    tfdml::RegisterKernels_Xent();
 }
