@@ -114,6 +114,9 @@
                     "file": "ops/topk_op_test.py"
                 },
                 {
+                    "file": "ops/transpose_op_test.py"
+                },
+                {
                     "file": "ops/xent_op_test.py"
                 }
             ]
