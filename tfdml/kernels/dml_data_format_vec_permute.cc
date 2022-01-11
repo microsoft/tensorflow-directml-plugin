@@ -207,7 +207,6 @@ class DmlDataFormatVecPermuteKernel : public OpKernel
             }
         }
 
-        Tensor* output = nullptr;
         StatusOr<Tensor> status_or_output =
             ctx->allocate_output(0, input_shape);
         OP_REQUIRES_OK(ctx, status_or_output.status());
@@ -219,7 +218,7 @@ class DmlDataFormatVecPermuteKernel : public OpKernel
             device_context->GetBufferForTensor(input);
 
         D3D12BufferRegion output_buffer =
-            device_context->GetBufferForTensor(*output);
+            device_context->GetBufferForTensor(status_or_output.ValueOrDie());
 
         const int perm_stride =
             DataTypeSize(input.dtype()) * input_shape.dims();

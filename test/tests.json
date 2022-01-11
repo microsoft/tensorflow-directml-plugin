@@ -6,8 +6,10 @@
             "timeout_seconds": 1800,
             "tests": [
                 {
-                    "file": "ops/batch_matmul_op_test.py",
-                    "disabled": true
+                    "file": "ops/argmax_op_test.py"
+                },
+                {
+                    "file": "ops/batch_matmul_op_test.py"
                 },
                 {
                     "file": "ops/bias_op_deterministic_test.py"
@@ -43,6 +45,9 @@
                     "file": "ops/conv3d_transpose_test.py"
                 },
                 {
+                    "file": "ops/data_format_op_test.py"
+                },
+                {
                     "file": "ops/depthwise_conv_op_test.py"
                 },
                 {
@@ -61,6 +66,9 @@
                     "file": "ops/image_ops_test.py"
                 },
                 {
+                    "file": "ops/lrn_op_test.py"
+                },
+                {
                     "file": "ops/matmul_op_test.py"
                 },
                 {
@@ -68,6 +76,42 @@
                 },
                 {
                     "file": "ops/nn_fused_batchnorm_test.py"
+                },
+                {
+                    "file": "ops/pool_test.py"
+                },
+                {
+                    "file": "ops/pooling_ops_3d_test.py"
+                },
+                {
+                    "file": "ops/pooling_ops_test.py"
+                },
+                {
+                    "file": "ops/ragged_reduce_op_test.py"
+                },
+                {
+                    "file": "ops/reduce_join_op_test.py"
+                },
+                {
+                    "file": "ops/reduce_test.py"
+                },
+                {
+                    "file": "ops/reduction_ops_test_big.py"
+                },
+                {
+                    "file": "ops/reduction_ops_test.py"
+                },
+                {
+                    "file": "ops/sparse_xent_op_test.py"
+                },
+                {
+                    "file": "ops/strings_reduce_join_op_test.py"
+                },
+                {
+                    "file": "ops/topk_op_test.py"
+                },
+                {
+                    "file": "ops/xent_op_test.py"
                 }
             ]
         },
