@@ -247,6 +247,7 @@ cc_library(
         "kernels/dml_conv_ops.cc",
         "kernels/dml_data_format_dim_map.cc",
         "kernels/dml_data_format_vec_permute.cc",
+        "kernels/dml_fill_op.cc",
         "kernels/dml_gather_nd_op.cc",
         "kernels/dml_gather_op.cc",
         "kernels/dml_lrn_ops.cc",
