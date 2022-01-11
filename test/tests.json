@@ -18,6 +18,9 @@
                     "file": "ops/bias_op_test.py"
                 },
                 {
+                    "file": "ops/cast_op_test.py"
+                },
+                {
                     "file": "ops/concat_op_test.py"
                 },
                 {
