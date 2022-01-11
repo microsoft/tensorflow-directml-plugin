@@ -94,6 +94,19 @@ class DmlCastKernel : public DmlKernel
     bool zero_outputs_ = false;
 };
 
+template <TF_DataType SrcT, TF_DataType T, TF_DataType... Ts>
+void RegisterCastDstT()
+{
+    using Op = ops::Cast;
+    using K = KernelDefinition<
+        Op,
+        DmlKernelWrapper<DmlCastKernel, GetOutputShapeAsInputShapeHelper>>::
+        template WithTypeConstraint<Op::Attribute::DstT, T>;
+    K::template WithTypeConstraint<Op::Attribute::SrcT, SrcT>::Register();
+
+    if constexpr (sizeof...(Ts) > 0) RegisterCastDstT<SrcT, Ts...>();
+}
+
 template <TF_DataType T, TF_DataType... Ts>
 void RegisterCastSrcT()
 {
@@ -111,19 +124,6 @@ void RegisterCastSrcT()
         TF_INT32,
         TF_INT64>();
     if constexpr (sizeof...(Ts) > 0) RegisterCastDstT<Ts...>();
-}
-
-template <TF_DataType SrcT, TF_DataType T, TF_DataType... Ts>
-void RegisterCastDstT()
-{
-    using Op = ops::Cast;
-    using K = KernelDefinition<
-        Op,
-        DmlKernelWrapper<DmlCastKernel, GetOutputShapeAsInputShapeHelper>>::
-        template WithTypeConstraint<Op::Attribute::DstT, T>;
-    K::template WithTypeConstraint<Op::Attribute::SrcT, SrcT>::Register();
-
-    if constexpr (sizeof...(Ts) > 0) RegisterCastDstT<SrcT, Ts...>();
 }
 
 void RegisterKernels_Cast()
