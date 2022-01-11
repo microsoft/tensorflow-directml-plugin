@@ -19,6 +19,7 @@ void RegisterKernels_AddN();
 void RegisterKernels_AssignVariableOp();
 void RegisterKernels_BatchNorm();
 void RegisterKernels_BiasAdd();
+void RegisterKernels_Cast();
 void RegisterKernels_Concat();
 void RegisterKernels_Conv();
 void RegisterKernels_Fill();
@@ -47,6 +48,7 @@ void TF_InitKernel()
 
     tfdml::RegisterKernels_BatchNorm();
     tfdml::RegisterKernels_BiasAdd();
+    tfdml::RegisterKernels_Cast();
     tfdml::RegisterKernels_Concat();
     tfdml::RegisterKernels_Conv();
     tfdml::RegisterKernels_Fill();

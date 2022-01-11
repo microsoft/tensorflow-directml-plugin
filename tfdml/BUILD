@@ -243,6 +243,7 @@ cc_library(
         "kernels/dml_assign_variable_op.cc",
         "kernels/dml_batch_norm_ops.cc",
         "kernels/dml_bias_add_op.cc",
+        "kernels/dml_cast_op.cc",
         "kernels/dml_concat_op.cc",
         "kernels/dml_conv_ops.cc",
         "kernels/dml_fill_op.cc",
