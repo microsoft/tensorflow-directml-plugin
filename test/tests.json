@@ -48,6 +48,9 @@
                     "file": "ops/conv3d_transpose_test.py"
                 },
                 {
+                    "file": "ops/data_format_op_test.py"
+                },
+                {
                     "file": "ops/depthwise_conv_op_test.py"
                 },
                 {
