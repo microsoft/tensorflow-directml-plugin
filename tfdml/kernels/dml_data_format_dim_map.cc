@@ -205,13 +205,6 @@ class DmlDataFormaDimMapKernel : public DmlKernel
                 dml::Span<const uint32_t> sizes)
             {
                 uint32_t dimension_count = static_cast<uint32_t>(sizes.size());
-
-                const uint32_t num_elements = std::accumulate(
-                    sizes.begin(),
-                    sizes.end(),
-                    1u,
-                    std::multiplies<uint32_t>());
-
                 dml::TensorDimensions strides(dimension_count);
                 strides.back() = element_stride;
 
