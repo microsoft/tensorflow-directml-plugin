@@ -27,6 +27,7 @@ void RegisterKernels_DataFormatVecPermute();
 void RegisterKernels_Fill();
 void RegisterKernels_Gather();
 void RegisterKernels_GatherNd();
+void RegisterKernels_L2Loss();
 void RegisterKernels_LRN();
 void RegisterKernels_MatMul();
 void RegisterKernels_Pooling();
@@ -59,6 +60,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Fill();
     tfdml::RegisterKernels_Gather();
     tfdml::RegisterKernels_GatherNd();
+    tfdml::RegisterKernels_L2Loss();
     tfdml::RegisterKernels_LRN();
     tfdml::RegisterKernels_MatMul();
     tfdml::RegisterKernels_Pooling();

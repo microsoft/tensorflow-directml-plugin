@@ -72,6 +72,9 @@
                     "file": "ops/image_ops_test.py"
                 },
                 {
+                    "file": "ops/l2loss_test.py"
+                },
+                {
                     "file": "ops/lrn_op_test.py"
                 },
                 {
