@@ -19,13 +19,24 @@ void RegisterKernels_AddN();
 void RegisterKernels_AssignVariableOp();
 void RegisterKernels_BatchNorm();
 void RegisterKernels_BiasAdd();
+void RegisterKernels_Cast();
 void RegisterKernels_Concat();
 void RegisterKernels_Conv();
+void RegisterKernels_DataFormatDimMap();
+void RegisterKernels_DataFormatVecPermute();
+void RegisterKernels_Fill();
 void RegisterKernels_Gather();
 void RegisterKernels_GatherNd();
 void RegisterKernels_L2Loss();
+void RegisterKernels_LRN();
 void RegisterKernels_MatMul();
+void RegisterKernels_Pooling();
+void RegisterKernels_Reduce();
 void RegisterKernels_Resize();
+void RegisterKernels_SparseXent();
+void RegisterKernels_TopK();
+void RegisterKernels_Transpose();
+void RegisterKernels_Xent();
 } // namespace tfdml
 
 void TF_InitKernel()
@@ -41,11 +52,22 @@ void TF_InitKernel()
 
     tfdml::RegisterKernels_BatchNorm();
     tfdml::RegisterKernels_BiasAdd();
+    tfdml::RegisterKernels_Cast();
     tfdml::RegisterKernels_Concat();
     tfdml::RegisterKernels_Conv();
+    tfdml::RegisterKernels_DataFormatDimMap();
+    tfdml::RegisterKernels_DataFormatVecPermute();
+    tfdml::RegisterKernels_Fill();
     tfdml::RegisterKernels_Gather();
     tfdml::RegisterKernels_GatherNd();
     tfdml::RegisterKernels_L2Loss();
+    tfdml::RegisterKernels_LRN();
     tfdml::RegisterKernels_MatMul();
+    tfdml::RegisterKernels_Pooling();
+    tfdml::RegisterKernels_Reduce();
     tfdml::RegisterKernels_Resize();
+    tfdml::RegisterKernels_SparseXent();
+    tfdml::RegisterKernels_TopK();
+    tfdml::RegisterKernels_Transpose();
+    tfdml::RegisterKernels_Xent();
 }

@@ -53,4 +53,49 @@ std::string DataTypeString(TF_DataType dtype)
         return absl::StrCat("unknown dtype enum (", dtype, ")");
     }
 }
+
+int DataTypeSize(TF_DataType dtype)
+{
+    switch (dtype)
+    {
+    case TF_FLOAT: return sizeof(float);
+    case TF_DOUBLE: return sizeof(double);
+    case TF_INT32: return sizeof(int32_t);
+    case TF_UINT32: return sizeof(uint32_t);
+    case TF_UINT8: return sizeof(uint8_t);
+    case TF_UINT16: return sizeof(uint16_t);
+    case TF_INT16: return sizeof(int16_t);
+    case TF_INT8: return sizeof(int8_t);
+    case TF_COMPLEX64: return sizeof(std::complex<float>);
+    case TF_COMPLEX128: return sizeof(std::complex<double>);
+    case TF_INT64: return sizeof(int64_t);
+    case TF_UINT64: return sizeof(uint64_t);
+    case TF_BOOL: return sizeof(bool);
+    case TF_QINT8: return sizeof(Eigen::QInt8);
+    case TF_QUINT8: return sizeof(Eigen::QUInt8);
+    case TF_QUINT16: return sizeof(Eigen::QUInt16);
+    case TF_QINT16: return sizeof(Eigen::QInt16);
+    case TF_QINT32: return sizeof(Eigen::QInt32);
+    case TF_BFLOAT16: return sizeof(Eigen::bfloat16);
+    case TF_HALF: return sizeof(Eigen::half);
+    default:
+        return 0;
+    }
+}
+
+bool DataTypeIsInteger(TF_DataType dtype)
+{
+    switch (dtype)
+    {
+    case TF_INT8:
+    case TF_UINT8:
+    case TF_INT16:
+    case TF_UINT16:
+    case TF_INT32:
+    case TF_UINT32:
+    case TF_INT64:
+    case TF_UINT64: return true;
+    default: return false;
+    }
+}
 } //  namespace tfdml
