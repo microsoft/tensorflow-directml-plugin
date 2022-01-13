@@ -22,6 +22,7 @@ void RegisterKernels_BiasAdd();
 void RegisterKernels_Cast();
 void RegisterKernels_Concat();
 void RegisterKernels_Conv();
+void RegisterKernels_Cwise();
 void RegisterKernels_DataFormatDimMap();
 void RegisterKernels_DataFormatVecPermute();
 void RegisterKernels_Fill();
@@ -54,6 +55,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Cast();
     tfdml::RegisterKernels_Concat();
     tfdml::RegisterKernels_Conv();
+    tfdml::RegisterKernels_Cwise();
     tfdml::RegisterKernels_DataFormatDimMap();
     tfdml::RegisterKernels_DataFormatVecPermute();
     tfdml::RegisterKernels_Fill();
