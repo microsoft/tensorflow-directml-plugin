@@ -51,7 +51,7 @@ namespace tfdml
 
     DML_CREATE_DEVICE_FLAGS dml_flags = DML_CREATE_DEVICE_FLAG_NONE;
 
-#ifdef _WIN32
+#ifdef DML_BUILD_WINDOWS
     // If the D3D12 debug layer is enabled, enable the DML debug layer too. This
     // is only allowed when using an explicit path to DirectML.dll, since the
     // python wheels do not contain a copy of the debug layer.
