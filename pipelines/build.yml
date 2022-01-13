@@ -53,7 +53,7 @@ jobs:
       if ("${{parameters.releaseBuild}}" -eq "True") {
           $WheelVersionSuffix = ''
       } else {
-          $WheelVersionSuffix = "$(Build.BuildNumber)" -replace '(\d{6}).*','$1'
+          $WheelVersionSuffix = ".dev" + "$(Build.BuildNumber)" -replace '(\d{6}).*','$1'
       }
       Write-Host "##vso[task.setVariable variable=wheelVersionSuffix;isOutput=true]$WheelVersionSuffix"
 
