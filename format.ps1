@@ -25,7 +25,4 @@ function FormatFiles($Root)
 $ErrorActionPreference = "Stop"
 FormatFiles($PSScriptRoot)
 
-Write-Output "Linting and formatting bazel files"
-bazel run //:buildifier
-
 Write-Output "Done!"
