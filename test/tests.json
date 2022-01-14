@@ -48,6 +48,15 @@
                     "file": "ops/conv3d_transpose_test.py"
                 },
                 {
+                    "file": "ops/cwise_ops_binary_test.py"
+                },
+                {
+                    "file": "ops/cwise_ops_test.py"
+                },
+                {
+                    "file": "ops/cwise_ops_unary_test.py"
+                },
+                {
                     "file": "ops/data_format_op_test.py"
                 },
                 {
