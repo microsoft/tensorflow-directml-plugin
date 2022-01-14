@@ -30,7 +30,7 @@ def is_windows():
 
 
 def copy_dml_redist_files(dst, dml_redist_dir, pix_dir):
-  dml_config_path = os.path.join(dml_redist_dir, "include/DirectMLConfig.h")
+  dml_config_path = os.path.join(dml_redist_dir, 'include/DirectMLConfig.h')
 
   # Copy library and licenses
   with open(dml_config_path, 'r') as dml_config:
@@ -115,7 +115,7 @@ def build_wheel(staging_dir, cmake_build_dir):
 
 def main():
   args = parse_args()
-  staging_dir = os.path.join(args.build_dir, "build_wheel_staging")
+  staging_dir = os.path.join(args.build_dir, 'build_wheel_staging')
   try:
     prepare_src(staging_dir, args.plugin_path, args.build_dir)
     build_wheel(staging_dir, args.build_dir)

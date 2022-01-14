@@ -25,7 +25,7 @@ DOCLINES = __doc__.split('\n')
 # result for pip.
 # Also update tfdml/tfdml.bzl
 _VERSION = '0.0.0'
-with open("TFDML_WHEEL_VERSION", "r") as f:
+with open('TFDML_WHEEL_VERSION', 'r') as f:
   _VERSION = f.read()
 
 # this path can't be modified.
@@ -45,7 +45,7 @@ if sys.byteorder == 'little':
 
 # The wheel package name, change it as your requirements
 project_name = ''
-with open("TFDML_WHEEL_NAME", "r") as f:
+with open('TFDML_WHEEL_NAME', 'r') as f:
   project_name = f.read()
 
 # python3 requires wheel 0.26

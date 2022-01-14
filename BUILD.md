@@ -22,7 +22,7 @@ Your machine must have a few tools installed before you can get started.
 
 - CMake.
 - A Python 3.7, 3.8, or 3.9 environment with the `wheel` package installed.
-- Build tools appropriate for your platform (MSVC on Windows, GCC/Clang on Linux).
+- Build tools appropriate for your platform (MSVC on Windows, Clang on Linux).
 - Linux: a glibc-based distro, like Ubuntu.
 
 ## Install CMake
@@ -39,13 +39,13 @@ CMake is used to generate and build this project on all platforms.
 
 **Windows**:
 
-- Download and install [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) or [Visual Studio 2019](https://visualstudio.microsoft.com/vs/older-downloads/)
+- Download and install [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) or [Visual Studio 2019](https://visualstudio.microsoft.com/vs/older-downloads/).
 - You must have Windows 10 SDK 10.0.17763.0 or newer, which will be satisfied by installing VS2022 or VS2019.
 - Note that Visual Studio comes with a copy of the Ninja build system (you don't need to install it separately).
 
 **Linux**:
 
-On Linux you can use either GCC or Clang, but we'll show Clang below. You'll also want to install the Ninja build system if using the build.py helper script.
+On Linux you must use Clang to compile. You'll also want to install the Ninja build system if using the build.py helper script.
 
 ```
 sudo apt update
@@ -54,62 +54,76 @@ sudo apt install clang ninja-build
 
 ## Install Python/Miniconda
 
-This project requires a Python interpreter to produce the TFDML plugin wheel. This environment must have the `wheel` package installed.
+This project requires a Python interpreter to produce the TFDML plugin wheel. This environment must have the `wheel` package installed. On Windows you should have the `vswhere` package if you intend to use `build.py` with the Ninja generator.
 
 Feel free to use any version of Python, but we recommend [Miniconda](https://docs.conda.io/en/latest/miniconda.html) to sandbox your project environments. Miniconda is a bundle that includes [Python](https://www.python.org/), a package and environment manager named [Conda](https://docs.conda.io/projects/conda/en/latest/), and a very small set of Python packages. It is a lighter-weight alternative to Anaconda, which contains hundreds of Python packages that aren't necessary for building. See the [user guide](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) for more details if you're not familiar with its usage.
 
+Once you've installed Miniconda you will want to create and activate a Python 3.7, 3.8, or 3.9 environment with the required packages Use this activated environment when building this project.
+
 **Windows**:
 
-Download the latest [Miniconda3 Windows 64-bit](https://docs.conda.io/en/latest/miniconda.html) installer. You can leave all the default settings, but take note of the installation location (you'll need it later). The examples in this doc will reference "c:\miniconda3" as the install location.
+Download the latest [Miniconda3 Windows 64-bit](https://docs.conda.io/en/latest/miniconda.html) installer. You can leave all the default settings.
+
+```
+conda create --name tfdml_plugin python=3.7
+conda activate tfdml_plugin
+pip install wheel vswhere
+```
 
 **Linux**:
+
+Download and run the installer script, then create a build environment.
+
 ```
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
+# follow prompts to install Miniconda and activate it in your shell
+
+conda create --name tfdml_plugin python=3.7
+conda activate tfdml_plugin
+pip install wheel
 ```
-
-Once you've installed Miniconda make sure you create and activate a Python 3.7, 3.8, or 3.9 environment and install the `wheel` package. Use this activated environment when building this project.
-
-For Windows make sure to install the `vswhere` package if you intend to use `build.py`.
 
 # Step 2: Clone
 
-Clone the repository to a location of your choosing. The examples here will assume you clone to `C:\src\tensorflow-directml-plugin` (Windows) or `~/src` (Linux) for the sake of brevity, but you may clone wherever you like.
+Clone the repository to a location of your choosing.
 
-**Windows**:
 ```
-cd C:\src
-git clone https://github.com/microsoft/tensorflow-directml-plugin.git 
-```
-
-**Linux**:
-```
-cd ~/src
 git clone https://github.com/microsoft/tensorflow-directml-plugin.git 
 ```
 
 # Step 3: Build
 
-CMake projects have two phases: configuration and building.
+CMake projects have three phases: configure, generate, and build. 
+
+1. **Configure**: CMake locate the compilers/linkers, locate tools (e.g. Python), and set any build options (e.g. building with telemetry or not).
+2. **Generate**: CMake will produce the build files for the desired generator (Visual Studio, Ninja, Makefiles, etc.).
+3. **Build**: CMake will invoke the underlying build system to compile and link targets.
+
+This project has a helper script, `build.py`, that combines all three steps into a single command line invocation. However, you can use CMake directly for more control.
 
 ## Build with Helper Script
 
-A helper script, build.py, can be used to build this repository. This script is a thin wrapper around CMake commands and handles configuring and building in one step.
+The `build.py` script is a thin wrapper around CMake commands and handles configuring and building in one step.
 
-The default settings will produce the Python wheel (debug build by default):
+The default settings will produce the Python wheel (debug build by default) in a folder name `build/` under the source tree:
 
 ```
 python build.py
 ```
 
-Run `build.py --help` for a full list of options! Especially useful parameters include `--config` and `--target`.
+Run `build.py --help` for a full list of options! Especially useful parameters include `--config` (`-c`), `--target` (`-t`), and `--build_output` (`-o`).
+
+By default, this script uses the "Ninja Multi-Config" generator for both Windows and Linux. You can run the script and change between release and debug builds without using separate build output directories.
+
+Configuration will occur if the project hasn't yet been generated or the script detects a change in one of the build options. If you reuse an existing build output directory and change generators CMake will give you an error; you must manually delete the build directory in this case.
 
 ## Build with Visual Studio IDE
 
 If you prefer to work within the Visual Studio IDE you can generate the project without building it:
 
 ```
-python build.py --configure-only
+python build.py --configure-only --generator "Visual Studio 17 2022"
 ```
 
 You'll find the generated solution under `build/tensorflow-directml-plugin.sln`.
@@ -121,10 +135,10 @@ You can use CMake directly if you prefer; this is especially useful if you want 
 ```
 cd <path_to_repo>
 
-# Configure:
+# Configure and generate
 cmake -S . -B build
 
-# Build:
+# Build
 cmake --build build --target tfdml_plugin_wheel
 ```
 
