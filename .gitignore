@@ -218,3 +218,4 @@ Thumbs.db
 
 .vs/
 CMakeSettings.json
+out/

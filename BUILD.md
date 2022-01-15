@@ -35,6 +35,13 @@ CMake is used to generate and build this project on all platforms.
 **Linux**:
 - Refer to [CMake's instructions](https://cmake.org/install/) to get a compatible release. The version of CMake available through your distro's package manager (e.g. `apt`) may not be new enough without adding a different upstream/repository! 
 
+Example to download and extract pre-built CMake binaries to `/home/<username>/.cmake`:
+```
+wget https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.sh
+mkdir ~/.cmake
+bash cmake-3.22.1-linux-x86_64.sh --prefix=/home/<username>/.cmake --skip-license
+```
+
 ## Install Development Tools
 
 **Windows**:
