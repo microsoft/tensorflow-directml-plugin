@@ -35,7 +35,7 @@ def set_tool_environment(args, cl):
   # is running within a VS developer command prompt (i.e. has executed vcvarsall.bat).
   if os.name == "nt" and args.generator.startswith("Ninja"):
     import vswhere
-    vs_path = vswhere.get_latest_path()
+    vs_path = vswhere.get_latest_path(products='*')
     bat_path = Path(vs_path) / "Common7" / "Tools" / "VsDevCmd.bat"
     cl.append(f"\"{bat_path}\" -arch=x64 -no_logo &&")
 
@@ -107,11 +107,12 @@ def build(args):
 def install_wheel(args):
   """Installs the built plugin wheel into the current Python environment."""
 
-  package_dir = os.path.join(args.build_output, "python_package")
-
   # Find the most recently created package
-  package_path = sorted(Path(package_dir).iterdir(),
-                        key=os.path.getmtime)[-1].as_posix()
+  build_files = sorted(Path(args.build_output).iterdir(),
+                       key=os.path.getmtime,
+                       reverse=True)
+  wheel_files = filter(lambda f: f.parts[-1].endswith(".whl"), build_files)
+  package_path = next(wheel_files).as_posix()
 
   # Only force the reinstallation of tfdml
   subprocess.run(
