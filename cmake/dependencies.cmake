@@ -180,3 +180,5 @@ if(NOT ${python_wheel_check_exit_code} EQUAL 0)
         "have the 'wheel' package installed."
     )
 endif()
+
+set(CMAKE_FOLDER "")
