@@ -630,7 +630,7 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
         TF_Operation* shape_op = TF_FinishOperation(shape_desc, status.raw());
         OP_REQUIRES_OK(ctx, status);
 
-        char* emulated_kernel_name;
+        const char* emulated_kernel_name;
         switch (emulated_kernel_type)
         {
         case EmulatedKernelType::kRandomStandardNormal:
