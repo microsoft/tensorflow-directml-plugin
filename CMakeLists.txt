@@ -89,6 +89,7 @@ add_library(
     tfdml/runtime_adapter/allocator_retry.cc
     tfdml/runtime_adapter/bcast.cc
     tfdml/runtime_adapter/bfc_allocator.cc
+    tfdml/runtime_adapter/determinism.cc
     tfdml/runtime_adapter/device.cc
     tfdml/runtime_adapter/env.cc
     tfdml/runtime_adapter/env_var.cc

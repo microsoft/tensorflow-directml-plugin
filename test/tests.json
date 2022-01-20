@@ -99,6 +99,9 @@
                     "file": "ops/ragged_reduce_op_test.py"
                 },
                 {
+                    "file": "ops/random_ops_test.py"
+                },
+                {
                     "file": "ops/reduce_join_op_test.py"
                 },
                 {

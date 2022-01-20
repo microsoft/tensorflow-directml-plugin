@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tfdml/runtime_adapter/guarded_philox_random.h"
+#include "tfdml/runtime_adapter/determinism.h"
 #include "tfdml/runtime_adapter/macros.h"
 #include "tfdml/runtime_adapter/op_kernel_construction.h"
 #include "tfdml/runtime_adapter/status.h"
@@ -44,6 +45,11 @@ Status GuardedPhiloxRandom::Init(OpKernelConstruction* context)
     if (!status.ok()) return status;
     status = context->GetAttr("seed2", &seed2);
     if (!status.ok()) return status;
+    if (seed == 0 && seed2 == 0 && OpDeterminismRequired())
+    {
+        return errors::InvalidArgument("When determinism is enabled, random "
+                                       "ops must have a seed specified.");
+    }
 
     // Initialize with the given seeds
     if (seed == 0 && seed2 == 0)
