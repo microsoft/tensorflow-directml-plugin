@@ -1,12 +1,25 @@
+function ShouldFormat($FileName)
+{
+    return $FileName -clike "*.h" `
+        -or $FileName -clike "*.c" `
+        -or $FileName -clike "*.cpp" `
+        -or $FileName -clike "*.cc"
+}
+
 function FormatFiles($Root)
 {
-    $Folder = (New-Object -Com Scripting.FileSystemObject).GetFolder($Root)
-    $Files = $Folder.Files | Where-Object {
-        $_.Name -clike "*.h" `
-        -or $_.Name -clike "*.c" `
-        -or $_.Name -clike "*.cpp" `
-        -or $_.Name -clike "*.cc"
+    if (Test-Path -Path $Root -PathType Leaf)
+    {
+        if (ShouldFormat($Root))
+        {
+            Write-Output "Formatting $($Root)"
+            clang-format -i --style=file $File.Path
+        }
+        continue
     }
+
+    $Folder = (New-Object -Com Scripting.FileSystemObject).GetFolder($Root)
+    $Files = $Folder.Files | Where-Object { ShouldFormat($_.Name) }
     foreach ($File in $Files)
     {
         Write-Output "Formatting $($File.Path)"
@@ -17,12 +30,19 @@ function FormatFiles($Root)
         $CurrentItem = Get-Item $SubFolder.Path -ErrorAction SilentlyContinue
         if ($CurrentItem -and !$CurrentItem.Attributes.ToString().Contains("ReparsePoint"))
         {
-            FormatFiles($SubFolder.Path);
+            FormatFiles($SubFolder.Path)
         }
     }
 }
 
 $ErrorActionPreference = "Stop"
-FormatFiles($PSScriptRoot)
+
+foreach ($Item in Get-ChildItem $PSScriptRoot)
+{
+    if ($Item.Name -ne "build")
+    {
+        FormatFiles($Item.FullName)
+    }
+}
 
 Write-Output "Done!"
