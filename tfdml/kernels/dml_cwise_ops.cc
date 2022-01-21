@@ -22,18 +22,6 @@ namespace tfdml
 
 using Microsoft::WRL::ComPtr;
 
-template <DML_OPERATOR_TYPE op_type>
-static constexpr uint32_t GetMaxDimCount()
-{
-    switch (op_type)
-    {
-    case DML_OPERATOR_ELEMENT_WISE_IDENTITY:
-    case DML_OPERATOR_ELEMENT_WISE_ADD:
-    case DML_OPERATOR_ELEMENT_WISE_MULTIPLY: return 5;
-    default: return 4;
-    }
-}
-
 static absl::InlinedVector<TensorShape, 2> GetCollapsedShapes(
     OpKernelContext* ctx)
 {
@@ -86,7 +74,7 @@ class ElementWiseInitHelper : public GetBroadcastedOutputShapeHelper::InitHelper
         collapsed_input_shapes_ = GetCollapsedShapes(ctx);
         collapsed_output_shape_ =
             BroadcastTensorShapes(collapsed_input_shapes_);
-
+            
         OP_REQUIRES(
             ctx,
             collapsed_output_shape_.dims() <= max_dim_count,
@@ -153,7 +141,7 @@ template <DML_OPERATOR_TYPE op_type, typename DML_OPERATOR_SPECIFIC_DESC>
 class DmlBinaryKernel : public DmlKernel
 {
   public:
-    using InitHelper = ElementWiseInitHelper<GetMaxDimCount<op_type>()>;
+    using InitHelper = ElementWiseInitHelper<kBinaryCwiseOpMaxDimCount>;
 
     explicit DmlBinaryKernel(
         DmlKernelConstruction* ctx,

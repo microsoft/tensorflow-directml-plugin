@@ -170,12 +170,14 @@ class BinaryOpTest(test.TestCase):
 
   def _compareGpu(self, x, y, np_func, tf_func):
     np_ans = np_func(x, y)
-    with test_util.use_gpu():
-      inx = ops.convert_to_tensor(x)
-      iny = ops.convert_to_tensor(y)
-      out = tf_func(inx, iny)
-      tf_gpu = self.evaluate(out)
-    self.assertAllClose(np_ans, tf_gpu)
+    inx = ops.convert_to_tensor(x)
+    iny = ops.convert_to_tensor(y)
+    out = tf_func(inx, iny)
+    tf_gpu = self.evaluate(out)
+    if x.dtype == np.float16:
+      self.assertAllClose(np_ans, tf_gpu, rtol=2e-3)
+    else:
+      self.assertAllClose(np_ans, tf_gpu)
     self.assertShapeEqual(np_ans, out)
     # TODO(zhifengc/ke): make gradient checker work on GPU.
 
@@ -832,11 +834,10 @@ class BinaryOpTest(test.TestCase):
 class ComparisonOpTest(test.TestCase):
 
   def _compareScalar(self, func, x, y, dtype):
-    with test_util.use_gpu():
-      out = func(
-          ops.convert_to_tensor(np.array([x]).astype(dtype)),
-          ops.convert_to_tensor(np.array([y]).astype(dtype)))
-      ret = self.evaluate(out)
+    out = func(
+        ops.convert_to_tensor(np.array([x]).astype(dtype)),
+        ops.convert_to_tensor(np.array([y]).astype(dtype)))
+    ret = self.evaluate(out)
     return ret[0]
 
   def testScalarCompareScalar(self):
@@ -865,9 +866,8 @@ class ComparisonOpTest(test.TestCase):
 
   def _compare(self, x, y, np_func, tf_func):
     np_ans = np_func(x, y)
-    with test_util.use_gpu():
-      out = tf_func(ops.convert_to_tensor(x), ops.convert_to_tensor(y))
-      tf_ans = self.evaluate(out)
+    out = tf_func(ops.convert_to_tensor(x), ops.convert_to_tensor(y))
+    tf_ans = self.evaluate(out)
     self.assertAllEqual(np_ans, tf_ans)
 
   def testTensorCompareTensor(self):
