@@ -24,6 +24,7 @@ void RegisterKernels_Concat();
 void RegisterKernels_Conv();
 void RegisterKernels_DataFormatDimMap();
 void RegisterKernels_DataFormatVecPermute();
+void RegisterKernels_DynamicStitch();
 void RegisterKernels_Fill();
 void RegisterKernels_Gather();
 void RegisterKernels_GatherNd();
@@ -58,6 +59,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Conv();
     tfdml::RegisterKernels_DataFormatDimMap();
     tfdml::RegisterKernels_DataFormatVecPermute();
+    tfdml::RegisterKernels_DynamicStitch();
     tfdml::RegisterKernels_Fill();
     tfdml::RegisterKernels_Gather();
     tfdml::RegisterKernels_GatherNd();
