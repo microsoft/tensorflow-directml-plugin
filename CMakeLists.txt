@@ -107,6 +107,7 @@ add_library(
     tfdml/runtime_adapter/tensor_shape.cc
     tfdml/runtime_adapter/tensor_shape_utils.cc
     tfdml/runtime_adapter/types.cc
+    tfdml/runtime_adapter/variable_lock.cc
     tfdml/runtime_adapter/xplane_builder.cc
 )
 target_link_libraries(
