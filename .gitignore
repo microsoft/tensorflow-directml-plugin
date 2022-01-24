@@ -215,3 +215,7 @@ Thumbs.db
 
 # Wheels
 *.whl
+
+.vs/
+CMakeSettings.json
+out/

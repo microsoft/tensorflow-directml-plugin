@@ -66,7 +66,7 @@ class DmlAssignVariableOp : public OpKernel
 
             OP_REQUIRES(
                 ctx,
-                 var_tensor.shape().IsSameSize(value_tensor.shape()),
+                var_tensor.shape().IsSameSize(value_tensor.shape()),
                 errors::InvalidArgument(
                     "Trying to assign to variable with tensor with wrong shape."
                     " Expected ",

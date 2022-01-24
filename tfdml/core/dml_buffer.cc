@@ -15,8 +15,8 @@ limitations under the License.
 
 #include "dml_bfc_allocator.h"
 #include "dml_device.h"
+#include "tensorflow/c/kernels.h"
 #include "tfdml/runtime_adapter/op_kernel_context.h"
-#include "tensorflow/include/tensorflow/c/kernels.h"
 
 namespace tfdml
 {

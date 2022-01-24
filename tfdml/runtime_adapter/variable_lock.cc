@@ -119,8 +119,9 @@ void VariableLock::Unlock()
     {
 #ifdef _WIN32
         Status status;
-        void* tf_handle =
-            TF_LoadSharedLibrary("_pywrap_tensorflow_internal.pyd", status.raw());
+        void* tf_handle = TF_LoadSharedLibrary(
+            "_pywrap_tensorflow_internal.pyd",
+            status.raw());
 
         CHECK(status.ok());
 

@@ -162,12 +162,12 @@ void TensorShape::UpdateNumElements()
         std::multiplies<int64_t>());
 }
 
-bool TensorShape::IsSameSize(const TensorShape& b) const
+bool TensorShape::IsSameSize(const TensorShape& other) const
 {
-    if (b.dims() != dims()) return false;
+    if (other.dims() != dims()) return false;
     for (int d = 0; d < dims(); d++)
     {
-        if (dim_size(d) != b.dim_size(d)) return false;
+        if (dim_size(d) != other.dim_size(d)) return false;
     }
     return true;
 }

@@ -29,7 +29,8 @@ class GatherNdInitHelper : public InitializationHelper
 
     explicit GatherNdInitHelper(
         OpKernelContext* ctx,
-        std::shared_ptr<const Attributes> attr) : var_lock_(ctx)
+        std::shared_ptr<const Attributes> attr)
+        : var_lock_(ctx)
     {
         if (ctx->input(0).dtype() == TF_RESOURCE)
         {

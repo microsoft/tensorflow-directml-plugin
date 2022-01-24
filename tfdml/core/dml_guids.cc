@@ -21,11 +21,11 @@ limitations under the License.
 
 // clang-format off
 #ifndef _WIN32
-#include "winadapter.h"
+#include <wsl/winadapter.h>
 #include <directx/d3d12.h>
 #include <directx/dxcore.h>
 #include "DirectML.h"
-#include "dxguids.h"
+#include "dxguids/dxguids.h"
 #include "dml_guids.h"
 #else
 #include <dxgi1_6.h>
