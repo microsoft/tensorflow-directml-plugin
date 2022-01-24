@@ -19,7 +19,6 @@ limitations under the License.
 #include <numeric>
 
 #include "absl/strings/str_cat.h"
-#include "tensorflow/core/framework/tensor_shape.pb.h"
 
 namespace tfdml
 {
