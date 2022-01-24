@@ -161,7 +161,6 @@ function(tf_proto_cpp proto_path)
 endfunction()
 
 # Generate the necessary .proto files in the TF wheel (performed at build time).
-tf_proto_cpp(tensorflow/core/framework/resource_handle.proto)
 tf_proto_cpp(tensorflow/core/framework/tensor.proto)
 tf_proto_cpp(tensorflow/core/framework/tensor_shape.proto)
 tf_proto_cpp(tensorflow/core/framework/types.proto)

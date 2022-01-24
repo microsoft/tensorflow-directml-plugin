@@ -18,7 +18,6 @@ limitations under the License.
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "tensorflow/c/tf_datatype.h"
-#include "tensorflow/core/framework/resource_handle.pb.h"
 #include "tfdml/runtime_adapter/macros.h"
 #include "tfdml/runtime_adapter/tensor_shape.h"
 
