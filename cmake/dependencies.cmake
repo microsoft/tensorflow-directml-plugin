@@ -19,17 +19,20 @@ FetchContent_Declare(
 set(protobuf_BUILD_TESTS OFF)
 
 # TensorFlow python package
+# To update the package version to a nightly build, query https://pypi.org/pypi/tf-nightly-cpu/json and search for the
+# SHA and URL of the desired date for the cp37 version. To update the package version to a stable build instead, query
+# https://pypi.org/pypi/tensorflow-cpu/json.
 if(WIN32)
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/36/65/e0eebf64df8d1e7b1575b7ccee6e527d96ac1093297a153df488077f0743/tensorflow_cpu-2.7.0-cp37-cp37m-win_amd64.whl
-        URL_HASH SHA256=b4e2a9c1104f1210b53641937b286d1259b351ba915d9812d8948a664561d4a3
+        URL https://files.pythonhosted.org/packages/6f/a6/16d2825ffb318f82a548205fd17822c4d9cbecf0577d2f5a9e7b8b75e3b0/tf_nightly_cpu-2.9.0.dev20220123-cp37-cp37m-win_amd64.whl
+        URL_HASH SHA256=d1900d59af1d01ac34089e5d50528c53b64723dda1e1d8ea79a2954e573e284a
     )
 else()
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/2d/5c/417ca2f34e63b5681e61d300f4358d838b6720a1a669aa48fca9eab68371/tensorflow_cpu-2.7.0-cp37-cp37m-manylinux2010_x86_64.whl
-        URL_HASH SHA256=a043c8185889c17e6577b26b05c614d2ebfe44c84b5a168a90ab2f1762263cc7
+        URL https://files.pythonhosted.org/packages/76/0f/d0502c20aa220518f8ac68adb15e27733a68308e597b9247ef3f84dcb6be/tf_nightly_cpu-2.9.0.dev20220123-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl
+        URL_HASH SHA256=b7ee40bb94774c7c7cc905785d3be290c369ab7369c921ec78a176706c3182b9
     )
 endif()
 
@@ -180,5 +183,3 @@ if(NOT ${python_wheel_check_exit_code} EQUAL 0)
         "have the 'wheel' package installed."
     )
 endif()
-
-set(CMAKE_FOLDER "")
