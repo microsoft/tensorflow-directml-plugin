@@ -161,9 +161,6 @@ function(tf_proto_cpp proto_path)
 endfunction()
 
 # Generate the necessary .proto files in the TF wheel (performed at build time).
-tf_proto_cpp(tensorflow/core/framework/tensor.proto)
-tf_proto_cpp(tensorflow/core/framework/tensor_shape.proto)
-tf_proto_cpp(tensorflow/core/framework/types.proto)
 tf_proto_cpp(tensorflow/core/profiler/protobuf/xplane.proto)
 
 # A python interpreter is required to produce the plugin wheel. This python environment

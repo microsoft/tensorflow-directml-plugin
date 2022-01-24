@@ -16,8 +16,6 @@ limitations under the License.
 #include "tensorflow/c/tf_datatype.h"
 #include "tensorflow/c/tf_tensor.h"
 #include "tensorflow/c/tf_tstring.h"
-#include "tensorflow/core/framework/tensor.pb.h"
-#include "tensorflow/core/framework/types.pb.h"
 #include "tfdml/runtime_adapter/macros.h"
 #include "tfdml/runtime_adapter/status.h"
 

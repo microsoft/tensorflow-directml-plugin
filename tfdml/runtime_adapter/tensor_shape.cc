@@ -42,18 +42,6 @@ TensorShape::TensorShape(absl::InlinedVector<int64_t, 5>&& dim_sizes)
     UpdateNumElements();
 }
 
-TensorShape::TensorShape(const tensorflow::TensorShapeProto& proto)
-{
-    dim_sizes_.reserve(proto.dim_size());
-
-    for (const auto& d : proto.dim())
-    {
-        dim_sizes_.push_back(d.size());
-    }
-
-    UpdateNumElements();
-}
-
 bool operator==(const TensorShape& a, const TensorShape& b)
 {
     return a.dim_sizes_ == b.dim_sizes_;
