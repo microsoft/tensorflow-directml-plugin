@@ -16,7 +16,7 @@ parameters:
   default: test
 - name: tensorflowPackage
   type: string
-  default: tensorflow==2.7.0
+  default: tf-nightly-cpu==2.9.0.dev20220123
 - name: pluginBuildPipeline
   type: string
   default: current

@@ -16,6 +16,8 @@ limitations under the License.
 #include "dml_bfc_allocator.h"
 #include "dml_util.h"
 #include "tensorflow/c/experimental/stream_executor/stream_executor.h"
+#include "tensorflow/c/kernels.h"
+#include "tensorflow/c/tf_tensor.h"
 #include "tfdml/core/dml_device.h"
 #include "tfdml/runtime_adapter/status.h"
 
@@ -312,7 +314,7 @@ void DMLDeviceContext::EnqueueCallbackForGpuEvent(
 }
 
 DmlBuffer DMLDeviceContext::AllocateDefaultBuffer(
-    OpKernelContext* op_kernel_context,
+    TF_OpKernelContext* op_kernel_context,
     uint64_t num_bytes) const
 {
     return DmlBuffer(op_kernel_context, allocator_, num_bytes);
@@ -362,6 +364,14 @@ D3D12BufferRegion DMLDeviceContext::GetBufferForTensor(
 {
     const void* p = tensor.tensor_data().data();
     return GetBufferForOpaqueData(allocator_, p, tensor.TotalBytes());
+}
+
+D3D12BufferRegion DMLDeviceContext::GetBufferForTensor(
+    const TF_Tensor* tensor) const
+{
+    const void* p = TF_TensorData(tensor);
+    size_t total_bytes = TF_TensorByteSize(tensor);
+    return GetBufferForOpaqueData(allocator_, p, total_bytes);
 }
 
 D3D12BufferRegion DMLDeviceContext::GetBufferForDeviceMemory(

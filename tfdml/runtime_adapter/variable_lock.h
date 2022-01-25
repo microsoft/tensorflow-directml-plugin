@@ -13,23 +13,26 @@ limitations under the License.
 
 #pragma once
 
-#include "tfdml/runtime_adapter/status.h"
+#include "absl/types/span.h"
+
+struct TF_VariableInputLockHolder;
 
 namespace tfdml
 {
-class Tensor;
 
-class Device
+class OpKernelContext;
+
+class VariableLock
 {
   public:
-    virtual ~Device() = default;
+    VariableLock(OpKernelContext* ctx);
+    void LockShared(absl::Span<const int> input_indices);
+    void LockUnique(absl::Span<const int> input_indices);
+    void Unlock();
 
-    virtual Status CopyCPUTensorToDevice(
-        const Tensor* cpu_tensor,
-        Tensor* device_tensor) = 0;
-
-    virtual void CopyTensorInSameDevice(
-        const Tensor* input_tensor,
-        Tensor* output_tensor) = 0;
+  private:
+    TF_VariableInputLockHolder* lock_holder_ = nullptr;
+    OpKernelContext* ctx_;
 };
+
 } // namespace tfdml

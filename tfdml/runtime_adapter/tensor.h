@@ -18,7 +18,6 @@ limitations under the License.
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "tensorflow/c/tf_datatype.h"
-#include "tensorflow/core/framework/resource_handle.pb.h"
 #include "tfdml/runtime_adapter/macros.h"
 #include "tfdml/runtime_adapter/tensor_shape.h"
 
@@ -39,7 +38,7 @@ class Tensor
     int64_t AllocatedBytes() const;
     absl::string_view tensor_data() const;
     TF_DataType dtype() const;
-    const TensorShape& shape() const;
+    TensorShape shape() const;
     int64_t NumElements() const;
     Tensor DeepCopy() const;
     int64_t TotalBytes() const;
@@ -62,19 +61,6 @@ class Tensor
         return reinterpret_cast<T*>(raw_data());
     }
 
-    template <>
-    const tensorflow::ResourceHandleProto* base<
-        tensorflow::ResourceHandleProto>() const
-    {
-        return resource_handle_.get();
-    }
-
-    template <>
-    tensorflow::ResourceHandleProto* base<tensorflow::ResourceHandleProto>()
-    {
-        return resource_handle_.get();
-    }
-
     std::string DebugString() const;
 
     template <typename H>
@@ -95,9 +81,5 @@ class Tensor
 
     std::shared_ptr<TF_Tensor> tensor_;
     TensorShape shape_;
-
-    // Resource handles are not directly stored in the tensor and are serialized
-    // instead, so we need somewhere to store the memory
-    std::shared_ptr<tensorflow::ResourceHandleProto> resource_handle_;
 };
 } // namespace tfdml

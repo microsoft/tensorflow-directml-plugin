@@ -19,18 +19,12 @@ limitations under the License.
 #include "absl/container/inlined_vector.h"
 #include "absl/types/span.h"
 
-namespace tensorflow
-{
-class TensorShapeProto;
-}
-
 namespace tfdml
 {
 class TensorShape
 {
   public:
     TensorShape();
-    TensorShape(const tensorflow::TensorShapeProto& proto);
     TensorShape(std::initializer_list<int64_t> dim_sizes);
     TensorShape(absl::Span<const int64_t> dim_sizes);
     TensorShape(absl::InlinedVector<int64_t, 5>&& dim_sizes);
