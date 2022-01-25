@@ -125,7 +125,8 @@ struct DmlTensorLayout : public DmlTensorLayoutBase
             DmlTensorAxis::N,
             DmlTensorAxis::C,
             DmlTensorAxis::H,
-            DmlTensorAxis::W};
+            DmlTensorAxis::W,
+        };
     };
     static DmlTensorLayout Nhwc()
     {
@@ -133,7 +134,27 @@ struct DmlTensorLayout : public DmlTensorLayoutBase
             DmlTensorAxis::N,
             DmlTensorAxis::H,
             DmlTensorAxis::W,
-            DmlTensorAxis::C};
+            DmlTensorAxis::C,
+        };
+    };
+    static DmlTensorLayout Cnhw()
+    {
+        return {
+            DmlTensorAxis::C,
+            DmlTensorAxis::N,
+            DmlTensorAxis::H,
+            DmlTensorAxis::W,
+        };
+    };
+    static DmlTensorLayout Cndhw()
+    {
+        return {
+            DmlTensorAxis::C,
+            DmlTensorAxis::N,
+            DmlTensorAxis::D,
+            DmlTensorAxis::H,
+            DmlTensorAxis::W,
+        };
     };
 };
 
