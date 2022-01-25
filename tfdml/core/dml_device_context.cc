@@ -314,13 +314,6 @@ void DMLDeviceContext::EnqueueCallbackForGpuEvent(
 }
 
 DmlBuffer DMLDeviceContext::AllocateDefaultBuffer(
-    OpKernelContext* op_kernel_context,
-    uint64_t num_bytes) const
-{
-    return DmlBuffer(op_kernel_context, allocator_, num_bytes);
-}
-
-DmlBuffer DMLDeviceContext::AllocateDefaultBuffer(
     TF_OpKernelContext* op_kernel_context,
     uint64_t num_bytes) const
 {

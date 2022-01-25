@@ -129,13 +129,6 @@ class DMLDeviceContext
     // When the returned object is destructed, the memory is freed back to the
     // pool.
     DmlBuffer AllocateDefaultBuffer(
-        OpKernelContext* op_kernel_context,
-        uint64_t num_bytes) const;
-
-    // Allocates a D3D12 default heap buffer which is at least num_bytes large.
-    // When the returned object is destructed, the memory is freed back to the
-    // pool.
-    DmlBuffer AllocateDefaultBuffer(
         TF_OpKernelContext* op_kernel_context,
         uint64_t num_bytes) const;
 

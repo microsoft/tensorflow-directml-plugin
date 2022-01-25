@@ -22,33 +22,6 @@ namespace tfdml
 {
 
 /*explicit*/ DmlBuffer::DmlBuffer(
-    OpKernelContext* op_kernel_context,
-    DmlAllocator* allocator,
-    uint64_t size_in_bytes)
-    : allocator_(allocator)
-{
-    // Allocate a dummy tensor to leverage the BFCAllocator that wraps our
-    // DmlAllocator. Calling allocator->Alloc() would not use its BFC
-    // capabilities and would unconditionally allocate new memory instead of
-    // reusing existing memory.
-    constexpr bool on_host = false;
-    Status status = op_kernel_context->allocate_temp(
-        TF_UINT8,
-        TensorShape({static_cast<int64_t>(size_in_bytes)}),
-        &tensor_,
-        on_host);
-
-    // If the allocation fails, leave this buffer empty
-    if (!status.ok())
-    {
-        return;
-    }
-
-    buffer_region_ =
-        allocator_->CreateBufferRegion(tensor_.raw_data(), size_in_bytes);
-}
-
-/*explicit*/ DmlBuffer::DmlBuffer(
     TF_OpKernelContext* op_kernel_context,
     DmlAllocator* allocator,
     uint64_t size_in_bytes)

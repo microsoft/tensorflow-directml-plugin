@@ -33,11 +33,6 @@ class DmlBuffer
 {
   public:
     explicit DmlBuffer(
-        OpKernelContext* op_kernel_context,
-        DmlAllocator* allocator,
-        uint64_t size_in_bytes);
-
-    explicit DmlBuffer(
         TF_OpKernelContext* op_kernel_context,
         DmlAllocator* allocator,
         uint64_t size_in_bytes);

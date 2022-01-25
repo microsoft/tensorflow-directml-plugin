@@ -316,7 +316,7 @@ class DmlStatelessRandomUniformKernel : public DmlKernel
     {
         DmlBuffer input_state_buffer =
             ctx->GetDmlDeviceContext()->AllocateDefaultBuffer(
-                ctx->GetOpKernelContext(),
+                ctx->GetOpKernelContext()->raw(),
                 6 * sizeof(uint32_t));
 
         Tensor output_tensor = ctx->GetOutputTensor(0);
@@ -484,7 +484,7 @@ class DmlRandomUniformKernel : public DmlKernel
             static_cast<uint32_t>(init_helper->GetOutputShape().num_elements());
 
         state_buffer_ = ctx->GetDmlDeviceContext()->AllocateDefaultBuffer(
-            ctx->GetOpKernelContext(),
+            ctx->GetOpKernelContext()->raw(),
             6 * sizeof(uint32_t));
 
         OP_REQUIRES(
