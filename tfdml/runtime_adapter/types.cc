@@ -78,8 +78,7 @@ int DataTypeSize(TF_DataType dtype)
     case TF_QINT32: return sizeof(Eigen::QInt32);
     case TF_BFLOAT16: return sizeof(Eigen::bfloat16);
     case TF_HALF: return sizeof(Eigen::half);
-    default:
-        return 0;
+    default: return 0;
     }
 }
 

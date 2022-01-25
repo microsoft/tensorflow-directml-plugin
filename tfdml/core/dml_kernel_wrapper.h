@@ -168,7 +168,7 @@ class DmlKernelWrapper : public DmlKernelWrapperBase
 
     StatusOr<DmlGpuEvent> ComputeKernel(
         DmlKernel* kernel,
-        DmlKernelContext* context) const final
+        DmlKernelContext* context) const override
     {
         return kernel->Compute(context);
     }

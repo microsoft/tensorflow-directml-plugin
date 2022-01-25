@@ -297,10 +297,6 @@ class Conv2DTransposeTest(test.TestCase):
         self.assertAllClose(cache_values, value)
 
   def testConv2DTransposeShapeInference(self):
-    # TODO: Enable when TF_RESOURCE deserialization across ABI is enabled
-    # https://github.com/tensorflow/tensorflow/issues/53531
-    self.skipTest("TF_RESOURCE is not supported yet")
-
     # Test case for 8972
     initializer = random_ops.truncated_normal(
         [3, 3, 5, 1], mean=0.0, stddev=0.01, dtype=dtypes.float32)

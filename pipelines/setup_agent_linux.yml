@@ -3,9 +3,11 @@
 
 steps:
 - script: |
-    wget --output-document="$(Build.StagingDirectory)/bazel" https://github.com/bazelbuild/bazelisk/releases/download/v1.10.1/bazelisk-linux-amd64
-    echo "##vso[task.prependpath]$(Build.StagingDirectory)"
-  displayName: Install Bazelisk
+    wget --output-document="$(Build.StagingDirectory)/cmake.sh" https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.sh
+    mkdir "$(Build.StagingDirectory)/cmake"
+    bash "$(Build.StagingDirectory)/cmake.sh" --skip-license --prefix="$(Build.StagingDirectory)/cmake"
+    echo "##vso[task.prependpath]$(Build.StagingDirectory)/cmake/bin"
+  displayName: Install CMake
   workingDirectory: $(Build.StagingDirectory)
   # target: manylinux
 
@@ -16,15 +18,17 @@ steps:
     eval "$($miniconda_path/bin/conda shell.bash hook)" 
     conda create --name build python=$(vars.pyVersionMajorDotMinor) -y
     activate_cmd="source $(Build.StagingDirectory)/$miniconda_path/bin/activate build"
+    source $(Build.StagingDirectory)/$miniconda_path/bin/activate build
+    pip install wheel
     echo "##vso[task.setVariable variable=activateCommand;isOutput=true]$activate_cmd"
   displayName: Install Miniconda
   name: miniconda
   workingDirectory: $(Build.StagingDirectory)
   # target: manylinux
 
-# - script: |
-#     sudo apt update
-#     sudo apt install clang -y
-#   displayName: Install Clang
-#   workingDirectory: $(Build.StagingDirectory)
+- script: |
+    sudo apt update
+    sudo apt install ninja-build clang -y
+  displayName: Install Ninja & Clang
+  workingDirectory: $(Build.StagingDirectory)
 #   target: manylinux

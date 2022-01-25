@@ -19,7 +19,6 @@ limitations under the License.
 #include <numeric>
 
 #include "absl/strings/str_cat.h"
-#include "tensorflow/core/framework/tensor_shape.pb.h"
 
 namespace tfdml
 {
@@ -39,18 +38,6 @@ TensorShape::TensorShape(absl::Span<const int64_t> dim_sizes)
 TensorShape::TensorShape(absl::InlinedVector<int64_t, 5>&& dim_sizes)
     : dim_sizes_(std::move(dim_sizes))
 {
-    UpdateNumElements();
-}
-
-TensorShape::TensorShape(const tensorflow::TensorShapeProto& proto)
-{
-    dim_sizes_.reserve(proto.dim_size());
-
-    for (const auto& d : proto.dim())
-    {
-        dim_sizes_.push_back(d.size());
-    }
-
     UpdateNumElements();
 }
 

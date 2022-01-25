@@ -16,15 +16,4 @@ limitations under the License.
 namespace tfdml
 {
 
-Device::Device() { rmgr_ = new ResourceMgr(); }
-
-Device::~Device()
-{
-    if (rmgr_ != nullptr)
-    {
-        delete rmgr_;
-        rmgr_ = nullptr;
-    }
-}
-
 } // namespace tfdml

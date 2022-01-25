@@ -15,6 +15,7 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tfdml/kernels/pch.h"
+#include "tfdml/runtime_adapter/variable_lock.h"
 
 namespace tfdml
 {
@@ -40,18 +41,21 @@ class GatherInitializationHelper : public InitializationHelper
     GatherInitializationHelper(
         OpKernelContext* ctx,
         std::shared_ptr<const Attributes> attr)
+        : var_lock_(ctx)
     {
         if (ctx->input(0).dtype() == TF_RESOURCE)
         {
-            const Tensor handle_input = ctx->input(0);
-
+            constexpr bool is_variant = false;
+            variable_tensor_.emplace();
             OP_REQUIRES_OK(
                 ctx,
-                LookupResource(
-                    ctx,
-                    HandleFromInput(ctx, 0),
-                    &params_resource_));
-            params_resource_->mu()->lock_shared();
+                ctx->GetInputTensorFromVariable(
+                    0,
+                    is_variant,
+                    &*variable_tensor_));
+
+            constexpr int lock_indices[1] = {0};
+            var_lock_.LockShared(lock_indices);
         }
 
         const Tensor params = GetParamsTensor(ctx);
@@ -190,23 +194,24 @@ class GatherInitializationHelper : public InitializationHelper
 
     const Tensor GetParamsTensor(OpKernelContext* ctx) const
     {
-        return ctx->input(0).dtype() == TF_RESOURCE
-                   ? *params_resource_->tensor()
-                   : ctx->input(0);
+        return variable_tensor_ ? *variable_tensor_ : ctx->input(0);
     }
 
     void Unlock() const
     {
-        if (params_resource_)
+        if (variable_tensor_)
         {
-            params_resource_->mu()->unlock_shared();
+            var_lock_.Unlock();
         }
     }
+
+    virtual ~GatherInitializationHelper() { Unlock(); }
 
   private:
     int64_t axis_;
     int32_t batch_dims_;
-    RefCountPtr<Var> params_resource_;
+    absl::optional<Tensor> variable_tensor_;
+    mutable VariableLock var_lock_;
 };
 
 template <typename TIndex>
@@ -474,10 +479,7 @@ void RegisterKernels_Gather()
 {
     RegisterGather<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64>();
     RegisterGatherV2<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT32, TF_INT64>();
-
-    // TODO: Enable when TF_RESOURCE deserialization across ABI is enabled
-    // https://github.com/tensorflow/tensorflow/issues/53531
-    // RegisterResourceGather<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT64>();
+    RegisterResourceGather<TF_FLOAT, TF_HALF, TF_BOOL, TF_INT64>();
 }
 
 } // namespace tfdml

@@ -15,13 +15,14 @@ limitations under the License.
 
 #include "dml_bfc_allocator.h"
 #include "dml_device.h"
+#include "tensorflow/c/kernels.h"
 #include "tfdml/runtime_adapter/op_kernel_context.h"
 
 namespace tfdml
 {
 
 /*explicit*/ DmlBuffer::DmlBuffer(
-    OpKernelContext* op_kernel_context,
+    TF_OpKernelContext* op_kernel_context,
     DmlAllocator* allocator,
     uint64_t size_in_bytes)
     : allocator_(allocator)
@@ -30,18 +31,27 @@ namespace tfdml
     // DmlAllocator. Calling allocator->Alloc() would not use its BFC
     // capabilities and would unconditionally allocate new memory instead of
     // reusing existing memory.
-    constexpr bool on_host = false;
-    Status status = op_kernel_context->allocate_temp(
-        TF_UINT8,
-        TensorShape({static_cast<int64_t>(size_in_bytes)}),
-        &tensor_,
-        on_host);
+    TF_AllocatorAttributes alloc_attributes;
+    alloc_attributes.struct_size = TF_ALLOCATOR_ATTRIBUTES_STRUCT_SIZE;
+    alloc_attributes.on_host = false;
 
-    // If the allocation fails, leave this buffer empty
+    TensorShape shape({static_cast<int64_t>(size_in_bytes)});
+
+    Status status;
+    TF_Tensor* raw_tensor = TF_AllocateTemp(
+        op_kernel_context,
+        TF_UINT8,
+        shape.data(),
+        shape.dims(),
+        &alloc_attributes,
+        status.raw());
+
     if (!status.ok())
     {
         return;
     }
+
+    tensor_ = Tensor(raw_tensor);
 
     buffer_region_ =
         allocator_->CreateBufferRegion(tensor_.raw_data(), size_in_bytes);

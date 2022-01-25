@@ -236,9 +236,9 @@ class FusedBatchNormInitializationHelper : public InitializationHelper
         absl::Span<const TensorShape> output_shapes) const override
     {
         // FusedBatchNorm can legitimately have empty tensors depending on
-        // whether is_training is true or not. And when the first input is
-        // empty, we have to return NaN for mean and variance.
-        return false;
+        // whether is_training is true or not. So this kernel is only truly a
+        // no-op when the input tensor is empty.
+        return (ctx->input(0).NumElements() == 0);
     }
 
     float GetEpsilon() const { return attr_->epsilon; }
@@ -510,53 +510,6 @@ class DmlFusedBatchNormKernel : public DmlKernel
         }
     }
 
-    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const
-    {
-        if (ctx->GetOutputTensor(0).NumElements() != 0)
-        {
-            return DmlKernel::Compute(ctx);
-        }
-
-        const DMLDeviceContext* device_content = ctx->GetDmlDeviceContext();
-
-        // When the input is empty, mean and variance should be filled with NaN
-        for (uint32_t i = 1; i < ctx->GetOutputCount(); ++i)
-        {
-            Tensor& output = ctx->GetOutputTensor(i);
-
-            if (output.NumElements() == 0)
-            {
-                continue;
-            }
-
-            if (output.dtype() == TF_HALF)
-            {
-                Eigen::half pattern =
-                    std::numeric_limits<Eigen::half>::quiet_NaN();
-                auto pattern_bytes = absl::Span<const uint8_t>(
-                    reinterpret_cast<const uint8_t*>(&pattern),
-                    sizeof(pattern));
-                device_content->FillBufferWithPattern(
-                    device_content->GetBufferForTensor(output),
-                    pattern_bytes);
-            }
-            else
-            {
-                CHECK(output.dtype() == TF_FLOAT);
-
-                float pattern = std::numeric_limits<float>::quiet_NaN();
-                auto pattern_bytes = absl::Span<const uint8_t>(
-                    reinterpret_cast<const uint8_t*>(&pattern),
-                    sizeof(pattern));
-                device_content->FillBufferWithPattern(
-                    device_content->GetBufferForTensor(output),
-                    pattern_bytes);
-            }
-        }
-
-        return device_content->GetCurrentCompletionEvent();
-    }
-
     // Initializes the batch norm kernel for training. In training mode, we
     // don't receive the mean/variance and need to compute it ourselves.
     void InitializeForTraining(
@@ -610,8 +563,7 @@ class DmlFusedBatchNormKernel : public DmlKernel
         using namespace DmlTensorAxes;
         assert(dim_count == 4 || dim_count == 5);
         const auto scalar_layout =
-            dim_count == 4 ? absl::Span<const DmlTensorAxis>({C, N, H, W})
-                           : absl::Span<const DmlTensorAxis>({C, N, D, H, W});
+            dim_count == 4 ? DmlTensorLayout::Cnhw() : DmlTensorLayout::Cndhw();
 
         tensors.inputs[1]->desc = DmlTensorDesc::Create(
             ctx->GetInputDataType(1),
@@ -755,8 +707,7 @@ class DmlFusedBatchNormKernel : public DmlKernel
         using namespace DmlTensorAxes;
         assert(dim_count == 4 || dim_count == 5);
         const auto scalar_layout =
-            dim_count == 4 ? absl::Span<const DmlTensorAxis>({C, N, H, W})
-                           : absl::Span<const DmlTensorAxis>({C, N, D, H, W});
+            dim_count == 4 ? DmlTensorLayout::Cnhw() : DmlTensorLayout::Cndhw();
 
         tensors.inputs[1]->desc = DmlTensorDesc::Create(
             ctx->GetInputDataType(1),

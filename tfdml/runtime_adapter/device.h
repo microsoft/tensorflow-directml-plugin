@@ -13,7 +13,6 @@ limitations under the License.
 
 #pragma once
 
-#include "tfdml/runtime_adapter/resource_mgr.h"
 #include "tfdml/runtime_adapter/status.h"
 
 namespace tfdml
@@ -23,17 +22,14 @@ class Tensor;
 class Device
 {
   public:
-    Device();
-    virtual ~Device();
+    virtual ~Device() = default;
 
     virtual Status CopyCPUTensorToDevice(
         const Tensor* cpu_tensor,
         Tensor* device_tensor) = 0;
 
-    // Returns the resource manager associated w/ this device.
-    virtual ResourceMgr* resource_manager() { return rmgr_; }
-
-  private:
-    ResourceMgr* rmgr_;
+    virtual void CopyTensorInSameDevice(
+        const Tensor* input_tensor,
+        Tensor* output_tensor) = 0;
 };
 } // namespace tfdml

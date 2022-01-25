@@ -63,6 +63,9 @@
                     "file": "ops/depthwise_conv_op_test.py"
                 },
                 {
+                    "file": "ops/dynamic_stitch_op_test.py"
+                },
+                {
                     "file": "ops/fill_op_test.py"
                 },
                 {
@@ -79,6 +82,9 @@
                 },
                 {
                     "file": "ops/image_ops_test.py"
+                },
+                {
+                    "file": "ops/l2loss_test.py"
                 },
                 {
                     "file": "ops/lrn_op_test.py"
@@ -105,6 +111,9 @@
                     "file": "ops/ragged_reduce_op_test.py"
                 },
                 {
+                    "file": "ops/random_ops_test.py"
+                },
+                {
                     "file": "ops/reduce_join_op_test.py"
                 },
                 {
@@ -115,6 +124,9 @@
                 },
                 {
                     "file": "ops/reduction_ops_test.py"
+                },
+                {
+                    "file": "ops/resource_variable_ops_test.py"
                 },
                 {
                     "file": "ops/sparse_xent_op_test.py"
