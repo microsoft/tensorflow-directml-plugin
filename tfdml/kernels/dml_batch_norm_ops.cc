@@ -563,8 +563,7 @@ class DmlFusedBatchNormKernel : public DmlKernel
         using namespace DmlTensorAxes;
         assert(dim_count == 4 || dim_count == 5);
         const auto scalar_layout =
-            dim_count == 4 ? absl::Span<const DmlTensorAxis>({C, N, H, W})
-                           : absl::Span<const DmlTensorAxis>({C, N, D, H, W});
+            dim_count == 4 ? DmlTensorLayout::Cnhw() : DmlTensorLayout::Cndhw();
 
         tensors.inputs[1]->desc = DmlTensorDesc::Create(
             ctx->GetInputDataType(1),
@@ -708,9 +707,7 @@ class DmlFusedBatchNormKernel : public DmlKernel
         using namespace DmlTensorAxes;
         assert(dim_count == 4 || dim_count == 5);
         const auto scalar_layout =
-            dim_count == 4
-                ? absl::InlinedVector<DmlTensorAxis, 5>({C, N, H, W})
-                : absl::InlinedVector<DmlTensorAxis, 5>({C, N, D, H, W});
+            dim_count == 4 ? DmlTensorLayout::Cnhw() : DmlTensorLayout::Cndhw();
 
         tensors.inputs[1]->desc = DmlTensorDesc::Create(
             ctx->GetInputDataType(1),
