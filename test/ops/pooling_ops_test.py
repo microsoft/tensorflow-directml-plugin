@@ -1091,6 +1091,8 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
         config_exec.disable_op_determinism()
 
   def testMaxPoolingGradGradWithArgmax(self):
+    # TODO #37915658: Enable once MaxPoolGradGrad is implemented
+    self.skipTest("MaxPoolGradGrad is not implemented yet on DML")
     # MaxPoolWithArgMax is implemented only on CUDA.
     if not test.is_gpu_available(cuda_only=True):
       return
@@ -2088,6 +2090,9 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
 
   @test_util.run_deprecated_v1
   def testMaxPoolGradGrad(self):
+    # TODO #37915658: Enable once MaxPoolGradGrad is implemented
+    self.skipTest("MaxPoolGradGrad is not implemented yet on DML")
+    
     for (data_format, use_gpu) in GetTestConfigs():
       self._testMaxPoolGradGradValidPadding1_1(data_format, use_gpu)
       self._testMaxPoolGradGradValidPadding2_1_6(data_format, use_gpu)

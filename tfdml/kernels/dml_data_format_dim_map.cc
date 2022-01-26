@@ -23,7 +23,7 @@ namespace tfdml
 // Ops defined in this file assume that user specifies a permutation via two
 // string attributes. This check validates that these attributes properly define
 // it to prevent security vulnerabilities.
-static bool IsValidPermutation(const std::string& src, const std::string& dst)
+static bool IsValidPermutation(absl::string_view src, absl::string_view dst)
 {
     if (src.size() != dst.size())
     {
@@ -69,29 +69,6 @@ class DataFormatDimMapInitHelper : public InitializationHelper
         {
             OP_REQUIRES_OK(ctx, ctx->GetAttr("src_format", &src_format));
             OP_REQUIRES_OK(ctx, ctx->GetAttr("dst_format", &dst_format));
-            OP_REQUIRES(
-                ctx,
-                src_format.size() == 4 || src_format.size() == 5,
-                errors::InvalidArgument(absl::StrCat(
-                    "Source format must be of length 4 or 5, received "
-                    "src_format = ",
-                    src_format)));
-            OP_REQUIRES(
-                ctx,
-                dst_format.size() == 4 || dst_format.size() == 5,
-                errors::InvalidArgument(absl::StrCat(
-                    "Destination format must be of length "
-                    "4 or 5, received dst_format = ",
-                    dst_format)));
-            OP_REQUIRES(
-                ctx,
-                IsValidPermutation(src_format, dst_format),
-                errors::InvalidArgument(
-                    "Destination and source format must "
-                    "determine a permutation, got ",
-                    src_format,
-                    " and ",
-                    dst_format));
         }
 
         std::string src_format;
@@ -123,6 +100,32 @@ class DmlDataFormaDimMapKernel : public DmlKernel
     {
         auto src_format = init_helper->GetSrcFormat();
         auto dst_format = init_helper->GetDstFormat();
+
+        // TODO #37895137: Investigate why DataFormatDimMap's validation makes
+        // other operators fail when done in the constructor instead of Compute
+        OP_REQUIRES(
+            ctx->GetOpKernelContext(),
+            src_format.size() == 4 || src_format.size() == 5,
+            errors::InvalidArgument(absl::StrCat(
+                "Source format must be of length 4 or 5, received "
+                "src_format = ",
+                src_format)));
+        OP_REQUIRES(
+            ctx->GetOpKernelContext(),
+            dst_format.size() == 4 || dst_format.size() == 5,
+            errors::InvalidArgument(absl::StrCat(
+                "Destination format must be of length "
+                "4 or 5, received dst_format = ",
+                dst_format)));
+        OP_REQUIRES(
+            ctx->GetOpKernelContext(),
+            IsValidPermutation(src_format, dst_format),
+            errors::InvalidArgument(
+                "Destination and source format must "
+                "determine a permutation, got ",
+                src_format,
+                " and ",
+                dst_format));
 
         // Put all the indices into a single uint32 scalar that we use to fill
         // the buffer. Since the indices are forced to be within the [0, 3]

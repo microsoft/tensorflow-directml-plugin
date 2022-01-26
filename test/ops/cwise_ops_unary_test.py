@@ -383,7 +383,7 @@ class UnaryOpTest(test.TestCase):
     self._compareBothSparse(x, np.negative, math_ops.negative)
     self._compareBothSparse(x, np.square, math_ops.square)
     self._compareBothSparse(z, np.sqrt, math_ops.sqrt, tol=1e-3)
-    self._compareBothSparse(x, np.tanh, math_ops.tanh)
+    self._compareBothSparse(x, np.tanh, math_ops.tanh, tol=1e-3)
     self._compareBothSparse(y, np.sign, math_ops.sign)
     self._compareBothSparse(x, np.vectorize(math.erf), math_ops.erf, tol=1e-3)
 
