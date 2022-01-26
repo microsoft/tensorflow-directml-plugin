@@ -242,8 +242,8 @@ class PadInitHelper : public InitializationHelper
             ctx,
             simple_pad_.has_value(),
             errors::InvalidArgument(
-                "DML can only handle up to 5D padding, but the given shape "
-                "and paddings cannot be simplified to 5D."));
+                "DML can only handle up to 8D padding, but the given shape "
+                "and paddings cannot be simplified to 8D."));
     }
 
     const TensorShape& GetOutputShape() const { return output_shape_; }
