@@ -512,8 +512,10 @@ class MomentsTest(test.TestCase):
       expected_variance = expected_x_squared - expected_mean_squared
 
       # Check that the moments are correct.
-      self.assertAllCloseAccordingToType(expected_mean, self.evaluate(mean))
-      self.assertAllCloseAccordingToType(expected_variance, self.evaluate(var))
+      self.assertAllCloseAccordingToType(
+          expected_mean, self.evaluate(mean), half_atol=6e-3)
+      self.assertAllCloseAccordingToType(
+          expected_variance, self.evaluate(var), half_atol=6e-3)
 
   @test_util.run_deprecated_v1
   def testBasic(self):
