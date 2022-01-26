@@ -24,13 +24,13 @@ from tensorflow.core.protobuf import config_pb2
 from tensorflow.python.client import session
 from tensorflow.python.framework import ops as ops_lib
 from tensorflow.python.framework import test_util
-from tensorflow.python.kernel_tests import sparse_xent_op_test_base
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradients_impl
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import sparse_ops
 from tensorflow.python.ops.nn_grad import _SparseSoftmaxCrossEntropyWithLogitsGrad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
+import sparse_xent_op_test_base
 
 
 SparseXentOpTest = sparse_xent_op_test_base.SparseXentOpTestBase
