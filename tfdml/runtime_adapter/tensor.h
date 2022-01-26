@@ -21,6 +21,8 @@ limitations under the License.
 #include "tensorflow/core/framework/resource_handle.pb.h"
 #include "tfdml/runtime_adapter/macros.h"
 #include "tfdml/runtime_adapter/tensor_shape.h"
+#include "tfdml/runtime_adapter/tensor_types.h"
+#include "tfdml/runtime_adapter/types.h"
 
 struct TF_Tensor;
 
@@ -49,6 +51,12 @@ class Tensor
     bool IsInitialized() const;
     TF_Tensor* raw() const;
     bool CopyFrom(const Tensor& other, const TensorShape& shape);
+
+    template <typename T, size_t NDIMS>
+    typename TTypes<T, NDIMS>::Tensor tensor();
+
+    template <typename T, size_t NDIMS>
+    typename TTypes<T, NDIMS>::ConstTensor tensor() const;
 
     template <typename T>
     T* base()
@@ -87,6 +95,11 @@ class Tensor
             tensor.tensor_data());
         return result;
     }
+    
+    template <typename T>
+    typename TTypes<T>::ConstMatrix matrix() const {
+        return tensor<T, 2>();
+    }
 
     bool IsSameSize(const Tensor& other) const;
 
@@ -100,4 +113,20 @@ class Tensor
     // instead, so we need somewhere to store the memory
     std::shared_ptr<tensorflow::ResourceHandleProto> resource_handle_;
 };
+
+template <typename T, size_t NDIMS>
+typename TTypes<T, NDIMS>::Tensor Tensor::tensor() {
+//   CheckTypeAndIsAligned(DataTypeToEnum<T>::v());
+  assert(dtype() == DataTypeToEnum<T>());
+  return typename TTypes<T, NDIMS>::Tensor(base<T>(),
+                                           shape().AsEigenDSizes<NDIMS>());
+}
+template <typename T, size_t NDIMS>
+typename TTypes<T, NDIMS>::ConstTensor Tensor::tensor() const {
+//   CheckTypeAndIsAligned(DataTypeToEnum<T>::v());
+  assert(dtype() == DataTypeToEnum<T>());
+  return typename TTypes<T, NDIMS>::ConstTensor(base<const T>(),
+                                                shape().AsEigenDSizes<NDIMS>());
+}
+
 } // namespace tfdml

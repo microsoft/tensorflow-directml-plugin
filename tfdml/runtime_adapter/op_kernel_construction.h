@@ -16,6 +16,7 @@ limitations under the License.
 #include "attribute.h"
 #include "op_defs.h"
 #include "tensorflow/c/kernels.h"
+#include "tfdml/runtime_adapter/mirror_pad_mode.h"
 #include "tfdml/runtime_adapter/padding.h"
 #include "tfdml/runtime_adapter/status.h"
 #include "tfdml/runtime_adapter/tensor.h"
@@ -153,6 +154,22 @@ class OpKernelConstruction
         }
 
         return GetPaddingFromString(padding_string, value);
+    }
+
+    template <>
+    Status GetAttr<MirrorPadMode>(const char* attr_name, MirrorPadMode* value) const
+    {
+        CHECK(value != nullptr);
+
+        std::string padding_string;
+        Status status = GetAttr(attr_name, &padding_string);
+
+        if (!status.ok())
+        {
+            return status;
+        }
+
+        return GetMirrorPaddingFromString(padding_string, value);
     }
 
     template <>
@@ -393,5 +410,9 @@ class OpKernelConstruction
     static Status GetPaddingFromString(
         absl::string_view str_value,
         Padding* value);
+
+    static Status GetMirrorPaddingFromString(
+        absl::string_view str_value,
+        MirrorPadMode* value);
 };
 } // namespace tfdml
