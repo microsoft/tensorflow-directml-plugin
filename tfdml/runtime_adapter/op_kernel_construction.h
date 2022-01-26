@@ -411,9 +411,5 @@ class OpKernelConstruction
     static Status GetPaddingFromString(
         absl::string_view str_value,
         Padding* value);
-
-    static Status GetMirrorPaddingFromString(
-        absl::string_view str_value,
-        MirrorPadMode* value);
 };
 } // namespace tfdml

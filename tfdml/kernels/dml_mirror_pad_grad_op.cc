@@ -341,7 +341,7 @@ using K = typename KernelDefinition<
         template WithTypeConstraint<Op::Attribute::T, type>::
             template WithHostMemoryArgument<Op::Argument::paddings>;
 
-void RegisterMirrorPadGrad()
+void RegisterKernels_MirrorPadGrad()
 {
     using Op = ops::MirrorPadGrad;
     K<Op, TF_HALF, int32_t>::Register();
@@ -349,7 +349,5 @@ void RegisterMirrorPadGrad()
     K<Op, TF_FLOAT, int32_t>::Register();
     K<Op, TF_FLOAT, int64_t>::Register();
 }
-
-void RegisterKernels_MirrorPadGrad() { RegisterMirrorPadGrad(); }
 
 } // namespace tfdml
