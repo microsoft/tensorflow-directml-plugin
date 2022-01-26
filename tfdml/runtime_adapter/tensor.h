@@ -101,6 +101,16 @@ class Tensor
         return tensor<T, 2>();
     }
 
+    bool IsAligned() const {
+    #if EIGEN_MAX_ALIGN_BYTES == 0
+        return true;
+    #else
+        const void* ptr = base<void>();
+        return dtype() == TF_STRING ||
+            (reinterpret_cast<intptr_t>(ptr) % EIGEN_MAX_ALIGN_BYTES == 0);
+    #endif
+    }
+
     bool IsSameSize(const Tensor& other) const;
 
   private:
@@ -116,15 +126,15 @@ class Tensor
 
 template <typename T, size_t NDIMS>
 typename TTypes<T, NDIMS>::Tensor Tensor::tensor() {
-//   CheckTypeAndIsAligned(DataTypeToEnum<T>::v());
-  assert(dtype() == DataTypeToEnum<T>());
+  CHECK(IsAligned());
+  CHECK(dtype() == DataTypeToEnum<T>());
   return typename TTypes<T, NDIMS>::Tensor(base<T>(),
                                            shape().AsEigenDSizes<NDIMS>());
 }
 template <typename T, size_t NDIMS>
 typename TTypes<T, NDIMS>::ConstTensor Tensor::tensor() const {
-//   CheckTypeAndIsAligned(DataTypeToEnum<T>::v());
-  assert(dtype() == DataTypeToEnum<T>());
+  CHECK(IsAligned());
+  CHECK(dtype() == DataTypeToEnum<T>());
   return typename TTypes<T, NDIMS>::ConstTensor(base<const T>(),
                                                 shape().AsEigenDSizes<NDIMS>());
 }
