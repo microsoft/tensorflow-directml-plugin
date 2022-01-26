@@ -110,14 +110,6 @@ class DmlDataFormaDimMapKernel : public DmlKernel
                 "Source format must be of length 4 or 5, received "
                 "src_format = ",
                 src_format)));
-
-        OP_REQUIRES(
-            ctx->GetOpKernelContext(),
-            src_format.size() == 4 || src_format.size() == 5,
-            errors::InvalidArgument(absl::StrCat(
-                "Source format must be of length 4 or 5, received "
-                "src_format = ",
-                src_format)));
         OP_REQUIRES(
             ctx->GetOpKernelContext(),
             dst_format.size() == 4 || dst_format.size() == 5,
