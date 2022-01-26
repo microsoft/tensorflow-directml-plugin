@@ -116,9 +116,7 @@ class PadInitHelper : public InitializationHelper
                 case SYMMETRIC:
                     padding_mode = DML_PADDING_MODE_SYMMETRIC;
                     break;
-                case REFLECT:
-                    padding_mode = DML_PADDING_MODE_REFLECTION;
-                    break;
+                case REFLECT: padding_mode = DML_PADDING_MODE_REFLECTION; break;
                 default:
                     OP_REQUIRES(
                         ctx,
@@ -164,9 +162,8 @@ class PadInitHelper : public InitializationHelper
                 "paddings must be a matrix with 2 columns: ",
                 paddings.shape().DebugString()));
 
-        const int fixed_dims = (dims == 0 && paddings.dim_size(0) == 1)
-                                   ? 1
-                                   : dims;
+        const int fixed_dims =
+            (dims == 0 && paddings.dim_size(0) == 1) ? 1 : dims;
 
         OP_REQUIRES(
             ctx,
@@ -190,7 +187,8 @@ class PadInitHelper : public InitializationHelper
             pad_value_ = ctx->input(2).base<T>()[0];
         }
 
-        typename TTypes<Tpadding>::ConstMatrix pads = paddings.matrix<Tpadding>();
+        typename TTypes<Tpadding>::ConstMatrix pads =
+            paddings.matrix<Tpadding>();
 
         for (int d = 0; d < fixed_dims; ++d)
         {
@@ -235,10 +233,7 @@ class PadInitHelper : public InitializationHelper
                         input.dim_size(d)));
             }
 
-            const int64_t size_d =
-                (d == input.dims())
-                    ? 1
-                    : input.dim_size(d);
+            const int64_t size_d = (d == input.dims()) ? 1 : input.dim_size(d);
             output_shape_.AddDim(before_d + size_d + after_d);
         }
 
@@ -332,47 +327,73 @@ using K = typename KernelDefinition<
     Op,
     DmlKernelWrapper<
         DmlPadKernel<typename EnumToDataType<type>::T, TPadding>,
-        PadShapeHelper<typename EnumToDataType<type>::T, TPadding>>>
-        ::template WithTypeConstraint<Op::Attribute::Tpaddings, DataTypeToEnum<TPadding>()>
-        ::template WithTypeConstraint<Op::Attribute::T, type>;
+        PadShapeHelper<typename EnumToDataType<type>::T, TPadding>>>::
+    template WithTypeConstraint<
+        Op::Attribute::Tpaddings,
+        DataTypeToEnum<TPadding>()>::
+        template WithTypeConstraint<Op::Attribute::T, type>;
 
-template <TF_DataType T, TF_DataType... Ts> void RegisterPad()
+template <TF_DataType T, TF_DataType... Ts>
+void RegisterPad()
 {
     using Op = ops::Pad;
-    K<Op, T, int32_t>
-        ::template WithHostMemoryArgument<Op::Argument::paddings>::Register();
-    K<Op, T, int64_t>
-        ::template WithHostMemoryArgument<Op::Argument::paddings>::Register();
+    K<Op, T, int32_t>::template WithHostMemoryArgument<
+        Op::Argument::paddings>::Register();
+    K<Op, T, int64_t>::template WithHostMemoryArgument<
+        Op::Argument::paddings>::Register();
     if constexpr (sizeof...(Ts) > 0) RegisterPad<Ts...>();
 }
 
-template <TF_DataType T, TF_DataType... Ts> void RegisterPadV2()
+template <TF_DataType T, TF_DataType... Ts>
+void RegisterPadV2()
 {
-  using Op = ops::PadV2;
-  K<Op, T, int32_t>
-    ::template WithHostMemoryArgument<Op::Argument::paddings>
-    ::template WithHostMemoryArgument<Op::Argument::constant_values>::Register();
-  K<Op, T, int64_t>
-    ::template WithHostMemoryArgument<Op::Argument::paddings>
-    ::template WithHostMemoryArgument<Op::Argument::constant_values>::Register();
- if constexpr (sizeof...(Ts) > 0) RegisterPadV2<Ts...>();
+    using Op = ops::PadV2;
+    K<Op, T, int32_t>::template WithHostMemoryArgument<Op::Argument::paddings>::
+        template WithHostMemoryArgument<
+            Op::Argument::constant_values>::Register();
+    K<Op, T, int64_t>::template WithHostMemoryArgument<Op::Argument::paddings>::
+        template WithHostMemoryArgument<
+            Op::Argument::constant_values>::Register();
+    if constexpr (sizeof...(Ts) > 0) RegisterPadV2<Ts...>();
 }
 
-template <TF_DataType T, TF_DataType... Ts> void RegisterMirrorPad()
+template <TF_DataType T, TF_DataType... Ts>
+void RegisterMirrorPad()
 {
     using Op = ops::MirrorPad;
-    K<Op, T, int32_t>
-        ::template WithHostMemoryArgument<Op::Argument::paddings>::Register();
-    K<Op, T, int64_t>
-        ::template WithHostMemoryArgument<Op::Argument::paddings>::Register();
+    K<Op, T, int32_t>::template WithHostMemoryArgument<
+        Op::Argument::paddings>::Register();
+    K<Op, T, int64_t>::template WithHostMemoryArgument<
+        Op::Argument::paddings>::Register();
     if constexpr (sizeof...(Ts) > 0) RegisterMirrorPad<Ts...>();
 }
 
 void RegisterKernels_Pad()
 {
-    RegisterPad<TF_HALF, TF_FLOAT, TF_UINT8, TF_UINT16, TF_UINT32, TF_INT8, TF_INT16>();
-    RegisterPadV2<TF_HALF, TF_FLOAT, TF_UINT8, TF_UINT16, TF_UINT32, TF_INT8, TF_INT16>();
-    RegisterMirrorPad<TF_HALF, TF_FLOAT, TF_UINT8, TF_UINT16, TF_UINT32, TF_INT8, TF_INT16>();
+    RegisterPad<
+        TF_HALF,
+        TF_FLOAT,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32,
+        TF_INT8,
+        TF_INT16>();
+    RegisterPadV2<
+        TF_HALF,
+        TF_FLOAT,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32,
+        TF_INT8,
+        TF_INT16>();
+    RegisterMirrorPad<
+        TF_HALF,
+        TF_FLOAT,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32,
+        TF_INT8,
+        TF_INT16>();
 }
 
 } // namespace tfdml

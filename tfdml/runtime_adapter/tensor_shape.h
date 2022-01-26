@@ -82,23 +82,27 @@ bool operator==(const TensorShape& a, const TensorShape& b);
 bool operator!=(const TensorShape& a, const TensorShape& b);
 
 template <int NDIMS, typename IndexType>
-Eigen::DSizes<IndexType, NDIMS> TensorShape::AsEigenDSizes() const {
-  assert(NDIMS == TensorShape::dims());
-  return AsEigenDSizesWithPadding<NDIMS, IndexType>();
+Eigen::DSizes<IndexType, NDIMS> TensorShape::AsEigenDSizes() const
+{
+    assert(NDIMS == TensorShape::dims());
+    return AsEigenDSizesWithPadding<NDIMS, IndexType>();
 }
 
 template <int NDIMS, typename IndexType>
-Eigen::DSizes<IndexType, NDIMS> TensorShape::AsEigenDSizesWithPadding() const {
-  assert(NDIMS >= TensorShape::dims());
-  static_assert(NDIMS <= TensorShape::MaxDimensions(), "Too many dimensions");
-  Eigen::DSizes<IndexType, NDIMS> dsizes;
-  for (int d = 0; d < dims(); d++) {
-    dsizes[d] = static_cast<IndexType>(dim_size(d));
-  }
-  for (int d = dims(); d < NDIMS; d++) {
-    dsizes[d] = 1;
-  }
-  return dsizes;
+Eigen::DSizes<IndexType, NDIMS> TensorShape::AsEigenDSizesWithPadding() const
+{
+    assert(NDIMS >= TensorShape::dims());
+    static_assert(NDIMS <= TensorShape::MaxDimensions(), "Too many dimensions");
+    Eigen::DSizes<IndexType, NDIMS> dsizes;
+    for (int d = 0; d < dims(); d++)
+    {
+        dsizes[d] = static_cast<IndexType>(dim_size(d));
+    }
+    for (int d = dims(); d < NDIMS; d++)
+    {
+        dsizes[d] = 1;
+    }
+    return dsizes;
 }
 
 } // namespace tfdml

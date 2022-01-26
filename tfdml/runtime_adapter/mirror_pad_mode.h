@@ -38,6 +38,8 @@ enum MirrorPadMode
 std::string GetMirrorPadModeAttrString();
 
 // Sets mirror pad mode based on the given string padding value.
-Status GetMirrorPaddingFromString(absl::string_view str_value, MirrorPadMode* value);
+Status GetMirrorPaddingFromString(
+    absl::string_view str_value,
+    MirrorPadMode* value);
 
 } // end namespace tfdml

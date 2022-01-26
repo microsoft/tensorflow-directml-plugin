@@ -157,7 +157,8 @@ class OpKernelConstruction
     }
 
     template <>
-    Status GetAttr<MirrorPadMode>(const char* attr_name, MirrorPadMode* value) const
+    Status GetAttr<MirrorPadMode>(const char* attr_name, MirrorPadMode* value)
+        const
     {
         CHECK(value != nullptr);
 

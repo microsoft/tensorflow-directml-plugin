@@ -175,7 +175,9 @@ Status OpKernelConstruction::GetPaddingFromString(
     return Status::OK();
 }
 
-Status OpKernelConstruction::GetMirrorPaddingFromString(absl::string_view str_value, MirrorPadMode* value)
+Status OpKernelConstruction::GetMirrorPaddingFromString(
+    absl::string_view str_value,
+    MirrorPadMode* value)
 {
     if (str_value == "REFLECT")
     {

@@ -15,26 +15,32 @@ limitations under the License.
 
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
-namespace tfdml {
+namespace tfdml
+{
 
 // Helper to define Tensor types given that the scalar is of type T.
 template <typename T, int NDIMS = 1, typename IndexType = Eigen::DenseIndex>
-struct TTypes {
-  // Rank-<NDIMS> tensor of scalar type T.
-  typedef Eigen::TensorMap<Eigen::Tensor<T, NDIMS, Eigen::RowMajor, IndexType>,
-                           Eigen::Aligned>
-      Tensor;
-  typedef Eigen::TensorMap<
-      Eigen::Tensor<const T, NDIMS, Eigen::RowMajor, IndexType>, Eigen::Aligned>
-      ConstTensor;
+struct TTypes
+{
+    // Rank-<NDIMS> tensor of scalar type T.
+    typedef Eigen::TensorMap<
+        Eigen::Tensor<T, NDIMS, Eigen::RowMajor, IndexType>,
+        Eigen::Aligned>
+        Tensor;
+    typedef Eigen::TensorMap<
+        Eigen::Tensor<const T, NDIMS, Eigen::RowMajor, IndexType>,
+        Eigen::Aligned>
+        ConstTensor;
 
-  // Rank-2 tensor (matrix) of scalar type T.
-  typedef Eigen::TensorMap<Eigen::Tensor<T, 2, Eigen::RowMajor, IndexType>,
-                           Eigen::Aligned>
-      Matrix;
-  typedef Eigen::TensorMap<
-      Eigen::Tensor<const T, 2, Eigen::RowMajor, IndexType>, Eigen::Aligned>
-      ConstMatrix;
+    // Rank-2 tensor (matrix) of scalar type T.
+    typedef Eigen::TensorMap<
+        Eigen::Tensor<T, 2, Eigen::RowMajor, IndexType>,
+        Eigen::Aligned>
+        Matrix;
+    typedef Eigen::TensorMap<
+        Eigen::Tensor<const T, 2, Eigen::RowMajor, IndexType>,
+        Eigen::Aligned>
+        ConstMatrix;
 };
 
-}  // namespace tfdml
+} // namespace tfdml

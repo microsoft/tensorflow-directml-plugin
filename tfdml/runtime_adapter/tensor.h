@@ -95,20 +95,22 @@ class Tensor
             tensor.tensor_data());
         return result;
     }
-    
+
     template <typename T>
-    typename TTypes<T>::ConstMatrix matrix() const {
+    typename TTypes<T>::ConstMatrix matrix() const
+    {
         return tensor<T, 2>();
     }
 
-    bool IsAligned() const {
-    #if EIGEN_MAX_ALIGN_BYTES == 0
+    bool IsAligned() const
+    {
+#if EIGEN_MAX_ALIGN_BYTES == 0
         return true;
-    #else
+#else
         const void* ptr = base<void>();
         return dtype() == TF_STRING ||
-            (reinterpret_cast<intptr_t>(ptr) % EIGEN_MAX_ALIGN_BYTES == 0);
-    #endif
+               (reinterpret_cast<intptr_t>(ptr) % EIGEN_MAX_ALIGN_BYTES == 0);
+#endif
     }
 
     bool IsSameSize(const Tensor& other) const;
@@ -125,18 +127,22 @@ class Tensor
 };
 
 template <typename T, size_t NDIMS>
-typename TTypes<T, NDIMS>::Tensor Tensor::tensor() {
-  CHECK(IsAligned());
-  CHECK(dtype() == DataTypeToEnum<T>());
-  return typename TTypes<T, NDIMS>::Tensor(base<T>(),
-                                           shape().AsEigenDSizes<NDIMS>());
+typename TTypes<T, NDIMS>::Tensor Tensor::tensor()
+{
+    CHECK(IsAligned());
+    CHECK(dtype() == DataTypeToEnum<T>());
+    return typename TTypes<T, NDIMS>::Tensor(
+        base<T>(),
+        shape().AsEigenDSizes<NDIMS>());
 }
 template <typename T, size_t NDIMS>
-typename TTypes<T, NDIMS>::ConstTensor Tensor::tensor() const {
-  CHECK(IsAligned());
-  CHECK(dtype() == DataTypeToEnum<T>());
-  return typename TTypes<T, NDIMS>::ConstTensor(base<const T>(),
-                                                shape().AsEigenDSizes<NDIMS>());
+typename TTypes<T, NDIMS>::ConstTensor Tensor::tensor() const
+{
+    CHECK(IsAligned());
+    CHECK(dtype() == DataTypeToEnum<T>());
+    return typename TTypes<T, NDIMS>::ConstTensor(
+        base<const T>(),
+        shape().AsEigenDSizes<NDIMS>());
 }
 
 } // namespace tfdml

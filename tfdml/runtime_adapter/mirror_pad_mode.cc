@@ -18,7 +18,9 @@ limitations under the License.
 namespace tfdml
 {
 
-Status GetMirrorPaddingFromString(absl::string_view str_value, MirrorPadMode* value)
+Status GetMirrorPaddingFromString(
+    absl::string_view str_value,
+    MirrorPadMode* value)
 {
     if (str_value == "REFLECT")
     {
