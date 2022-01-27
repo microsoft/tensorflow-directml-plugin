@@ -38,6 +38,7 @@ void RegisterKernels_Pooling();
 void RegisterKernels_Random();
 void RegisterKernels_Reduce();
 void RegisterKernels_Resize();
+void RegisterKernels_Slice();
 void RegisterKernels_SparseXent();
 void RegisterKernels_TopK();
 void RegisterKernels_Transpose();
@@ -71,6 +72,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Random();
     tfdml::RegisterKernels_Reduce();
     tfdml::RegisterKernels_Resize();
+    tfdml::RegisterKernels_Slice();
     tfdml::RegisterKernels_SparseXent();
     tfdml::RegisterKernels_TopK();
     tfdml::RegisterKernels_Transpose();
