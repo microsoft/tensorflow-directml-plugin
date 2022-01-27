@@ -90,6 +90,18 @@ class DmlKernelConstruction
     Status GetAttr(const char* attr_name, T* value) const;
 
     template <>
+    Status GetAttr<float>(const char* attr_name, float* value) const
+    {
+        Status status;
+        TF_OpKernelConstruction_GetAttrFloat(
+            ctx_,
+            attr_name,
+            value,
+            status.raw());
+        return status;
+    }
+
+    template <>
     Status GetAttr<int32_t>(const char* attr_name, int32_t* value) const
     {
         Status status;
