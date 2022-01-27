@@ -16,9 +16,6 @@
 
 import numpy as np
 
-import os
-input(os.getpid())
-
 from tensorflow.python import tf2
 from tensorflow.python.eager import context
 from tensorflow.python.eager import def_function
