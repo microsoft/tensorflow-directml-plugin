@@ -20,8 +20,6 @@ limitations under the License.
 #include "tfdml/runtime_adapter/op_kernel.h"
 #include "tfdml/runtime_adapter/op_kernel_construction.h"
 #include "tfdml/runtime_adapter/op_kernel_context.h"
-#include "tfdml/runtime_adapter/refcount.h"
-#include "tfdml/runtime_adapter/resource_var.h"
 #include "tfdml/runtime_adapter/types.h"
 
 #include "tfdml/core/dml_buffer.h"
@@ -31,6 +29,8 @@ limitations under the License.
 #include "tfdml/core/dml_operator_helper.h"
 #include "tfdml/core/dml_tensor_desc.h"
 #include "tfdml/core/dml_util.h"
+
+struct TF_OpKernelContext;
 
 namespace tfdml
 {
@@ -182,6 +182,15 @@ class DmlKernel
         DmlKernelTensors&& tensor_descs,
         IDMLCompiledOperator* compiled_op);
 
+    Status Initialize(
+        TF_OpKernelContext* ctx,
+        DmlKernelTensors&& tensor_descs,
+        IDMLCompiledOperator* compiled_op,
+        std::shared_ptr<const InitializationHelper> init_helper,
+        IDMLDevice* dml_device,
+        DMLDeviceContext* device_context,
+        const char* kernel_type);
+
     // For ops that skip the DML graph (e.g. BlockLSTM in seq_len_max==0 case)
     void InitializeAsNoOp(DmlKernelConstruction* ctx)
     {
@@ -204,6 +213,14 @@ class DmlKernel
     // bindings.
     StatusOr<DmlGpuEvent> Compute(
         DmlKernelContext* ctx,
+        absl::Span<const absl::optional<DML_BUFFER_BINDING>> input_bindings,
+        absl::Span<const absl::optional<DML_BUFFER_BINDING>> output_bindings)
+        const;
+
+    StatusOr<DmlGpuEvent> Compute(
+        TF_OpKernelContext* ctx,
+        IDMLDevice* dml_device,
+        DMLDeviceContext* device_context,
         absl::Span<const absl::optional<DML_BUFFER_BINDING>> input_bindings,
         absl::Span<const absl::optional<DML_BUFFER_BINDING>> output_bindings)
         const;

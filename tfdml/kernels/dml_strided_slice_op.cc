@@ -16,6 +16,7 @@ limitations under the License.
 
 #include "absl/cleanup/cleanup.h"
 #include "tfdml/kernels/pch.h"
+#include "tfdml/runtime_adapter/variable_lock.h"
 
 namespace tfdml
 {
@@ -1080,14 +1081,21 @@ class StridedSliceAssignInitHelper : public InitializationHelper
     StridedSliceAssignInitHelper(
         OpKernelContext* ctx,
         std::shared_ptr<const Attributes> attr)
+        : var_lock_(ctx)
     {
         if (ctx->input(0).dtype() == TF_RESOURCE)
         {
+            constexpr bool is_variant = false;
+            variable_tensor_.emplace();
             OP_REQUIRES_OK(
                 ctx,
-                LookupResource(ctx, HandleFromInput(ctx, 0), &input_resource_));
-            input_resource_->mu()->lock_shared();
-            locked_ = true;
+                ctx->GetInputTensorFromVariable(
+                    0,
+                    is_variant,
+                    &*variable_tensor_));
+
+            constexpr int lock_indices[1] = {0};
+            var_lock_.LockShared(lock_indices);
         }
 
         const Tensor input = GetInputTensor(ctx);
@@ -1154,16 +1162,14 @@ class StridedSliceAssignInitHelper : public InitializationHelper
 
     Tensor GetInputTensor(OpKernelContext* ctx) const
     {
-        return ctx->input(0).dtype() == TF_RESOURCE ? *input_resource_->tensor()
-                                                    : ctx->input(0);
+        return variable_tensor_ ? *variable_tensor_ : ctx->input(0);
     }
 
     void Unlock() const
     {
-        if (input_resource_ && locked_)
+        if (variable_tensor_)
         {
-            input_resource_->mu()->unlock_shared();
-            locked_ = false;
+            var_lock_.Unlock();
         }
     }
 
@@ -1176,8 +1182,8 @@ class StridedSliceAssignInitHelper : public InitializationHelper
 
   private:
     absl::optional<SimplifiedSlice> simple_slice_;
-    RefCountPtr<Var> input_resource_;
-    mutable bool locked_ = false;
+    absl::optional<Tensor> variable_tensor_;
+    mutable VariableLock var_lock_;
     bool is_identity_;
 };
 
@@ -1347,7 +1353,7 @@ class DmlStridedSliceAssignKernel : public DmlKernel
 
         DmlBuffer output_buffer =
             ctx->GetDmlDeviceContext()->AllocateDefaultBuffer(
-                ctx->GetOpKernelContext(),
+                ctx->GetOpKernelContext()->raw(),
                 input_buffers[1].SizeInBytes());
 
         absl::optional<DML_BUFFER_BINDING> output_bindings[] = {
@@ -1469,9 +1475,6 @@ void RegisterKernels_StridedSlice()
     RegisterStridedSlice();
     RegisterStridedSliceGrad();
     RegisterStridedSliceAssign();
-
-    // TODO: Enable when TF_RESOURCE deserialization across ABI is enabled
-    // https://github.com/tensorflow/tensorflow/issues/53531
-    // RegisterResourceStridedSliceAssign();
+    RegisterResourceStridedSliceAssign();
 }
 } // namespace tfdml

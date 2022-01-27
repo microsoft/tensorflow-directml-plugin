@@ -542,7 +542,7 @@ inline int64_t GetFilterDim(
 }
 
 inline void GetExplicitPaddingForDim(
-    const std::vector<int64_t>& explicit_paddings,
+    absl::Span<const int64_t> explicit_paddings,
     TensorFormat tensor_format,
     char dimension,
     int64_t* padding_before,

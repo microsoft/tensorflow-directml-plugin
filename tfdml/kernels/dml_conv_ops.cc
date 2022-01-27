@@ -660,11 +660,11 @@ class DepthwiseConv2DNativeInitHelper : public BaseConv2DInitHelper
     {
         // Input tensor is of the following dimensions:
         // [ batch, in_rows, in_cols, in_depth ]
-        const Tensor& input = ctx->input(0);
+        const Tensor input = ctx->input(0);
 
         // Input filter is of the following dimensions:
         // [ filter_rows, filter_cols, in_depth, depth_multiplier]
-        const Tensor& filter = ctx->input(1);
+        const Tensor filter = ctx->input(1);
 
         // For 2D convolution, there should be 4 dimensions.
         OP_REQUIRES(
@@ -811,8 +811,8 @@ class ConvInitHelper : public BaseConv2DInitHelper
     ConvInitHelper(OpKernelContext* ctx, std::shared_ptr<const Attributes> attr)
         : attr_(attr)
     {
-        const Tensor& input = ctx->input(0);
-        const Tensor& filter = ctx->input(1);
+        const Tensor input = ctx->input(0);
+        const Tensor filter = ctx->input(1);
 
         OP_REQUIRES_OK(
             ctx,
@@ -1692,7 +1692,7 @@ class DepthwiseConv2DBackpropInitHelper : public InitializationHelper
             backprop_sizes_name = "filter_sizes";
         }
 
-        const Tensor& backprop_tensor_shape_tensor =
+        const Tensor backprop_tensor_shape_tensor =
             context->input(BackpropTensorIndex);
         OP_REQUIRES(
             context,
@@ -1721,7 +1721,7 @@ class DepthwiseConv2DBackpropInitHelper : public InitializationHelper
             backprop_tensor_shape.AddDim(backprop_tensor_shape_data[i]);
         }
 
-        const Tensor& non_backprop_tensor =
+        const Tensor non_backprop_tensor =
             context->input(NonBackpropTensorIndex);
         const TensorShape& non_backprop_tensor_shape =
             non_backprop_tensor.shape();
@@ -1733,7 +1733,7 @@ class DepthwiseConv2DBackpropInitHelper : public InitializationHelper
                                               ? non_backprop_tensor_shape
                                               : backprop_tensor_shape;
 
-        const Tensor& out_backprop = context->input(2);
+        const Tensor out_backprop = context->input(2);
 
         OP_REQUIRES(
             context,
@@ -2297,11 +2297,11 @@ class Conv3DInitHelper : public InitializationHelper
     {
         // Input tensor is of the following dimensions:
         // [ batch, in_z, in_y, in_x, in_channels ]
-        const Tensor& input = context->input(0);
+        const Tensor input = context->input(0);
 
         // Input filter is of the following dimensions:
         // [ filter_z, filter_y, filter_x, in_channels, out_channels]
-        const Tensor& filter = context->input(1);
+        const Tensor filter = context->input(1);
 
         // NOTE: The ordering of the spatial dimensions is arbitrary, but has to
         // be kept consistent between input/filter/output.
@@ -2550,7 +2550,7 @@ class Conv3DGradInitHelper : public InitializationHelper
         if constexpr (BackpropInput)
         {
             label = "Conv3DBackpropInputOp";
-            const Tensor& input_sizes = context->input(0);
+            const Tensor input_sizes = context->input(0);
             OP_REQUIRES_OK(
                 context,
                 TensorShapeUtils::MakeShape(input_sizes, &input_shape));
@@ -2560,13 +2560,14 @@ class Conv3DGradInitHelper : public InitializationHelper
         {
             label = "Conv3DBackpropFilterOp";
             input_shape = context->input(0).shape();
-            const Tensor& filter_sizes = context->input(1);
+            const Tensor filter_sizes = context->input(1);
             OP_REQUIRES_OK(
                 context,
                 TensorShapeUtils::MakeShape(filter_sizes, &filter_shape));
         }
 
-        const TensorShape& out_backprop_shape = context->input(2).shape();
+        const Tensor out_backprop = context->input(2);
+        const TensorShape& out_backprop_shape = out_backprop.shape();
 
         std::vector<int32_t> strides;
         std::vector<int32_t> dilations;

@@ -41,7 +41,7 @@ parameters:
 - name: testTensorflowPackage
   displayName: TensorFlow Package Version
   type: string
-  default: tensorflow-cpu==2.7.0
+  default: tf-nightly-cpu==2.9.0.dev20220123
 
 - name: enableTests
   displayName: Enable Tests

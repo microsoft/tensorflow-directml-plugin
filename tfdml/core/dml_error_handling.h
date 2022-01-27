@@ -18,7 +18,7 @@ limitations under the License.
 #ifdef _WIN32
 #include <Windows.h>
 #else
-#include "winadapter.h"
+#include <wsl/winadapter.h>
 #endif
 
 namespace tfdml

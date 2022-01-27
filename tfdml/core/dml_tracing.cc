@@ -24,7 +24,7 @@ limitations under the License.
 #define USE_PIX
 #include <d3d12.h>
 
-#include "pix3.h"
+#include "WinPixEventRuntime/pix3.h"
 #include "tfdml/core/dml_device_cache.h"
 #include "tfdml/core/dml_dso_loader.h"
 #include "tfdml/runtime_adapter/env.h"

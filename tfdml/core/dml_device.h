@@ -53,7 +53,7 @@ class DmlDevice : public Device
 
     void CopyTensorInSameDevice(
         const Tensor* input_tensor,
-        Tensor* output_tensor);
+        Tensor* output_tensor) final;
 
     Status CopyCPUTensorToDevice(
         const Tensor* cpu_tensor,

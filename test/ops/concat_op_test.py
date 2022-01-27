@@ -15,8 +15,6 @@
 """Functional tests for Concat Op."""
 
 import numpy as np
-import os
-# input(os.getpid())
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import errors_impl

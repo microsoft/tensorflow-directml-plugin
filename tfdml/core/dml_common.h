@@ -19,7 +19,7 @@ limitations under the License.
 #include <vector>
 
 #ifndef _WIN32
-#include "winadapter.h"
+#include <wsl/winadapter.h>
 #endif
 
 #include <directx/d3d12.h>
@@ -53,12 +53,12 @@ limitations under the License.
 #endif
 
 #include "DirectMLX.h"
-#include "d3dx12.h"
+#include "directx/d3dx12.h"
 
 // When building for Windows, this include will statically assert that the
 // declared IIDs match those found in the Windows SDK.
 // clang-format off
-#include "dxguids.h"
+#include "dxguids/dxguids.h"
 #include "dml_guids.h"
 // clang-format on
 
@@ -125,7 +125,8 @@ struct DmlTensorLayout : public DmlTensorLayoutBase
             DmlTensorAxis::N,
             DmlTensorAxis::C,
             DmlTensorAxis::H,
-            DmlTensorAxis::W};
+            DmlTensorAxis::W,
+        };
     };
     static DmlTensorLayout Nhwc()
     {
@@ -133,7 +134,27 @@ struct DmlTensorLayout : public DmlTensorLayoutBase
             DmlTensorAxis::N,
             DmlTensorAxis::H,
             DmlTensorAxis::W,
-            DmlTensorAxis::C};
+            DmlTensorAxis::C,
+        };
+    };
+    static DmlTensorLayout Cnhw()
+    {
+        return {
+            DmlTensorAxis::C,
+            DmlTensorAxis::N,
+            DmlTensorAxis::H,
+            DmlTensorAxis::W,
+        };
+    };
+    static DmlTensorLayout Cndhw()
+    {
+        return {
+            DmlTensorAxis::C,
+            DmlTensorAxis::N,
+            DmlTensorAxis::D,
+            DmlTensorAxis::H,
+            DmlTensorAxis::W,
+        };
     };
 };
 
@@ -143,6 +164,9 @@ static constexpr uint32_t kNchwDimensionCount = 4;
 static constexpr uint32_t kNchwSpatialDimensionCount = 2;
 static constexpr uint32_t kNcdhwDimensionCount = 5;
 static constexpr uint32_t kNcdhwSpatialDimensionCount = 3;
+
+// 8 dimensions are supported for elementwise operators
+static constexpr uint32_t kBinaryCwiseOpMaxDimCount = 8;
 
 // The batch and channel dimensions of NCW, NCHW, NCDHW....
 static constexpr uint32_t kNonspatialDimensionCount = 2;

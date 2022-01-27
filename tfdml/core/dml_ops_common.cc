@@ -18,6 +18,7 @@ limitations under the License.
 
 #include <numeric>
 
+#include "tensorflow/c/kernels.h"
 #include "tensorflow/c/logging.h"
 #include "tfdml/core/dml_tracing.h"
 #include "tfdml/core/dml_util.h"
@@ -230,10 +231,14 @@ void DmlKernel::Initialize(
     Initialize(ctx, std::move(tensor_descs), compiled_op.Get());
 }
 
-void DmlKernel::Initialize(
-    DmlKernelConstruction* ctx,
+Status DmlKernel::Initialize(
+    TF_OpKernelContext* ctx,
     DmlKernelTensors&& tensor_descs,
-    IDMLCompiledOperator* compiled_op)
+    IDMLCompiledOperator* compiled_op,
+    std::shared_ptr<const InitializationHelper> init_helper,
+    IDMLDevice* dml_device,
+    DMLDeviceContext* device_context,
+    const char* kernel_type)
 {
     assert(!compiled_op_); // Initialize must only be called once
 
@@ -241,7 +246,7 @@ void DmlKernel::Initialize(
     // Set the name of this compiled op, for debugging purposes. We use the name
     // of the op (e.g. "Conv2D") rather than the name of the node because this
     // kernel may be shared across many nodes.
-    std::string op_type_c{ctx->GetOpKernelContext()->op_kernel().type_string()};
+    std::string op_type_c{kernel_type};
     std::wstring op_type = Utf8ToWideChar(op_type_c);
     DML_CHECK_SUCCEEDED(compiled_op->SetName(op_type.c_str()));
     DML_CHECK_SUCCEEDED(compiled_op->SetPrivateData(
@@ -255,7 +260,7 @@ void DmlKernel::Initialize(
     input_descs_ = std::move(tensor_descs.inputs);
     output_descs_ = std::move(tensor_descs.outputs);
     output_refs_forwarding_ = std::move(tensor_descs.output_refs_forwarding);
-    init_helper_ = ctx->GetInitializationHelper();
+    init_helper_ = init_helper;
 
     DML_BINDING_PROPERTIES exec_binding_props =
         compiled_op_->GetBindingProperties();
@@ -268,7 +273,7 @@ void DmlKernel::Initialize(
             strings::HumanReadableNumBytes(
                 exec_binding_props.PersistentResourceSize)
                 .c_str(),
-            ctx->GetOpKernelContext()->op_kernel().type_string().data());
+            kernel_type);
 
         CD3DX12_HEAP_PROPERTIES default_heap_properties =
             CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
@@ -277,7 +282,11 @@ void DmlKernel::Initialize(
                 exec_binding_props.PersistentResourceSize,
                 D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
-        HRESULT hr = ctx->GetD3D12Device()->CreateCommittedResource(
+        Microsoft::WRL::ComPtr<ID3D12Device> d3d12_device;
+        DML_CHECK_SUCCEEDED(
+            dml_device->GetParentDevice(IID_PPV_ARGS(&d3d12_device)));
+
+        HRESULT hr = d3d12_device->CreateCommittedResource(
             &default_heap_properties,
             D3D12_HEAP_FLAG_NONE,
             &persistent_resource_desc,
@@ -287,14 +296,10 @@ void DmlKernel::Initialize(
 
         if (dml_util::HrIsOutOfMemory(hr))
         {
-            assert(!persistent_resource_);
-            OP_REQUIRES(
-                ctx->GetOpKernelContext(),
-                persistent_resource_,
-                errors::ResourceExhausted(
-                    "OOM when allocating a persistent resource buffer of ",
-                    exec_binding_props.PersistentResourceSize,
-                    " bytes"));
+            return errors::ResourceExhausted(
+                "OOM when allocating a persistent resource buffer of ",
+                exec_binding_props.PersistentResourceSize,
+                " bytes");
         }
 
         DML_CHECK_SUCCEEDED(hr);
@@ -310,7 +315,7 @@ void DmlKernel::Initialize(
 
     // Reset the initializer to reference the input operator.
     IDMLCompiledOperator* ops[] = {compiled_op_.Get()};
-    DML_CHECK_SUCCEEDED(ctx->GetDmlDevice()->CreateOperatorInitializer(
+    DML_CHECK_SUCCEEDED(dml_device->CreateOperatorInitializer(
         ABSL_ARRAYSIZE(ops),
         ops,
         IID_PPV_ARGS(&initializer)));
@@ -321,7 +326,7 @@ void DmlKernel::Initialize(
     // Unfortunately we have to use make_shared here to make it copyable, so it
     // can be captured in the lambda below
     auto descriptor_range = std::make_shared<DescriptorAllocation>(
-        ctx->GetDmlDeviceContext()->AllocateDescriptors(
+        device_context->AllocateDescriptors(
             init_binding_props.RequiredDescriptorCount));
 
     D3D12DescriptorHandles descriptor_handles =
@@ -336,7 +341,7 @@ void DmlKernel::Initialize(
         init_binding_props.RequiredDescriptorCount;
 
     Microsoft::WRL::ComPtr<IDMLBindingTable> binding_table;
-    DML_CHECK_SUCCEEDED(ctx->GetDmlDevice()->CreateBindingTable(
+    DML_CHECK_SUCCEEDED(dml_device->CreateBindingTable(
         &binding_table_desc,
         IID_PPV_ARGS(&binding_table)));
 
@@ -346,22 +351,21 @@ void DmlKernel::Initialize(
     absl::optional<DML_BUFFER_BINDING> temp_resource_binding;
     if (temporary_resource_size > 0)
     {
-        temp_resource = ctx->GetDmlDeviceContext()->AllocateDefaultBuffer(
-            ctx->GetOpKernelContext(),
-            temporary_resource_size);
+        temp_resource =
+            device_context->AllocateDefaultBuffer(ctx, temporary_resource_size);
 
-        OP_REQUIRES(
-            ctx->GetOpKernelContext(),
-            *temp_resource,
-            errors::ResourceExhausted(
+        if (!*temp_resource)
+        {
+            return errors::ResourceExhausted(
                 "OOM when allocating a buffer of ",
                 temporary_resource_size,
-                " bytes"));
+                " bytes");
+        }
 
         temp_resource_binding = temp_resource->GetBufferBinding();
     }
 
-    auto init_gpu_event = ctx->GetDmlDeviceContext()->BindAndInitializeOperator(
+    auto init_gpu_event = device_context->BindAndInitializeOperator(
         initializer.Get(),
         std::move(binding_table),
         descriptor_handles.heap,
@@ -377,9 +381,27 @@ void DmlKernel::Initialize(
         p = nullptr;
         p2->Reset();
     };
-    ctx->GetDmlDeviceContext()->EnqueueCallbackForGpuEvent(
+    device_context->EnqueueCallbackForGpuEvent(
         init_gpu_event,
         on_initialize_completed);
+    return Status::OK();
+}
+
+void DmlKernel::Initialize(
+    DmlKernelConstruction* ctx,
+    DmlKernelTensors&& tensor_descs,
+    IDMLCompiledOperator* compiled_op)
+{
+    OP_REQUIRES_OK(
+        ctx->GetOpKernelContext(),
+        Initialize(
+            ctx->GetOpKernelContext()->raw(),
+            std::move(tensor_descs),
+            compiled_op,
+            ctx->GetInitializationHelper(),
+            ctx->GetDmlDevice(),
+            ctx->GetDmlDeviceContext(),
+            ctx->GetOpKernelContext()->op_kernel().type_string().data()));
 }
 
 StatusOr<DmlGpuEvent> DmlKernel::Compute(DmlKernelContext* ctx) const
@@ -395,7 +417,9 @@ StatusOr<DmlGpuEvent> DmlKernel::Compute(DmlKernelContext* ctx) const
 }
 
 StatusOr<DmlGpuEvent> DmlKernel::Compute(
-    DmlKernelContext* ctx,
+    TF_OpKernelContext* ctx,
+    IDMLDevice* dml_device,
+    DMLDeviceContext* device_context,
     absl::Span<const absl::optional<DML_BUFFER_BINDING>> input_bindings,
     absl::Span<const absl::optional<DML_BUFFER_BINDING>> output_bindings) const
 {
@@ -405,7 +429,7 @@ StatusOr<DmlGpuEvent> DmlKernel::Compute(
     // Unfortunately we have to use make_shared here to make it copyable, so it
     // can be captured in the lambda below
     auto descriptor_range = std::make_shared<DescriptorAllocation>(
-        ctx->GetDmlDeviceContext()->AllocateDescriptors(
+        device_context->AllocateDescriptors(
             exec_binding_props.RequiredDescriptorCount));
 
     D3D12DescriptorHandles descriptor_handles =
@@ -419,7 +443,7 @@ StatusOr<DmlGpuEvent> DmlKernel::Compute(
         exec_binding_props.RequiredDescriptorCount;
 
     Microsoft::WRL::ComPtr<IDMLBindingTable> binding_table;
-    DML_CHECK_SUCCEEDED(ctx->GetDmlDevice()->CreateBindingTable(
+    DML_CHECK_SUCCEEDED(dml_device->CreateBindingTable(
         &bind_table_desc,
         IID_PPV_ARGS(&binding_table)));
 
@@ -435,9 +459,8 @@ StatusOr<DmlGpuEvent> DmlKernel::Compute(
         // but because the allocator is multi-threaded we need to at least keep
         // a use on it until we're done with it locally to prevent the buffer
         // being reused.
-        temp_resource = ctx->GetDmlDeviceContext()->AllocateDefaultBuffer(
-            ctx->GetOpKernelContext(),
-            temporary_resource_size);
+        temp_resource =
+            device_context->AllocateDefaultBuffer(ctx, temporary_resource_size);
         if (!(*temp_resource))
         {
             return errors::ResourceExhausted(
@@ -449,7 +472,7 @@ StatusOr<DmlGpuEvent> DmlKernel::Compute(
         temp_resource_binding = temp_resource->GetBufferBinding();
     }
 
-    DmlGpuEvent gpu_event = ctx->GetDmlDeviceContext()->BindAndExecuteOperator(
+    DmlGpuEvent gpu_event = device_context->BindAndExecuteOperator(
         compiled_op_.Get(),
         std::move(binding_table),
         descriptor_handles.heap,
@@ -462,7 +485,7 @@ StatusOr<DmlGpuEvent> DmlKernel::Compute(
     // be released when the execution completes on the GPU. Note that we don't
     // need to keep the binding table alive - recall that lifetime is tied to
     // the underlying descriptors, not the binding table itself.
-    ctx->GetDmlDeviceContext()->EnqueueCallbackForGpuEvent(
+    device_context->EnqueueCallbackForGpuEvent(
         gpu_event,
         [p = std::move(descriptor_range)]() mutable
         {
@@ -470,6 +493,19 @@ StatusOr<DmlGpuEvent> DmlKernel::Compute(
         });
 
     return gpu_event;
+}
+
+StatusOr<DmlGpuEvent> DmlKernel::Compute(
+    DmlKernelContext* ctx,
+    absl::Span<const absl::optional<DML_BUFFER_BINDING>> input_bindings,
+    absl::Span<const absl::optional<DML_BUFFER_BINDING>> output_bindings) const
+{
+    return Compute(
+        ctx->GetOpKernelContext()->raw(),
+        ctx->GetDmlDevice(),
+        ctx->GetDmlDeviceContext(),
+        input_bindings,
+        output_bindings);
 }
 
 absl::InlinedVector<D3D12BufferRegion, 8> DmlKernel::CreateInputBuffers(

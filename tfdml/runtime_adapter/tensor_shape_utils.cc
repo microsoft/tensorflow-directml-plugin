@@ -190,4 +190,22 @@ bool TensorShapeUtils::IsMatrix(const TensorShape& shape)
 {
     return shape.dims() == 2;
 }
+
+bool TensorShapeUtils::IsMatrixOrHigher(const TensorShape& shape)
+{
+    return shape.dims() >= 2;
+}
+
+bool TensorShapeUtils::StartsWith(
+    const TensorShape& shape,
+    const TensorShape& prefix)
+{
+    if (shape.dims() < prefix.dims()) return false;
+    for (int i = 0; i < prefix.dims(); ++i)
+    {
+        if (shape.dim_size(i) != prefix.dim_size(i)) return false;
+    }
+    return true;
+}
+
 } // namespace tfdml

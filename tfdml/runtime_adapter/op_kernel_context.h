@@ -48,9 +48,22 @@ class OpKernelContext
         bool on_host = true);
     MemoryType input_memory_type(int index) const;
     MemoryType output_memory_type(int index) const;
-    ResourceMgr* resource_manager() const;
     Status set_output(int index, const Tensor& tensor);
     const OpKernel& op_kernel() const;
+    Status AssignVariable(int var_index, int value_index);
+    Status AssignUpdateVariable(
+        int var_index,
+        int value_index,
+        void (*updateFunc)(
+            TF_OpKernelContext* ctx,
+            TF_Tensor* tensor,
+            TF_Tensor* value,
+            int Op));
+    Status GetInputTensorFromVariable(
+        int index,
+        bool is_variant,
+        Tensor* tensor);
+    TF_OpKernelContext* raw() const;
 
   private:
     TF_OpKernelContext* const context_;

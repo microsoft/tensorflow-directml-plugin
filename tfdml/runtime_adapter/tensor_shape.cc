@@ -19,11 +19,10 @@ limitations under the License.
 #include <numeric>
 
 #include "absl/strings/str_cat.h"
-#include "tensorflow/core/framework/tensor_shape.pb.h"
 
 namespace tfdml
 {
-TensorShape::TensorShape() : num_elements_(0) {}
+TensorShape::TensorShape() : num_elements_(1) {}
 
 TensorShape::TensorShape(std::initializer_list<int64_t> dim_sizes)
     : TensorShape(absl::Span<const int64_t>(dim_sizes))
@@ -40,17 +39,6 @@ TensorShape::TensorShape(absl::InlinedVector<int64_t, 5>&& dim_sizes)
     : dim_sizes_(std::move(dim_sizes))
 {
     UpdateNumElements();
-}
-
-TensorShape::TensorShape(const tensorflow::TensorShapeProto& proto)
-{
-    dim_sizes_.reserve(proto.dim_size());
-
-    for (const auto& d : proto.dim())
-    {
-        dim_sizes_.push_back(d.size());
-        num_elements_ *= d.size();
-    }
 }
 
 bool operator==(const TensorShape& a, const TensorShape& b)
@@ -80,6 +68,7 @@ void TensorShape::RemoveLastDims(int num_dims)
 {
     assert(num_dims <= dim_sizes_.size());
     dim_sizes_.resize(dim_sizes_.size() - num_dims);
+    UpdateNumElements();
 }
 
 void TensorShape::Clear()
@@ -164,6 +153,16 @@ void TensorShape::UpdateNumElements()
         dim_sizes_.end(),
         1LL,
         std::multiplies<int64_t>());
+}
+
+bool TensorShape::IsSameSize(const TensorShape& other) const
+{
+    if (other.dims() != dims()) return false;
+    for (int d = 0; d < dims(); d++)
+    {
+        if (dim_size(d) != other.dim_size(d)) return false;
+    }
+    return true;
 }
 
 } // namespace tfdml
