@@ -135,6 +135,9 @@
                     "file": "ops/resource_variable_ops_test.py"
                 },
                 {
+                    "file": "ops/slice_op_test.py"
+                },
+                {
                     "file": "ops/sparse_xent_op_test.py"
                 },
                 {
