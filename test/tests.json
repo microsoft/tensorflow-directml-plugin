@@ -9,6 +9,9 @@
                     "file": "ops/argmax_op_test.py"
                 },
                 {
+                    "file": "ops/array_ops_test.py"
+                },
+                {
                     "file": "ops/batch_matmul_op_test.py"
                 },
                 {
