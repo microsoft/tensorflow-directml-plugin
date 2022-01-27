@@ -125,7 +125,7 @@ class KernelDefinition<
             OpTypeConstraint<Op, A, Type>>,
         OpArgumentList<Op, HostArguments...>>;
 
-    // Extend the kernel registration type with an additional host-memory
+    // Extend the kernel registration type with additional host-memory
     // arguments.
     template <typename Op::Argument... NewHostArgs>
     using WithHostMemoryArguments = KernelDefinition<
