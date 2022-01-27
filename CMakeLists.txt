@@ -215,6 +215,7 @@ add_library(
     tfdml/kernels/dml_topk_op.cc
     tfdml/kernels/dml_transpose_op.cc
     tfdml/kernels/dml_xent_op.cc
+    tfdml/kernels/dml_zeros_like_op.cc
 )
 target_link_libraries(
     kernels
