@@ -41,6 +41,7 @@ void RegisterKernels_Range();
 void RegisterKernels_Reduce();
 void RegisterKernels_Relu();
 void RegisterKernels_Resize();
+void RegisterKernels_Select();
 void RegisterKernels_Slice();
 void RegisterKernels_SparseXent();
 void RegisterKernels_Tile();
@@ -80,6 +81,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Reduce();
     tfdml::RegisterKernels_Relu();
     tfdml::RegisterKernels_Resize();
+    tfdml::RegisterKernels_Select();
     tfdml::RegisterKernels_Slice();
     tfdml::RegisterKernels_SparseXent();
     tfdml::RegisterKernels_Tile();
