@@ -129,6 +129,9 @@
                     "file": "ops/reduction_ops_test.py"
                 },
                 {
+                    "file": "ops/relu_op_test.py"
+                },
+                {
                     "file": "ops/resource_variable_ops_test.py"
                 },
                 {
