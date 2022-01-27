@@ -117,6 +117,9 @@
                     "file": "ops/random_ops_test.py"
                 },
                 {
+                    "file": "ops/range_op_test.py"
+                },
+                {
                     "file": "ops/reduce_join_op_test.py"
                 },
                 {
