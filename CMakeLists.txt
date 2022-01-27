@@ -206,6 +206,7 @@ add_library(
     tfdml/kernels/dml_lrn_ops.cc
     tfdml/kernels/dml_matmul_op.cc
     tfdml/kernels/dml_mirror_pad_grad_op.cc
+    tfdml/kernels/dml_pack_op.cc
     tfdml/kernels/dml_pad_op.cc
     tfdml/kernels/dml_pooling_ops.cc
     tfdml/kernels/dml_random_ops.cc

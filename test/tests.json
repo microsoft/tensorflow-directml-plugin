@@ -144,6 +144,9 @@
                     "file": "ops/sparse_xent_op_test.py"
                 },
                 {
+                    "file": "ops/stack_op_test.py"
+                },
+                {
                     "file": "ops/strings_reduce_join_op_test.py"
                 },
                 {
