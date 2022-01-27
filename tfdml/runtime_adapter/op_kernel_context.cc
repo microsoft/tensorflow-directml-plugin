@@ -115,6 +115,33 @@ StatusOr<Tensor> OpKernelContext::allocate_output(
     return Tensor(raw_tensor);
 }
 
+// TODO: Make candidate_input_indices constant once the API has been fixed
+// https://github.com/tensorflow/tensorflow/pull/54139
+StatusOr<Tensor> OpKernelContext::forward_input_or_allocate_output(
+    absl::Span<int> candidate_input_indices,
+    int output_index,
+    const TensorShape& output_shape,
+    int* forwarded_input)
+{
+    Status status;
+    TF_Tensor* raw_tensor = TF_ForwardInputOrAllocateOutput(
+        context_,
+        candidate_input_indices.data(),
+        candidate_input_indices.size(),
+        output_index,
+        output_shape.data(),
+        output_shape.dims(),
+        forwarded_input,
+        status.raw());
+
+    if (!status.ok())
+    {
+        return status;
+    }
+
+    return Tensor(raw_tensor);
+}
+
 TF_DataType OpKernelContext::input_dtype(int index)
 {
     TF_Tensor* raw_tensor = nullptr;

@@ -42,6 +42,7 @@ void RegisterKernels_SparseXent();
 void RegisterKernels_TopK();
 void RegisterKernels_Transpose();
 void RegisterKernels_Xent();
+void RegisterKernels_ZerosLike();
 } // namespace tfdml
 
 void TF_InitKernel()
@@ -75,4 +76,5 @@ void TF_InitKernel()
     tfdml::RegisterKernels_TopK();
     tfdml::RegisterKernels_Transpose();
     tfdml::RegisterKernels_Xent();
+    tfdml::RegisterKernels_ZerosLike();
 }
