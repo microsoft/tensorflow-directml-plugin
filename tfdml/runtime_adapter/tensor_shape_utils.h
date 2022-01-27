@@ -37,4 +37,7 @@ class TensorShapeUtils
     static bool IsMatrixOrHigher(const TensorShape& shape);
     static bool StartsWith(const TensorShape& shape, const TensorShape& prefix);
 };
+
+int64_t MultiplyWithoutOverflow(int64_t x, int64_t y);
+
 } // namespace tfdml
