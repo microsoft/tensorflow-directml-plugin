@@ -96,6 +96,7 @@ add_library(
     tfdml/runtime_adapter/fused_eigen_output_kernels.cc
     tfdml/runtime_adapter/guarded_philox_random.cc
     tfdml/runtime_adapter/kernel_shape_util.cc
+    tfdml/runtime_adapter/mirror_pad_mode.cc
     tfdml/runtime_adapter/numbers.cc
     tfdml/runtime_adapter/op_kernel_construction.cc
     tfdml/runtime_adapter/op_kernel_context.cc
@@ -205,6 +206,8 @@ add_library(
     tfdml/kernels/dml_l2loss_op.cc
     tfdml/kernels/dml_lrn_ops.cc
     tfdml/kernels/dml_matmul_op.cc
+    tfdml/kernels/dml_mirror_pad_grad_op.cc
+    tfdml/kernels/dml_pad_op.cc
     tfdml/kernels/dml_pooling_ops.cc
     tfdml/kernels/dml_random_ops.cc
     tfdml/kernels/dml_reduce_ops.cc

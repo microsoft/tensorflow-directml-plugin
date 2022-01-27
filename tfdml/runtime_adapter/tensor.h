@@ -20,6 +20,8 @@ limitations under the License.
 #include "tensorflow/c/tf_datatype.h"
 #include "tfdml/runtime_adapter/macros.h"
 #include "tfdml/runtime_adapter/tensor_shape.h"
+#include "tfdml/runtime_adapter/tensor_types.h"
+#include "tfdml/runtime_adapter/types.h"
 
 struct TF_Tensor;
 
@@ -49,6 +51,12 @@ class Tensor
     TF_Tensor* raw() const;
     bool CopyFrom(const Tensor& other, const TensorShape& shape);
 
+    template <typename T, size_t NDIMS>
+    typename TTypes<T, NDIMS>::Tensor tensor();
+
+    template <typename T, size_t NDIMS>
+    typename TTypes<T, NDIMS>::ConstTensor tensor() const;
+
     template <typename T>
     T* base()
     {
@@ -74,6 +82,23 @@ class Tensor
         return result;
     }
 
+    template <typename T>
+    typename TTypes<T>::ConstMatrix matrix() const
+    {
+        return tensor<T, 2>();
+    }
+
+    bool IsAligned() const
+    {
+#if EIGEN_MAX_ALIGN_BYTES == 0
+        return true;
+#else
+        const void* ptr = base<void>();
+        return dtype() == TF_STRING ||
+               (reinterpret_cast<intptr_t>(ptr) % EIGEN_MAX_ALIGN_BYTES == 0);
+#endif
+    }
+
     bool IsSameSize(const Tensor& other) const;
 
   private:
@@ -82,4 +107,24 @@ class Tensor
     std::shared_ptr<TF_Tensor> tensor_;
     TensorShape shape_;
 };
+
+template <typename T, size_t NDIMS>
+typename TTypes<T, NDIMS>::Tensor Tensor::tensor()
+{
+    CHECK(IsAligned());
+    CHECK(dtype() == DataTypeToEnum<T>());
+    return typename TTypes<T, NDIMS>::Tensor(
+        base<T>(),
+        shape().AsEigenDSizes<NDIMS>());
+}
+template <typename T, size_t NDIMS>
+typename TTypes<T, NDIMS>::ConstTensor Tensor::tensor() const
+{
+    CHECK(IsAligned());
+    CHECK(dtype() == DataTypeToEnum<T>());
+    return typename TTypes<T, NDIMS>::ConstTensor(
+        base<const T>(),
+        shape().AsEigenDSizes<NDIMS>());
+}
+
 } // namespace tfdml
