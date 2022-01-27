@@ -74,7 +74,7 @@ void TensorShape::RemoveLastDims(int num_dims)
 void TensorShape::Clear()
 {
     dim_sizes_.clear();
-    num_elements_ = 0;
+    num_elements_ = 1;
 }
 
 int64_t TensorShape::dim_size(int dim_index) const

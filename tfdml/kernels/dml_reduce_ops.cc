@@ -734,13 +734,13 @@ using DmlReduceWrapper = DmlKernelWrapper<
 template <typename op, DML_REDUCE_FUNCTION reduce_function, TF_DataType Tidx>
 using HostReductionIndicesKernel =
     typename KernelDefinition<op, DmlReduceWrapper<reduce_function>>::
-        template WithHostMemoryArgument<op::Argument::reduction_indices>::
+        template WithHostMemoryArguments<op::Argument::reduction_indices>::
             template WithTypeConstraint<op::Attribute::Tidx, Tidx>;
 
 template <typename op, DML_REDUCE_FUNCTION reduce_function, TF_DataType Tidx>
 using HostDimensionKernel =
     typename KernelDefinition<op, DmlReduceWrapper<reduce_function>>::
-        template WithHostMemoryArgument<op::Argument::dimension>::
+        template WithHostMemoryArguments<op::Argument::dimension>::
             template WithTypeConstraint<op::Attribute::Tidx, Tidx>;
 
 void RegisterSum()

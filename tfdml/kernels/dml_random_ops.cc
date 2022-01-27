@@ -726,8 +726,9 @@ void RegisterStatelessRandomUniform()
         DmlKernelWrapper<
             DmlStatelessRandomUniformKernel,
             StatelessRandomUniformShapeHelper>>::
-        WithHostMemoryArgument<ops::StatelessRandomUniform::Argument::shape>::
-            WithHostMemoryArgument<ops::StatelessRandomUniform::Argument::seed>;
+        WithHostMemoryArguments<
+            ops::StatelessRandomUniform::Argument::shape,
+            ops::StatelessRandomUniform::Argument::seed>;
 
     RegisterWithTypes<
         K,
@@ -743,14 +744,11 @@ void RegisterStatelessRandomUniformInt()
         DmlKernelWrapper<
             DmlStatelessRandomUniformKernel,
             StatelessRandomUniformShapeHelper>>::
-        WithHostMemoryArgument<
-            ops::StatelessRandomUniformInt::Argument::shape>::
-            WithHostMemoryArgument<
-                ops::StatelessRandomUniformInt::Argument::seed>::
-                WithHostMemoryArgument<
-                    ops::StatelessRandomUniformInt::Argument::minval>::
-                    WithHostMemoryArgument<
-                        ops::StatelessRandomUniformInt::Argument::maxval>;
+        WithHostMemoryArguments<
+            ops::StatelessRandomUniformInt::Argument::shape,
+            ops::StatelessRandomUniformInt::Argument::seed,
+            ops::StatelessRandomUniformInt::Argument::minval,
+            ops::StatelessRandomUniformInt::Argument::maxval>;
 
     RegisterWithTypes<
         K,
@@ -763,7 +761,7 @@ void RegisterRandomUniform()
     using K = KernelDefinition<
         ops::RandomUniform,
         DmlPhiloxWrapper<DmlRandomUniformKernel, RandomUniformShapeHelper>>::
-        WithHostMemoryArgument<ops::RandomUniform::Argument::shape>::
+        WithHostMemoryArguments<ops::RandomUniform::Argument::shape>::
             WithTypeConstraint<ops::RandomUniform::Attribute::T, TF_INT32>;
 
     RegisterWithTypes<
@@ -778,13 +776,11 @@ void RegisterRandomUniformInt()
     using K = KernelDefinition<
         ops::RandomUniformInt,
         DmlPhiloxWrapper<DmlRandomUniformKernel, RandomUniformShapeHelper>>::
-        WithHostMemoryArgument<ops::RandomUniformInt::Argument::shape>::
-            WithHostMemoryArgument<ops::RandomUniformInt::Argument::minval>::
-                WithHostMemoryArgument<
-                    ops::RandomUniformInt::Argument::maxval>::
-                    WithTypeConstraint<
-                        ops::RandomUniformInt::Attribute::T,
-                        TF_INT32>;
+        WithHostMemoryArguments<
+            ops::RandomUniformInt::Argument::shape,
+            ops::RandomUniformInt::Argument::minval,
+            ops::RandomUniformInt::Argument::maxval>::
+            WithTypeConstraint<ops::RandomUniformInt::Attribute::T, TF_INT32>;
 
     RegisterWithTypes<K, ops::RandomUniformInt::Attribute::Tout, TF_INT32>();
 }
@@ -795,13 +791,13 @@ void RegisterRandomStandardNormal()
         ops::RandomStandardNormal,
         DmlEmulatedPhiloxRandomKernel<
             EmulatedKernelType::kRandomStandardNormal>>::
-        WithHostMemoryArgument<ops::RandomStandardNormal::Argument::shape>;
+        WithHostMemoryArguments<ops::RandomStandardNormal::Argument::shape>;
 
     using float_kernel = KernelDefinition<
         ops::RandomStandardNormal,
         DmlEmulatedPhiloxRandomKernel<
             EmulatedKernelType::kRandomStandardNormal>>::
-        WithHostMemoryArgument<ops::RandomStandardNormal::Argument::shape>;
+        WithHostMemoryArguments<ops::RandomStandardNormal::Argument::shape>;
 
     half_kernel::WithTypeConstraint<
         ops::RandomStandardNormal::Attribute::dtype,
@@ -816,12 +812,12 @@ void RegisterTruncatedNormal()
     using half_kernel = KernelDefinition<
         ops::TruncatedNormal,
         DmlEmulatedPhiloxRandomKernel<EmulatedKernelType::kTruncatedNormal>>::
-        WithHostMemoryArgument<ops::TruncatedNormal::Argument::shape>;
+        WithHostMemoryArguments<ops::TruncatedNormal::Argument::shape>;
 
     using float_kernel = KernelDefinition<
         ops::TruncatedNormal,
         DmlEmulatedPhiloxRandomKernel<EmulatedKernelType::kTruncatedNormal>>::
-        WithHostMemoryArgument<ops::TruncatedNormal::Argument::shape>;
+        WithHostMemoryArguments<ops::TruncatedNormal::Argument::shape>;
 
     half_kernel::WithTypeConstraint<
         ops::TruncatedNormal::Attribute::dtype,
