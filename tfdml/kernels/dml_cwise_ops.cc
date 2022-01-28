@@ -553,6 +553,417 @@ class DmlUnaryScaleBiasKernel : public DmlKernel
     bool zero_outputs_ = false;
 };
 
+class DmlClipByValueKernel : public DmlKernel
+{
+  public:
+    using InitHelper = ElementWiseInitHelper<UINT32_MAX>;
+
+    explicit DmlClipByValueKernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        CHECK(ctx->GetInputCount() == 3);
+        CHECK(ctx->GetOutputCount() == 1);
+
+        // Currently, 64-bit integers in DML are emulated using 32-bit integers
+        // using striding to emulate a larger type. Because we can't guarantee
+        // that our output tensor's memory is zero'd, we need to do so manually
+        // prior to running running gather.
+        if (Is64BitIntegerType(ctx->GetOutputDataType(0)))
+        {
+            zero_outputs_ = true;
+        }
+
+        DmlKernelParams params;
+
+        // Broadcast inputs to match output shape
+        params.input_shape = ctx->GetOutputTensorShape(0);
+
+        // The DML operator takes fewer inputs than the TF kernel receives, so
+        // we need to explicitly specify the kernel indices. In this case, the
+        // DML op takes a single input which corresponds to the 0th input on the
+        // kernel.
+        params.kernel_input_indices = {0};
+
+        DmlKernelTensors tensors = GetTensorInfos(ctx, params);
+        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto outputs = GetDmlTensorDescs(tensors.outputs);
+
+        // Min/max are supplied as tensors for ClipByValue, which are required
+        // to be constant CPU inputs
+        const Tensor& min_tensor = ctx->GetConstantInputTensor(1);
+        const Tensor& max_tensor = ctx->GetConstantInputTensor(2);
+
+        DML_ELEMENT_WISE_CLIP_OPERATOR_DESC clip_desc = {};
+        clip_desc.InputTensor = inputs.data();
+        clip_desc.OutputTensor = outputs.data();
+        clip_desc.Min = min_tensor.base<float>()[0];
+        clip_desc.Max = max_tensor.base<float>()[0];
+
+        DML_OPERATOR_DESC op_desc = {
+            DML_OPERATOR_ELEMENT_WISE_CLIP,
+            &clip_desc};
+        Initialize(ctx, std::move(tensors), op_desc);
+    }
+
+    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const
+    {
+        Tensor& output = ctx->GetOutputTensor(0);
+        if (zero_outputs_)
+        {
+            ctx->GetDmlDeviceContext()->ZeroBuffer(
+                ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
+        }
+        return DmlKernel::Compute(ctx);
+    }
+
+  private:
+    bool zero_outputs_ = false;
+};
+
+class DmlSquaredDifferenceKernel : public DmlKernel
+{
+  public:
+    using InitHelper = ElementWiseInitHelper<kNchwDimensionCount>;
+
+    explicit DmlSquaredDifferenceKernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        CHECK(ctx->GetInputCount() == 2);
+        CHECK(ctx->GetOutputCount() == 1);
+
+        // Currently, 64-bit integers in DML are emulated using 32-bit integers
+        // using striding to emulate a larger type. Because we can't guarantee
+        // that our output tensor's memory is zero'd, we need to do so manually
+        // prior to running running gather.
+        if (Is64BitIntegerType(ctx->GetOutputDataType(0)))
+        {
+            zero_outputs_ = true;
+        }
+
+        auto input_shapes = init_helper->GetCollapsedInputShapes();
+        const TensorShape& output_shape =
+            init_helper->GetCollapsedOutputShape();
+
+        DmlKernelTensors tensors =
+            CreateKernelTensors(ctx, input_shapes, output_shape);
+        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto outputs = GetDmlTensorDescs(tensors.outputs);
+
+        auto scope = dml::Graph(ctx->GetDmlDevice());
+        auto x = dml::InputTensor(scope, 0, inputs[0]);
+        auto y = dml::InputTensor(scope, 1, inputs[1]);
+        auto diff = x - y;
+        auto result = diff * diff;
+
+        ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
+    }
+
+    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const
+    {
+        Tensor& output = ctx->GetOutputTensor(0);
+        if (zero_outputs_)
+        {
+            ctx->GetDmlDeviceContext()->ZeroBuffer(
+                ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
+        }
+        return DmlKernel::Compute(ctx);
+    }
+
+  private:
+    bool zero_outputs_ = false;
+};
+
+class DmlSeluKernel : public DmlKernel
+{
+  public:
+    using InitHelper = ElementWiseInitHelper<UINT32_MAX>;
+
+    explicit DmlSeluKernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        CHECK(ctx->GetInputCount() == 1);
+        CHECK(ctx->GetOutputCount() == 1);
+
+        DmlKernelParams params;
+
+        // Broadcast inputs to match output shape
+        params.input_shape = ctx->GetOutputTensorShape(0);
+
+        DmlKernelTensors tensors = GetTensorInfos(ctx, params);
+        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto outputs = GetDmlTensorDescs(tensors.outputs);
+
+        DML_ACTIVATION_SCALED_ELU_OPERATOR_DESC selu_desc = {
+            &inputs[0],
+            outputs.data(),
+            1.67326319217681884765625f, // alpha
+            1.05070102214813232421875f  // gamma
+        };
+
+        DML_OPERATOR_DESC op_desc = {
+            DML_OPERATOR_ACTIVATION_SCALED_ELU,
+            &selu_desc};
+        Initialize(ctx, std::move(tensors), op_desc);
+    }
+};
+
+class DmlLeakyReluKernel : public DmlKernel
+{
+  public:
+    using InitHelper = ElementWiseInitHelper<UINT32_MAX>;
+
+    explicit DmlLeakyReluKernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        CHECK(ctx->GetInputCount() == 1);
+        CHECK(ctx->GetOutputCount() == 1);
+
+        DmlKernelParams params;
+
+        // Broadcast inputs to match output shape
+        params.input_shape = ctx->GetOutputTensorShape(0);
+
+        DmlKernelTensors tensors = GetTensorInfos(ctx, params);
+        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto outputs = GetDmlTensorDescs(tensors.outputs);
+
+        float alpha;
+        TF_CHECK_OK(ctx->GetAttr("alpha", &alpha));
+
+        DML_ACTIVATION_LEAKY_RELU_OPERATOR_DESC leaky_relu_desc = {
+            &inputs[0],
+            outputs.data(),
+            alpha};
+
+        DML_OPERATOR_DESC op_desc = {
+            DML_OPERATOR_ACTIVATION_LEAKY_RELU,
+            &leaky_relu_desc};
+        Initialize(ctx, std::move(tensors), op_desc);
+    }
+};
+
+template <typename T>
+class DmlApproximateEqualKernel : public DmlKernel
+{
+  public:
+    using InitHelper = ElementWiseInitHelper<kNchwDimensionCount>;
+
+    explicit DmlApproximateEqualKernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        CHECK(ctx->GetInputCount() == 2);
+        CHECK(ctx->GetOutputCount() == 1);
+
+        auto input_shapes = init_helper->GetCollapsedInputShapes();
+        const TensorShape& output_shape =
+            init_helper->GetCollapsedOutputShape();
+
+        DmlKernelTensors tensors =
+            CreateKernelTensors(ctx, input_shapes, output_shape);
+        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto outputs = GetDmlTensorDescs(tensors.outputs);
+
+        auto scope = dml::Graph(ctx->GetDmlDevice());
+        auto x = dml::InputTensor(scope, 0, inputs[0]);
+        auto y = dml::InputTensor(scope, 1, inputs[1]);
+
+        float tolerance;
+        TF_CHECK_OK(ctx->GetAttr("tolerance", &tolerance));
+        auto tolerance_tensor = dml::ScalarTensor<T>(
+            scope,
+            TfTensorTypeTraits<T>::FromFloat(tolerance),
+            x.GetOutputDesc().sizes);
+
+        auto result = dml::Abs(x - y) < tolerance_tensor;
+
+        ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
+    }
+};
+
+class DmlBitwiseNotKernel : public DmlKernel
+{
+  public:
+    using InitHelper = NoOpInitializationHelper;
+
+    explicit DmlBitwiseNotKernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        CHECK(ctx->GetInputCount() == 1);
+        CHECK(ctx->GetOutputCount() == 1);
+
+        auto num_elements =
+            static_cast<uint32_t>(ctx->GetInputTensorShape(0).num_elements());
+
+        // DML doesn't support 64-bit integer types, but we can reinterpret
+        // the tensor as twice as many 32-bit elements. Sign doesn't matter.
+        auto dtype = ctx->GetInputDataType(0);
+        assert(dtype == ctx->GetOutputDataType(0));
+        if (Is64BitIntegerType(dtype))
+        {
+            num_elements *= 2;
+            dtype = TF_UINT32;
+        }
+
+        std::array<uint32_t, 4> sizes = {1, 1, 1, num_elements};
+
+        DmlTensorInfo in;
+        in.kernel_index = 0;
+        in.desc = DmlTensorDesc::Create(dtype, sizes, sizes);
+        in.desc.ForceUnsignedDataType();
+        auto in_desc = in.desc.GetDmlDesc();
+
+        DmlTensorInfo out;
+        out.kernel_index = 0;
+        out.desc = DmlTensorDesc::Create(dtype, sizes, sizes);
+        out.desc.ForceUnsignedDataType();
+        auto out_desc = out.desc.GetDmlDesc();
+
+        DmlKernelTensors tensors;
+        tensors.inputs = {in};
+        tensors.outputs = {out};
+
+        DML_ELEMENT_WISE_BIT_NOT_OPERATOR_DESC desc = {};
+        desc.InputTensor = &in_desc;
+        desc.OutputTensor = &out_desc;
+
+        DML_OPERATOR_DESC op_desc = {DML_OPERATOR_ELEMENT_WISE_BIT_NOT, &desc};
+
+        Initialize(ctx, std::move(tensors), op_desc);
+    }
+};
+
+template <DML_OPERATOR_TYPE op_type, typename DML_OPERATOR_SPECIFIC_DESC>
+class DmlBinaryBitwiseKernel : public DmlKernel
+{
+  public:
+    using InitHelper = ElementWiseInitHelper<kBinaryCwiseOpMaxDimCount>;
+
+    explicit DmlBinaryBitwiseKernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        CHECK(ctx->GetInputCount() == 2);
+        CHECK(ctx->GetOutputCount() == 1);
+
+        auto input_shapes = init_helper->GetCollapsedInputShapes();
+        const TensorShape& output_shape =
+            init_helper->GetCollapsedOutputShape();
+
+        DmlKernelTensors tensors =
+            CreateKernelTensors(ctx, input_shapes, output_shape);
+
+        // DML only supports unsigned types, but sign doesn't matter for
+        // bitwise.
+        tensors.inputs[0]->desc.ForceUnsignedDataType();
+        tensors.inputs[1]->desc.ForceUnsignedDataType();
+        tensors.outputs[0]->desc.ForceUnsignedDataType();
+
+        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto outputs = GetDmlTensorDescs(tensors.outputs);
+
+        DML_OPERATOR_SPECIFIC_DESC desc = {
+            &inputs[0],
+            &inputs[1],
+            outputs.data(),
+        };
+
+        DML_OPERATOR_DESC op_desc = {op_type, &desc};
+
+        Initialize(ctx, std::move(tensors), op_desc);
+    }
+};
+
+class DmlBitCountKernel : public DmlKernel
+{
+  public:
+    using InitHelper = NoOpInitializationHelper;
+
+    explicit DmlBitCountKernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        CHECK(ctx->GetInputCount() == 1);
+        CHECK(ctx->GetOutputCount() == 1);
+
+        auto num_elements =
+            static_cast<uint32_t>(ctx->GetInputTensorShape(0).num_elements());
+
+        std::array<uint32_t, 4> sizes = {1, 1, 1, num_elements};
+
+        DmlTensorInfo in;
+        in.kernel_index = 0;
+        in.desc = DmlTensorDesc::Create(ctx->GetInputDataType(0), sizes, sizes);
+        in.desc.ForceUnsignedDataType();
+        auto in_desc = in.desc.GetDmlDesc();
+
+        DmlTensorInfo out;
+        out.kernel_index = 0;
+        out.desc =
+            DmlTensorDesc::Create(ctx->GetOutputDataType(0), sizes, sizes);
+        out.desc.ForceUnsignedDataType();
+        auto out_desc = out.desc.GetDmlDesc();
+
+        DmlKernelTensors tensors;
+        tensors.inputs = {in};
+        tensors.outputs = {out};
+
+        if (Is64BitIntegerType(ctx->GetInputDataType(0)))
+        {
+            // DML doesn't support 64-bit integer types, but we can reinterpret
+            // the input tensor as twice as many 32-bit elements. Sign doesn't
+            // matter. This is followed by a sum of the two separate counts, so
+            // make the shape 2D so that we can reduce each adjacent pair of
+            // counts.
+            dml::TensorDesc::Dimensions double_sizes = {1, 1, num_elements, 2};
+
+            auto scope = dml::Graph(ctx->GetDmlDevice());
+            auto in_64_bit = dml::InputTensor(scope, 0, in_desc);
+            auto in_32_bit = dml::Reinterpret(
+                in_64_bit,
+                DML_TENSOR_DATA_TYPE_UINT32,
+                double_sizes,
+                dml::NullOpt);
+
+            // Reduce doesn't support UINT8, so output UINT32 bit counts and
+            // cast down. This may be faster than doing the arithmetic in UINT8
+            // anyway.
+            auto bit_count =
+                dml::BitCount(in_32_bit, DML_TENSOR_DATA_TYPE_UINT32);
+            bit_count = dml::Reduce(bit_count, DML_REDUCE_FUNCTION_SUM, {3});
+            bit_count = dml::Cast(bit_count, DML_TENSOR_DATA_TYPE_UINT8);
+
+            ComPtr<IDMLCompiledOperator> compiled_op =
+                scope.Compile(DML_EXECUTION_FLAG_NONE, {bit_count});
+
+            Initialize(ctx, std::move(tensors), compiled_op.Get());
+        }
+        else
+        {
+            DML_ELEMENT_WISE_BIT_COUNT_OPERATOR_DESC desc = {};
+            desc.InputTensor = &in_desc;
+            desc.OutputTensor = &out_desc;
+
+            DML_OPERATOR_DESC op_desc = {
+                DML_OPERATOR_ELEMENT_WISE_BIT_COUNT,
+                &desc};
+
+            Initialize(ctx, std::move(tensors), op_desc);
+        }
+    }
+};
+
 struct DmlDivNoNanFunctor
 {
     dml::Expression operator()(
@@ -612,6 +1023,17 @@ struct DmlLessEqualFunctor
     }
 };
 
+struct DmlMulNoNanFunctor
+{
+    dml::Expression operator()(
+        dml::Expression zero,
+        dml::Expression x,
+        dml::Expression y)
+    {
+        return dml::If(y == zero, zero, x * y);
+    }
+};
+
 struct DmlNotEqualFunctor
 {
     dml::Expression operator()(dml::Expression x, dml::Expression y)
@@ -649,6 +1071,28 @@ struct DmlTanhGradFunctor
     dml::Expression operator()(dml::Expression x, dml::Expression y)
     {
         return (y * (1 - x * x));
+    }
+};
+
+struct DmlXdivyFunctor
+{
+    dml::Expression operator()(
+        dml::Expression zero,
+        dml::Expression x,
+        dml::Expression y)
+    {
+        return dml::If(x == zero, zero, x / y);
+    }
+};
+
+struct DmlXlogyFunctor
+{
+    dml::Expression operator()(
+        dml::Expression zero,
+        dml::Expression x,
+        dml::Expression y)
+    {
+        return dml::If(x == zero, zero, x * dml::Log(y));
     }
 };
 
@@ -737,6 +1181,30 @@ static void RegisterAddV2()
         TF_UINT64>();
 }
 
+static void RegisterApproximateEqual()
+{
+    using half_kernel = KernelDefinition<
+        ops::ApproximateEqual,
+        DmlKernelWrapper<
+            DmlApproximateEqualKernel<Eigen::half>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    using float_kernel = KernelDefinition<
+        ops::ApproximateEqual,
+        DmlKernelWrapper<
+            DmlApproximateEqualKernel<float>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        half_kernel,
+        ops::ApproximateEqual::Attribute::T,
+        TF_HALF>();
+    RegisterWithTypes<
+        float_kernel,
+        ops::ApproximateEqual::Attribute::T,
+        TF_FLOAT>();
+}
+
 static void RegisterAsin()
 {
     using K = KernelDefinition<
@@ -789,6 +1257,69 @@ static void RegisterAtanh()
     RegisterWithTypes<K, ops::Atanh::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
+static void RegisterBitwiseAnd()
+{
+    using K = KernelDefinition<
+        ops::BitwiseAnd,
+        DmlKernelWrapper<
+            DmlBinaryBitwiseKernel<
+                DML_OPERATOR_ELEMENT_WISE_BIT_AND,
+                DML_ELEMENT_WISE_BIT_AND_OPERATOR_DESC>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::BitwiseAnd::Attribute::T,
+        TF_INT8,
+        TF_INT16,
+        TF_INT32,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32>();
+}
+
+static void RegisterBitwiseOr()
+{
+    using K = KernelDefinition<
+        ops::BitwiseOr,
+        DmlKernelWrapper<
+            DmlBinaryBitwiseKernel<
+                DML_OPERATOR_ELEMENT_WISE_BIT_OR,
+                DML_ELEMENT_WISE_BIT_OR_OPERATOR_DESC>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::BitwiseOr::Attribute::T,
+        TF_INT8,
+        TF_INT16,
+        TF_INT32,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32>();
+}
+
+static void RegisterBitwiseXor()
+{
+    using K = KernelDefinition<
+        ops::BitwiseXor,
+        DmlKernelWrapper<
+            DmlBinaryBitwiseKernel<
+                DML_OPERATOR_ELEMENT_WISE_BIT_XOR,
+                DML_ELEMENT_WISE_BIT_XOR_OPERATOR_DESC>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::BitwiseXor::Attribute::T,
+        TF_INT8,
+        TF_INT16,
+        TF_INT32,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32>();
+}
+
 static void RegisterCeil()
 {
     using K = KernelDefinition<
@@ -800,6 +1331,33 @@ static void RegisterCeil()
             GetBroadcastedOutputShapeHelper>>;
 
     RegisterWithTypes<K, ops::Ceil::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterClipByValue()
+{
+    using K = KernelDefinition<
+        ops::ClipByValue,
+        DmlKernelWrapper<
+            DmlClipByValueKernel,
+            GetBroadcastedOutputShapeHelper>>::
+        template WithHostMemoryArguments<
+            ops::ClipByValue::Argument::clip_value_min>::
+            template WithHostMemoryArguments<
+                ops::ClipByValue::Argument::clip_value_max>;
+
+    RegisterWithTypes<
+        K,
+        ops::ClipByValue::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_BOOL,
+        TF_INT8,
+        TF_INT16,
+        TF_INT64,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32,
+        TF_UINT64>();
 }
 
 static void RegisterCos()
@@ -1062,6 +1620,27 @@ static void RegisterInv()
     RegisterWithTypes<K, ops::Inv::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
+static void RegisterInvert()
+{
+    using K = KernelDefinition<
+        ops::Invert,
+        DmlKernelWrapper<
+            DmlBitwiseNotKernel,
+            GetOutputShapeAsInputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::Invert::Attribute::T,
+        TF_INT8,
+        TF_INT16,
+        TF_INT32,
+        TF_INT64,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32,
+        TF_UINT64>();
+}
+
 static void RegisterIsFinite()
 {
     using K = KernelDefinition<
@@ -1097,6 +1676,36 @@ static void RegisterIsNan()
             GetBroadcastedOutputShapeHelper>>;
 
     RegisterWithTypes<K, ops::IsNan::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterLeakyRelu()
+{
+    using K = KernelDefinition<
+        ops::LeakyRelu,
+        DmlKernelWrapper<DmlLeakyReluKernel, GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::LeakyRelu::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterLeftShift()
+{
+    using K = KernelDefinition<
+        ops::LeftShift,
+        DmlKernelWrapper<
+            DmlBinaryBitwiseKernel<
+                DML_OPERATOR_ELEMENT_WISE_BIT_SHIFT_LEFT,
+                DML_ELEMENT_WISE_BIT_SHIFT_LEFT_OPERATOR_DESC>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::LeftShift::Attribute::T,
+        TF_INT8,
+        TF_INT16,
+        TF_INT32,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32>();
 }
 
 static void RegisterLess()
@@ -1317,6 +1926,17 @@ static void RegisterMul()
         TF_UINT64>();
 }
 
+static void RegisterMulNoNan()
+{
+    using K = KernelDefinition<
+        ops::MulNoNan,
+        DmlKernelWrapper<
+            DmlBinaryWithZeroKernel<DmlMulNoNanFunctor, kNchwDimensionCount>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::MulNoNan::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 static void RegisterNeg()
 {
     using K = KernelDefinition<
@@ -1353,6 +1973,25 @@ static void RegisterNotEqual()
         TF_HALF,
         TF_INT8,
         TF_INT16,
+        TF_INT64,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32,
+        TF_UINT64>();
+}
+
+static void RegisterPopulationCount()
+{
+    using K = KernelDefinition<
+        ops::PopulationCount,
+        DmlKernelWrapper<DmlBitCountKernel, GetOutputShapeAsInputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::PopulationCount::Attribute::T,
+        TF_INT8,
+        TF_INT16,
+        TF_INT32,
         TF_INT64,
         TF_UINT8,
         TF_UINT16,
@@ -1453,6 +2092,24 @@ static void RegisterRelu6()
         TF_UINT64>();
 }
 
+static void RegisterRightShift()
+{
+    using K = KernelDefinition<
+        ops::RightShift,
+        DmlKernelWrapper<
+            DmlBinaryBitwiseKernel<
+                DML_OPERATOR_ELEMENT_WISE_BIT_SHIFT_RIGHT,
+                DML_ELEMENT_WISE_BIT_SHIFT_RIGHT_OPERATOR_DESC>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::RightShift::Attribute::T,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32>();
+}
+
 static void RegisterRound()
 {
     using K = KernelDefinition<
@@ -1475,6 +2132,15 @@ static void RegisterRsqrt()
             GetBroadcastedOutputShapeHelper>>;
 
     RegisterWithTypes<K, ops::Rsqrt::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterSelu()
+{
+    using K = KernelDefinition<
+        ops::Selu,
+        DmlKernelWrapper<DmlSeluKernel, GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::Selu::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
 static void RegisterSigmoid()
@@ -1617,6 +2283,23 @@ static void RegisterSquare()
     RegisterWithTypes<K, ops::Square::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
+static void RegisterSquaredDifference()
+{
+    using K = KernelDefinition<
+        ops::SquaredDifference,
+        DmlKernelWrapper<
+            DmlSquaredDifferenceKernel,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::SquaredDifference::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT8,
+        TF_INT16>();
+}
+
 static void RegisterSub()
 {
     using K = KernelDefinition<
@@ -1698,6 +2381,28 @@ static void RegisterTruncateMod()
         TF_UINT64>();
 }
 
+static void RegisterXdivy()
+{
+    using K = KernelDefinition<
+        ops::Xdivy,
+        DmlKernelWrapper<
+            DmlBinaryWithZeroKernel<DmlXdivyFunctor, kNchwDimensionCount>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::Xdivy::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterXlogy()
+{
+    using K = KernelDefinition<
+        ops::Xlogy,
+        DmlKernelWrapper<
+            DmlBinaryWithZeroKernel<DmlXlogyFunctor, kNchwDimensionCount>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::Xlogy::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 void RegisterKernels_Cwise()
 {
     RegisterAbs();
@@ -1705,11 +2410,16 @@ void RegisterKernels_Cwise()
     RegisterAcosh();
     RegisterAdd();
     RegisterAddV2();
+    RegisterApproximateEqual();
     RegisterAsin();
     RegisterAsinh();
     RegisterAtan();
     RegisterAtanh();
+    RegisterBitwiseAnd();
+    RegisterBitwiseOr();
+    RegisterBitwiseXor();
     RegisterCeil();
+    RegisterClipByValue();
     RegisterCos();
     RegisterCosh();
     RegisterDiv();
@@ -1726,9 +2436,12 @@ void RegisterKernels_Cwise()
     RegisterGreater();
     RegisterGreaterEqual();
     RegisterInv();
+    RegisterInvert();
     RegisterIsFinite();
     RegisterIsInf();
     RegisterIsNan();
+    RegisterLeakyRelu();
+    RegisterLeftShift();
     RegisterLess();
     RegisterLessEqual();
     RegisterLog();
@@ -1741,15 +2454,19 @@ void RegisterKernels_Cwise()
     RegisterMinimum();
     RegisterMod();
     RegisterMul();
+    RegisterMulNoNan();
     RegisterNeg();
     RegisterNotEqual();
+    RegisterPopulationCount();
     RegisterPow();
     RegisterReciprocal();
     RegisterRealDiv();
     RegisterReciprocalGrad();
     RegisterRelu6();
+    RegisterRightShift();
     RegisterRound();
     RegisterRsqrt();
+    RegisterSelu();
     RegisterSigmoid();
     RegisterSigmoidGrad();
     RegisterSign();
@@ -1760,11 +2477,14 @@ void RegisterKernels_Cwise()
     RegisterSoftsign();
     RegisterSqrt();
     RegisterSquare();
+    RegisterSquaredDifference();
     RegisterSub();
     RegisterTan();
     RegisterTanh();
     RegisterTanhGrad();
     RegisterTruncateMod();
+    RegisterXdivy();
+    RegisterXlogy();
 }
 
 } // namespace tfdml
