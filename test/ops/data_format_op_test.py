@@ -10,7 +10,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Tests for tensorflow.ops.tf.fill."""
+"""
+Tests for tensorflow.raw_ops.DataFormatVecPermute and
+tensorflow.raw_ops.DataFormatDimMap
+"""
 
 import tensorflow as tf
 from tensorflow.python.framework import test_util

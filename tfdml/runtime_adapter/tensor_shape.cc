@@ -19,6 +19,8 @@ limitations under the License.
 #include <numeric>
 
 #include "absl/strings/str_cat.h"
+#include "tfdml/runtime_adapter/status.h"
+#include "tfdml/runtime_adapter/tensor_shape_utils.h"
 
 namespace tfdml
 {
@@ -163,6 +165,36 @@ bool TensorShape::IsSameSize(const TensorShape& other) const
         if (dim_size(d) != other.dim_size(d)) return false;
     }
     return true;
+}
+
+Status TensorShape::AddDimWithStatus(int64_t size)
+{
+    if (size < 0)
+    {
+        return errors::InvalidArgument(
+            "Expected a non-negative size, got ",
+            size);
+    }
+
+    if (dims() >= MaxDimensions())
+    {
+        return errors::InvalidArgument("Too many dimensions in tensor");
+    }
+
+    int64_t new_num_elements = MultiplyWithoutOverflow(num_elements(), size);
+    if (new_num_elements < 0)
+    {
+        return errors::InvalidArgument(
+            "Encountered overflow when multiplying ",
+            num_elements(),
+            " with ",
+            size,
+            ", result: ",
+            new_num_elements);
+    }
+
+    AddDim(size);
+    return Status::OK();
 }
 
 } // namespace tfdml
