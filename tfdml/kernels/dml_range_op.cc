@@ -190,12 +190,13 @@ template <typename T>
 using K = typename KernelDefinition<
     ops::Range,
     DmlKernelWrapper<DmlRangeKernel<T>, RangeShapeHelper<T>>>::
-    template WithHostMemoryArgument<ops::Range::Argument::start>::
-        template WithHostMemoryArgument<ops::Range::Argument::limit>::
-            template WithHostMemoryArgument<ops::Range::Argument::delta>::
-                template WithTypeConstraint<
-                    ops::Range::Attribute::Tidx,
-                    DataTypeToEnum<T>()>;
+    template WithHostMemoryArguments<
+        ops::Range::Argument::start,
+        ops::Range::Argument::limit,
+        ops::Range::Argument::delta>::
+        template WithTypeConstraint<
+            ops::Range::Attribute::Tidx,
+            DataTypeToEnum<T>()>;
 
 void RegisterKernels_Range()
 {

@@ -457,9 +457,9 @@ template <TF_DataType T, TF_DataType... Ts>
 void RegisterGatherV2()
 {
     using Op = ops::GatherV2;
-    K<Op, Op::Attribute::Tparams, T, int32_t>::template WithHostMemoryArgument<
+    K<Op, Op::Attribute::Tparams, T, int32_t>::template WithHostMemoryArguments<
         Op::Argument::axis>::Register();
-    K<Op, Op::Attribute::Tparams, T, int64_t>::template WithHostMemoryArgument<
+    K<Op, Op::Attribute::Tparams, T, int64_t>::template WithHostMemoryArguments<
         Op::Argument::axis>::Register();
     if constexpr (sizeof...(Ts) > 0) RegisterGatherV2<Ts...>();
 }
@@ -469,9 +469,9 @@ void RegisterResourceGather()
 {
     using Op = ops::ResourceGather;
     K<Op, Op::Attribute::dtype, T, int32_t, DmlKernelCachePolicy::Never>::
-        template WithHostMemoryArgument<Op::Argument::resource>::Register();
+        template WithHostMemoryArguments<Op::Argument::resource>::Register();
     K<Op, Op::Attribute::dtype, T, int64_t, DmlKernelCachePolicy::Never>::
-        template WithHostMemoryArgument<Op::Argument::resource>::Register();
+        template WithHostMemoryArguments<Op::Argument::resource>::Register();
     if constexpr (sizeof...(Ts) > 0) RegisterResourceGather<Ts...>();
 }
 

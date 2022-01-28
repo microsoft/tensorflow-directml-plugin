@@ -74,7 +74,7 @@ class ElementWiseInitHelper : public GetBroadcastedOutputShapeHelper::InitHelper
         collapsed_input_shapes_ = GetCollapsedShapes(ctx);
         collapsed_output_shape_ =
             BroadcastTensorShapes(collapsed_input_shapes_);
-            
+
         OP_REQUIRES(
             ctx,
             collapsed_output_shape_.dims() <= max_dim_count,

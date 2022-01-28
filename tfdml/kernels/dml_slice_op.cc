@@ -173,8 +173,9 @@ void RegisterKernels_Slice()
     using K = KernelDefinition<
         ops::Slice,
         DmlKernelWrapper<DmlSliceKernel, SliceShapeHelper>>::
-        WithHostMemoryArgument<ops::Slice::Argument::begin>::
-            WithHostMemoryArgument<ops::Slice::Argument::size>;
+        WithHostMemoryArguments<
+            ops::Slice::Argument::begin,
+            ops::Slice::Argument::size>;
 
     RegisterWithTypes<
         K::WithTypeConstraint<ops::Slice::Attribute::Index, TF_INT32>,

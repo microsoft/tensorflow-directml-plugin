@@ -44,6 +44,7 @@ void RegisterKernels_Resize();
 void RegisterKernels_Select();
 void RegisterKernels_Slice();
 void RegisterKernels_SparseXent();
+void RegisterKernels_StridedSlice();
 void RegisterKernels_Tile();
 void RegisterKernels_TopK();
 void RegisterKernels_Transpose();
@@ -84,6 +85,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Select();
     tfdml::RegisterKernels_Slice();
     tfdml::RegisterKernels_SparseXent();
+    tfdml::RegisterKernels_StridedSlice();
     tfdml::RegisterKernels_Tile();
     tfdml::RegisterKernels_TopK();
     tfdml::RegisterKernels_Transpose();

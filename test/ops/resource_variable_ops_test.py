@@ -190,8 +190,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
 
   @test_util.run_in_graph_and_eager_modes
   def testStridedSliceAssign(self):
-    # TODO #37618408: Enable when we support ResourceStridedSliceAssign
-    self.skipTest("DML doesn't support ResourceStridedSliceAssign yet")
     v = resource_variable_ops.ResourceVariable([1.0, 2.0])
     self.evaluate(variables.global_variables_initializer())
     self.evaluate(v[0].assign(2.0))

@@ -210,7 +210,7 @@ class DmlDynamicStitchKernel : public OpKernel
 void RegisterDynamicStitch()
 {
     using K = KernelDefinition<ops::DynamicStitch, DmlDynamicStitchKernel>::
-        WithHostMemoryArgument<ops::DynamicStitch::Argument::indices>;
+        WithHostMemoryArguments<ops::DynamicStitch::Argument::indices>;
 
     RegisterWithTypes<
         K,
@@ -225,7 +225,7 @@ void RegisterParallelDynamicStitch()
 {
     using K =
         KernelDefinition<ops::ParallelDynamicStitch, DmlDynamicStitchKernel>::
-            WithHostMemoryArgument<
+            WithHostMemoryArguments<
                 ops::ParallelDynamicStitch::Argument::indices>;
 
     RegisterWithTypes<

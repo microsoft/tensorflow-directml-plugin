@@ -76,7 +76,7 @@ struct OpTypeConstraintList;
 //
 // KernelDefinition<ops::AssignVariableOp, DmlAssignVariableOp>
 //    ::WithTypeConstraint<ops::AssignVariableOp::Attribute::dtype, TF_FLOAT>
-//    ::WithHostMemoryArgument<ops::AssignVariableOp::Argument::resource>
+//    ::WithHostMemoryArguments<ops::AssignVariableOp::Argument::resource>
 //    ::Register();
 template <
     typename Op,
@@ -125,15 +125,15 @@ class KernelDefinition<
             OpTypeConstraint<Op, A, Type>>,
         OpArgumentList<Op, HostArguments...>>;
 
-    // Extend the kernel registration type with an additional host-memory
-    // argument.
-    template <typename Op::Argument HostArg>
-    using WithHostMemoryArgument = KernelDefinition<
+    // Extend the kernel registration type with additional host-memory
+    // arguments.
+    template <typename Op::Argument... NewHostArgs>
+    using WithHostMemoryArguments = KernelDefinition<
         Op,
         Kernel,
         PriorityValue,
         OpTypeConstraintList<Op, TypeConstraints...>,
-        OpArgumentList<Op, HostArguments..., HostArg>>;
+        OpArgumentList<Op, HostArguments..., NewHostArgs...>>;
 
     static void Register()
     {

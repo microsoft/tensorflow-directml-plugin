@@ -287,11 +287,11 @@ void RegisterKernels_Tile()
 {
     using int32_kernel = KernelDefinition<ops::Tile, DmlTileWrapper<int32_t>>::
         WithTypeConstraint<ops::Tile::Attribute::Tmultiples, TF_INT32>::
-            WithHostMemoryArgument<ops::Tile::Argument::multiples>;
+            WithHostMemoryArguments<ops::Tile::Argument::multiples>;
 
     using int64_kernel = KernelDefinition<ops::Tile, DmlTileWrapper<int64_t>>::
         WithTypeConstraint<ops::Tile::Attribute::Tmultiples, TF_INT64>::
-            WithHostMemoryArgument<ops::Tile::Argument::multiples>;
+            WithHostMemoryArguments<ops::Tile::Argument::multiples>;
 
     RegisterWithTypes<
         int32_kernel,

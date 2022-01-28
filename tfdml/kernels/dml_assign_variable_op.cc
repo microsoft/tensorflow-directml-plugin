@@ -261,7 +261,7 @@ class DmlUpdateVariableOp : public OpKernel
 void RegisterAssignVariableOp()
 {
     using K = KernelDefinition<ops::AssignVariableOp, DmlAssignVariableOp>::
-        WithHostMemoryArgument<ops::AssignVariableOp::Argument::resource>;
+        WithHostMemoryArguments<ops::AssignVariableOp::Argument::resource>;
 
     // We deliberately register the same types here that CUDA does.
     constexpr auto T = ops::AssignVariableOp::Attribute::dtype;
@@ -280,7 +280,7 @@ void RegisterAssignAddVariableOp()
     using K = KernelDefinition<
         ops::AssignAddVariableOp,
         DmlUpdateVariableOp<std::plus<dml::Expression>>>::
-        WithHostMemoryArgument<ops::AssignAddVariableOp::Argument::resource>;
+        WithHostMemoryArguments<ops::AssignAddVariableOp::Argument::resource>;
 
     constexpr auto T = ops::AssignAddVariableOp::Attribute::dtype;
     K::WithTypeConstraint<T, TF_HALF>::Register();
@@ -293,7 +293,7 @@ void RegisterAssignSubVariableOp()
     using K = KernelDefinition<
         ops::AssignSubVariableOp,
         DmlUpdateVariableOp<std::minus<dml::Expression>>>::
-        WithHostMemoryArgument<ops::AssignSubVariableOp::Argument::resource>;
+        WithHostMemoryArguments<ops::AssignSubVariableOp::Argument::resource>;
 
     constexpr auto T = ops::AssignSubVariableOp::Attribute::dtype;
     K::WithTypeConstraint<T, TF_HALF>::Register();
