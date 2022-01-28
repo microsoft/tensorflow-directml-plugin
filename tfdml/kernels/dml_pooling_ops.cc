@@ -1094,8 +1094,9 @@ void RegisterMaxPoolV2()
     using K = KernelDefinition<
         ops::MaxPoolV2,
         DmlKernelWrapper<DmlMaxPoolKernel, PoolingShapeHelper>>::
-        WithHostMemoryArgument<ops::MaxPoolV2::Argument::ksize>::
-            WithHostMemoryArgument<ops::MaxPoolV2::Argument::strides>;
+        WithHostMemoryArguments<
+            ops::MaxPoolV2::Argument::ksize,
+            ops::MaxPoolV2::Argument::strides>;
 
     RegisterWithTypes<K, ops::MaxPoolV2::Attribute::T, TF_FLOAT, TF_HALF>();
 }
@@ -1107,7 +1108,7 @@ void RegisterAvgPoolGrad()
         DmlKernelWrapper<
             DmlAvgPoolingGradKernel,
             GetOutputShapeFromDimsTensorHelper<int32_t, 0>>>::
-        WithHostMemoryArgument<ops::AvgPoolGrad::Argument::orig_input_shape>;
+        WithHostMemoryArguments<ops::AvgPoolGrad::Argument::orig_input_shape>;
 
     RegisterWithTypes<K, ops::AvgPoolGrad::Attribute::T, TF_FLOAT, TF_HALF>();
 }
@@ -1119,7 +1120,7 @@ void RegisterAvgPool3DGrad()
         DmlKernelWrapper<
             DmlAvgPoolingGradKernel,
             GetOutputShapeFromDimsTensorHelper<int32_t, 0>>>::
-        WithHostMemoryArgument<ops::AvgPool3DGrad::Argument::orig_input_shape>;
+        WithHostMemoryArguments<ops::AvgPool3DGrad::Argument::orig_input_shape>;
 
     RegisterWithTypes<K, ops::AvgPool3DGrad::Attribute::T, TF_FLOAT, TF_HALF>();
 }
@@ -1142,8 +1143,9 @@ void RegisterMaxPoolGradV2()
         DmlKernelWrapper<
             DmlMaxPoolGradKernel,
             GetOutputShapeAsInputShapeHelper>>::
-        WithHostMemoryArgument<ops::MaxPoolGradV2::Argument::ksize>::
-            WithHostMemoryArgument<ops::MaxPoolGradV2::Argument::strides>;
+        WithHostMemoryArguments<
+            ops::MaxPoolGradV2::Argument::ksize,
+            ops::MaxPoolGradV2::Argument::strides>;
 
     RegisterWithTypes<K, ops::MaxPoolGradV2::Attribute::T, TF_FLOAT, TF_HALF>();
 }

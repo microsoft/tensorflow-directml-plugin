@@ -347,7 +347,7 @@ void RegisterKernels_Transpose()
     using K = KernelDefinition<
         ops::Transpose,
         DmlKernelWrapper<DmlTransposeKernel, TransposeShapeHelper>>::
-        WithHostMemoryArgument<ops::Transpose::Argument::perm>;
+        WithHostMemoryArguments<ops::Transpose::Argument::perm>;
 
     RegisterWithTypes<
         K,

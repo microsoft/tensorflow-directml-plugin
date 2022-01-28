@@ -337,9 +337,9 @@ template <TF_DataType T, TF_DataType... Ts>
 void RegisterPad()
 {
     using Op = ops::Pad;
-    K<Op, T, int32_t>::template WithHostMemoryArgument<
+    K<Op, T, int32_t>::template WithHostMemoryArguments<
         Op::Argument::paddings>::Register();
-    K<Op, T, int64_t>::template WithHostMemoryArgument<
+    K<Op, T, int64_t>::template WithHostMemoryArguments<
         Op::Argument::paddings>::Register();
     if constexpr (sizeof...(Ts) > 0) RegisterPad<Ts...>();
 }
@@ -348,12 +348,12 @@ template <TF_DataType T, TF_DataType... Ts>
 void RegisterPadV2()
 {
     using Op = ops::PadV2;
-    K<Op, T, int32_t>::template WithHostMemoryArgument<Op::Argument::paddings>::
-        template WithHostMemoryArgument<
-            Op::Argument::constant_values>::Register();
-    K<Op, T, int64_t>::template WithHostMemoryArgument<Op::Argument::paddings>::
-        template WithHostMemoryArgument<
-            Op::Argument::constant_values>::Register();
+    K<Op, T, int32_t>::template WithHostMemoryArguments<
+        Op::Argument::paddings,
+        Op::Argument::constant_values>::Register();
+    K<Op, T, int64_t>::template WithHostMemoryArguments<
+        Op::Argument::paddings,
+        Op::Argument::constant_values>::Register();
     if constexpr (sizeof...(Ts) > 0) RegisterPadV2<Ts...>();
 }
 
@@ -361,9 +361,9 @@ template <TF_DataType T, TF_DataType... Ts>
 void RegisterMirrorPad()
 {
     using Op = ops::MirrorPad;
-    K<Op, T, int32_t>::template WithHostMemoryArgument<
+    K<Op, T, int32_t>::template WithHostMemoryArguments<
         Op::Argument::paddings>::Register();
-    K<Op, T, int64_t>::template WithHostMemoryArgument<
+    K<Op, T, int64_t>::template WithHostMemoryArguments<
         Op::Argument::paddings>::Register();
     if constexpr (sizeof...(Ts) > 0) RegisterMirrorPad<Ts...>();
 }

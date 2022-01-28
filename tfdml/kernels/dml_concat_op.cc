@@ -329,7 +329,7 @@ template <
 void RegisterConcat()
 {
     using K = typename KernelDefinition<Op, DmlConcatWrapper<AxisArgName>>::
-        template WithHostMemoryArgument<AxisArg>;
+        template WithHostMemoryArguments<AxisArg>;
 
     // TODO: add uint64 support
     // TF2 #36692608

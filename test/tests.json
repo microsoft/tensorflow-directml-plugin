@@ -9,6 +9,9 @@
                     "file": "ops/argmax_op_test.py"
                 },
                 {
+                    "file": "ops/array_ops_test.py"
+                },
+                {
                     "file": "ops/batch_matmul_op_test.py"
                 },
                 {
@@ -117,6 +120,9 @@
                     "file": "ops/random_ops_test.py"
                 },
                 {
+                    "file": "ops/range_op_test.py"
+                },
+                {
                     "file": "ops/reduce_join_op_test.py"
                 },
                 {
@@ -129,10 +135,19 @@
                     "file": "ops/reduction_ops_test.py"
                 },
                 {
+                    "file": "ops/relu_op_test.py"
+                },
+                {
                     "file": "ops/resource_variable_ops_test.py"
                 },
                 {
+                    "file": "ops/slice_op_test.py"
+                },
+                {
                     "file": "ops/sparse_xent_op_test.py"
+                },
+                {
+                    "file": "ops/stack_op_test.py"
                 },
                 {
                     "file": "ops/strings_reduce_join_op_test.py"
@@ -144,7 +159,13 @@
                     "file": "ops/transpose_op_test.py"
                 },
                 {
+                    "file": "ops/where_op_test.py"
+                },
+                {
                     "file": "ops/xent_op_test.py"
+                },
+                {
+                    "file": "ops/zeros_like_test.py"
                 }
             ]
         },

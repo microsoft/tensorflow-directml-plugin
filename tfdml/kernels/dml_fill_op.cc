@@ -113,11 +113,11 @@ void RegisterKernels_Fill()
 {
     using int32_kernel = KernelDefinition<ops::Fill, DmlFillWrapper<int32_t>>::
         WithTypeConstraint<ops::Fill::Attribute::index_type, TF_INT32>::
-            WithHostMemoryArgument<ops::Fill::Argument::dims>;
+            WithHostMemoryArguments<ops::Fill::Argument::dims>;
 
     using int64_kernel = KernelDefinition<ops::Fill, DmlFillWrapper<int64_t>>::
         WithTypeConstraint<ops::Fill::Attribute::index_type, TF_INT64>::
-            WithHostMemoryArgument<ops::Fill::Argument::dims>;
+            WithHostMemoryArguments<ops::Fill::Argument::dims>;
 
     RegisterWithTypes<
         int32_kernel,

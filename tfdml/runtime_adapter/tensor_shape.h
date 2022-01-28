@@ -18,6 +18,7 @@ limitations under the License.
 
 #include "absl/container/inlined_vector.h"
 #include "absl/types/span.h"
+#include "tfdml/runtime_adapter/status.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tfdml
@@ -35,8 +36,10 @@ class TensorShape
     static constexpr int MaxDimensions() { return 254; }
 
     void AddDim(int64_t dim_size);
+    Status AddDimWithStatus(int64_t size);
     void InsertDim(int index, int64_t dim_size);
     void RemoveLastDims(int num_dims);
+    void Clear();
     int64_t dim_size(int dim_index) const;
     int64_t dims() const;
     absl::InlinedVector<int64_t, 4> dim_sizes() const;

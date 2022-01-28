@@ -663,19 +663,19 @@ class RaggedReduceOpsTest(test_util.TensorFlowTestCase, parameterized.TestCase):
     tensor = [[1.0, 2.0, 3.0], [10.0, 20.0, 30.0]]
     expected = [2.0, 20.0]
     reduced = ragged_math_ops.reduce_mean(tensor, axis=1)
-    self.assertAllEqual(reduced, expected)
+    self.assertAllCloseAccordingToType(reduced, expected)
 
   def testVarianceWithTensorInputs(self):
     tensor = [[6.0, 9.0, 6.0], [60.0, 90.0, 60.0]]
     expected = [2., 200.]
     reduced = ragged_math_ops.reduce_variance(tensor, axis=1)
-    self.assertAllEqual(reduced, expected)
+    self.assertAllCloseAccordingToType(reduced, expected, rtol=1e-5)
 
   def testStdWithTensorInputs(self):
     tensor = [[1.0, 2.0, 2.0, 1.0], [10.0, 20.0, 20.0, 10.0]]
     expected = [0.5, 5.]
     reduced = ragged_math_ops.reduce_std(tensor, axis=1)
-    self.assertAllEqual(reduced, expected)
+    self.assertAllCloseAccordingToType(reduced, expected)
 
   def testErrors(self):
     rt_input = ragged_factory_ops.constant([[1, 2, 3], [4, 5]])
