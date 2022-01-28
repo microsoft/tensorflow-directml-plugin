@@ -414,7 +414,7 @@ void Relu6Grad()
             GetOutputShapeAsInputShapeHelper>>;
 
     RegisterWithTypes<half_kernel, ops::Relu6Grad::Attribute::T, TF_HALF>();
-    RegisterWithTypes<float_kernel, ops::Relu6Grad::Attribute::T, TF_HALF>();
+    RegisterWithTypes<float_kernel, ops::Relu6Grad::Attribute::T, TF_FLOAT>();
 }
 
 void LeakyReluGrad()
