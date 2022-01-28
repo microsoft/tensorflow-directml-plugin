@@ -763,12 +763,16 @@ class StridedSliceInitHelper : public InitializationHelper
             input_shape = ctx->input(0).shape();
         }
 
+        const Tensor input1 = ctx->input(1);
+        const Tensor input2 = ctx->input(2);
+        const Tensor input3 = ctx->input(3);
+
         OP_REQUIRES_OK(
             ctx,
             ValidateStridedSliceOp(
-                &ctx->input(1),
-                &ctx->input(2),
-                ctx->input(3),
+                &input1,
+                &input2,
+                input3,
                 input_shape,
                 attr->begin_mask,
                 attr->end_mask,
@@ -1110,12 +1114,16 @@ class StridedSliceAssignInitHelper : public InitializationHelper
         TensorShape input_shape = input.shape();
         TensorShape final_shape;
 
+        const Tensor input1 = ctx->input(1);
+        const Tensor input2 = ctx->input(2);
+        const Tensor input3 = ctx->input(3);
+
         OP_REQUIRES_OK(
             ctx,
             ValidateStridedSliceOp(
-                &ctx->input(1),
-                &ctx->input(2),
-                ctx->input(3),
+                &input1,
+                &input2,
+                input3,
                 input_shape,
                 attr->begin_mask,
                 attr->end_mask,
