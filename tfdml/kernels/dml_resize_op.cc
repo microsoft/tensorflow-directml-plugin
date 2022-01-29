@@ -307,7 +307,7 @@ void RegisterResizeBilinear()
         DmlKernelWrapper<
             DmlResizeKernel<DML_INTERPOLATION_MODE_LINEAR>,
             GetResizeShapeHelper>>::
-        WithHostMemoryArgument<ops::ResizeBilinear::Argument::size>;
+        WithHostMemoryArguments<ops::ResizeBilinear::Argument::size>;
 
     RegisterWithTypes<
         K,
@@ -323,7 +323,7 @@ void RegisterResizeNearestNeighbor()
         DmlKernelWrapper<
             DmlResizeKernel<DML_INTERPOLATION_MODE_NEAREST_NEIGHBOR>,
             GetResizeShapeHelper>>::
-        WithHostMemoryArgument<ops::ResizeNearestNeighbor::Argument::size>;
+        WithHostMemoryArguments<ops::ResizeNearestNeighbor::Argument::size>;
 
     RegisterWithTypes<
         K,

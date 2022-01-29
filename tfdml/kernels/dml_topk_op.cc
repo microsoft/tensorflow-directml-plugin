@@ -198,7 +198,7 @@ void RegisterTopKV2()
     using K = KernelDefinition<
         ops::TopKV2,
         DmlKernelWrapper<DmlTopKKernel, TopKShapeHelper>>::
-        WithHostMemoryArgument<ops::TopKV2::Argument::k>;
+        WithHostMemoryArguments<ops::TopKV2::Argument::k>;
 
     RegisterWithTypes<
         K,

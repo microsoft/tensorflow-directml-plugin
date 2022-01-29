@@ -42,7 +42,7 @@ struct TensorShapeAndType
 
 // Used to identify/hash an input tensor for a DML kernel. A DML kernel may
 // choose to register certain arguments as requiring to be stored in host
-// memory. (This is achieved by using ::WithHostMemoryArgument<...> in a kernel
+// memory. (This is achieved by using ::WithHostMemoryArguments<...> in a kernel
 // definition). Such arguments' tensors are known as constant CPU input tensors,
 // otherwise they're just regular input tensors.
 //

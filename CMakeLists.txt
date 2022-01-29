@@ -207,15 +207,23 @@ add_library(
     tfdml/kernels/dml_lrn_ops.cc
     tfdml/kernels/dml_matmul_op.cc
     tfdml/kernels/dml_mirror_pad_grad_op.cc
+    tfdml/kernels/dml_pack_op.cc
     tfdml/kernels/dml_pad_op.cc
     tfdml/kernels/dml_pooling_ops.cc
     tfdml/kernels/dml_random_ops.cc
+    tfdml/kernels/dml_range_op.cc
     tfdml/kernels/dml_reduce_ops.cc
+    tfdml/kernels/dml_relu_ops.cc
     tfdml/kernels/dml_resize_op.cc
+    tfdml/kernels/dml_select_op.cc
+    tfdml/kernels/dml_slice_op.cc
     tfdml/kernels/dml_sparse_xent_op.cc
+    tfdml/kernels/dml_strided_slice_op.cc
+    tfdml/kernels/dml_tile_op.cc
     tfdml/kernels/dml_topk_op.cc
     tfdml/kernels/dml_transpose_op.cc
     tfdml/kernels/dml_xent_op.cc
+    tfdml/kernels/dml_zeros_like_op.cc
 )
 target_link_libraries(
     kernels

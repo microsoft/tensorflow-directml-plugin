@@ -339,7 +339,7 @@ using K = typename KernelDefinition<
         Op::Attribute::Tpaddings,
         DataTypeToEnum<TPadding>()>::
         template WithTypeConstraint<Op::Attribute::T, type>::
-            template WithHostMemoryArgument<Op::Argument::paddings>;
+            template WithHostMemoryArguments<Op::Argument::paddings>;
 
 void RegisterKernels_MirrorPadGrad()
 {
