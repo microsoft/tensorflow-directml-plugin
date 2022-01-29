@@ -265,6 +265,7 @@ Status OpKernelContext::AssignUpdateVariable(
 
 Status OpKernelContext::GetInputTensorFromVariable(
     int var_index,
+    bool lock_held,
     bool is_variant,
     Tensor* tensor)
 {
@@ -273,12 +274,7 @@ Status OpKernelContext::GetInputTensorFromVariable(
     static constexpr int64_t empty_sizes[1] = {0};
     TF_Tensor* raw_tensor = TF_AllocateTensor(TF_FLOAT, empty_sizes, 1, 0);
 
-    // Lock holding is only relevant for mutable tensors, which is a deprecated
-    // feature and isn't supported for pluggable devices
-    constexpr bool lock_held = false;
-
     Status status;
-
     TF_GetInputTensorFromVariable(
         context_,
         var_index,

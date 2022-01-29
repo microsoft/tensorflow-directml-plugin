@@ -50,7 +50,7 @@ class OpKernelContext
         TF_DataType dtype,
         const TensorShape& shape,
         Tensor* tensor,
-        bool on_host = true);
+        bool on_host = false);
     MemoryType input_memory_type(int index) const;
     MemoryType output_memory_type(int index) const;
     Status set_output(int index, const Tensor& tensor);
@@ -66,6 +66,7 @@ class OpKernelContext
             int Op));
     Status GetInputTensorFromVariable(
         int index,
+        bool lock_held,
         bool is_variant,
         Tensor* tensor);
     TF_OpKernelContext* raw() const;

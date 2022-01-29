@@ -85,52 +85,11 @@ class DmlKernelConstruction
     TF_DataType GetOutputDataType(uint32_t index) const;
     const TensorShape& GetOutputTensorShape(uint32_t index) const;
 
-    // See OpKernelConstruction::GetAttr
-    template <typename T>
-    Status GetAttr(const char* attr_name, T* value) const;
-
-    template <>
-    Status GetAttr<float>(const char* attr_name, float* value) const
-    {
-        Status status;
-        TF_OpKernelConstruction_GetAttrFloat(
-            ctx_,
-            attr_name,
-            value,
-            status.raw());
-        return status;
-    }
-
-    template <>
-    Status GetAttr<int32_t>(const char* attr_name, int32_t* value) const
-    {
-        Status status;
-        TF_OpKernelConstruction_GetAttrInt32(
-            ctx_,
-            attr_name,
-            value,
-            status.raw());
-        return status;
-    }
-
-    template <>
-    Status GetAttr<int64_t>(const char* attr_name, int64_t* value) const
-    {
-        Status status;
-        TF_OpKernelConstruction_GetAttrInt64(
-            ctx_,
-            attr_name,
-            value,
-            status.raw());
-        return status;
-    }
-
   private:
     const DmlDevice* device_;
     OpKernelContext* op_ctx_;
     absl::Span<const TensorShape> output_shapes_;
     std::shared_ptr<const InitializationHelper> init_helper_;
-    TF_OpKernelConstruction* ctx_;
 };
 
 // Context supplied to a DML kernel during execution.

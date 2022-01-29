@@ -48,6 +48,7 @@ void RegisterKernels_StridedSlice();
 void RegisterKernels_Tile();
 void RegisterKernels_TopK();
 void RegisterKernels_Transpose();
+void RegisterKernels_Training();
 void RegisterKernels_Xent();
 void RegisterKernels_ZerosLike();
 } // namespace tfdml
@@ -89,6 +90,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Tile();
     tfdml::RegisterKernels_TopK();
     tfdml::RegisterKernels_Transpose();
+    tfdml::RegisterKernels_Training();
     tfdml::RegisterKernels_Xent();
     tfdml::RegisterKernels_ZerosLike();
 }

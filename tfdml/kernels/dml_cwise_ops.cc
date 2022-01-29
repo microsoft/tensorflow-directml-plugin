@@ -713,10 +713,38 @@ class DmlSeluKernel : public DmlKernel
     }
 };
 
+class LeakyReluInitHelper : public ElementWiseInitHelper<UINT32_MAX>
+{
+  public:
+    struct Attributes : public ElementWiseInitHelper<UINT32_MAX>::Attributes
+    {
+        explicit Attributes(OpKernelConstruction* ctx)
+            : ElementWiseInitHelper<UINT32_MAX>::Attributes(ctx)
+        {
+            OP_REQUIRES_OK(ctx, ctx->GetAttr("alpha", &alpha));
+        }
+
+        float alpha;
+    };
+
+    LeakyReluInitHelper(
+        OpKernelContext* ctx,
+        std::shared_ptr<const Attributes> attr)
+        : ElementWiseInitHelper<UINT32_MAX>(ctx, attr),
+          alpha_(attr->alpha)
+    {
+    }
+
+    float GetAlpha() const { return alpha_; }
+
+  private:
+    float alpha_;
+};
+
 class DmlLeakyReluKernel : public DmlKernel
 {
   public:
-    using InitHelper = ElementWiseInitHelper<UINT32_MAX>;
+    using InitHelper = LeakyReluInitHelper;
 
     explicit DmlLeakyReluKernel(
         DmlKernelConstruction* ctx,
@@ -734,13 +762,10 @@ class DmlLeakyReluKernel : public DmlKernel
         auto inputs = GetDmlTensorDescs(tensors.inputs);
         auto outputs = GetDmlTensorDescs(tensors.outputs);
 
-        float alpha;
-        TF_CHECK_OK(ctx->GetAttr("alpha", &alpha));
-
         DML_ACTIVATION_LEAKY_RELU_OPERATOR_DESC leaky_relu_desc = {
             &inputs[0],
             outputs.data(),
-            alpha};
+            init_helper->GetAlpha()};
 
         DML_OPERATOR_DESC op_desc = {
             DML_OPERATOR_ACTIVATION_LEAKY_RELU,
@@ -749,11 +774,41 @@ class DmlLeakyReluKernel : public DmlKernel
     }
 };
 
+class ApproximateEqualInitHelper
+    : public ElementWiseInitHelper<kBinaryCwiseOpMaxDimCount>
+{
+  public:
+    struct Attributes
+        : public ElementWiseInitHelper<kBinaryCwiseOpMaxDimCount>::Attributes
+    {
+        explicit Attributes(OpKernelConstruction* ctx)
+            : ElementWiseInitHelper<kBinaryCwiseOpMaxDimCount>::Attributes(ctx)
+        {
+            OP_REQUIRES_OK(ctx, ctx->GetAttr("tolerance", &tolerance));
+        }
+
+        float tolerance;
+    };
+
+    ApproximateEqualInitHelper(
+        OpKernelContext* ctx,
+        std::shared_ptr<const Attributes> attr)
+        : ElementWiseInitHelper<kBinaryCwiseOpMaxDimCount>(ctx, attr),
+          tolerance_(attr->tolerance)
+    {
+    }
+
+    float GetTolerance() const { return tolerance_; }
+
+  private:
+    float tolerance_;
+};
+
 template <typename T>
 class DmlApproximateEqualKernel : public DmlKernel
 {
   public:
-    using InitHelper = ElementWiseInitHelper<kNchwDimensionCount>;
+    using InitHelper = ApproximateEqualInitHelper;
 
     explicit DmlApproximateEqualKernel(
         DmlKernelConstruction* ctx,
@@ -775,11 +830,9 @@ class DmlApproximateEqualKernel : public DmlKernel
         auto x = dml::InputTensor(scope, 0, inputs[0]);
         auto y = dml::InputTensor(scope, 1, inputs[1]);
 
-        float tolerance;
-        TF_CHECK_OK(ctx->GetAttr("tolerance", &tolerance));
         auto tolerance_tensor = dml::ScalarTensor<T>(
             scope,
-            TfTensorTypeTraits<T>::FromFloat(tolerance),
+            TfTensorTypeTraits<T>::FromFloat(init_helper->GetTolerance()),
             x.GetOutputDesc().sizes);
 
         auto result = dml::Abs(x - y) < tolerance_tensor;

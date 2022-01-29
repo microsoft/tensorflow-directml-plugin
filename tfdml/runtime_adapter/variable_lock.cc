@@ -23,6 +23,31 @@ namespace tfdml
 
 VariableLock::VariableLock(OpKernelContext* ctx) : ctx_(ctx) {}
 
+VariableLock::VariableLock(
+    OpKernelContext* ctx,
+    bool exclusive_lock,
+    absl::Span<const int> input_indices)
+    : ctx_(ctx)
+{
+    if (exclusive_lock)
+    {
+        LockUnique(input_indices);
+    }
+    else
+    {
+        LockShared(input_indices);
+    }
+}
+
+VariableLock::VariableLock(VariableLock&& other)
+    : lock_holder_(other.lock_holder_),
+      ctx_(other.ctx_)
+{
+    other.lock_holder_ = nullptr;
+}
+
+VariableLock::~VariableLock() { Unlock(); }
+
 // This copy will only be done for sparse tensors
 static void CopyTensorInSameDevice(
     TF_OpKernelContext* ctx,

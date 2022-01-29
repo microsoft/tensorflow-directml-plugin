@@ -36,12 +36,14 @@ class GatherNdInitHelper : public InitializationHelper
         {
             constexpr int lock_indices[1] = {0};
             var_lock_.LockShared(lock_indices);
+            constexpr bool exclusive_lock = false;
             constexpr bool is_variant = false;
             variable_tensor_.emplace();
             OP_REQUIRES_OK(
                 ctx,
                 ctx->GetInputTensorFromVariable(
                     0,
+                    exclusive_lock,
                     is_variant,
                     &*variable_tensor_));
         }
