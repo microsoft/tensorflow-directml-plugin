@@ -17,6 +17,7 @@ limitations under the License.
 #include "absl/cleanup/cleanup.h"
 #include "tfdml/kernels/pch.h"
 #include "tfdml/runtime_adapter/variable_lock.h"
+#include <cfloat>
 
 namespace tfdml
 {
