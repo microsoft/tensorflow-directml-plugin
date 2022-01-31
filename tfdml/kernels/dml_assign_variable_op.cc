@@ -53,12 +53,14 @@ class DmlAssignVariableOp : public OpKernel
 
         if (validate_shape_)
         {
+            constexpr bool exclusive_lock = false;
             constexpr bool is_variant = false;
             Tensor var_tensor;
             OP_REQUIRES_OK(
                 ctx,
                 ctx->GetInputTensorFromVariable(
                     var_index,
+                    exclusive_lock,
                     is_variant,
                     &var_tensor));
 

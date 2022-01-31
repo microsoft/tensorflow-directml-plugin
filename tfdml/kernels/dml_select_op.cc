@@ -384,9 +384,9 @@ class SelectV2InitHelper : public BaseSelectInitHelper
         broadcasted_output_shape_ = BCast::ToShape(bcast.output_shape());
 
         absl::optional<SimpleTernary> simple_ternary = SimplifyTernary(
-            BCast::ToShape(cond_bcast.y_reshape()),
-            BCast::ToShape(then_bcast.y_reshape()),
-            BCast::ToShape(else_bcast.y_reshape()),
+            BCast::ToShape(cond_bcast.output_shape()),
+            BCast::ToShape(then_bcast.output_shape()),
+            BCast::ToShape(else_bcast.output_shape()),
             broadcasted_output_shape_);
 
         OP_REQUIRES(

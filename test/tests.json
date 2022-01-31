@@ -156,6 +156,36 @@
                     "file": "ops/topk_op_test.py"
                 },
                 {
+                    "file": "ops/training_arrays_test.py"
+                },
+                {
+                    "file": "ops/training_dataset_test.py"
+                },
+                {
+                    "file": "ops/training_eager_test.py"
+                },
+                {
+                    "file": "ops/training_generator_test.py"
+                },
+                {
+                    "file": "ops/training_gpu_test.py"
+                },
+                {
+                    "file": "ops/training_integration_test.py"
+                },
+                {
+                    "file": "ops/training_ops_test.py"
+                },
+                {
+                    "file": "ops/training_test.py"
+                },
+                {
+                    "file": "ops/training_util_test.py"
+                },
+                {
+                    "file": "ops/training_utils_v1_test.py"
+                },
+                {
                     "file": "ops/transpose_op_test.py"
                 },
                 {

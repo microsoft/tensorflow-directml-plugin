@@ -45,12 +45,14 @@ class GatherInitializationHelper : public InitializationHelper
     {
         if (ctx->input(0).dtype() == TF_RESOURCE)
         {
+            constexpr bool exclusive_lock = false;
             constexpr bool is_variant = false;
             variable_tensor_.emplace();
             OP_REQUIRES_OK(
                 ctx,
                 ctx->GetInputTensorFromVariable(
                     0,
+                    exclusive_lock,
                     is_variant,
                     &*variable_tensor_));
 

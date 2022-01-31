@@ -26,6 +26,12 @@ class VariableLock
 {
   public:
     VariableLock(OpKernelContext* ctx);
+    VariableLock(
+        OpKernelContext* ctx,
+        bool exclusive_lock,
+        absl::Span<const int> input_indices);
+    VariableLock(VariableLock&& other);
+    ~VariableLock();
     void LockShared(absl::Span<const int> input_indices);
     void LockUnique(absl::Span<const int> input_indices);
     void Unlock();
