@@ -423,7 +423,7 @@ class DmlBatchToSpaceKernel : public DmlKernel {
       uint32_t batch_size = internal_input_shape.dim_size(0);
       uint32_t block_shape_product = std::accumulate(
           internal_block_sizes.begin(), internal_block_sizes.end(), 1,
-          std::multiplies<int64>());
+          std::multiplies<int64_t>());
 
       // Reshape the input into [block_shape[0], ..., block_shape[M-1], batch /
       // prod(block_shape), input_shape[1], ..., input_shape[N-1]]

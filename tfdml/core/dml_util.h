@@ -175,6 +175,8 @@ dml::TensorPolicy GetDmlXTensorPolicy(TensorFormat format);
 // for int64 emulation.
 dml::TensorPolicy GetEmulatedInt64TensorPolicy();
 
+dml::TensorStrides ComputePackedStrides(const dml::Span<const uint32_t>& sizes);
+
 namespace dml_util
 {
 
