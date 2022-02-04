@@ -18,6 +18,7 @@ namespace tfdml
 void RegisterKernels_AddN();
 void RegisterKernels_AssignVariableOps();
 void RegisterKernels_BatchNorm();
+void RegisterKernels_BatchToSpace();
 void RegisterKernels_BiasAdd();
 void RegisterKernels_BroadcastTo();
 void RegisterKernels_Cast();
@@ -62,6 +63,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_AddN();
     tfdml::RegisterKernels_AssignVariableOps();
     tfdml::RegisterKernels_BatchNorm();
+    tfdml::RegisterKernels_BatchToSpace();
     tfdml::RegisterKernels_BiasAdd();
     tfdml::RegisterKernels_BroadcastTo();
     tfdml::RegisterKernels_Cast();
