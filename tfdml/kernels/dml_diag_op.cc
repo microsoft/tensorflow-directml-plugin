@@ -177,7 +177,6 @@ void RegisterKernels_Diag()
         K,
         ops::Diag::Attribute::T,
         TF_FLOAT,
-        TF_HALF,
         TF_INT32,
         TF_INT64>();
 }

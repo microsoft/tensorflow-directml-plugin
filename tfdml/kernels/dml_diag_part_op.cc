@@ -155,7 +155,6 @@ void RegisterKernels_DiagPart()
         K,
         ops::DiagPart::Attribute::T,
         TF_FLOAT,
-        TF_HALF,
         TF_INT32,
         TF_INT64>();
 }
