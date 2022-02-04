@@ -16,8 +16,6 @@
 import itertools
 
 import numpy as np
-import tensorflow as tf
-tf.debugging.set_log_device_placement(True)
 
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes as dtypes_lib
