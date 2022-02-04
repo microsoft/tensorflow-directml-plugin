@@ -66,7 +66,7 @@ class SpaceDepthInitHelper : public InitializationHelper {
 
       // The depth must be divisible by block_size * block_size
       OP_REQUIRES(
-          ctx, input_depth_ % block_size_sq == 0,
+          ctx, (input_depth_ % block_size_sq) == 0,
           errors::InvalidArgument("Input depth dimension ", input_depth_,
                                   " should be divisible by: ", block_size_sq));
     } else {
@@ -149,17 +149,8 @@ class DmlSpaceDepthKernel : public DmlKernel {
     CHECK(ctx->GetInputCount() == 1);
     CHECK(ctx->GetOutputCount() == 1);
 
-    // Currently, 64-bit integers in DML are emulated using 32-bit integers
-    // using striding to emulate a larger type. Because we can't guarantee
-    // that our output tensor's memory is zero'd, we need to do so manually
-    // prior to running running gather.
-    if (Is64BitIntegerType(ctx->GetOutputDataType(0)))
-    {
-        zero_outputs_ = true;
-    }
-
     const TensorShape& input_shape = ctx->GetInputTensorShape(0);
-    const TensorShape& output_shape = ctx->GetOutputTensorShape(1);
+    const TensorShape& output_shape = ctx->GetOutputTensorShape(0);
 
     auto layout =
         GetDmlTensorLayout(init_helper->GetDataFormat(), input_shape.dims());
@@ -187,22 +178,6 @@ class DmlSpaceDepthKernel : public DmlKernel {
     DML_OPERATOR_DESC op_desc = {operator_type, &specific_op_desc};
     Initialize(ctx, std::move(tensors), op_desc);
   }
-
-  StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const
-  {
-      Tensor& output = ctx->GetOutputTensor(0);
-
-      if (zero_outputs_)
-      {
-          ctx->GetDmlDeviceContext()->ZeroBuffer(
-              ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
-      }
-
-      return DmlKernel::Compute(ctx);
-  }
-
-  private:
-    bool zero_outputs_ = false;
 };
 
 static void RegisterSpaceToDepth()
@@ -211,17 +186,7 @@ static void RegisterSpaceToDepth()
         ops::SpaceToDepth,
         DmlKernelWrapper<DmlSpaceDepthKernel<DML_SPACE_TO_DEPTH_OPERATOR_DESC, DML_OPERATOR_SPACE_TO_DEPTH>, SpaceDepthShapeHelper<DML_OPERATOR_SPACE_TO_DEPTH>>>;
 
-    RegisterWithTypes<K, ops::SpaceToDepth::Attribute::T, TF_FLOAT,
-        TF_HALF,
-        TF_BOOL,
-        TF_UINT8,
-        TF_UINT16,
-        TF_UINT32,
-        TF_UINT64,
-        TF_INT8,
-        TF_INT16,
-        TF_INT32,
-        TF_INT64>();
+    RegisterWithTypes<K, ops::SpaceToDepth::Attribute::T, TF_FLOAT, TF_HALF, TF_UINT8>();
 }
 
 static void RegisterDepthToSpace()
@@ -230,17 +195,7 @@ static void RegisterDepthToSpace()
         ops::DepthToSpace,
         DmlKernelWrapper<DmlSpaceDepthKernel<DML_DEPTH_TO_SPACE_OPERATOR_DESC, DML_OPERATOR_DEPTH_TO_SPACE>, SpaceDepthShapeHelper<DML_OPERATOR_DEPTH_TO_SPACE>>>;
 
-    RegisterWithTypes<K, ops::DepthToSpace::Attribute::T, TF_FLOAT,
-        TF_HALF,
-        TF_BOOL,
-        TF_UINT8,
-        TF_UINT16,
-        TF_UINT32,
-        TF_UINT64,
-        TF_INT8,
-        TF_INT16,
-        TF_INT32,
-        TF_INT64>();
+    RegisterWithTypes<K, ops::DepthToSpace::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
 void RegisterKernels_SpaceDepth()

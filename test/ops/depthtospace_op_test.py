@@ -51,8 +51,7 @@ class DepthToSpaceTest(test.TestCase):
             "No OpKernel was registered to support Op 'DepthToSpace'"):
           self.evaluate(output_nhwc)
 
-    if test.is_gpu_available():
-      with self.cached_session():
+    with self.cached_session():
         # test NHWC (default) on GPU
         x_tf = array_ops.depth_to_space(input_nhwc, block_size)
         self.assertAllEqual(x_tf, outputs)
@@ -121,8 +120,7 @@ class DepthToSpaceTest(test.TestCase):
       x_tf = array_ops.depth_to_space(input_nhwc, block_size)
       self.assertAllEqual(x_tf.shape, x_out.shape)
       self.evaluate(x_tf)
-    if test.is_gpu_available():
-      with self.cached_session():
+    with self.cached_session():
         # test NHWC (default) on GPU
         x_tf = array_ops.depth_to_space(input_nhwc, block_size)
         self.assertAllEqual(x_tf.shape, x_out.shape)
@@ -284,22 +282,22 @@ class DepthToSpaceTest(test.TestCase):
     total_size = np.prod(nhwc_input_shape)
 
     if data_format == "NCHW_VECT_C":
-      # Initialize the input tensor with qint8 values that circle -127..127.
-      x = [((f + 128) % 255) - 127 for f in range(total_size)]
-      t = constant_op.constant(x, shape=nhwc_input_shape, dtype=dtypes.float32)
-      expected = self.depthToSpaceUsingTranspose(t, block_size, "NHWC")
-      t = test_util.NHWCToNCHW_VECT_C(t)
-      t, _, _ = gen_array_ops.quantize_v2(t, -128.0, 127.0, dtypes.qint8)
-      t = array_ops.depth_to_space(t, block_size, data_format="NCHW_VECT_C")
-      t = gen_array_ops.dequantize(t, -128, 127)
-      actual = test_util.NCHW_VECT_CToNHWC(t)
+        # Initialize the input tensor with qint8 values that circle -127..127.
+        x = [((f + 128) % 255) - 127 for f in range(total_size)]
+        t = constant_op.constant(x, shape=nhwc_input_shape, dtype=dtypes.float32)
+        expected = self.depthToSpaceUsingTranspose(t, block_size, "NHWC")
+        t = test_util.NHWCToNCHW_VECT_C(t)
+        t, _, _ = gen_array_ops.quantize_v2(t, -128.0, 127.0, dtypes.qint8)
+        t = array_ops.depth_to_space(t, block_size, data_format="NCHW_VECT_C")
+        t = gen_array_ops.dequantize(t, -128, 127)
+        actual = test_util.NCHW_VECT_CToNHWC(t)
     else:
       # Initialize the input tensor with ascending whole numbers as floats.
-      x = [f * 1.0 for f in range(total_size)]
-      shape = nchw_input_shape if data_format == "NCHW" else nhwc_input_shape
-      t = constant_op.constant(x, shape=shape, dtype=dtypes.float32)
-      expected = self.depthToSpaceUsingTranspose(t, block_size, data_format)
-      actual = array_ops.depth_to_space(t, block_size, data_format=data_format)
+        x = [f * 1.0 for f in range(total_size)]
+        shape = nchw_input_shape if data_format == "NCHW" else nhwc_input_shape
+        t = constant_op.constant(x, shape=shape, dtype=dtypes.float32)
+        expected = self.depthToSpaceUsingTranspose(t, block_size, data_format)
+        actual = array_ops.depth_to_space(t, block_size, data_format=data_format)
 
     with self.session(use_gpu=use_gpu) as sess:
       actual_vals, expected_vals = self.evaluate([actual, expected])
@@ -310,10 +308,6 @@ class DepthToSpaceTest(test.TestCase):
     self.compareToTranspose(3, 2, 3, 2, 2, "NHWC", False)
     self.compareToTranspose(1, 2, 3, 2, 3, "NHWC", False)
 
-    if not test.is_gpu_available():
-      tf_logging.info("skipping gpu tests since gpu not available")
-      return
-
     self.compareToTranspose(3, 2, 3, 1, 2, "NHWC", True)
     self.compareToTranspose(3, 2, 3, 2, 2, "NHWC", True)
     self.compareToTranspose(3, 2, 3, 1, 2, "NCHW", True)
@@ -323,11 +317,12 @@ class DepthToSpaceTest(test.TestCase):
     self.compareToTranspose(5, 7, 11, 3, 2, "NCHW", True)
     self.compareToTranspose(3, 200, 300, 32, 2, "NCHW", True)
 
-    self.compareToTranspose(3, 2, 3, 8, 2, "NCHW_VECT_C", True)
-    self.compareToTranspose(3, 2, 3, 4, 3, "NCHW_VECT_C", True)
-    self.compareToTranspose(3, 2, 3, 8, 3, "NCHW_VECT_C", True)
-    self.compareToTranspose(5, 7, 11, 12, 2, "NCHW_VECT_C", True)
-    self.compareToTranspose(3, 200, 300, 32, 2, "NCHW_VECT_C", True)
+    # DML doesn't support NCHW_VECT_C
+    # self.compareToTranspose(3, 2, 3, 8, 2, "NCHW_VECT_C", True)
+    # self.compareToTranspose(3, 2, 3, 4, 3, "NCHW_VECT_C", True)
+    # self.compareToTranspose(3, 2, 3, 8, 3, "NCHW_VECT_C", True)
+    # self.compareToTranspose(5, 7, 11, 12, 2, "NCHW_VECT_C", True)
+    # self.compareToTranspose(3, 200, 300, 32, 2, "NCHW_VECT_C", True)
 
 
 class DepthToSpaceGradientTest(test.TestCase):

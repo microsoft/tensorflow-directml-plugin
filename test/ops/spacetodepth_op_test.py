@@ -16,9 +16,6 @@
 
 import numpy as np
 import os
-import tensorflow as tf
-
-tf.debugging.set_log_device_placement(True)
 
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
@@ -41,9 +38,7 @@ class SpaceToDepthTest(test.TestCase):
     x_tf = array_ops.space_to_depth(input_nhwc, block_size)
     self.assertAllEqual(self.evaluate(x_tf), outputs)
 
-    # if test_util.is_gpu_available():
-    #   with test_util.force_gpu():
-        # test NCHW on GPU
+    # test NCHW on GPU
     input_nchw = test_util.NHWCToNCHW(input_nhwc)
     output_nchw = array_ops.space_to_depth(
         input_nchw, block_size, data_format="NCHW")
@@ -268,34 +263,16 @@ class SpaceToDepthTest(test.TestCase):
         shape = nchw_input_shape if data_format == "NCHW" else nhwc_input_shape
         t = constant_op.constant(x, shape=shape, dtype=dtypes.float32)
 
-    with test_util.device(use_gpu):
-      if data_format == "NCHW_VECT_C":
-        return
-        assert data_type == dtypes.qint8
+    if use_gpu:
+        # DML doesn't support NCHW_VECT_C
+        if data_format != "NCHW_VECT_C":
+            # Initialize the input tensor with ascending whole numbers as floats.
+            actual = array_ops.space_to_depth(
+                t, block_size, data_format=data_format)
+            expected = self.spaceToDepthUsingTranspose(t, block_size, data_format)
 
-        # Convert to int8, then NHWCToNCHW_VECT_C, and then back to qint8.
-        actual = array_ops.bitcast(t, dtypes.int8)
-        actual = test_util.NHWCToNCHW_VECT_C(actual)
-        actual = array_ops.bitcast(actual, dtypes.qint8)
-        actual = array_ops.space_to_depth(
-            actual, block_size, data_format=data_format)
-        actual = array_ops.bitcast(actual, dtypes.int8)
-        actual = test_util.NCHW_VECT_CToNHWC(actual)
-        actual = array_ops.bitcast(actual, dtypes.qint8)
-
-        expected = array_ops.bitcast(t, dtypes.int8)
-        expected = math_ops.cast(expected, dtypes.float32)
-        expected = self.spaceToDepthUsingTranspose(expected, block_size, "NHWC")
-        expected = math_ops.cast(expected, dtypes.int8)
-        expected = array_ops.bitcast(expected, dtypes.qint8)
-      else:
-        # Initialize the input tensor with ascending whole numbers as floats.
-        actual = array_ops.space_to_depth(
-            t, block_size, data_format=data_format)
-        expected = self.spaceToDepthUsingTranspose(t, block_size, data_format)
-
-      actual_vals, expected_vals = self.evaluate([actual, expected])
-      self.assertTrue(np.array_equal(actual_vals, expected_vals))
+            actual_vals, expected_vals = self.evaluate([actual, expected])
+            self.assertTrue(np.array_equal(actual_vals, expected_vals))
 
   @test_util.disable_tfrt("b/169901260")
   def testAgainstTranspose(self):
@@ -307,16 +284,13 @@ class SpaceToDepthTest(test.TestCase):
     self.compareToTranspose(1, 2, 3, 2, 2, "NHWC", dtypes.qint8, False)
     self.compareToTranspose(1, 2, 3, 2, 3, "NHWC", dtypes.qint8, False)
 
-    if not test.is_gpu_available():
-      tf_logging.info("skipping gpu tests since gpu not available")
-      return
-
     self.compareToTranspose(3, 2, 3, 1, 2, "NHWC", dtypes.float32, True)
     self.compareToTranspose(3, 2, 3, 2, 2, "NHWC", dtypes.float32, True)
     self.compareToTranspose(3, 2, 3, 1, 2, "NCHW", dtypes.float32, True)
     self.compareToTranspose(3, 2, 3, 2, 3, "NCHW", dtypes.float32, True)
     self.compareToTranspose(5, 7, 11, 3, 2, "NCHW", dtypes.float32, True)
 
+    # DML doesn't support NCHW_VECT_C
     # self.compareToTranspose(3, 2, 3, 4, 2, "NCHW_VECT_C", dtypes.qint8, True)
     # self.compareToTranspose(3, 2, 3, 8, 3, "NCHW_VECT_C", dtypes.qint8, True)
     # self.compareToTranspose(5, 7, 11, 12, 2, "NCHW_VECT_C", dtypes.qint8, True)
@@ -335,8 +309,7 @@ class SpaceToDepthGradientTest(test.TestCase):
     def func(x):
       return array_ops.space_to_depth(x, block_size, data_format=data_format)
 
-    with test_util.use_gpu():
-      with self.cached_session():
+    with self.cached_session():
         theoretical, numerical = gradient_checker_v2.compute_gradient(
             func, [ops.convert_to_tensor(x)])
         self.assertAllClose(theoretical, numerical, rtol=1e-2, atol=1e-2)
