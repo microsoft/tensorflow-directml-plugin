@@ -217,6 +217,7 @@ add_library(
     tfdml/kernels/dml_resize_op.cc
     tfdml/kernels/dml_select_op.cc
     tfdml/kernels/dml_slice_op.cc
+    tfdml/kernels/dml_space_depth_ops.cc
     tfdml/kernels/dml_sparse_xent_op.cc
     tfdml/kernels/dml_strided_slice_op.cc
     tfdml/kernels/dml_tile_op.cc

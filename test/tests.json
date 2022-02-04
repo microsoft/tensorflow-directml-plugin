@@ -63,6 +63,9 @@
                     "file": "ops/data_format_op_test.py"
                 },
                 {
+                    "file": "ops/depthtospace_op_test.py"
+                },
+                {
                     "file": "ops/depthwise_conv_op_test.py"
                 },
                 {
@@ -142,6 +145,9 @@
                 },
                 {
                     "file": "ops/slice_op_test.py"
+                },
+                {
+                    "file": "ops/spacetodepth_op_test.py"
                 },
                 {
                     "file": "ops/sparse_xent_op_test.py"
