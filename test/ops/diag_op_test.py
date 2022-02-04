@@ -16,6 +16,8 @@
 import itertools
 
 import numpy as np
+import tensorflow as tf
+tf.debugging.set_log_device_placement(True)
 
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes as dtypes_lib
@@ -1072,10 +1074,16 @@ class DiagPartOpTest(test.TestCase):
     np.random.seed(0)
 
   def _diagPartOp(self, tensor, dtype, expected_ans, use_gpu):
-    with self.cached_session(use_gpu=use_gpu):
+    if use_gpu:
       tensor = ops.convert_to_tensor(tensor.astype(dtype))
       tf_ans_inv = array_ops.diag_part(tensor)
       inv_out = self.evaluate(tf_ans_inv)
+    else:
+      with test_util.force_cpu():
+        tensor = ops.convert_to_tensor(tensor.astype(dtype))
+        tf_ans_inv = array_ops.diag_part(tensor)
+        inv_out = self.evaluate(tf_ans_inv)
+
     self.assertAllClose(inv_out, expected_ans)
     self.assertShapeEqual(expected_ans, tf_ans_inv)
 
