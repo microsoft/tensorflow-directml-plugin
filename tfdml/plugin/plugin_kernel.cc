@@ -46,6 +46,7 @@ void RegisterKernels_Resize();
 void RegisterKernels_Select();
 void RegisterKernels_Slice();
 void RegisterKernels_SpaceDepth();
+void RegisterKernels_SpaceToBatch();
 void RegisterKernels_SparseXent();
 void RegisterKernels_StridedSlice();
 void RegisterKernels_Tile();
@@ -91,6 +92,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Select();
     tfdml::RegisterKernels_Slice();
     tfdml::RegisterKernels_SpaceDepth();
+    tfdml::RegisterKernels_SpaceToBatch();
     tfdml::RegisterKernels_SparseXent();
     tfdml::RegisterKernels_StridedSlice();
     tfdml::RegisterKernels_Tile();

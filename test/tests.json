@@ -150,6 +150,9 @@
                     "file": "ops/slice_op_test.py"
                 },
                 {
+                    "file": "ops/spacetobatch_op_test.py"
+                },
+                {
                     "file": "ops/spacetodepth_op_test.py"
                 },
                 {
