@@ -200,6 +200,8 @@ add_library(
     tfdml/kernels/dml_cwise_ops.cc
     tfdml/kernels/dml_data_format_dim_map.cc
     tfdml/kernels/dml_data_format_vec_permute.cc
+    tfdml/kernels/dml_diag_op.cc
+    tfdml/kernels/dml_diag_part_op.cc
     tfdml/kernels/dml_dynamic_stitch_op.cc
     tfdml/kernels/dml_fill_op.cc
     tfdml/kernels/dml_gather_nd_op.cc
