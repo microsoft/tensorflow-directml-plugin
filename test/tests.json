@@ -15,6 +15,9 @@
                     "file": "ops/batch_matmul_op_test.py"
                 },
                 {
+                    "file": "ops/batchtospace_op_test.py"
+                },
+                {
                     "file": "ops/bias_op_deterministic_test.py"
                 },
                 {
@@ -145,6 +148,9 @@
                 },
                 {
                     "file": "ops/slice_op_test.py"
+                },
+                {
+                    "file": "ops/spacetobatch_op_test.py"
                 },
                 {
                     "file": "ops/spacetodepth_op_test.py"

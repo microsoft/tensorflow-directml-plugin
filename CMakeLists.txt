@@ -191,6 +191,7 @@ add_library(
     tfdml/kernels/dml_addn_op.cc
     tfdml/kernels/dml_assign_variable_op.cc
     tfdml/kernels/dml_batch_norm_ops.cc
+    tfdml/kernels/dml_batch_to_space_op.cc
     tfdml/kernels/dml_bias_add_op.cc
     tfdml/kernels/dml_broadcast_to_op.cc
     tfdml/kernels/dml_cast_op.cc
@@ -220,6 +221,7 @@ add_library(
     tfdml/kernels/dml_select_op.cc
     tfdml/kernels/dml_slice_op.cc
     tfdml/kernels/dml_space_depth_ops.cc
+    tfdml/kernels/dml_space_to_batch_op.cc
     tfdml/kernels/dml_sparse_xent_op.cc
     tfdml/kernels/dml_strided_slice_op.cc
     tfdml/kernels/dml_tile_op.cc
