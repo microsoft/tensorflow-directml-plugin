@@ -326,8 +326,6 @@ class TestGeneratorMethods(keras_parameterized.TestCase):
   @keras_parameterized.run_all_keras_modes
   @data_utils.dont_use_multiprocessing_pool
   def test_generator_dynamic_shapes(self):
-    # TODO #37589560: Enable after ResourceScatterAdd is implemented
-    self.skipTest("ResourceScatterAdd is not supported on DML yet")
     x = [
         'I think juice is great',
         'unknown is the best language since slicedbread',

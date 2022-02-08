@@ -1366,8 +1366,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
       self.assertEqual(g.control_inputs[0].type, "AssignAddVariableOp")
 
   def testScatterNdAddStateOps(self):
-    # TODO #37619412: Enable when we support ResourceScatterNdAdd
-    self.skipTest("DML doesn't support ResourceScatterNdAdd yet")
     with context.eager_mode():
       v = resource_variable_ops.ResourceVariable(
           [1, 2, 3, 4, 5, 6, 7, 8], dtype=dtypes.float32, name="add")
@@ -1390,8 +1388,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
                         for x in graph.get_operations()))
 
   def testScatterNdSubStateOps(self):
-    # TODO #37619394: Enable when we support ResourceScatterNdSub
-    self.skipTest("DML doesn't support ResourceScatterNdSub yet")
     with context.eager_mode():
       v = resource_variable_ops.ResourceVariable(
           [1, 2, 3, 4, 5, 6, 7, 8], dtype=dtypes.float32, name="sub")
