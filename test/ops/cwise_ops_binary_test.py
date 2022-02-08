@@ -40,8 +40,6 @@ _FLOORDIV = lambda x, y: x // y
 _MOD = lambda x, y: x % y
 
 
-# TODO(zongheng): it'd be great to factor out this function and various random
-# SparseTensor gen funcs.
 def _sparsify(x, thresh=0.5, index_dtype=np.int64):
   x[x < thresh] = 0
 
@@ -179,7 +177,6 @@ class BinaryOpTest(test.TestCase):
     else:
       self.assertAllClose(np_ans, tf_gpu)
     self.assertShapeEqual(np_ans, out)
-    # TODO(zhifengc/ke): make gradient checker work on GPU.
 
   def _compareBoth(self, x, y, np_func, tf_func, also_compare_variables=False):
     self._compareCpu(x, y, np_func, tf_func, also_compare_variables)
@@ -421,8 +418,6 @@ class BinaryOpTest(test.TestCase):
       y = (1 + np.linspace(0, 5, np.prod(ys))).astype(dtype).reshape(ys)
     self._compareCpu(x, y, np_func, tf_func)
     if x.dtype in (np.float16, np.float32, np.float64):
-      # TODO(aselle): Make the test work for dtypes:
-      #     (np.complex64, np.complex128).
       if tf_func not in (_FLOORDIV, math_ops.floordiv):
         if x.dtype == np.float16:
           # Compare fp16 theoretical gradients to fp32 numerical gradients,
@@ -437,7 +432,6 @@ class BinaryOpTest(test.TestCase):
           self._compareGradientY(x, y, np_func, tf_func)
       self._compareGpu(x, y, np_func, tf_func)
 
-  # TODO(josh11b,vrv): Refactor this to use parameterized tests.
   def _testBCastByFunc(self, funcs, xs, ys):
     dtypes = [
         np.float16,

@@ -415,7 +415,6 @@ class ReverseV2Test(test_util.TensorFlowTestCase):
 
   # This is the version of reverse that uses axis indices rather than
   # bool tensors
-  # TODO(b/32254538): Change this test to use array_ops.reverse
   #
   # Note: this test passes placeholder as constant axis is validated
   # in shape function (see testInvalidAxis)
@@ -739,8 +738,6 @@ class StridedSliceTest(test_util.TensorFlowTestCase):
       f = func.get_concrete_function(
           tensor_spec.TensorSpec([2, 2], dtypes.int16))
 
-      # TODO(b/190416665): Allow the constant to be eagerly copied/created on
-      # the GPU.
       with ops.device("CPU"):
         ones = constant_op.constant([[1, 1], [1, 1]], dtypes.int16)
       self.assertAllEqual([[1, 1]], self.evaluate(f(ones)))
@@ -1558,7 +1555,6 @@ class InvertPermutationTest(test_util.TensorFlowTestCase):
 
 class UnravelIndexTest(test_util.TensorFlowTestCase):
 
-  # TODO(b/73086570): Reenable test.
   @unittest.skip("Test does not pass internally.")
   def testUnravelIndex(self):
     with self.cached_session():
@@ -1700,7 +1696,6 @@ class QuantizeAndDequantizeTest(test_util.TensorFlowTestCase):
     # XLA raises an UnimplementedError on invalid axis.
     error_message_pattern = (r"Shape must be at least rank 11 but is rank "
                              r"1|invalid axis")
-    # TODO(b/171260356): Eager mode and graph mode throw different error types
     error = (errors.InvalidArgumentError, ValueError, errors.UnimplementedError)
     with self.assertRaisesRegex(error, error_message_pattern):
       self.evaluate(
@@ -2328,8 +2323,6 @@ class StopGradientTest(test_util.TensorFlowTestCase):
     with backprop.GradientTape() as tape:
       y = array_ops.stop_gradient(x)
 
-    # TODO(b/202162002): Once GradientTape supports composiste tensors, use
-    # tape.gradient(y, x).
     self.assertIsNone(tape.gradient(y.values, x.values))
 
 

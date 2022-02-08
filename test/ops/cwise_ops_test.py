@@ -47,8 +47,6 @@ _XOR = lambda x, y: x ^ y
 _INV = lambda x: ~x
 
 
-# TODO(zongheng): it'd be great to factor out this function and various random
-# SparseTensor gen funcs.
 def _sparsify(x, thresh=0.5, index_dtype=np.int64):
   x[x < thresh] = 0
 
@@ -1065,7 +1063,6 @@ class RoundingTest(test.TestCase):
   def _testDtype(self, dtype):
     data = (np.arange(-3, 3) / 4.).reshape(1, 3, 2).astype(dtype)
     self._compare(data)
-    # TODO(reedwm): rint op is not supported for float16 and bfloat16
     if dtype in (np.float16, dtypes_lib.bfloat16.as_numpy_dtype):
       return
     self._compare_values(data)

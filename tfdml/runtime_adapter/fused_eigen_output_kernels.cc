@@ -43,9 +43,6 @@ Status InitializeFusedComputation(
     int num_args;
     TF_RETURN_IF_ERROR(context->GetAttr("num_args", &num_args));
 
-    // TODO(ezhulenev): Add support for fusion element-wise op chains defined
-    // at runtime, e.g. Relu+Sqrt+Tanh+etc.
-
     // Reset fused computation type.
     *fused_computation = FusedComputationType::kUndefined;
 

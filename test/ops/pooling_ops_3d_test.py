@@ -43,7 +43,6 @@ def GetTestConfigs():
   return test_configs
 
 
-# TODO(mjanusz): Add microbenchmarks for 3d pooling.
 @test_util.with_eager_op_as_function
 class PoolingTest(test.TestCase):
 

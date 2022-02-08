@@ -213,8 +213,6 @@ class GatherNdTest(test.TestCase):
         self.evaluate(gather_nd)
 
   def _disabledTestBadIndicesGPU(self):
-    # TODO disabled due to different behavior on GPU and CPU
-    # On GPU the bad indices do not raise error but fetch 0 values
     if not test.is_gpu_available():
       return
     with self.session():
@@ -237,8 +235,6 @@ class GatherNdTest(test.TestCase):
         self.evaluate(gather_nd)
 
   def _disabledTestBadIndicesWithSlicesGPU(self):
-    # TODO disabled due to different behavior on GPU and CPU
-    # On GPU the bad indices do not raise error but fetch 0 values
     if not test.is_gpu_available():
       return
     with self.session():

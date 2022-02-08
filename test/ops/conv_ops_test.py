@@ -890,7 +890,6 @@ class Conv2DTest(test.TestCase):
             data_format=data_format,
             use_gpu=True,
             max_err=0.005)
-  # TODO(yzhwang): this currently fails.
   # self._VerifyValues(tensor_in_sizes=[1, 8, 8, 1],
   #                   filter_in_sizes=[2, 2, 1, 1],
   #                   strides=[4, 4], padding="SAME",
@@ -1867,7 +1866,6 @@ class Conv2DTest(test.TestCase):
     assert in_depth % num_groups == 0 and out_depth % num_groups == 0
     input_shape = [batch, input_rows, input_cols, in_depth]
     filter_shape = [filter_rows, filter_cols, in_depth // num_groups, out_depth]
-    # TODO(yangke): re-factor the computation of output shape.
     if padding == "VALID":
       output_rows = (input_rows - filter_rows + stride_rows) // stride_rows
       output_cols = (input_cols - filter_cols + stride_cols) // stride_cols
@@ -2540,7 +2538,6 @@ class Conv2DTest(test.TestCase):
           nn_ops.conv2d(
               input_val, filter_val, strides=[1, 1, 1, 2], padding="SAME"))
 
-    # TODO(b/195689143): Will enable when fixed for V2 behavior
     # # Filter larger than input.
     # with self.assertRaisesRegex(ValueError, "Negative dimension size"):
     #   input_val = np.ones([32, 20, 20, 3])
@@ -3079,7 +3076,6 @@ class Conv2DBenchmark(test.Benchmark):
     fact the Python padding list must be checked and processed before the Conv2D
     op can run.
     """
-    # TODO(reedwm): Make EXPLICIT padding as fast as SAME padding.
     if not test.is_gpu_available():
       return
 
@@ -3404,12 +3400,6 @@ if __name__ == "__main__":
                                            output_size_, [stride_, stride_],
                                            padding_)))
 
-  # TODO(b/35359731)
-  # Fwd, BckInput, and BackFilter to test that for certain input parameter
-  # set, winograd nonfused algorithm will be excluded from conv autotune. If
-  # in such case, winograd nonfused algorithm is added as one option of the
-  # conv autotune, and cuDNN version is smaller than 7, the following tests
-  # will fail.
   ishape = [1, 400, 400, 1]
   fshape = [1, 1, 1, 256]
   oshape = [1, 400, 400, 256]

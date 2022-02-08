@@ -192,8 +192,6 @@ class TrainingTest(keras_parameterized.TestCase):
       model.fit(dataset, steps_per_epoch=2, epochs=1, verbose=0,
                 validation_data=validation_dataset)
 
-  # TODO(b/120931266): Enable test on subclassed models after bug causing an
-  # extra dimension to be added to predict outputs is fixed.
   @keras_parameterized.run_with_all_model_types(exclude_models='subclass')
   def test_generator_methods(self):
     model = testing_utils.get_small_mlp(10, 4, 3)

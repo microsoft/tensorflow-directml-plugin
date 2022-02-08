@@ -25,9 +25,6 @@ namespace tfdml
 // The mnemonics specify the meaning of each tensor dimension sorted from
 // largest to smallest memory stride.
 // N = Batch, H = Image Height, W = Image Width, C = Number of Channels.
-// TODO(pauldonnelly): It would probably be better to switch to a registration
-// process for tensor formats, so specialized formats could be defined more
-// locally to where they are used.
 enum TensorFormat
 {
     // FORMAT_NHWC is the default format in TensorFlow.
@@ -313,10 +310,6 @@ inline int GetFilterTensorOutputChannelsDimIndex(
         return -1; // Avoid compiler warning about missing return value
     }
 }
-
-// TODO(pauldonnelly): Replace these tensor dimension index functions with
-// constant structs to improve performance and reduce code size in Compute()
-// functions.
 
 // Return the dimension index for the specified 'dimension' of the specified
 // data 'tensor_format'.  'dimension' is a char that can be 'N' (batch size),

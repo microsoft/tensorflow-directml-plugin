@@ -37,8 +37,6 @@ _NEG = lambda x: -x
 _ABS = abs
 
 
-# TODO(zongheng): it'd be great to factor out this function and various random
-# SparseTensor gen funcs.
 def _sparsify(x, thresh=0.5, index_dtype=np.int64):
   x[x < thresh] = 0
 
