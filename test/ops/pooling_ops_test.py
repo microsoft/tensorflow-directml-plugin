@@ -48,8 +48,6 @@ def GetDeviceScope(self, use_gpu=False):
     return self.session(use_gpu=use_gpu)
 
 
-# TODO(jlebar): Convert the rest of this file to parameters.parameterized().
-# Then remove GetTestConfigs() and rename GetTestConfigsDicts().
 def GetTestConfigsDicts(v1_fn,
                         v2_fn=None,
                         one_dimensional=False,

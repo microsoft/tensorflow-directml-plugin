@@ -101,8 +101,6 @@ Status GetWindowedOutputSize(
 //
 // If you want to use EXPLICIT padding, GetWindowedOutputSizeVerboseV2 must be
 // called instead
-//
-// TODO(b/67112639): Merge V2 versions and the original versions eventually.
 Status GetWindowedOutputSizeV2(
     int64_t input_size,
     int64_t filter_size,

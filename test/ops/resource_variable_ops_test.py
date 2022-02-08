@@ -352,7 +352,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
 
     c = constant_op.constant(1.)
     identity = array_ops.identity_n([c, v.handle])
-    # TODO(b/137403775): Remove this.
     handle_data_util.copy_handle_data(v.handle, identity[1])
 
     g = gradients_impl.gradients(identity[0], [c, v.handle])
@@ -737,7 +736,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
     self.assertEqual(
         compat.as_bytes(self.evaluate(read)[0][0]), compat.as_bytes("b"))
 
-  # TODO(alive): get this to work in Eager mode.
   def testGPU(self):
     with test_util.use_gpu():
       abc = variable_scope.get_variable(
@@ -775,7 +773,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
       v = resource_variable_ops.ResourceVariable(
           initial_value=lambda: 1, constraint=constraint, name="var1")
 
-  # TODO(alive): how should this work in Eager mode?
   @test_util.run_deprecated_v1
   def testInitFn(self):
     with self.cached_session():
@@ -1136,7 +1133,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
     self.assertIsInstance(w.dtype, dtypes.DType)
     self.assertEqual(v.dtype, w.dtype)
 
-  # TODO(alive): get caching to work in eager mode.
   @test_util.run_deprecated_v1
   def testCachingDevice(self):
     with ops.device("/job:server/task:1"):
@@ -1483,8 +1479,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
             ]))
     return value
 
-  # TODO(ebrevdo): Add run_in_graph_and_eager_modes once we can create
-  # EagerTensor constants with TensorProto inputs.
   @test_util.disable_tfrt("Does not support tf.Const in lowering.")
   @test_util.run_in_graph_and_eager_modes()
   def testVariantInitializer(self):
@@ -1644,10 +1638,7 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
   @test_util.run_v2_only
   def testUninitializedVariableMemoryUsage(self):
     if test_util.is_gpu_available():
-      # TODO(allenl): Investigate possible GPU-specific memory leaks
       self.skipTest("Disabled when a GPU is available")
-    # TODO(kkb): Python memory checker complains continuous `weakref`
-    # allocations, investigate.
     if memory_checker.CppMemoryChecker is None:
       self.skipTest("Requires the C++ memory checker")
 

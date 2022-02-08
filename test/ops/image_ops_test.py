@@ -1096,9 +1096,6 @@ class FlipTransposeRotateTest(test_util.TensorFlowTestCase,
       self.assertEqual(count_flipped, 45)
       self.assertEqual(count_unflipped, 55)
 
-  # TODO(b/162345082): stateless random op generates different random number
-  # with xla_gpu. Update tests such that there is a single ground truth result
-  # to test against.
   @parameterized.named_parameters(
       ("_RandomFlipLeftRight", image_ops.stateless_random_flip_left_right),
       ("_RandomFlipUpDown", image_ops.stateless_random_flip_up_down),
@@ -1143,9 +1140,6 @@ class FlipTransposeRotateTest(test_util.TensorFlowTestCase,
         self.assertAllEqual(flip_counts[0], flip_counts[i])
         self.assertAllEqual(flip_sequences[0], flip_sequences[i])
 
-  # TODO(b/162345082): stateless random op generates different random number
-  # with xla_gpu. Update tests such that there is a single ground truth result
-  # to test against.
   @parameterized.named_parameters(
       ("_RandomFlipLeftRight", image_ops.stateless_random_flip_left_right),
       ("_RandomFlipUpDown", image_ops.stateless_random_flip_up_down)
@@ -2293,7 +2287,6 @@ class PadToBoundingBoxTest(test_util.TensorFlowTestCase,
   def testInvalidInput(self):
     # Test case for GitHub issue 46890.
     if test_util.is_xla_enabled():
-      # TODO(b/200850176): test fails with XLA.
       return
     with self.session():
       with self.assertRaises(errors_impl.InvalidArgumentError):
@@ -2379,14 +2372,6 @@ class SelectDistortedCropBoxTest(test_util.TensorFlowTestCase):
     #                                     range=aspect_ratio_range)
     # mean = np.mean(aspect_ratio_hist)
     # stddev = np.sqrt(mean)
-    # TODO(wicke, shlens, dga): Restore this test so that it is no longer flaky.
-    # TODO(irving): Since the rejection probability is not independent of the
-    # aspect ratio, the aspect_ratio random value is not exactly uniformly
-    # distributed in [min_aspect_ratio, max_aspect_ratio).  This test should be
-    # fixed to reflect the true statistical property, then tightened to enforce
-    # a stricter bound.  Or, ideally, the sample_distorted_bounding_box Op
-    # be fixed to not use rejection sampling and generate correctly uniform
-    # aspect ratios.
     # self.assertAllClose(aspect_ratio_hist,
     #                     [mean] * num_bins, atol=3.6 * stddev)
 
@@ -2402,7 +2387,6 @@ class SelectDistortedCropBoxTest(test_util.TensorFlowTestCase):
     print("area_ratio_hist ", area_ratio_hist)
 
     # Ensure that fraction_object_covered is satisfied.
-    # TODO(wicke, shlens, dga): Restore this test so that it is no longer flaky.
     # self.assertGreaterEqual(min(fraction_object_covered), min_object_covered)
 
   def testWholeImageBoundingBox(self):
@@ -2567,9 +2551,6 @@ class SelectDistortedCropBoxTest(test_util.TensorFlowTestCase):
         self.assertEqual(len(set(area_ratios)), 1)
         self.assertEqual(len(set(fraction_object_covered)), 1)
 
-  # TODO(b/162345082): stateless random op generates different random number
-  # with xla_gpu. Update tests such that there is a single ground truth result
-  # to test against.
   def testWholeImageBoundingBoxStateless(self):
     height = 40
     width = 50
@@ -2585,9 +2566,6 @@ class SelectDistortedCropBoxTest(test_util.TensorFlowTestCase):
           aspect_ratio_range=(0.75, 1.33),
           area_range=(0.05, 1.0))
 
-  # TODO(b/162345082): stateless random op generates different random number
-  # with xla_gpu. Update tests such that there is a single ground truth result
-  # to test against.
   def testWithBoundingBoxStateless(self):
     height = 40
     width = 50
@@ -3528,8 +3506,6 @@ class ResizeImagesTest(test_util.TensorFlowTestCase,
         6.0, 6.0, 3.0, 3.0, 3.0, 3.0, 6.0, 6.0, 3.0, 3.0, 6.0, 6.0, 6.0, 6.0,
         9.0, 9.0, 6.0, 6.0, 9.0, 9.0
     ]
-    # TODO(b/37749740): Improve alignment of ResizeMethodV1.AREA when
-    # align_corners=True.
     expected_data[image_ops.ResizeMethodV1.AREA] = [
         6.0, 6.0, 6.0, 3.0, 6.0, 6.0, 6.0, 3.0, 3.0, 3.0, 3.0, 6.0, 3.0, 3.0,
         3.0, 6.0, 6.0, 6.0, 6.0, 9.0
@@ -4259,7 +4235,6 @@ def simple_color_ramp():
 
 class JpegTest(test_util.TensorFlowTestCase):
 
-  # TODO(irving): Add self.assertAverageLess or similar to test_util
   def averageError(self, image0, image1):
     self.assertEqual(image0.shape, image1.shape)
     image0 = image0.astype(int)  # Avoid overflow
@@ -4448,9 +4423,6 @@ class JpegTest(test_util.TensorFlowTestCase):
               np.array_equal(random_jpeg_images[0], random_jpeg_images[i]))
         self.assertFalse(all(are_images_equal))
 
-  # TODO(b/162345082): stateless random op generates different random number
-  # with xla_gpu. Update tests such that there is a single ground truth result
-  # to test against.
   def testStatelessRandomJpegQuality(self):
     # Test deterministic randomness in jpeg quality by checking that the same
     # sequence of jpeg quality adjustments are returned each round given the
@@ -4808,7 +4780,6 @@ class TotalVariationTest(test_util.TensorFlowTestCase):
 
     return a
 
-  # TODO(b/133851381): re-enable this test.
   def disabledtestTotalVariationNumpy(self):
     """Test the TensorFlow implementation against a numpy implementation.
     The two implementations are very similar so it is possible that both

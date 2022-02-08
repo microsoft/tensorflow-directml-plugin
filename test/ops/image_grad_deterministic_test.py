@@ -367,7 +367,5 @@ class CropAndResizeOpDeterministicTest(test_base.CropAndResizeOpTestBase):
 
 
 if __name__ == '__main__':
-  # TODO(reedwm): Merge this file with image_grad_test.py and
-  # image_grad_test_base.py
   config.enable_op_determinism()
   test.main()

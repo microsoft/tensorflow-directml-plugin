@@ -37,8 +37,6 @@ from tensorflow.python.platform import test
 
 _TEST_TYPES = (dtypes.int64, dtypes.float32,)
 
-# TODO(virimia): Add a benchmark for gather_v2, with batch_dims and axis set.
-
 
 def _to_str_elements(values):
   """Converts the inner list elements to strings."""
@@ -301,8 +299,6 @@ class GatherTest(test.TestCase, parameterized.TestCase):
         self.evaluate(array_ops.gather(params, [[7]], axis=1))
 
   def _disabledTestBadIndicesGPU(self):
-    # TODO disabled due to different behavior on GPU and CPU
-    # On GPU the bad indices do not raise error but fetch 0 values
     if not test.is_gpu_available():
       return
     with self.session():

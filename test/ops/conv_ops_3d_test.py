@@ -505,9 +505,6 @@ class Conv3DTest(test.TestCase):
     filter_data = [x * 1.0 / filter_size for x in range(0, filter_size)]
 
     for data_type in self._DtypesToTest(use_gpu=use_gpu):
-      # TODO(mjanusz): Modify gradient_checker to also provide max relative
-      # error and synchronize the tolerance levels between the tests for forward
-      # and backward computations.
       if data_type == dtypes.float64:
         tolerance = 1e-8
       elif data_type == dtypes.float32:
