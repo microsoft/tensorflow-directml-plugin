@@ -75,6 +75,18 @@
                     "file": "ops/dynamic_stitch_op_test.py"
                 },
                 {
+                    "file": "ops/extract_images_patches_grad_test.py"
+                },
+                {
+                    "file": "ops/extract_images_patches_op_test.py"
+                },
+                {
+                    "file": "ops/extract_volume_patches_grad_test.py"
+                },
+                {
+                    "file": "ops/extract_volume_patches_op_test.py"
+                },
+                {
                     "file": "ops/fill_op_test.py"
                 },
                 {

@@ -30,6 +30,8 @@ void RegisterKernels_DataFormatVecPermute();
 void RegisterKernels_Diag();
 void RegisterKernels_DiagPart();
 void RegisterKernels_DynamicStitch();
+void RegisterKernels_ExtractImagePatches();
+void RegisterKernels_ExtractVolumePatches();
 void RegisterKernels_Fill();
 void RegisterKernels_Gather();
 void RegisterKernels_GatherNd();
@@ -78,6 +80,8 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Diag();
     tfdml::RegisterKernels_DiagPart();
     tfdml::RegisterKernels_DynamicStitch();
+    tfdml::RegisterKernels_ExtractImagePatches();
+    tfdml::RegisterKernels_ExtractVolumePatches();
     tfdml::RegisterKernels_Fill();
     tfdml::RegisterKernels_Gather();
     tfdml::RegisterKernels_GatherNd();
