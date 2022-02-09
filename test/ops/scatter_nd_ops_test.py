@@ -860,6 +860,9 @@ class ScatterNdTensorTest(test.TestCase):
                           constant_op.constant([1, 1, 1, 2, 1, 1, 1, 2]))
 
   def testUpdateMinMaxGradients(self):
+    # TODO #38100209: Enable when ScatterNd supports duplicated indices
+    self.skipTest("DML doesn't support duplicate indices for ScatterNd ops")
+
     with self.cached_session():
       x = array_ops.ones([4], dtype=dtypes.float32)
       indices = constant_op.constant([[1], [2], [3], [3]])
