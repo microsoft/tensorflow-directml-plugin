@@ -45,7 +45,7 @@ class ExtractVolumePatchesInitHelper : public InitializationHelper {
       OP_REQUIRES_OK(ctx, ctx->GetAttr("padding", &padding));
 
       // TODO: Support rates if the CPU/GPU kernels ever support them (still
-      // unsupported as of TensorFlow 2.3.0). For now, we set them to 1 to get
+      // unsupported as of TensorFlow 2.8.0). For now, we set them to 1 to get
       // the same results as the CPU and the GPU.
       rates[0] = 1;
       rates[1] = 1;

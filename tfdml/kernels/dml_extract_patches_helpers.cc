@@ -86,7 +86,7 @@ dml::Expression ExtractPatches(dml::Graph& scope, dml::Expression input,
       global_indices[i - 1] =
           dml::Sequence<uint32_t>(scope, 0, patch_step, {1, 1, out_size, 1});
     } else {
-      assert(window_sizes[i] > 1);
+      CHECK(window_sizes[i] >= 1);
       global_indices[i - 1] = dml::Sequence<uint32_t>(
           scope, 0, element_step, {1, 1, 1, window_sizes[i]});
     }
