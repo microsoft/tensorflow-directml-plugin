@@ -219,6 +219,7 @@ add_library(
     tfdml/kernels/dml_relu_ops.cc
     tfdml/kernels/dml_resize_op.cc
     tfdml/kernels/dml_scatter_nd_ops.cc
+    tfdml/kernels/dml_scatter_ops.cc
     tfdml/kernels/dml_select_op.cc
     tfdml/kernels/dml_slice_op.cc
     tfdml/kernels/dml_space_depth_ops.cc

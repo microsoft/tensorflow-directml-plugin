@@ -159,9 +159,8 @@ static Status ValidateInputs(
         ValidateCommonScatter<Index>(params_shape, indices, updates));
 
     // Calculate the number of dimensions in indices
-    int64_t slice_dim = (indices.dims() > 1)
-                            ? indices.dim_size(indices.dims() - 1)
-                            : 1;
+    int64_t slice_dim =
+        (indices.dims() > 1) ? indices.dim_size(indices.dims() - 1) : 1;
 
     // Calculate the number of elements that make up each slice of our updated
     // tensor. This allows us to work with flattened tensors and copy over whole
