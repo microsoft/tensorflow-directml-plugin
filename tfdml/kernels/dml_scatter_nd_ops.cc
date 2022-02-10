@@ -85,20 +85,20 @@ static Status ValidateUpdateShape(
 
 template <typename Index>
 static Status ValidateCommonScatter(
-    const Tensor& params,
+    const TensorShape& params_shape,
     const Tensor& indices,
     const Tensor& updates)
 {
-    if (!TensorShapeUtils::IsVectorOrHigher(params.shape()))
+    if (!TensorShapeUtils::IsVectorOrHigher(params_shape))
     {
         return errors::InvalidArgument(
             "Output must be at least 1-D, ",
             "got shape: ",
-            params.shape().DebugString());
+            params_shape.DebugString());
     }
 
     if (!ValidEmptyOutputShape(
-            params.NumElements(),
+            params_shape.num_elements(),
             indices.NumElements(),
             updates.NumElements()))
     {
@@ -117,7 +117,7 @@ static Status ValidateCommonScatter(
             updates.shape().DebugString());
     }
 
-    TF_RETURN_IF_ERROR(ValidateUpdateShape(params.shape(), indices, updates));
+    TF_RETURN_IF_ERROR(ValidateUpdateShape(params_shape, indices, updates));
 
     // Check that we have enough index space
     const int64_t N_big = indices.NumElements();
@@ -135,13 +135,13 @@ static Status ValidateCommonScatter(
 
     const Index N = static_cast<Index>(indices.NumElements());
 
-    if (params.dim_size(0) > std::numeric_limits<Index>::max())
+    if (params_shape.dim_size(0) > std::numeric_limits<Index>::max())
     {
         return errors::InvalidArgument(
             "params.shape[0] too large for ",
             DataTypeString(DataTypeToEnum<Index>()),
             " indexing: ",
-            params.dim_size(0),
+            params_shape.dim_size(0),
             " > ",
             std::numeric_limits<Index>::max());
     }
@@ -150,12 +150,57 @@ static Status ValidateCommonScatter(
 }
 
 template <typename Index>
-class ResourceScatterNDInitHelper : public InitializationHelper
+static Status ValidateInputs(
+    const TensorShape& params_shape,
+    const Tensor& indices,
+    const Tensor& updates)
+{
+    TF_RETURN_IF_ERROR(
+        ValidateCommonScatter<Index>(params_shape, indices, updates));
+
+    // Calculate the number of dimensions in indices
+    int64_t slice_dim = (indices.dims() > 1)
+                            ? indices.dim_size(indices.dims() - 1)
+                            : 1;
+
+    // Calculate the number of elements that make up each slice of our updated
+    // tensor. This allows us to work with flattened tensors and copy over whole
+    // slices at a time.
+    Index total_nd = params_shape.dims();
+
+    int64_t slice_size = 1;
+    for (int64_t i = slice_dim; i < total_nd; ++i)
+    {
+        slice_size *= params_shape.dim_size(i);
+    }
+
+    if (slice_size > std::numeric_limits<Index>::max())
+    {
+        return errors::InvalidArgument(
+            "slice size is too large for indexing: ",
+            slice_size,
+            " > ",
+            std::numeric_limits<Index>::max());
+    }
+
+    if (slice_dim > 7)
+    {
+        return errors::InvalidArgument(
+            "Only indices.shape[-1] values between 0 and 7 "
+            "are currently supported.  Requested rank: ",
+            slice_dim);
+    }
+
+    return Status::OK();
+}
+
+template <typename Index>
+class ScatterNdInitHelper : public InitializationHelper
 {
   public:
     using Attributes = EmptyAttributes;
 
-    explicit ResourceScatterNDInitHelper(
+    explicit ScatterNdInitHelper(
         OpKernelContext* ctx,
         std::shared_ptr<const Attributes> attr)
         : var_lock_(ctx),
@@ -184,7 +229,7 @@ class ResourceScatterNDInitHelper : public InitializationHelper
 
         OP_REQUIRES_OK(
             ctx,
-            ValidateCommonScatter<Index>(params, indices, updates));
+            ValidateCommonScatter<Index>(params.shape(), indices, updates));
     }
 
     Tensor GetParamsTensor(OpKernelContext* ctx) const
@@ -202,7 +247,7 @@ class ResourceScatterNDInitHelper : public InitializationHelper
 
     bool IsTensorInput() const { return isTensorInput_; }
 
-    virtual ~ResourceScatterNDInitHelper() { Unlock(); }
+    virtual ~ScatterNdInitHelper() { Unlock(); }
 
   private:
     bool isTensorInput_;
@@ -211,12 +256,12 @@ class ResourceScatterNDInitHelper : public InitializationHelper
 };
 
 template <typename Index>
-class DmlScatterNDUpdateKernel : public DmlKernel
+class DmlScatterNdUpdateKernel : public DmlKernel
 {
   public:
-    using InitHelper = ResourceScatterNDInitHelper<Index>;
+    using InitHelper = ScatterNdInitHelper<Index>;
 
-    DmlScatterNDUpdateKernel(
+    DmlScatterNdUpdateKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
     {
@@ -263,6 +308,8 @@ class DmlScatterNDUpdateKernel : public DmlKernel
             in_out_shape.dims(),
             indices_shape.dims());
 
+        // TODO: Remove the Is64BitSignedIntegerType hack when DML has a more
+        // solid solution for 64 bit datatypes
         // TFDML #24881131
         if (Is64BitSignedIntegerType(params_tensor.dtype()))
         {
@@ -411,14 +458,14 @@ struct ScatterNdBinaryOperation
 };
 
 template <typename Index, typename BinaryOp>
-class DmlScatterNDBinaryKernel : public DmlKernel
+class DmlScatterNdBinaryKernel : public DmlKernel
 {
     absl::optional<DmlBuffer> strides_buffer_;
 
   public:
-    using InitHelper = ResourceScatterNDInitHelper<Index>;
+    using InitHelper = ScatterNdInitHelper<Index>;
 
-    DmlScatterNDBinaryKernel(
+    DmlScatterNdBinaryKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
     {
@@ -499,8 +546,8 @@ class DmlScatterNDBinaryKernel : public DmlKernel
         auto updates = dml::InputTensor(graph, 2, inputs[2]);
         auto strides = dml::InputTensor(graph, 3, inputs[3]);
 
-        // TODO: Remove the Is64BitIntegerType hack when DML has a more solid
-        // solution for 64 bit datatypes
+        // TODO: Remove the Is64BitSignedIntegerType hack when DML has a more
+        // solid solution for 64 bit datatypes
         // TFDML #24881131
         auto result = BinaryOp()(
             graph,
@@ -622,6 +669,212 @@ class DmlScatterNDBinaryKernel : public DmlKernel
     }
 };
 
+template <typename Index>
+class ScatterNdUnaryInitHelper : public InitializationHelper
+{
+  public:
+    using Attributes = EmptyAttributes;
+
+    explicit ScatterNdUnaryInitHelper(
+        OpKernelContext* ctx,
+        std::shared_ptr<const Attributes> attr)
+    {
+        const Tensor& indices = ctx->input(0);
+        const Tensor& updates = ctx->input(1);
+        const Tensor& shape_input = ctx->input(2);
+
+        OP_REQUIRES(
+            ctx,
+            indices.shape().dims() >= 1,
+            errors::InvalidArgument(
+                "Indices shape must have rank at least one. Found:",
+                indices.shape().DebugString()));
+        OP_REQUIRES(
+            ctx,
+            updates.shape().dims() >= 1,
+            errors::InvalidArgument(
+                "Updates shape must have rank at least one. Found:",
+                updates.shape().DebugString()));
+
+        TensorShape shape;
+        OP_REQUIRES_OK(ctx, TensorShapeUtils::MakeShape(shape_input, &shape));
+
+        OP_REQUIRES(
+            ctx,
+            ValidEmptyOutputShape(
+                shape_input.NumElements(),
+                indices.shape().num_elements(),
+                updates.shape().num_elements()),
+            errors::InvalidArgument(
+                "Indices and updates specified for empty output shape"));
+
+        const int64_t outer_dims = indices.shape().dims() - 1;
+
+        for (int i = 0; i < outer_dims; ++i)
+        {
+            OP_REQUIRES(
+                ctx,
+                indices.shape().dim_size(i) == updates.shape().dim_size(i),
+                errors::InvalidArgument(
+                    "Outer dimensions of indices and update must match. "
+                    "Indices shape: ",
+                    indices.shape().DebugString(),
+                    ", updates shape:",
+                    updates.shape().DebugString()));
+        }
+
+        const int64_t ix = indices.shape().dim_size(outer_dims);
+        OP_REQUIRES(
+            ctx,
+            updates.shape().dims() - outer_dims == shape.dims() - ix,
+            errors::InvalidArgument(
+                "Inner dimensions of output shape must match "
+                "inner dimensions of updates shape. Output: ",
+                shape.DebugString(),
+                " updates: ",
+                updates.shape().DebugString()));
+        for (int i = 0; i + outer_dims < updates.shape().dims(); ++i)
+        {
+            OP_REQUIRES(
+                ctx,
+                updates.shape().dim_size(i + outer_dims) ==
+                    shape.dim_size(ix + i),
+                errors::InvalidArgument(
+                    "The inner ",
+                    shape.dims() - ix,
+                    " dimensions of output.shape=",
+                    shape.DebugString(),
+                    " must match the inner ",
+                    updates.shape().dims() - outer_dims,
+                    " dimensions of updates.shape=",
+                    updates.shape().DebugString()));
+        }
+        OP_REQUIRES(
+            ctx,
+            shape_input.dims() == 1,
+            errors::InvalidArgument("Shape must be a vector"));
+
+        OP_REQUIRES_OK(ctx, ValidateInputs<Index>(shape, indices, updates));
+    }
+};
+
+template <typename Index>
+class DmlScatterNdUnaryKernel : public DmlKernel
+{
+  public:
+    using InitHelper = ScatterNdUnaryInitHelper<Index>;
+
+    DmlScatterNdUnaryKernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        const TensorShape& indices_shape = ctx->GetInputTensorShape(0);
+        const TensorShape& updates_shape = ctx->GetInputTensorShape(1);
+        const TensorShape& in_out_shape = ctx->GetOutputTensorShape(0);
+
+        DmlTensorInfo params_tensor;
+        params_tensor.desc = DmlTensorDesc::Create(
+            ctx->GetOutputDataType(0),
+            in_out_shape,
+            TensorShape({1}));
+
+        DmlTensorInfo indices_tensor;
+        indices_tensor.desc = DmlTensorDesc::Create(
+            ctx->GetInputDataType(0),
+            indices_shape,
+            indices_shape);
+
+        DmlTensorInfo updates_tensor;
+        updates_tensor.desc = DmlTensorDesc::Create(
+            ctx->GetInputDataType(1),
+            updates_shape,
+            updates_shape);
+
+        DmlTensorInfo output_tensor;
+        output_tensor.desc = DmlTensorDesc::Create(
+            ctx->GetOutputDataType(0),
+            in_out_shape,
+            in_out_shape);
+
+        DmlKernelTensors tensors;
+        tensors.inputs = {params_tensor, indices_tensor, updates_tensor};
+        tensors.outputs = {output_tensor};
+
+        auto dml_dtype =
+            GetDmlDataTypeFromTfDataType(ctx->GetOutputDataType(0));
+        constexpr uint32_t in_dim_count = 1;
+        constexpr uint32_t in_size = 1;
+        constexpr uint32_t in_stride = 1;
+        input_buffer_size_ = DMLCalcBufferTensorSize(
+            dml_dtype,
+            in_dim_count,
+            &in_size,
+            &in_stride);
+
+        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto graph = dml::Graph(ctx->GetDmlDevice());
+        auto input = dml::InputTensor(graph, 0, inputs[0]);
+        auto indices = dml::InputTensor(graph, 1, inputs[1]);
+        auto updates = dml::InputTensor(graph, 2, inputs[2]);
+        auto result = dml::ScatterND(
+            input,
+            indices,
+            updates,
+            in_out_shape.dims(),
+            indices_shape.dims());
+
+        // TODO: Remove the Is64BitSignedIntegerType hack when DML has a more
+        // solid solution for 64 bit datatypes
+        // TFDML #24881131
+        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0)))
+        {
+            result = dml::ConvertInt32ToInt64(result);
+        }
+
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            graph.Compile(DML_EXECUTION_FLAG_NONE, {result});
+
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
+    }
+
+    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
+    {
+        DmlBuffer params_buffer =
+            ctx->GetDmlDeviceContext()->AllocateDefaultBuffer(
+                ctx->GetOpKernelContext()->raw(),
+                input_buffer_size_);
+
+        D3D12BufferRegion indices_buffer =
+            ctx->GetDmlDeviceContext()->GetBufferForTensor(
+                ctx->GetInputTensor(0));
+
+        D3D12BufferRegion updates_buffer =
+            ctx->GetDmlDeviceContext()->GetBufferForTensor(
+                ctx->GetInputTensor(1));
+
+        D3D12BufferRegion output_buffer =
+            ctx->GetDmlDeviceContext()->GetBufferForTensor(
+                ctx->GetOutputTensor(0));
+
+        absl::InlinedVector<absl::optional<DML_BUFFER_BINDING>, 3>
+            input_bindings;
+        input_bindings.push_back(params_buffer.GetBufferBinding());
+        input_bindings.push_back(indices_buffer.GetBufferBinding());
+        input_bindings.push_back(updates_buffer.GetBufferBinding());
+
+        absl::InlinedVector<absl::optional<DML_BUFFER_BINDING>, 1>
+            output_bindings;
+        output_bindings.push_back(output_buffer.GetBufferBinding());
+
+        ctx->GetDmlDeviceContext()->ZeroBuffer(params_buffer.Region());
+
+        return DmlKernel::Compute(ctx, input_bindings, output_bindings);
+    }
+
+  private:
+    uint64_t input_buffer_size_ = 0;
+};
+
 template <typename type>
 using ScatterNdPlusOp = ScatterNdBinaryOperation<
     std::plus<dml::Expression>,
@@ -638,7 +891,7 @@ template <typename Index, typename DataType>
 using ScatterNdNonAliasingAddKernel = typename KernelDefinition<
     ops::ScatterNdNonAliasingAdd,
     DmlKernelWrapper<
-        DmlScatterNDBinaryKernel<Index, ScatterNdPlusOp<DataType>>,
+        DmlScatterNdBinaryKernel<Index, ScatterNdPlusOp<DataType>>,
         GetOutputShapeAsInputShapeHelper>>::
     template WithTypeConstraint<
         ops::ScatterNdNonAliasingAdd::Attribute::Tindices,
@@ -661,7 +914,7 @@ template <typename Index, typename DataType>
 using ScatterNdAddKernel = typename KernelDefinition<
     ops::ScatterNdAdd,
     DmlKernelWrapper<
-        DmlScatterNDBinaryKernel<Index, ScatterNdPlusOp<DataType>>,
+        DmlScatterNdBinaryKernel<Index, ScatterNdPlusOp<DataType>>,
         GetOutputShapeAsInputShapeHelper>>::
     template WithTypeConstraint<
         ops::ScatterNdAdd::Attribute::Tindices,
@@ -684,7 +937,7 @@ template <typename Index, typename DataType>
 using ScatterNdSubKernel = typename KernelDefinition<
     ops::ScatterNdSub,
     DmlKernelWrapper<
-        DmlScatterNDBinaryKernel<Index, ScatterNdMinusOp<DataType>>,
+        DmlScatterNdBinaryKernel<Index, ScatterNdMinusOp<DataType>>,
         GetOutputShapeAsInputShapeHelper>>::
     template WithTypeConstraint<
         ops::ScatterNdSub::Attribute::Tindices,
@@ -707,7 +960,7 @@ template <typename Index, typename DataType>
 using ScatterNdUpdateKernel = typename KernelDefinition<
     ops::ScatterNdUpdate,
     DmlKernelWrapper<
-        DmlScatterNDUpdateKernel<Index>,
+        DmlScatterNdUpdateKernel<Index>,
         GetOutputShapeAsInputShapeHelper>>::
     template WithTypeConstraint<
         ops::ScatterNdUpdate::Attribute::Tindices,
@@ -730,7 +983,7 @@ template <typename Index, typename DataType>
 using ResourceScatterNdAddKernel = typename KernelDefinition<
     ops::ResourceScatterNdAdd,
     DmlKernelWrapper<
-        DmlScatterNDBinaryKernel<Index, ScatterNdPlusOp<DataType>>,
+        DmlScatterNdBinaryKernel<Index, ScatterNdPlusOp<DataType>>,
         NoOutputShapeHelper,
         DmlKernelCachePolicy::Never>>::
     template WithHostMemoryArguments<ops::ResourceScatterNdAdd::Argument::ref>::
@@ -755,7 +1008,7 @@ template <typename Index, typename DataType>
 using ResourceScatterNdSubKernel = typename KernelDefinition<
     ops::ResourceScatterNdSub,
     DmlKernelWrapper<
-        DmlScatterNDBinaryKernel<Index, ScatterNdMinusOp<DataType>>,
+        DmlScatterNdBinaryKernel<Index, ScatterNdMinusOp<DataType>>,
         NoOutputShapeHelper,
         DmlKernelCachePolicy::Never>>::
     template WithHostMemoryArguments<ops::ResourceScatterNdSub::Argument::ref>::
@@ -780,7 +1033,7 @@ template <typename Index, typename DataType>
 using ResourceScatterNdUpdateKernel = typename KernelDefinition<
     ops::ResourceScatterNdUpdate,
     DmlKernelWrapper<
-        DmlScatterNDUpdateKernel<Index>,
+        DmlScatterNdUpdateKernel<Index>,
         NoOutputShapeHelper,
         DmlKernelCachePolicy::Never>>::
     template WithHostMemoryArguments<
@@ -802,6 +1055,30 @@ static void RegisterResourceScatterNdUpdate()
     ResourceScatterNdUpdateKernel<int64_t, int64_t>::Register();
 }
 
+template <typename Index, typename DataType>
+using ScatterNdKernel = typename KernelDefinition<
+    ops::ScatterNd,
+    DmlKernelWrapper<
+        DmlScatterNdUnaryKernel<Index>,
+        GetOutputShapeFromDimsTensorHelper<Index, 2>>>::
+    template WithHostMemoryArguments<ops::ScatterNd::Argument::shape>::
+        template WithTypeConstraint<
+            ops::ScatterNd::Attribute::Tindices,
+            DataTypeToEnum<Index>()>::
+            template WithTypeConstraint<
+                ops::ScatterNd::Attribute::T,
+                DataTypeToEnum<DataType>()>;
+
+static void RegisterScatterNd()
+{
+    ScatterNdKernel<int32_t, float>::Register();
+    ScatterNdKernel<int64_t, float>::Register();
+    ScatterNdKernel<int32_t, Eigen::half>::Register();
+    ScatterNdKernel<int64_t, Eigen::half>::Register();
+    ScatterNdKernel<int32_t, int64_t>::Register();
+    ScatterNdKernel<int64_t, int64_t>::Register();
+}
+
 void RegisterKernels_ScatterNd()
 {
     RegisterScatterNdNonAliasingAdd();
@@ -811,6 +1088,7 @@ void RegisterKernels_ScatterNd()
     RegisterResourceScatterNdAdd();
     RegisterResourceScatterNdSub();
     RegisterResourceScatterNdUpdate();
+    RegisterScatterNd();
 }
 
 } // namespace tfdml
