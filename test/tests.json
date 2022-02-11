@@ -102,6 +102,9 @@
                     "file": "ops/matmul_op_test.py"
                 },
                 {
+                    "file": "ops/matrix_band_part_op_test.py"
+                },
+                {
                     "file": "ops/nn_batchnorm_test.py"
                 },
                 {
