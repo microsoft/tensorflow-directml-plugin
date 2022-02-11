@@ -38,6 +38,7 @@ void RegisterKernels_GatherNd();
 void RegisterKernels_L2Loss();
 void RegisterKernels_LRN();
 void RegisterKernels_MatMul();
+void RegisterKernels_MatrixBandPart();
 void RegisterKernels_MirrorPadGrad();
 void RegisterKernels_Pack();
 void RegisterKernels_Pad();
@@ -90,6 +91,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_L2Loss();
     tfdml::RegisterKernels_LRN();
     tfdml::RegisterKernels_MatMul();
+    tfdml::RegisterKernels_MatrixBandPart();
     tfdml::RegisterKernels_MirrorPadGrad();
     tfdml::RegisterKernels_Pack();
     tfdml::RegisterKernels_Pad();
