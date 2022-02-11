@@ -203,6 +203,9 @@ add_library(
     tfdml/kernels/dml_diag_op.cc
     tfdml/kernels/dml_diag_part_op.cc
     tfdml/kernels/dml_dynamic_stitch_op.cc
+    tfdml/kernels/dml_extract_image_patches_op.cc
+    tfdml/kernels/dml_extract_patches_helpers.cc
+    tfdml/kernels/dml_extract_volume_patches_op.cc
     tfdml/kernels/dml_fill_op.cc
     tfdml/kernels/dml_gather_nd_op.cc
     tfdml/kernels/dml_gather_op.cc
