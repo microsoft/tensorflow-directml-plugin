@@ -132,65 +132,6 @@ static DmlKernelTensors CreateKernelTensors(
     return tensors;
 }
 
-// template <DML_OPERATOR_TYPE op_type, typename DML_OPERATOR_SPECIFIC_DESC>
-// class DmlBinaryKernel : public DmlKernel
-// {
-//   public:
-//     using InitHelper = ElementWiseInitHelper<kBinaryCwiseOpMaxDimCount>;
-
-//     explicit DmlBinaryKernel(
-//         DmlKernelConstruction* ctx,
-//         const InitHelper* init_helper)
-//     {
-//         CHECK(ctx->GetInputCount() == 2);
-//         CHECK(ctx->GetOutputCount() == 1);
-
-//         // Currently, 64-bit integers in DML are emulated using 32-bit integers
-//         // using striding to emulate a larger type. Because we can't guarantee
-//         // that our output tensor's memory is zero'd, we need to do so manually
-//         // prior to running running gather.
-//         if (Is64BitIntegerType(ctx->GetOutputDataType(0)))
-//         {
-//             zero_outputs_ = true;
-//         }
-
-//         auto input_shapes = init_helper->GetCollapsedInputShapes();
-//         const TensorShape& output_shape =
-//             init_helper->GetCollapsedOutputShape();
-
-//         DmlKernelTensors tensors =
-//             CreateKernelTensors(ctx, input_shapes, output_shape);
-//         auto inputs = GetDmlTensorDescs(tensors.inputs);
-//         auto outputs = GetDmlTensorDescs(tensors.outputs);
-
-//         DML_OPERATOR_SPECIFIC_DESC op_specific_desc = {
-//             &inputs[0],
-//             &inputs[1],
-//             outputs.data(),
-//         };
-
-//         DML_OPERATOR_DESC op_desc = {op_type, &op_specific_desc};
-//         Initialize(ctx, std::move(tensors), op_desc);
-//     }
-
-//     StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const
-//     {
-
-//         Tensor& output = ctx->GetOutputTensor(0);
-
-//         if (zero_outputs_)
-//         {
-//             ctx->GetDmlDeviceContext()->ZeroBuffer(
-//                 ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
-//         }
-
-//         return DmlKernel::Compute(ctx);
-//     }
-
-//   private:
-//     bool zero_outputs_ = false;
-// };
-
 template <typename Functor, uint32_t max_dim_count>
 class DmlBinaryWithZeroKernel : public DmlKernel
 {
@@ -203,15 +144,6 @@ class DmlBinaryWithZeroKernel : public DmlKernel
     {
         CHECK(ctx->GetInputCount() == 2);
         CHECK(ctx->GetOutputCount() == 1);
-
-        // // Currently, 64-bit integers in DML are emulated using 32-bit integers
-        // // using striding to emulate a larger type. Because we can't guarantee
-        // // that our output tensor's memory is zero'd, we need to do so manually
-        // // prior to running running gather.
-        // if (Is64BitIntegerType(ctx->GetOutputDataType(0)))
-        // {
-        //     zero_outputs_ = true;
-        // }
 
         auto input_shapes = init_helper->GetCollapsedInputShapes();
         const TensorShape& output_shape =
@@ -327,61 +259,6 @@ class DmlCompositeBinaryKernel : public DmlKernel
         return DmlKernel::Compute(ctx);
     }
 };
-
-// template <
-//     DML_OPERATOR_TYPE op_type,
-//     typename DML_OPERATOR_SPECIFIC_DESC,
-//     int... constants>
-// class DmlUnaryKernel : public DmlKernel
-// {
-//   public:
-//     using InitHelper = ElementWiseInitHelper<UINT32_MAX>;
-
-//     explicit DmlUnaryKernel(
-//         DmlKernelConstruction* ctx,
-//         const InitHelper* init_helper)
-//     {
-//         CHECK(ctx->GetInputCount() == 1);
-//         CHECK(ctx->GetOutputCount() == 1);
-
-//         // Currently, 64-bit integers in DML are emulated using 32-bit integers
-//         // using striding to emulate a larger type. Because we can't guarantee
-//         // that our output tensor's memory is zero'd, we need to do so manually
-//         // prior to running running gather.
-//         if (Is64BitIntegerType(ctx->GetOutputDataType(0)))
-//         {
-//             zero_outputs_ = true;
-//         }
-
-//         TensorShape tensor_shape({ctx->GetOutputTensorShape(0).num_elements()});
-//         DmlKernelTensors tensors =
-//             CreateKernelTensors(ctx, {tensor_shape}, tensor_shape);
-//         auto inputs = GetDmlTensorDescs(tensors.inputs);
-//         auto outputs = GetDmlTensorDescs(tensors.outputs);
-
-//         DML_OPERATOR_SPECIFIC_DESC op_specific_desc = {
-//             &inputs[0],
-//             outputs.data(),
-//             constants...};
-
-//         DML_OPERATOR_DESC op_desc = {op_type, &op_specific_desc};
-//         Initialize(ctx, std::move(tensors), op_desc);
-//     }
-
-//     StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const
-//     {
-//         Tensor& output = ctx->GetOutputTensor(0);
-//         if (zero_outputs_)
-//         {
-//             ctx->GetDmlDeviceContext()->ZeroBuffer(
-//                 ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
-//         }
-//         return DmlKernel::Compute(ctx);
-//     }
-
-//   private:
-//     bool zero_outputs_ = false;
-// };
 
 template <DML_OPERATOR_TYPE op_type, typename DML_OPERATOR_SPECIFIC_DESC>
 class DmlMaxActivationKernel : public DmlKernel
@@ -504,66 +381,6 @@ class DmlCompositeUnaryKernel : public DmlKernel
     }
 };
 
-// template <
-//     DML_OPERATOR_TYPE op_type,
-//     typename DML_OPERATOR_SPECIFIC_DESC,
-//     int scale = 1,
-//     int bias = 0,
-//     int... constants>
-// class DmlUnaryScaleBiasKernel : public DmlKernel
-// {
-//   public:
-//     using InitHelper = ElementWiseInitHelper<UINT32_MAX>;
-
-//     explicit DmlUnaryScaleBiasKernel(
-//         DmlKernelConstruction* ctx,
-//         const InitHelper* init_helper)
-//     {
-//         CHECK(ctx->GetInputCount() == 1);
-//         CHECK(ctx->GetOutputCount() == 1);
-
-//         // Currently, 64-bit integers in DML are emulated using 32-bit integers
-//         // using striding to emulate a larger type. Because we can't guarantee
-//         // that our output tensor's memory is zero'd, we need to do so manually
-//         // prior to running running gather.
-//         if (Is64BitIntegerType(ctx->GetOutputDataType(0)))
-//         {
-//             zero_outputs_ = true;
-//         }
-
-//         TensorShape tensor_shape({ctx->GetOutputTensorShape(0).num_elements()});
-//         DmlKernelTensors tensors =
-//             CreateKernelTensors(ctx, {tensor_shape}, tensor_shape);
-//         auto inputs = GetDmlTensorDescs(tensors.inputs);
-//         auto outputs = GetDmlTensorDescs(tensors.outputs);
-
-//         DML_SCALE_BIAS scale_bias = {scale, bias};
-//         DML_OPERATOR_SPECIFIC_DESC op_specific_desc = {
-//             &inputs[0],
-//             &outputs[0],
-//             &scale_bias,
-//             constants...,
-//         };
-
-//         DML_OPERATOR_DESC op_desc = {op_type, &op_specific_desc};
-//         Initialize(ctx, std::move(tensors), op_desc);
-//     }
-
-//     StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const
-//     {
-//         Tensor& output = ctx->GetOutputTensor(0);
-//         if (zero_outputs_)
-//         {
-//             ctx->GetDmlDeviceContext()->ZeroBuffer(
-//                 ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
-//         }
-//         return DmlKernel::Compute(ctx);
-//     }
-
-//   private:
-//     bool zero_outputs_ = false;
-// };
-
 class DmlClipByValueKernel : public DmlKernel
 {
   public:
@@ -575,15 +392,6 @@ class DmlClipByValueKernel : public DmlKernel
     {
         CHECK(ctx->GetInputCount() == 3);
         CHECK(ctx->GetOutputCount() == 1);
-
-        // Currently, 64-bit integers in DML are emulated using 32-bit integers
-        // using striding to emulate a larger type. Because we can't guarantee
-        // that our output tensor's memory is zero'd, we need to do so manually
-        // prior to running running gather.
-        if (Is64BitIntegerType(ctx->GetOutputDataType(0)))
-        {
-            zero_outputs_ = true;
-        }
 
         DmlKernelParams params;
 
@@ -598,95 +406,27 @@ class DmlClipByValueKernel : public DmlKernel
 
         DmlKernelTensors tensors = GetTensorInfos(ctx, params);
         auto inputs = GetDmlTensorDescs(tensors.inputs);
-        auto outputs = GetDmlTensorDescs(tensors.outputs);
 
         // Min/max are supplied as tensors for ClipByValue, which are required
         // to be constant CPU inputs
         const Tensor& min_tensor = ctx->GetConstantInputTensor(1);
         const Tensor& max_tensor = ctx->GetConstantInputTensor(2);
 
-        DML_ELEMENT_WISE_CLIP_OPERATOR_DESC clip_desc = {};
-        clip_desc.InputTensor = inputs.data();
-        clip_desc.OutputTensor = outputs.data();
-        clip_desc.Min = min_tensor.base<float>()[0];
-        clip_desc.Max = max_tensor.base<float>()[0];
-
-        DML_OPERATOR_DESC op_desc = {
-            DML_OPERATOR_ELEMENT_WISE_CLIP,
-            &clip_desc};
-        Initialize(ctx, std::move(tensors), op_desc);
-    }
-
-    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const
-    {
-        Tensor& output = ctx->GetOutputTensor(0);
-        if (zero_outputs_)
-        {
-            ctx->GetDmlDeviceContext()->ZeroBuffer(
-                ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
-        }
-        return DmlKernel::Compute(ctx);
-    }
-
-  private:
-    bool zero_outputs_ = false;
-};
-
-class DmlSquaredDifferenceKernel : public DmlKernel
-{
-  public:
-    using InitHelper = ElementWiseInitHelper<kNchwDimensionCount>;
-
-    explicit DmlSquaredDifferenceKernel(
-        DmlKernelConstruction* ctx,
-        const InitHelper* init_helper)
-    {
-        CHECK(ctx->GetInputCount() == 2);
-        CHECK(ctx->GetOutputCount() == 1);
-
-        // Currently, 64-bit integers in DML are emulated using 32-bit integers
-        // using striding to emulate a larger type. Because we can't guarantee
-        // that our output tensor's memory is zero'd, we need to do so manually
-        // prior to running running gather.
-        if (Is64BitIntegerType(ctx->GetOutputDataType(0)))
-        {
-            zero_outputs_ = true;
-        }
-
-        auto input_shapes = init_helper->GetCollapsedInputShapes();
-        const TensorShape& output_shape =
-            init_helper->GetCollapsedOutputShape();
-
-        DmlKernelTensors tensors =
-            CreateKernelTensors(ctx, input_shapes, output_shape);
-        auto inputs = GetDmlTensorDescs(tensors.inputs);
-        auto outputs = GetDmlTensorDescs(tensors.outputs);
-
         auto scope = dml::Graph(ctx->GetDmlDevice());
-        auto x = dml::InputTensor(scope, 0, inputs[0]);
-        auto y = dml::InputTensor(scope, 1, inputs[1]);
-        auto diff = x - y;
-        auto result = diff * diff;
+        auto input = dml::InputTensor(scope, 0, inputs[0]);
+        auto result = dml::Clip(input, min_tensor.base<float>()[0],
+                                max_tensor.base<float>()[0]);
+
+        // TFDML #24881131
+        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0))) {
+        result = dml::ConvertInt32ToInt64(result);
+        }
 
         ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
 
         Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
-
-    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const
-    {
-        Tensor& output = ctx->GetOutputTensor(0);
-        if (zero_outputs_)
-        {
-            ctx->GetDmlDeviceContext()->ZeroBuffer(
-                ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
-        }
-        return DmlKernel::Compute(ctx);
-    }
-
-  private:
-    bool zero_outputs_ = false;
 };
 
 class DmlSeluKernel : public DmlKernel
@@ -872,6 +612,7 @@ class DmlBitwiseNotKernel : public DmlKernel
 
         // DML doesn't support 64-bit integer types, but we can reinterpret
         // the tensor as twice as many 32-bit elements. Sign doesn't matter.
+        // TFDML #24881131
         auto dtype = ctx->GetInputDataType(0);
         assert(dtype == ctx->GetOutputDataType(0));
         if (Is64BitIntegerType(dtype))
@@ -983,6 +724,7 @@ class DmlBitCountKernel : public DmlKernel
         tensors.inputs = {in};
         tensors.outputs = {out};
 
+        // TFDML #24881131
         if (Is64BitIntegerType(ctx->GetInputDataType(0)))
         {
             // DML doesn't support 64-bit integer types, but we can reinterpret
@@ -1039,54 +781,6 @@ struct DmlDivNoNanFunctor
     }
 };
 
-struct DmlErfcFunctor
-{
-    dml::Expression operator()(dml::Expression x)
-    {
-        return (1.0f - dml::Erf(x));
-    }
-};
-
-struct DmlExpm1Functor
-{
-    dml::Expression operator()(dml::Expression x)
-    {
-        return (dml::Exp(x) - 1.0f);
-    }
-};
-
-struct DmlIsFiniteFunctor
-{
-    dml::Expression operator()(dml::Expression x)
-    {
-        return (!(dml::IsNaN(x) || dml::IsInfinity(x)));
-    }
-};
-
-struct DmlFloorDivFunctor
-{
-    dml::Expression operator()(dml::Expression x, dml::Expression y)
-    {
-        return (dml::Floor(x / y));
-    }
-};
-
-struct DmlGreaterEqualFunctor
-{
-    dml::Expression operator()(dml::Expression x, dml::Expression y)
-    {
-        return (x >= y);
-    }
-};
-
-struct DmlLessEqualFunctor
-{
-    dml::Expression operator()(dml::Expression x, dml::Expression y)
-    {
-        return (x <= y);
-    }
-};
-
 struct DmlMulNoNanFunctor
 {
     dml::Expression operator()(
@@ -1095,46 +789,6 @@ struct DmlMulNoNanFunctor
         dml::Expression y)
     {
         return dml::If(y == zero, zero, x * y);
-    }
-};
-
-struct DmlNotEqualFunctor
-{
-    dml::Expression operator()(dml::Expression x, dml::Expression y)
-    {
-        return (x != y);
-    }
-};
-
-struct DmlReciprocalGradFunctor
-{
-    dml::Expression operator()(dml::Expression x, dml::Expression y)
-    {
-        return (-y * x * x);
-    }
-};
-
-struct DmlRsqrtFunctor
-{
-    dml::Expression operator()(dml::Expression x)
-    {
-        return (1.0f / dml::Sqrt(x));
-    }
-};
-
-struct DmlSigmoidGradFunctor
-{
-    dml::Expression operator()(dml::Expression x, dml::Expression y)
-    {
-        return (y * x * (1 - x));
-    }
-};
-
-struct DmlTanhGradFunctor
-{
-    dml::Expression operator()(dml::Expression x, dml::Expression y)
-    {
-        return (y * (1 - x * x));
     }
 };
 
@@ -1160,816 +814,6 @@ struct DmlXlogyFunctor
     }
 };
 
-// static void RegisterAbs()
-// {
-//     using K = KernelDefinition<
-//         ops::Abs,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_ABS,
-//                 DML_ELEMENT_WISE_ABS_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::Abs::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16>();
-// }
-
-// static void RegisterAcos()
-// {
-//     using K = KernelDefinition<
-//         ops::Acos,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_ACOS,
-//                 DML_ELEMENT_WISE_ACOS_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Acos::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterAcosh()
-// {
-//     using K = KernelDefinition<
-//         ops::Acosh,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_ACOSH,
-//                 DML_ELEMENT_WISE_ACOSH_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Acosh::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterAdd()
-// {
-//     using K = KernelDefinition<
-//         ops::Add,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_ADD,
-//                 DML_ELEMENT_WISE_ADD_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::Add::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT64,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
-// static void RegisterAddV2()
-// {
-//     using K = KernelDefinition<
-//         ops::AddV2,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_ADD,
-//                 DML_ELEMENT_WISE_ADD_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::AddV2::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT64,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
-// static void RegisterApproximateEqual()
-// {
-//     using half_kernel = KernelDefinition<
-//         ops::ApproximateEqual,
-//         DmlKernelWrapper<
-//             DmlApproximateEqualKernel<Eigen::half>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     using float_kernel = KernelDefinition<
-//         ops::ApproximateEqual,
-//         DmlKernelWrapper<
-//             DmlApproximateEqualKernel<float>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         half_kernel,
-//         ops::ApproximateEqual::Attribute::T,
-//         TF_HALF>();
-//     RegisterWithTypes<
-//         float_kernel,
-//         ops::ApproximateEqual::Attribute::T,
-//         TF_FLOAT>();
-// }
-
-// static void RegisterAsin()
-// {
-//     using K = KernelDefinition<
-//         ops::Asin,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_ASIN,
-//                 DML_ELEMENT_WISE_ASIN_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Asin::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterAsinh()
-// {
-//     using K = KernelDefinition<
-//         ops::Asinh,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_ASINH,
-//                 DML_ELEMENT_WISE_ASINH_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Asinh::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterAtan()
-// {
-//     using K = KernelDefinition<
-//         ops::Atan,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_ATAN,
-//                 DML_ELEMENT_WISE_ATAN_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Atan::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterAtanh()
-// {
-//     using K = KernelDefinition<
-//         ops::Atanh,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_ATANH,
-//                 DML_ELEMENT_WISE_ATANH_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Atanh::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterBitwiseAnd()
-// {
-//     using K = KernelDefinition<
-//         ops::BitwiseAnd,
-//         DmlKernelWrapper<
-//             DmlBinaryBitwiseKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_BIT_AND,
-//                 DML_ELEMENT_WISE_BIT_AND_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::BitwiseAnd::Attribute::T,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT32,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32>();
-// }
-
-// static void RegisterBitwiseOr()
-// {
-//     using K = KernelDefinition<
-//         ops::BitwiseOr,
-//         DmlKernelWrapper<
-//             DmlBinaryBitwiseKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_BIT_OR,
-//                 DML_ELEMENT_WISE_BIT_OR_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::BitwiseOr::Attribute::T,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT32,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32>();
-// }
-
-// static void RegisterBitwiseXor()
-// {
-//     using K = KernelDefinition<
-//         ops::BitwiseXor,
-//         DmlKernelWrapper<
-//             DmlBinaryBitwiseKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_BIT_XOR,
-//                 DML_ELEMENT_WISE_BIT_XOR_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::BitwiseXor::Attribute::T,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT32,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32>();
-// }
-
-// static void RegisterCeil()
-// {
-//     using K = KernelDefinition<
-//         ops::Ceil,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_CEIL,
-//                 DML_ELEMENT_WISE_CEIL_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Ceil::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterClipByValue()
-// {
-//     using K = KernelDefinition<
-//         ops::ClipByValue,
-//         DmlKernelWrapper<
-//             DmlClipByValueKernel,
-//             GetBroadcastedOutputShapeHelper>>::
-//         template WithHostMemoryArguments<
-//             ops::ClipByValue::Argument::clip_value_min>::
-//             template WithHostMemoryArguments<
-//                 ops::ClipByValue::Argument::clip_value_max>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::ClipByValue::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_BOOL,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
-// static void RegisterCos()
-// {
-//     using K = KernelDefinition<
-//         ops::Cos,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_COS,
-//                 DML_ELEMENT_WISE_COS_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Cos::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterCosh()
-// {
-//     using K = KernelDefinition<
-//         ops::Cosh,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_COSH,
-//                 DML_ELEMENT_WISE_COSH_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Cosh::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterDiv()
-// {
-//     using K = KernelDefinition<
-//         ops::Div,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_DIVIDE,
-//                 DML_ELEMENT_WISE_DIVIDE_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::Div::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT64,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
-// static void RegisterDivNoNan()
-// {
-//     using K = KernelDefinition<
-//         ops::DivNoNan,
-//         DmlKernelWrapper<
-//             DmlBinaryWithZeroKernel<DmlDivNoNanFunctor, kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::DivNoNan::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT32,
-//         TF_INT64,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
-// static void RegisterElu()
-// {
-//     using K = KernelDefinition<
-//         ops::Elu,
-//         DmlKernelWrapper<
-//             DmlUnaryKernel<
-//                 DML_OPERATOR_ACTIVATION_ELU,
-//                 DML_ACTIVATION_ELU_OPERATOR_DESC,
-//                 1>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Elu::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterEqual()
-// {
-//     using K = KernelDefinition<
-//         ops::Equal,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_LOGICAL_EQUALS,
-//                 DML_ELEMENT_WISE_LOGICAL_EQUALS_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::Equal::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
-// static void RegisterErf()
-// {
-//     using K = KernelDefinition<
-//         ops::Erf,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_ERF,
-//                 DML_ELEMENT_WISE_ERF_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Erf::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterErfc()
-// {
-//     using K = KernelDefinition<
-//         ops::Erfc,
-//         DmlKernelWrapper<
-//             DmlCompositeUnaryKernel<DmlErfcFunctor, kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Erfc::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterExp()
-// {
-//     using K = KernelDefinition<
-//         ops::Exp,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_EXP,
-//                 DML_ELEMENT_WISE_EXP_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Exp::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterExpm1()
-// {
-//     using K = KernelDefinition<
-//         ops::Expm1,
-//         DmlKernelWrapper<
-//             DmlCompositeUnaryKernel<DmlExpm1Functor, kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Expm1::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterFloor()
-// {
-//     using K = KernelDefinition<
-//         ops::Floor,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_FLOOR,
-//                 DML_ELEMENT_WISE_FLOOR_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Floor::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterFloorDiv()
-// {
-//     using K = KernelDefinition<
-//         ops::FloorDiv,
-//         DmlKernelWrapper<
-//             DmlCompositeBinaryKernel<DmlFloorDivFunctor, kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::FloorDiv::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterFloorMod()
-// {
-//     using K = KernelDefinition<
-//         ops::FloorMod,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_MODULUS_FLOOR,
-//                 DML_ELEMENT_WISE_MODULUS_FLOOR_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::FloorMod::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
-// static void RegisterGreater()
-// {
-//     using K = KernelDefinition<
-//         ops::Greater,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_LOGICAL_GREATER_THAN,
-//                 DML_ELEMENT_WISE_LOGICAL_GREATER_THAN_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::Greater::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
-// static void RegisterGreaterEqual()
-// {
-//     using K = KernelDefinition<
-//         ops::GreaterEqual,
-//         DmlKernelWrapper<
-//             DmlCompositeBinaryKernel<
-//                 DmlGreaterEqualFunctor,
-//                 kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::GreaterEqual::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
-// static void RegisterInv()
-// {
-//     using K = KernelDefinition<
-//         ops::Inv,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_RECIP,
-//                 DML_ELEMENT_WISE_RECIP_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Inv::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterInvert()
-// {
-//     using K = KernelDefinition<
-//         ops::Invert,
-//         DmlKernelWrapper<
-//             DmlBitwiseNotKernel,
-//             GetOutputShapeAsInputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::Invert::Attribute::T,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT32,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
-// static void RegisterIsFinite()
-// {
-//     using K = KernelDefinition<
-//         ops::IsFinite,
-//         DmlKernelWrapper<
-//             DmlCompositeUnaryKernel<DmlIsFiniteFunctor, kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::IsFinite::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterIsInf()
-// {
-//     using K = KernelDefinition<
-//         ops::IsInf,
-//         DmlKernelWrapper<
-//             DmlUnaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_IS_INFINITY,
-//                 DML_ELEMENT_WISE_IS_INFINITY_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::IsInf::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterIsNan()
-// {
-//     using K = KernelDefinition<
-//         ops::IsNan,
-//         DmlKernelWrapper<
-//             DmlUnaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_IS_NAN,
-//                 DML_ELEMENT_WISE_IS_NAN_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::IsNan::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterLeakyRelu()
-// {
-//     using K = KernelDefinition<
-//         ops::LeakyRelu,
-//         DmlKernelWrapper<DmlLeakyReluKernel, GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::LeakyRelu::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterLeftShift()
-// {
-//     using K = KernelDefinition<
-//         ops::LeftShift,
-//         DmlKernelWrapper<
-//             DmlBinaryBitwiseKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_BIT_SHIFT_LEFT,
-//                 DML_ELEMENT_WISE_BIT_SHIFT_LEFT_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::LeftShift::Attribute::T,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT32,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32>();
-// }
-
-// static void RegisterLess()
-// {
-//     using K = KernelDefinition<
-//         ops::Less,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_LOGICAL_LESS_THAN,
-//                 DML_ELEMENT_WISE_LOGICAL_LESS_THAN_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::Less::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
-// static void RegisterLessEqual()
-// {
-//     using K = KernelDefinition<
-//         ops::LessEqual,
-//         DmlKernelWrapper<
-//             DmlCompositeBinaryKernel<DmlLessEqualFunctor, kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::LessEqual::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
-// static void RegisterLog()
-// {
-//     using K = KernelDefinition<
-//         ops::Log,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_LOG,
-//                 DML_ELEMENT_WISE_LOG_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Log::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterLog1p()
-// {
-//     using K = KernelDefinition<
-//         ops::Log1p,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_LOG,
-//                 DML_ELEMENT_WISE_LOG_OPERATOR_DESC,
-//                 1,
-//                 1>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::Log1p::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterLogicalAnd()
-// {
-//     using K = KernelDefinition<
-//         ops::LogicalAnd,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_LOGICAL_AND,
-//                 DML_ELEMENT_WISE_LOGICAL_AND_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     K::Register();
-// }
-
-// static void RegisterLogicalNot()
-// {
-//     using K = KernelDefinition<
-//         ops::LogicalNot,
-//         DmlKernelWrapper<
-//             DmlUnaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_LOGICAL_NOT,
-//                 DML_ELEMENT_WISE_LOGICAL_NOT_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     K::Register();
-// }
-
-// static void RegisterLogicalOr()
-// {
-//     using K = KernelDefinition<
-//         ops::LogicalOr,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_LOGICAL_OR,
-//                 DML_ELEMENT_WISE_LOGICAL_OR_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     K::Register();
-// }
-
-// static void RegisterLogSoftmax()
-// {
-//     using K = KernelDefinition<
-//         ops::LogSoftmax,
-//         DmlKernelWrapper<
-//             DmlMaxActivationKernel<
-//                 DML_OPERATOR_ACTIVATION_LOG_SOFTMAX,
-//                 DML_ACTIVATION_LOG_SOFTMAX_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<K, ops::LogSoftmax::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
-
-// static void RegisterMaximum()
-// {
-//     using K = KernelDefinition<
-//         ops::Maximum,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_MAX,
-//                 DML_ELEMENT_WISE_MAX_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::Maximum::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
-// static void RegisterMinimum()
-// {
-//     using K = KernelDefinition<
-//         ops::Minimum,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_MIN,
-//                 DML_ELEMENT_WISE_MIN_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::Minimum::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
-// static void RegisterMod()
-// {
-//     using K = KernelDefinition<
-//         ops::Mod,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_MODULUS_TRUNCATE,
-//                 DML_ELEMENT_WISE_MODULUS_TRUNCATE_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
-
-//     RegisterWithTypes<
-//         K,
-//         ops::Mod::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
-
 #define REGISTER_DML_COMPOSITE_BINARY_STRUCT(opName, op, expression,   \
                                              max_dim_count)            \
   struct Dml##opName##Functor {                                        \
@@ -1977,20 +821,622 @@ struct DmlXlogyFunctor
       return (expression);                                             \
     }                                                                  \
   };                                                                   \
-  using K_##opName = KernelDefinition<                                          \
-      op,                                                 \
+  using K_##opName = KernelDefinition<                                 \
+      op,                                                              \
       DmlKernelWrapper<                                                \
       DmlCompositeBinaryKernel<Dml##opName##Functor, max_dim_count>,   \
       GetBroadcastedOutputShapeHelper>>;
 
-// template<dml::Expression *expression>
-// struct DmlCompositeBinaryFunctor
-// {
-//     dml::Expression operator()(dml::Expression x, dml::Expression y)
-//     {
-//         return (*expression); 
-//     }
-// };
+#define REGISTER_DML_COMPOSITE_UNARY_STRUCT(opName, op, expression)        \
+  struct Dml##opName##Functor {                                            \
+    dml::Expression operator()(dml::Expression x) { return (expression); } \
+  };                                                                       \
+    using K_##opName = KernelDefinition<                                   \
+        op,                                                                \
+        DmlKernelWrapper<                                                  \
+        DmlCompositeUnaryKernel<Dml##opName##Functor>,                     \
+        GetBroadcastedOutputShapeHelper>>;
+
+static void RegisterAbs()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Abs, ops::Abs, dml::Abs(x))
+
+    RegisterWithTypes<
+        K_Abs,
+        ops::Abs::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT64>();
+}
+
+static void RegisterAcos()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Acos, ops::Acos, dml::ACos(x))
+
+    RegisterWithTypes<K_Acos, ops::Acos::Attribute::T, TF_FLOAT>();
+}
+
+static void RegisterAcosh()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Acosh, ops::Acosh, dml::ACosh(x))
+
+    RegisterWithTypes<K_Acosh, ops::Acosh::Attribute::T, TF_FLOAT>();
+}
+
+static void RegisterAdd()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(AddUint8, ops::Add,
+        dml::Cast(dml::Cast(x, DML_TENSOR_DATA_TYPE_UINT32) +
+                  dml::Cast(y, DML_TENSOR_DATA_TYPE_UINT32),
+                  DML_TENSOR_DATA_TYPE_UINT8),
+        8)
+    K_AddUint8::template WithTypeConstraint<ops::Add::Attribute::T, TF_UINT8>::Register();
+
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Add, ops::Add,
+        x + y, 8)
+
+    RegisterWithTypes<
+        K_Add,
+        ops::Add::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT64>();
+}
+
+static void RegisterAddV2()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(AddV2Uint8, ops::AddV2,
+        dml::Cast(dml::Cast(x, DML_TENSOR_DATA_TYPE_UINT32) +
+                  dml::Cast(y, DML_TENSOR_DATA_TYPE_UINT32),
+              DML_TENSOR_DATA_TYPE_UINT8),
+        8)
+    K_AddV2Uint8::template WithTypeConstraint<ops::AddV2::Attribute::T, TF_UINT8>::Register();
+
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(AddV2, ops::AddV2,
+        x + y, 8)
+    RegisterWithTypes<
+        K_AddV2,
+        ops::AddV2::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT64>();
+}
+
+static void RegisterApproximateEqual()
+{
+    using half_kernel = KernelDefinition<
+        ops::ApproximateEqual,
+        DmlKernelWrapper<
+            DmlApproximateEqualKernel<Eigen::half>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    using float_kernel = KernelDefinition<
+        ops::ApproximateEqual,
+        DmlKernelWrapper<
+            DmlApproximateEqualKernel<float>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        half_kernel,
+        ops::ApproximateEqual::Attribute::T,
+        TF_HALF>();
+    RegisterWithTypes<
+        float_kernel,
+        ops::ApproximateEqual::Attribute::T,
+        TF_FLOAT>();
+}
+
+static void RegisterAsin()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Asin, ops::Asin, dml::ASin(x))
+
+    RegisterWithTypes<K_Asin, ops::Asin::Attribute::T, TF_FLOAT>();
+}
+
+static void RegisterAsinh()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Asinh, ops::Asinh, dml::ASinh(x))
+
+    RegisterWithTypes<K_Asinh, ops::Asinh::Attribute::T, TF_FLOAT>();
+}
+
+static void RegisterAtan()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Atan, ops::Atan, dml::ATan(x))
+
+    RegisterWithTypes<K_Atan, ops::Atan::Attribute::T, TF_FLOAT>();
+}
+
+static void RegisterAtan2()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Atan2, ops::Atan2,
+        dml::ATanYX(x, y), 8)
+
+    RegisterWithTypes<K_Atan2, ops::Atan2::Attribute::T, TF_FLOAT>();
+}
+
+static void RegisterAtanh()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Atanh, ops::Atanh, dml::ATanh(x))
+
+    RegisterWithTypes<K_Atanh, ops::Atanh::Attribute::T, TF_FLOAT>();
+}
+
+static void RegisterBitwiseAnd()
+{
+    using K = KernelDefinition<
+        ops::BitwiseAnd,
+        DmlKernelWrapper<
+            DmlBinaryBitwiseKernel<
+                DML_OPERATOR_ELEMENT_WISE_BIT_AND,
+                DML_ELEMENT_WISE_BIT_AND_OPERATOR_DESC>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::BitwiseAnd::Attribute::T,
+        TF_INT8,
+        TF_INT16,
+        TF_INT32,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32>();
+}
+
+static void RegisterBitwiseOr()
+{
+    using K = KernelDefinition<
+        ops::BitwiseOr,
+        DmlKernelWrapper<
+            DmlBinaryBitwiseKernel<
+                DML_OPERATOR_ELEMENT_WISE_BIT_OR,
+                DML_ELEMENT_WISE_BIT_OR_OPERATOR_DESC>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::BitwiseOr::Attribute::T,
+        TF_INT8,
+        TF_INT16,
+        TF_INT32,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32>();
+}
+
+static void RegisterBitwiseXor()
+{
+    using K = KernelDefinition<
+        ops::BitwiseXor,
+        DmlKernelWrapper<
+            DmlBinaryBitwiseKernel<
+                DML_OPERATOR_ELEMENT_WISE_BIT_XOR,
+                DML_ELEMENT_WISE_BIT_XOR_OPERATOR_DESC>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::BitwiseXor::Attribute::T,
+        TF_INT8,
+        TF_INT16,
+        TF_INT32,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32>();
+}
+
+static void RegisterCeil()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Ceil, ops::Ceil, dml::Ceil(x))
+
+    RegisterWithTypes<K_Ceil, ops::Ceil::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterClipByValue()
+{
+    using K = KernelDefinition<
+        ops::ClipByValue,
+        DmlKernelWrapper<
+            DmlClipByValueKernel,
+            GetBroadcastedOutputShapeHelper>>::
+        template WithHostMemoryArguments<
+            ops::ClipByValue::Argument::clip_value_min>::
+            template WithHostMemoryArguments<
+                ops::ClipByValue::Argument::clip_value_max>;
+
+    RegisterWithTypes<
+        K,
+        ops::ClipByValue::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT8,
+        TF_INT16,
+        TF_INT64,
+        TF_UINT8,
+        TF_UINT16>();
+}
+
+static void RegisterCos()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Cos, ops::Cos, dml::Cos(x))
+
+    RegisterWithTypes<K_Cos, ops::Cos::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterCosh()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Cosh, ops::Cosh, dml::Cosh(x))
+
+    RegisterWithTypes<K_Cosh, ops::Cosh::Attribute::T, TF_FLOAT>();
+}
+
+static void RegisterDiv()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Div, ops::Div,
+        x / y, 8)
+
+    RegisterWithTypes<
+        K_Div,
+        ops::Div::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_UINT8,
+        TF_UINT16,
+        TF_INT16,
+        TF_INT64>();
+}
+
+static void RegisterDivNoNan()
+{
+    using K = KernelDefinition<
+        ops::DivNoNan,
+        DmlKernelWrapper<
+            DmlBinaryWithZeroKernel<DmlDivNoNanFunctor, kNchwDimensionCount>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::DivNoNan::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
+
+static void RegisterElu()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Elu, ops::Elu, dml::ActivationElu(x))
+
+    RegisterWithTypes<K_Elu, ops::Elu::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterEqual()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Equal, ops::Equal,
+        x == y, 8)
+
+    RegisterWithTypes<
+        K_Equal,
+        ops::Equal::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_BOOL,
+        TF_INT8,
+        TF_INT16,
+        TF_INT64,
+        TF_UINT8>();
+}
+
+static void RegisterErf()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Erf, ops::Erf, dml::Erf(x))
+
+    RegisterWithTypes<K_Erf, ops::Erf::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterErfc()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Erfc, ops::Erfc, 1.0f - dml::Erf(x))
+
+    RegisterWithTypes<K_Erfc, ops::Erfc::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterExp()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Exp, ops::Exp, dml::Exp(x))
+
+    RegisterWithTypes<K_Exp, ops::Exp::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterExpm1()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Expm1, ops::Expm1, dml::Exp(x) - 1.0f)
+
+    RegisterWithTypes<K_Expm1, ops::Expm1::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterFloor()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Floor, ops::Floor, dml::Floor(x))
+
+    RegisterWithTypes<K_Floor, ops::Floor::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterFloorDiv()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(FloorDiv, ops::FloorDiv,
+        dml::Floor(x / y), 8)
+
+    RegisterWithTypes<K_FloorDiv, ops::FloorDiv::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterFloorMod()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(FloorMod, ops::FloorMod,
+        dml::ModulusFloor(x, y), 8)
+
+    RegisterWithTypes<
+        K_FloorMod,
+        ops::FloorMod::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT8,
+        TF_INT16,
+        TF_INT64,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32,
+        TF_UINT64>();
+}
+
+static void RegisterGreater()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Greater, ops::Greater,
+        x > y, 8)
+
+    RegisterWithTypes<
+        K_Greater,
+        ops::Greater::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT8,
+        TF_INT16,
+        TF_INT64,
+        TF_UINT8>();
+}
+
+static void RegisterGreaterEqual()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(GreaterEqual, ops::GreaterEqual,
+        x >= y, 8)
+
+    RegisterWithTypes<
+        K_GreaterEqual,
+        ops::GreaterEqual::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT8,
+        TF_INT16,
+        TF_INT64,
+        TF_UINT8>();
+}
+
+static void RegisterInv()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(InvInt64, ops::Inv, dml::Recip(dml::Cast(x, DML_TENSOR_DATA_TYPE_FLOAT32)))
+
+    RegisterWithTypes<K_InvInt64, ops::Inv::Attribute::T, TF_INT64>();
+
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Inv, ops::Inv, dml::Recip(x))
+
+    RegisterWithTypes<K_Inv, ops::Inv::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterInvGrad()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(InvGrad, ops::InvGrad,
+        (-y * x * x), 8)
+
+    RegisterWithTypes<K_InvGrad, ops::InvGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterInvert()
+{
+    using K = KernelDefinition<
+        ops::Invert,
+        DmlKernelWrapper<
+            DmlBitwiseNotKernel,
+            GetOutputShapeAsInputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::Invert::Attribute::T,
+        TF_INT8,
+        TF_INT16,
+        TF_INT32,
+        TF_INT64,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32,
+        TF_UINT64>();
+}
+
+static void RegisterIsFinite()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(IsFinite, ops::IsFinite, !(dml::IsNaN(x) || dml::IsInfinity(x)))
+
+    RegisterWithTypes<K_IsFinite, ops::IsFinite::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterIsInf()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(IsInf, ops::IsInf, dml::IsInfinity(x))
+
+    RegisterWithTypes<K_IsInf, ops::IsInf::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterIsNan()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(IsNan, ops::IsNan, dml::IsNaN(x))
+
+    RegisterWithTypes<K_IsNan, ops::IsNan::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterLeakyRelu()
+{
+    using K = KernelDefinition<
+        ops::LeakyRelu,
+        DmlKernelWrapper<DmlLeakyReluKernel, GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::LeakyRelu::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterLeftShift()
+{
+    using K = KernelDefinition<
+        ops::LeftShift,
+        DmlKernelWrapper<
+            DmlBinaryBitwiseKernel<
+                DML_OPERATOR_ELEMENT_WISE_BIT_SHIFT_LEFT,
+                DML_ELEMENT_WISE_BIT_SHIFT_LEFT_OPERATOR_DESC>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::LeftShift::Attribute::T,
+        TF_INT8,
+        TF_INT16,
+        TF_INT32,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32>();
+}
+
+static void RegisterLess()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Less, ops::Less,
+        x < y, 8)
+
+    RegisterWithTypes<
+        K_Less,
+        ops::Less::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT8,
+        TF_INT16,
+        TF_INT64,
+        TF_UINT8>();
+}
+
+static void RegisterLessEqual()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(LessEqual, ops::LessEqual,
+        x <= y, 8)
+
+    RegisterWithTypes<
+        K_LessEqual,
+        ops::LessEqual::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT8,
+        TF_INT16,
+        TF_INT64,
+        TF_UINT8>();
+}
+
+static void RegisterLog()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Log, ops::Log, dml::Log(x))
+
+    RegisterWithTypes<K_Log, ops::Log::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterLog1p()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Log1p, ops::Log1p, dml::Log(x, DML_SCALE_BIAS{1, 1}))
+
+    RegisterWithTypes<K_Log1p, ops::Log1p::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterLogicalAnd()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(LogicalAnd, ops::LogicalAnd,
+        dml::LogicalAnd(x, y), 8)
+
+    K_LogicalAnd::Register();
+}
+
+static void RegisterLogicalNot()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(LogicalNot, ops::LogicalNot, dml::LogicalNot(x))
+
+    K_LogicalNot::Register();
+}
+
+static void RegisterLogicalOr()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(LogicalOr, ops::LogicalOr,
+        dml::LogicalOr(x, y), 8)
+
+    K_LogicalOr::Register();
+}
+
+static void RegisterLogSoftmax()
+{
+    using K = KernelDefinition<
+        ops::LogSoftmax,
+        DmlKernelWrapper<
+            DmlMaxActivationKernel<
+                DML_OPERATOR_ACTIVATION_LOG_SOFTMAX,
+                DML_ACTIVATION_LOG_SOFTMAX_OPERATOR_DESC>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::LogSoftmax::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterMaximum()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Maximum, ops::Maximum,
+        dml::Max(x, y), 8)
+
+    RegisterWithTypes<
+        K_Maximum,
+        ops::Maximum::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT64>();
+}
+
+static void RegisterMinimum()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Minimum, ops::Minimum,
+        dml::Min(x, y), 8)
+
+    RegisterWithTypes<
+        K_Minimum,
+        ops::Minimum::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT64>();
+}
+
+static void RegisterMod()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Mod, ops::Mod,
+        dml::ModulusTruncate(x, y), 8)
+
+    RegisterWithTypes<
+        K_Mod,
+        ops::Mod::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT8,
+        TF_INT16,
+        TF_INT64,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32,
+        TF_UINT64>();
+}
+
 static void RegisterMul()
 {
     REGISTER_DML_COMPOSITE_BINARY_STRUCT(MulUint8, ops::Mul,
@@ -2020,567 +1466,484 @@ static void RegisterMul()
               DML_TENSOR_DATA_TYPE_INT16),
         8)
     K_MulInt16::template WithTypeConstraint<ops::Mul::Attribute::T, TF_INT16>::Register();
+
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Mul, ops::Mul,
+        (x * y), 8)
+    RegisterWithTypes<
+        K_Mul,
+        ops::Mul::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT64>();
 }
 
-// static void RegisterMulNoNan()
-// {
-//     using K = KernelDefinition<
-//         ops::MulNoNan,
-//         DmlKernelWrapper<
-//             DmlBinaryWithZeroKernel<DmlMulNoNanFunctor, kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterMulNoNan()
+{
+    using K = KernelDefinition<
+        ops::MulNoNan,
+        DmlKernelWrapper<
+            DmlBinaryWithZeroKernel<DmlMulNoNanFunctor, kNchwDimensionCount>,
+            GetBroadcastedOutputShapeHelper>>;
 
-//     RegisterWithTypes<K, ops::MulNoNan::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K, ops::MulNoNan::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterNeg()
-// {
-//     using K = KernelDefinition<
-//         ops::Neg,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_IDENTITY,
-//                 DML_ELEMENT_WISE_IDENTITY_OPERATOR_DESC,
-//                 -1,
-//                 0>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterNeg()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Neg, ops::Neg, -x)
 
-//     RegisterWithTypes<
-//         K,
-//         ops::Neg::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16>();
-// }
+    RegisterWithTypes<
+        K_Neg,
+        ops::Neg::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT64>();
+}
 
-// static void RegisterNotEqual()
-// {
-//     using K = KernelDefinition<
-//         ops::NotEqual,
-//         DmlKernelWrapper<
-//             DmlCompositeBinaryKernel<DmlNotEqualFunctor, kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterNotEqual()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(NotEqual, ops::NotEqual,
+        x != y, 8)
 
-//     RegisterWithTypes<
-//         K,
-//         ops::NotEqual::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
+    RegisterWithTypes<
+        K_NotEqual,
+        ops::NotEqual::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_BOOL,
+        TF_INT8,
+        TF_INT16,
+        TF_INT64,
+        TF_UINT8>();
+}
 
-// static void RegisterPopulationCount()
-// {
-//     using K = KernelDefinition<
-//         ops::PopulationCount,
-//         DmlKernelWrapper<DmlBitCountKernel, GetOutputShapeAsInputShapeHelper>>;
+static void RegisterPopulationCount()
+{
+    using K = KernelDefinition<
+        ops::PopulationCount,
+        DmlKernelWrapper<DmlBitCountKernel, GetOutputShapeAsInputShapeHelper>>;
 
-//     RegisterWithTypes<
-//         K,
-//         ops::PopulationCount::Attribute::T,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT32,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
+    RegisterWithTypes<
+        K,
+        ops::PopulationCount::Attribute::T,
+        TF_INT8,
+        TF_INT16,
+        TF_INT32,
+        TF_INT64,
+        TF_UINT8,
+        TF_UINT16>();
+}
 
-// static void RegisterPow()
-// {
-//     using K = KernelDefinition<
-//         ops::Pow,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_POW,
-//                 DML_ELEMENT_WISE_POW_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterPow()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Pow, ops::Pow,
+        dml::Pow(x, y), 8)
 
-//     RegisterWithTypes<K, ops::Pow::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K_Pow, ops::Pow::Attribute::T, TF_FLOAT, TF_HALF, TF_INT64>();
+}
 
-// static void RegisterRealDiv()
-// {
-//     using K = KernelDefinition<
-//         ops::RealDiv,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_DIVIDE,
-//                 DML_ELEMENT_WISE_DIVIDE_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterRealDiv()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(RealDiv, ops::RealDiv,
+        x / y, 8)
 
-//     RegisterWithTypes<
-//         K,
-//         ops::RealDiv::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT32,
-//         TF_INT64,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
+    RegisterWithTypes<
+        K_RealDiv,
+        ops::RealDiv::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
 
-// static void RegisterReciprocal()
-// {
-//     using K = KernelDefinition<
-//         ops::Reciprocal,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_RECIP,
-//                 DML_ELEMENT_WISE_RECIP_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterReciprocal()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(ReciprocalInt64, ops::Reciprocal, dml::Recip(dml::Cast(x, DML_TENSOR_DATA_TYPE_FLOAT32)))
 
-//     RegisterWithTypes<K, ops::Reciprocal::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K_ReciprocalInt64, ops::Reciprocal::Attribute::T, TF_INT64>();
 
-// static void RegisterReciprocalGrad()
-// {
-//     using K = KernelDefinition<
-//         ops::ReciprocalGrad,
-//         DmlKernelWrapper<
-//             DmlCompositeBinaryKernel<
-//                 DmlReciprocalGradFunctor,
-//                 kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Reciprocal, ops::Reciprocal, dml::Recip(x))
 
-//     RegisterWithTypes<
-//         K,
-//         ops::ReciprocalGrad::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF>();
-// }
+    RegisterWithTypes<K_Reciprocal, ops::Reciprocal::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterRelu6()
-// {
-//     using K = KernelDefinition<
-//         ops::Relu6,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_CLIP,
-//                 DML_ELEMENT_WISE_CLIP_OPERATOR_DESC,
-//                 1,
-//                 0,
-//                 0,
-//                 6>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterReciprocalGrad()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(ReciprocalGrad, ops::ReciprocalGrad,
+        (-y * x * x), 8)
 
-//     RegisterWithTypes<
-//         K,
-//         ops::Relu6::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT32,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
+    RegisterWithTypes<
+        K_ReciprocalGrad,
+        ops::ReciprocalGrad::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
 
-// static void RegisterRightShift()
-// {
-//     using K = KernelDefinition<
-//         ops::RightShift,
-//         DmlKernelWrapper<
-//             DmlBinaryBitwiseKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_BIT_SHIFT_RIGHT,
-//                 DML_ELEMENT_WISE_BIT_SHIFT_RIGHT_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterRelu6()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Relu6, ops::Relu6, dml::Clip(x, 0, 6))
 
-//     RegisterWithTypes<
-//         K,
-//         ops::RightShift::Attribute::T,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32>();
-// }
+    RegisterWithTypes<
+        K_Relu6,
+        ops::Relu6::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
 
-// static void RegisterRound()
-// {
-//     using K = KernelDefinition<
-//         ops::Round,
-//         DmlKernelWrapper<
-//             DmlUnaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_ROUND,
-//                 DML_ELEMENT_WISE_ROUND_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterRightShift()
+{
+    using K = KernelDefinition<
+        ops::RightShift,
+        DmlKernelWrapper<
+            DmlBinaryBitwiseKernel<
+                DML_OPERATOR_ELEMENT_WISE_BIT_SHIFT_RIGHT,
+                DML_ELEMENT_WISE_BIT_SHIFT_RIGHT_OPERATOR_DESC>,
+            GetBroadcastedOutputShapeHelper>>;
 
-//     RegisterWithTypes<K, ops::Round::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<
+        K,
+        ops::RightShift::Attribute::T,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32>();
+}
 
-// static void RegisterRsqrt()
-// {
-//     using K = KernelDefinition<
-//         ops::Rsqrt,
-//         DmlKernelWrapper<
-//             DmlCompositeUnaryKernel<DmlRsqrtFunctor, kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterRint()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Rint, ops::Rint, dml::Round(x))
 
-//     RegisterWithTypes<K, ops::Rsqrt::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K_Rint, ops::Rint::Attribute::T, TF_FLOAT>();
+}
 
-// static void RegisterSelu()
-// {
-//     using K = KernelDefinition<
-//         ops::Selu,
-//         DmlKernelWrapper<DmlSeluKernel, GetBroadcastedOutputShapeHelper>>;
+static void RegisterRound()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(RoundFloat, ops::Round, dml::Round(x))
 
-//     RegisterWithTypes<K, ops::Selu::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K_RoundFloat, ops::Round::Attribute::T, TF_FLOAT, TF_HALF>();
 
-// static void RegisterSigmoid()
-// {
-//     using K = KernelDefinition<
-//         ops::Sigmoid,
-//         DmlKernelWrapper<
-//             DmlUnaryKernel<
-//                 DML_OPERATOR_ACTIVATION_SIGMOID,
-//                 DML_ACTIVATION_SIGMOID_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(RoundInt, ops::Round, dml::Identity(x))
 
-//     RegisterWithTypes<K, ops::Sigmoid::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K_RoundInt, ops::Round::Attribute::T, TF_INT32, TF_INT64>();
+}
 
-// static void RegisterSigmoidGrad()
-// {
-//     using K = KernelDefinition<
-//         ops::SigmoidGrad,
-//         DmlKernelWrapper<
-//             DmlCompositeBinaryKernel<
-//                 DmlSigmoidGradFunctor,
-//                 kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterRsqrt()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Rsqrt, ops::Rsqrt, 1.0f / dml::Sqrt(x))
 
-//     RegisterWithTypes<K, ops::SigmoidGrad::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K_Rsqrt, ops::Rsqrt::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterSign()
-// {
-//     using K = KernelDefinition<
-//         ops::Sign,
-//         DmlKernelWrapper<
-//             DmlUnaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_SIGN,
-//                 DML_ELEMENT_WISE_SIGN_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterRsqrtGrad()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(RsqrtGrad, ops::RsqrtGrad,
+        (y * (-0.5f * x) * (x * x)), 8)
 
-//     RegisterWithTypes<
-//         K,
-//         ops::Sign::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16>();
-// }
+    RegisterWithTypes<K_RsqrtGrad, ops::RsqrtGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterSin()
-// {
-//     using K = KernelDefinition<
-//         ops::Sin,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_SIN,
-//                 DML_ELEMENT_WISE_SIN_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSelu()
+{
+    using K = KernelDefinition<
+        ops::Selu,
+        DmlKernelWrapper<DmlSeluKernel, GetBroadcastedOutputShapeHelper>>;
 
-//     RegisterWithTypes<K, ops::Sin::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K, ops::Selu::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterSinh()
-// {
-//     using K = KernelDefinition<
-//         ops::Sinh,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_SINH,
-//                 DML_ELEMENT_WISE_SINH_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSigmoid()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Sigmoid, ops::Sigmoid, dml::ActivationSigmoid(x))
 
-//     RegisterWithTypes<K, ops::Sinh::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K_Sigmoid, ops::Sigmoid::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterSoftmax()
-// {
-//     using K = KernelDefinition<
-//         ops::Softmax,
-//         DmlKernelWrapper<
-//             DmlMaxActivationKernel<
-//                 DML_OPERATOR_ACTIVATION_SOFTMAX,
-//                 DML_ACTIVATION_SOFTMAX_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSigmoidGrad()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(SigmoidGrad, ops::SigmoidGrad,
+        (y * x * (1 - x)), 8)
 
-//     RegisterWithTypes<K, ops::Softmax::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K_SigmoidGrad, ops::SigmoidGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterSoftplus()
-// {
-//     using K = KernelDefinition<
-//         ops::Softplus,
-//         DmlKernelWrapper<
-//             DmlUnaryKernel<
-//                 DML_OPERATOR_ACTIVATION_SOFTPLUS,
-//                 DML_ACTIVATION_SOFTPLUS_OPERATOR_DESC,
-//                 1>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSign()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Sign, ops::Sign, dml::Sign(x))
 
-//     RegisterWithTypes<K, ops::Softplus::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<
+        K_Sign,
+        ops::Sign::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT64>();
+}
 
-// static void RegisterSoftsign()
-// {
-//     using K = KernelDefinition<
-//         ops::Softsign,
-//         DmlKernelWrapper<
-//             DmlUnaryKernel<
-//                 DML_OPERATOR_ACTIVATION_SOFTSIGN,
-//                 DML_ACTIVATION_SOFTSIGN_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSin()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Sin, ops::Sin, dml::Sin(x))
 
-//     RegisterWithTypes<K, ops::Softsign::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K_Sin, ops::Sin::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterSqrt()
-// {
-//     using K = KernelDefinition<
-//         ops::Sqrt,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_SQRT,
-//                 DML_ELEMENT_WISE_SQRT_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSinh()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Sinh, ops::Sinh, dml::Sinh(x))
 
-//     RegisterWithTypes<K, ops::Sqrt::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K_Sinh, ops::Sinh::Attribute::T, TF_FLOAT>();
+}
 
-// static void RegisterSquare()
-// {
-//     using K = KernelDefinition<
-//         ops::Square,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_CONSTANT_POW,
-//                 DML_ELEMENT_WISE_CONSTANT_POW_OPERATOR_DESC,
-//                 1,
-//                 0,
-//                 2>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSoftmax()
+{
+    using K = KernelDefinition<
+        ops::Softmax,
+        DmlKernelWrapper<
+            DmlMaxActivationKernel<
+                DML_OPERATOR_ACTIVATION_SOFTMAX,
+                DML_ACTIVATION_SOFTMAX_OPERATOR_DESC>,
+            GetBroadcastedOutputShapeHelper>>;
 
-//     RegisterWithTypes<K, ops::Square::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K, ops::Softmax::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterSquaredDifference()
-// {
-//     using K = KernelDefinition<
-//         ops::SquaredDifference,
-//         DmlKernelWrapper<
-//             DmlSquaredDifferenceKernel,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSoftplus()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Softplus, ops::Softplus, dml::ActivationSoftplus(x))
 
-//     RegisterWithTypes<
-//         K,
-//         ops::SquaredDifference::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16>();
-// }
+    RegisterWithTypes<K_Softplus, ops::Softplus::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterSub()
-// {
-//     using K = KernelDefinition<
-//         ops::Sub,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_SUBTRACT,
-//                 DML_ELEMENT_WISE_SUBTRACT_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSoftplusGrad()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(SoftplusGrad, ops::SoftplusGrad,
+        x / (dml::Exp(-y) + 1), 8)
 
-//     RegisterWithTypes<
-//         K,
-//         ops::Sub::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT64,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
+    RegisterWithTypes<K_SoftplusGrad, ops::SoftplusGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterTan()
-// {
-//     using K = KernelDefinition<
-//         ops::Tan,
-//         DmlKernelWrapper<
-//             DmlUnaryScaleBiasKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_TAN,
-//                 DML_ELEMENT_WISE_TAN_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSoftsign()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Softsign, ops::Softsign, dml::ActivationSoftsign(x))
 
-//     RegisterWithTypes<K, ops::Tan::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K_Softsign, ops::Softsign::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterTanh()
-// {
-//     using K = KernelDefinition<
-//         ops::Tanh,
-//         DmlKernelWrapper<
-//             DmlUnaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_TANH,
-//                 DML_ELEMENT_WISE_TANH_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSoftsignGrad()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(SoftsignGrad, ops::SoftsignGrad,
+        x / dml::Pow(1 + dml::Abs(y), 2), 8)
 
-//     RegisterWithTypes<K, ops::Tanh::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K_SoftsignGrad, ops::SoftsignGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterTanhGrad()
-// {
-//     using K = KernelDefinition<
-//         ops::TanhGrad,
-//         DmlKernelWrapper<
-//             DmlCompositeBinaryKernel<DmlTanhGradFunctor, kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSqrt()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Sqrt, ops::Sqrt, dml::Sqrt(x))
 
-//     RegisterWithTypes<K, ops::TanhGrad::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K_Sqrt, ops::Sqrt::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterTruncateMod()
-// {
-//     using K = KernelDefinition<
-//         ops::TruncateMod,
-//         DmlKernelWrapper<
-//             DmlBinaryKernel<
-//                 DML_OPERATOR_ELEMENT_WISE_MODULUS_TRUNCATE,
-//                 DML_ELEMENT_WISE_MODULUS_TRUNCATE_OPERATOR_DESC>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSqrtGrad()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(SqrtGrad, ops::SqrtGrad,
+        (y * 0.5f / x), 8)
 
-//     RegisterWithTypes<
-//         K,
-//         ops::TruncateMod::Attribute::T,
-//         TF_FLOAT,
-//         TF_HALF,
-//         TF_INT8,
-//         TF_INT16,
-//         TF_INT64,
-//         TF_UINT8,
-//         TF_UINT16,
-//         TF_UINT32,
-//         TF_UINT64>();
-// }
+    RegisterWithTypes<K_SqrtGrad, ops::SqrtGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
-// static void RegisterXdivy()
-// {
-//     using K = KernelDefinition<
-//         ops::Xdivy,
-//         DmlKernelWrapper<
-//             DmlBinaryWithZeroKernel<DmlXdivyFunctor, kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSquare()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Square, ops::Square, (x * x))
 
-//     RegisterWithTypes<K, ops::Xdivy::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<K_Square, ops::Square::Attribute::T, TF_FLOAT, TF_HALF, TF_INT64>();
+}
 
-// static void RegisterXlogy()
-// {
-//     using K = KernelDefinition<
-//         ops::Xlogy,
-//         DmlKernelWrapper<
-//             DmlBinaryWithZeroKernel<DmlXlogyFunctor, kNchwDimensionCount>,
-//             GetBroadcastedOutputShapeHelper>>;
+static void RegisterSquaredDifference()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(SquaredDifference, ops::SquaredDifference,
+        dml::DifferenceSquare(x, y), 8)
 
-//     RegisterWithTypes<K, ops::Xlogy::Attribute::T, TF_FLOAT, TF_HALF>();
-// }
+    RegisterWithTypes<
+        K_SquaredDifference,
+        ops::SquaredDifference::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT64>();
+}
+
+static void RegisterSub()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Sub, ops::Sub,
+        x - y, 8)
+
+    RegisterWithTypes<
+        K_Sub,
+        ops::Sub::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT64>();
+}
+
+static void RegisterTan()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Tan, ops::Tan, dml::Tan(x))
+
+    RegisterWithTypes<K_Tan, ops::Tan::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterTanh()
+{
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Tanh, ops::Tanh, dml::Tanh(x))
+
+    RegisterWithTypes<K_Tanh, ops::Tanh::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterTanhGrad()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(TanhGrad, ops::TanhGrad,
+        (y * (1 - x * x)), 8)
+
+    RegisterWithTypes<K_TanhGrad, ops::TanhGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterTruncateDiv()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(TruncateDiv, ops::TruncateDiv,
+        x / y, 8)
+
+    RegisterWithTypes<K_TruncateDiv, ops::TruncateDiv::Attribute::T, TF_UINT8, TF_UINT16, TF_INT16, TF_INT64>();
+}
+
+static void RegisterTruncateMod()
+{
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(TruncateMod, ops::TruncateMod,
+        dml::ModulusTruncate(x, y), 8)
+
+    RegisterWithTypes<
+        K_TruncateMod,
+        ops::TruncateMod::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT8,
+        TF_INT16,
+        TF_INT64,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32,
+        TF_UINT64>();
+}
+
+static void RegisterXdivy()
+{
+    using K = KernelDefinition<
+        ops::Xdivy,
+        DmlKernelWrapper<
+            DmlBinaryWithZeroKernel<DmlXdivyFunctor, kNchwDimensionCount>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::Xdivy::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+static void RegisterXlogy()
+{
+    using K = KernelDefinition<
+        ops::Xlogy,
+        DmlKernelWrapper<
+            DmlBinaryWithZeroKernel<DmlXlogyFunctor, kNchwDimensionCount>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::Xlogy::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+#undef REGISTER_DML_COMPOSITE_BINARY_STRUCT
+#undef REGISTER_DML_COMPOSITE_UNARY_STRUCT
 
 void RegisterKernels_Cwise()
 {
-    // RegisterAbs();
-    // RegisterAcos();
-    // RegisterAcosh();
-    // RegisterAdd();
-    // RegisterAddV2();
-    // RegisterApproximateEqual();
-    // RegisterAsin();
-    // RegisterAsinh();
-    // RegisterAtan();
-    // RegisterAtanh();
-    // RegisterBitwiseAnd();
-    // RegisterBitwiseOr();
-    // RegisterBitwiseXor();
-    // RegisterCeil();
-    // RegisterClipByValue();
-    // RegisterCos();
-    // RegisterCosh();
-    // RegisterDiv();
-    // RegisterDivNoNan();
-    // RegisterElu();
-    // RegisterEqual();
-    // RegisterErf();
-    // RegisterErfc();
-    // RegisterExp();
-    // RegisterExpm1();
-    // RegisterFloor();
-    // RegisterFloorDiv();
-    // RegisterFloorMod();
-    // RegisterGreater();
-    // RegisterGreaterEqual();
-    // RegisterInv();
-    // RegisterInvert();
-    // RegisterIsFinite();
-    // RegisterIsInf();
-    // RegisterIsNan();
-    // RegisterLeakyRelu();
-    // RegisterLeftShift();
-    // RegisterLess();
-    // RegisterLessEqual();
-    // RegisterLog();
-    // RegisterLog1p();
-    // RegisterLogicalAnd();
-    // RegisterLogicalNot();
-    // RegisterLogicalOr();
-    // RegisterLogSoftmax();
-    // RegisterMaximum();
-    // RegisterMinimum();
-    // RegisterMod();
+    RegisterAbs();
+    RegisterAcos();
+    RegisterAcosh();
+    RegisterAdd();
+    RegisterAddV2();
+    RegisterApproximateEqual();
+    RegisterAsin();
+    RegisterAsinh();
+    RegisterAtan();
+    RegisterAtan2();
+    RegisterAtanh();
+    RegisterBitwiseAnd();
+    RegisterBitwiseOr();
+    RegisterBitwiseXor();
+    RegisterCeil();
+    RegisterClipByValue();
+    RegisterCos();
+    RegisterCosh();
+    RegisterDiv();
+    RegisterDivNoNan();
+    RegisterElu();
+    RegisterEqual();
+    RegisterErf();
+    RegisterErfc();
+    RegisterExp();
+    RegisterExpm1();
+    RegisterFloor();
+    RegisterFloorDiv();
+    RegisterFloorMod();
+    RegisterGreater();
+    RegisterGreaterEqual();
+    RegisterInv();
+    RegisterInvGrad();
+    RegisterInvert();
+    RegisterIsFinite();
+    RegisterIsInf();
+    RegisterIsNan();
+    RegisterLeakyRelu();
+    RegisterLeftShift();
+    RegisterLess();
+    RegisterLessEqual();
+    RegisterLog();
+    RegisterLog1p();
+    RegisterLogicalAnd();
+    RegisterLogicalNot();
+    RegisterLogicalOr();
+    RegisterLogSoftmax();
+    RegisterMaximum();
+    RegisterMinimum();
+    RegisterMod();
     RegisterMul();
-    // RegisterMulNoNan();
-    // RegisterNeg();
-    // RegisterNotEqual();
-    // RegisterPopulationCount();
-    // RegisterPow();
-    // RegisterReciprocal();
-    // RegisterRealDiv();
-    // RegisterReciprocalGrad();
-    // RegisterRelu6();
-    // RegisterRightShift();
-    // RegisterRound();
-    // RegisterRsqrt();
-    // RegisterSelu();
-    // RegisterSigmoid();
-    // RegisterSigmoidGrad();
-    // RegisterSign();
-    // RegisterSin();
-    // RegisterSinh();
-    // RegisterSoftmax();
-    // RegisterSoftplus();
-    // RegisterSoftsign();
-    // RegisterSqrt();
-    // RegisterSquare();
-    // RegisterSquaredDifference();
-    // RegisterSub();
-    // RegisterTan();
-    // RegisterTanh();
-    // RegisterTanhGrad();
-    // RegisterTruncateMod();
-    // RegisterXdivy();
-    // RegisterXlogy();
+    RegisterMulNoNan();
+    RegisterNeg();
+    RegisterNotEqual();
+    RegisterPopulationCount();
+    RegisterPow();
+    RegisterReciprocal();
+    RegisterRealDiv();
+    RegisterReciprocalGrad();
+    RegisterRelu6();
+    RegisterRightShift();
+    RegisterRint();
+    RegisterRound();
+    RegisterRsqrt();
+    RegisterRsqrtGrad();
+    RegisterSelu();
+    RegisterSigmoid();
+    RegisterSigmoidGrad();
+    RegisterSign();
+    RegisterSin();
+    RegisterSinh();
+    RegisterSoftmax();
+    RegisterSoftplus();
+    RegisterSoftplusGrad();
+    RegisterSoftsign();
+    RegisterSoftsignGrad();
+    RegisterSqrt();
+    RegisterSqrtGrad();
+    RegisterSquare();
+    RegisterSquaredDifference();
+    RegisterSub();
+    RegisterTan();
+    RegisterTanh();
+    RegisterTanhGrad();
+    RegisterTruncateDiv();
+    RegisterTruncateMod();
+    RegisterXdivy();
+    RegisterXlogy();
 }
 
 } // namespace tfdml
