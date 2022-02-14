@@ -16,12 +16,15 @@ limitations under the License.
 
 #include "tfdml/core/dml_common.h"
 
-namespace dml {
-dml::Expression ExtractPatches(dml::Graph& scope, dml::Expression input,
-                               absl::Span<const uint32_t> window_sizes,
-                               absl::Span<const uint32_t> window_strides,
-                               absl::Span<const uint32_t> window_rates,
-                               absl::Span<const uint32_t> start_padding,
-                               absl::Span<const uint32_t> end_padding,
-                               absl::Span<const uint32_t> output_sizes);
-}  // namespace dml
+namespace dml
+{
+dml::Expression ExtractPatches(
+    dml::Graph& scope,
+    dml::Expression input,
+    absl::Span<const uint32_t> window_sizes,
+    absl::Span<const uint32_t> window_strides,
+    absl::Span<const uint32_t> window_rates,
+    absl::Span<const uint32_t> start_padding,
+    absl::Span<const uint32_t> end_padding,
+    absl::Span<const uint32_t> output_sizes);
+} // namespace dml
