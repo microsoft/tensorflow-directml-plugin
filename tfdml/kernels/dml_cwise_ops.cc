@@ -1897,7 +1897,7 @@ void RegisterKernels_Cwise()
     RegisterLeftShift();
     RegisterLess();
     RegisterLessEqual();
-    RegisterLog();
+    // RegisterLog();
     RegisterLog1p();
     RegisterLogicalAnd();
     RegisterLogicalNot();

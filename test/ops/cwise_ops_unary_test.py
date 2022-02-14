@@ -460,6 +460,7 @@ class UnaryOpTest(test.TestCase):
     self._compareBoth(x, np.square, math_ops.square)
 
   def testInt32Basic(self):
+    self.skipTest("DML doesn't support int32")
     x = np.arange(-6, 6, 2).reshape(1, 3, 2).astype(np.int32)
     self._compareCpu(x, np.abs, math_ops.abs)
     self._compareCpu(x, np.abs, _ABS)
@@ -479,6 +480,7 @@ class UnaryOpTest(test.TestCase):
     self._compareBoth(x, np.square, math_ops.square)
 
   def testInt64Basic(self):
+    self.skipTest("DML doesn't support int64")
     x = np.arange(-6 << 40, 6 << 40, 2 << 40).reshape(1, 3, 2).astype(np.int64)
     self._compareCpu(x, np.abs, math_ops.abs)
     self._compareCpu(x, np.abs, _ABS)
@@ -491,6 +493,7 @@ class UnaryOpTest(test.TestCase):
     self._compareBothSparse(x, np.sign, math_ops.sign)
 
   def testInt64Square(self):
+    self.skipTest("DML doesn't support int64")
     x = np.arange(-6 << 20, 6 << 20, 2 << 20).reshape(1, 3, 2).astype(np.int64)
     self._compareCpu(x, np.square, math_ops.square)
     self._compareBothSparse(x, np.square, math_ops.square)
