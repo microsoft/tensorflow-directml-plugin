@@ -162,6 +162,9 @@
                     "file": "ops/resource_variable_ops_test.py"
                 },
                 {
+                    "file": "ops/reverse_sequence_op_test.py"
+                },
+                {
                     "file": "ops/scatter_nd_ops_test.py"
                 },
                 {
