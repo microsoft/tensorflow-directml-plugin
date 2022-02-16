@@ -1428,30 +1428,6 @@ void RegisterStridedSliceGrad()
         TF_INT64>();
 }
 
-void RegisterStridedSliceAssign()
-{
-    using K = KernelDefinition<
-        ops::StridedSliceAssign,
-        DmlKernelWrapper<
-            DmlStridedSliceAssignKernel,
-            GetOutputShapeAsInputShapeHelper>>::
-        WithHostMemoryArguments<
-            ops::StridedSliceAssign::Argument::begin,
-            ops::StridedSliceAssign::Argument::end,
-            ops::StridedSliceAssign::Argument::strides>;
-
-    RegisterWithTypes<
-        K,
-        ops::StridedSliceAssign::Attribute::T,
-        TF_FLOAT,
-        TF_HALF,
-        TF_BOOL,
-        TF_INT8,
-        TF_UINT8,
-        TF_UINT32,
-        TF_INT64>();
-}
-
 void RegisterResourceStridedSliceAssign()
 {
     using K = KernelDefinition<
@@ -1482,7 +1458,6 @@ void RegisterKernels_StridedSlice()
 {
     RegisterStridedSlice();
     RegisterStridedSliceGrad();
-    RegisterStridedSliceAssign();
     RegisterResourceStridedSliceAssign();
 }
 } // namespace tfdml
