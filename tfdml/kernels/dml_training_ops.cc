@@ -1976,22 +1976,6 @@ class DmlApplyPowerSignKernel : public DmlTrainingKernel
     }
 };
 
-void RegisterApplyAdam()
-{
-    using K = KernelDefinition<
-        ops::ApplyAdam,
-        DmlAdamKernelWrapper<GetBroadcastedOutputShapeHelper>>::
-        WithHostMemoryArguments<
-            ops::ApplyAdam::Argument::beta1_power,
-            ops::ApplyAdam::Argument::beta2_power,
-            ops::ApplyAdam::Argument::lr,
-            ops::ApplyAdam::Argument::beta1,
-            ops::ApplyAdam::Argument::beta2,
-            ops::ApplyAdam::Argument::epsilon>;
-
-    RegisterWithTypes<K, ops::ApplyAdam::Attribute::T, TF_FLOAT, TF_HALF>();
-}
-
 void RegisterResourceApplyAdam()
 {
     using K = KernelDefinition<
@@ -2032,17 +2016,6 @@ void RegisterResourceApplyAdamWithAmsgrad()
         TF_HALF>();
 }
 
-void RegisterApplyAdaMax()
-{
-    using K = KernelDefinition<
-        ops::ApplyAdaMax,
-        DmlKernelWrapper<
-            DmlApplyAdaMaxKernel,
-            GetBroadcastedOutputShapeHelper>>;
-
-    RegisterWithTypes<K, ops::ApplyAdaMax::Attribute::T, TF_FLOAT, TF_HALF>();
-}
-
 void RegisterResourceApplyAdaMax()
 {
     using K = KernelDefinition<
@@ -2056,21 +2029,6 @@ void RegisterResourceApplyAdaMax()
     RegisterWithTypes<
         K,
         ops::ResourceApplyAdaMax::Attribute::T,
-        TF_FLOAT,
-        TF_HALF>();
-}
-
-void RegisterApplyGradientDescent()
-{
-    using K = KernelDefinition<
-        ops::ApplyGradientDescent,
-        DmlKernelWrapper<
-            DmlApplyGradientDescentKernel,
-            GetBroadcastedOutputShapeHelper>>;
-
-    RegisterWithTypes<
-        K,
-        ops::ApplyGradientDescent::Attribute::T,
         TF_FLOAT,
         TF_HALF>();
 }
@@ -2090,17 +2048,6 @@ void RegisterResourceApplyGradientDescent()
         TF_HALF>();
 }
 
-void RegisterApplyAdadelta()
-{
-    using K = KernelDefinition<
-        ops::ApplyAdadelta,
-        DmlKernelWrapper<
-            DmlApplyAdadeltaKernel,
-            GetBroadcastedOutputShapeHelper>>;
-
-    RegisterWithTypes<K, ops::ApplyAdadelta::Attribute::T, TF_FLOAT, TF_HALF>();
-}
-
 void RegisterResourceApplyAdadelta()
 {
     using K = KernelDefinition<
@@ -2114,32 +2061,6 @@ void RegisterResourceApplyAdadelta()
     RegisterWithTypes<
         K,
         ops::ResourceApplyAdadelta::Attribute::T,
-        TF_FLOAT,
-        TF_HALF>();
-}
-
-void RegisterApplyAdagrad()
-{
-    using K = KernelDefinition<
-        ops::ApplyAdagrad,
-        DmlKernelWrapper<
-            DmlApplyAdagradKernel,
-            GetBroadcastedOutputShapeHelper>>;
-
-    RegisterWithTypes<K, ops::ApplyAdagrad::Attribute::T, TF_FLOAT, TF_HALF>();
-}
-
-void RegisterApplyAdagradV2()
-{
-    using K = KernelDefinition<
-        ops::ApplyAdagradV2,
-        DmlKernelWrapper<
-            DmlApplyAdagradKernel,
-            GetBroadcastedOutputShapeHelper>>;
-
-    RegisterWithTypes<
-        K,
-        ops::ApplyAdagradV2::Attribute::T,
         TF_FLOAT,
         TF_HALF>();
 }
@@ -2176,17 +2097,6 @@ void RegisterResourceApplyAdagradV2()
         TF_HALF>();
 }
 
-void RegisterApplyMomentum()
-{
-    using K = KernelDefinition<
-        ops::ApplyMomentum,
-        DmlKernelWrapper<
-            DmlApplyMomentumKernel,
-            GetBroadcastedOutputShapeHelper>>;
-
-    RegisterWithTypes<K, ops::ApplyMomentum::Attribute::T, TF_FLOAT, TF_HALF>();
-}
-
 void RegisterResourceApplyMomentum()
 {
     using K = KernelDefinition<
@@ -2219,17 +2129,6 @@ void RegisterResourceApplyKerasMomentum()
         TF_HALF>();
 }
 
-void RegisterApplyRMSProp()
-{
-    using K = KernelDefinition<
-        ops::ApplyRMSProp,
-        DmlKernelWrapper<
-            DmlApplyRMSPropKernel,
-            GetBroadcastedOutputShapeHelper>>;
-
-    RegisterWithTypes<K, ops::ApplyRMSProp::Attribute::T, TF_FLOAT, TF_HALF>();
-}
-
 void RegisterResourceApplyRMSProp()
 {
     using K = KernelDefinition<
@@ -2243,21 +2142,6 @@ void RegisterResourceApplyRMSProp()
     RegisterWithTypes<
         K,
         ops::ResourceApplyRMSProp::Attribute::T,
-        TF_FLOAT,
-        TF_HALF>();
-}
-
-void RegisterApplyCenteredRMSProp()
-{
-    using K = KernelDefinition<
-        ops::ApplyCenteredRMSProp,
-        DmlKernelWrapper<
-            DmlApplyCenteredRMSPropKernel,
-            GetBroadcastedOutputShapeHelper>>;
-
-    RegisterWithTypes<
-        K,
-        ops::ApplyCenteredRMSProp::Attribute::T,
         TF_FLOAT,
         TF_HALF>();
 }
@@ -2279,17 +2163,6 @@ void RegisterResourceApplyCenteredRMSProp()
         TF_HALF>();
 }
 
-void RegisterApplyAddSign()
-{
-    using K = KernelDefinition<
-        ops::ApplyAddSign,
-        DmlKernelWrapper<
-            DmlApplyAddSignKernel,
-            GetBroadcastedOutputShapeHelper>>;
-
-    RegisterWithTypes<K, ops::ApplyAddSign::Attribute::T, TF_FLOAT, TF_HALF>();
-}
-
 void RegisterResourceApplyAddSign()
 {
     using K = KernelDefinition<
@@ -2302,21 +2175,6 @@ void RegisterResourceApplyAddSign()
     RegisterWithTypes<
         K,
         ops::ResourceApplyAddSign::Attribute::T,
-        TF_FLOAT,
-        TF_HALF>();
-}
-
-void RegisterApplyPowerSign()
-{
-    using K = KernelDefinition<
-        ops::ApplyPowerSign,
-        DmlKernelWrapper<
-            DmlApplyPowerSignKernel,
-            GetBroadcastedOutputShapeHelper>>;
-
-    RegisterWithTypes<
-        K,
-        ops::ApplyPowerSign::Attribute::T,
         TF_FLOAT,
         TF_HALF>();
 }
@@ -2339,29 +2197,18 @@ void RegisterResourceApplyPowerSign()
 
 void RegisterKernels_Training()
 {
-    RegisterApplyAdam();
     RegisterResourceApplyAdam();
     RegisterResourceApplyAdamWithAmsgrad();
-    RegisterApplyAdaMax();
     RegisterResourceApplyAdaMax();
-    RegisterApplyGradientDescent();
     RegisterResourceApplyGradientDescent();
-    RegisterApplyAdadelta();
     RegisterResourceApplyAdadelta();
-    RegisterApplyAdagrad();
-    RegisterApplyAdagradV2();
     RegisterResourceApplyAdagrad();
     RegisterResourceApplyAdagradV2();
-    RegisterApplyMomentum();
     RegisterResourceApplyMomentum();
     RegisterResourceApplyKerasMomentum();
-    RegisterApplyRMSProp();
     RegisterResourceApplyRMSProp();
-    RegisterApplyCenteredRMSProp();
     RegisterResourceApplyCenteredRMSProp();
-    RegisterApplyAddSign();
     RegisterResourceApplyAddSign();
-    RegisterApplyPowerSign();
     RegisterResourceApplyPowerSign();
 }
 
