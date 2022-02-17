@@ -112,6 +112,13 @@ class SplitInitHelper : public InitializationHelper {
       if (neg_one_dim >= 0) {
         split_sizes_[neg_one_dim] = input_size_split_dim - determined_size;
       }
+
+      for (int i = 0; i < split_sizes_.size(); ++i) {
+        int64_t split_size = split_sizes_[i];
+        OP_REQUIRES(context, split_size >= 0,
+                    errors::InvalidArgument("Split size at index ", i,
+                                            " must be >= 0. Got: ", split_size));
+      }
     } else {
       OP_REQUIRES(context, input_size_split_dim % num_split == 0,
                   errors::InvalidArgument(
