@@ -37,11 +37,12 @@ from tensorflow.python.ops import variables
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging
+import dml_test_util
 
 
 def GetDeviceScope(self, use_gpu=False):
   if context.executing_eagerly():
-    if use_gpu and test.is_gpu_available():
+    if use_gpu and dml_test_util.is_gpu_available():
       return ops.device("GPU:0")
     return ops.device("CPU:0")
   else:
@@ -128,18 +129,18 @@ def GetTestConfigs(include_nchw_vect_c=False, one_dimensional=False):
   """
   if one_dimensional:
     test_configs = [("NWC", False), ("NWC", True)]
-    if test.is_gpu_available(cuda_only=True):
+    if dml_test_util.is_gpu_available(cuda_only=True):
       test_configs += [("NCW", True)]
     return test_configs
   test_configs = [("NHWC", False), ("NHWC", True)]
-  if not test.is_gpu_available(cuda_only=True):
+  if not dml_test_util.is_gpu_available(cuda_only=True):
     tf_logging.info("NCHW and NCHW_VECT_C tests skipped because not run with "
                     "--config=cuda or no GPUs available.")
     return test_configs
   # "NCHW" format is currently supported exclusively on CUDA GPUs.
   test_configs += [("NCHW", True)]
   if include_nchw_vect_c:
-    if test.is_gpu_available(
+    if dml_test_util.is_gpu_available(
         cuda_only=True, min_cuda_compute_capability=(6, 1)):
       test_configs += [("NCHW_VECT_C", True)]
     else:
@@ -204,11 +205,11 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
     # Check that this test is compatible with the hardware we have.  (Really
     # this should be done in GetTestConfigsDicts(), but when that runs, we
     # haven't initialized enough of TF to know what our hardware is!)
-    if use_gpu and not test.is_gpu_available():
+    if use_gpu and not dml_test_util.is_gpu_available():
       self.skipTest("No GPU is available.")
     if use_gpu and data_type == dtypes.float64 and test.is_built_with_rocm():
       self.skipTest("ROCm pooling ops don't support float64.")
-    if use_gpu and data_format == "NCHW_VECT_C" and not test.is_gpu_available(
+    if use_gpu and data_format == "NCHW_VECT_C" and not dml_test_util.is_gpu_available(
         cuda_only=True, min_cuda_compute_capability=(6, 1)):
       self.skipTest("NCHW_VECT_C requires sm61+.")
 
@@ -871,7 +872,7 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
         "depth window to equal the depth stride")
     self._testDepthwiseMaxPoolInvalidConfig([1, 2, 2, 4], [1, 1, 1, 3],
                                             [1, 1, 1, 3], "evenly divide")
-    if test.is_gpu_available():
+    if dml_test_util.is_gpu_available():
       with self.session():
         t = variables.Variable(np.ones([1, 2, 2, 4]))
         self.evaluate(variables.global_variables_initializer())
@@ -1034,7 +1035,7 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
         ])
 
   def testMaxPoolingGradThrowDeterminismError(self):
-    if test.is_gpu_available(cuda_only=True):
+    if dml_test_util.is_gpu_available(cuda_only=True):
       try:
         config_exec.enable_op_determinism()
         orig_input = [
@@ -1092,7 +1093,7 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
     # TODO #37915658: Enable once MaxPoolGradGrad is implemented
     self.skipTest("MaxPoolGradGrad is not implemented yet on DML")
     # MaxPoolWithArgMax is implemented only on CUDA.
-    if not test.is_gpu_available(cuda_only=True):
+    if not dml_test_util.is_gpu_available(cuda_only=True):
       return
     orig_input = [
         1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0,
@@ -1817,7 +1818,7 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
           use_gpu=False,
           v2=v2)
 
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
 
     # The functionality associated with TF_ENABLE_NANPROP is currently
@@ -1904,7 +1905,7 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
           use_gpu=False,
           v2=v2)
 
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
 
     # The functionality associated with TF_ENABLE_NANPROP is currently
@@ -2285,9 +2286,9 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
   @test_util.run_deprecated_v1
   @test_util.disable_xla("b/123337890")  # Error messages differ
   def testOpEdgeCases(self):
-    with self.session(use_gpu=test.is_gpu_available()) as sess:
+    with self.session(use_gpu=dml_test_util.is_gpu_available()) as sess:
       pool_funcs = [nn_ops.max_pool, nn_ops.avg_pool]
-      if test.is_gpu_available():
+      if dml_test_util.is_gpu_available():
         pool_funcs.append(nn_ops.max_pool_with_argmax)
       for pool_func in pool_funcs:
         if pool_func != nn_ops.max_pool:
@@ -2350,7 +2351,7 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
 
   @test_util.run_deprecated_v1
   def testEdgeCasesExcessPadding(self):
-    with self.session(use_gpu=test.is_gpu_available()) as sess:
+    with self.session(use_gpu=dml_test_util.is_gpu_available()) as sess:
       with self.assertRaisesRegexp(
           (errors_impl.UnimplementedError, errors_impl.InvalidArgumentError),
           "Right padding 2 needs to be smaller than the window size 2|"
@@ -2368,7 +2369,7 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
 
   @test_util.run_deprecated_v1
   def testNegativePadding(self):
-    with self.session(use_gpu=test.is_gpu_available()) as sess:
+    with self.session(use_gpu=dml_test_util.is_gpu_available()) as sess:
       with self.assertRaisesRegexp(
           ValueError, "All elements of explicit_paddings must be "
                       "nonnegative for"):
@@ -2385,7 +2386,7 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
 
   @test_util.run_deprecated_v1
   def testExplicitPaddingBatch(self):
-    with self.session(use_gpu=test.is_gpu_available()) as sess:
+    with self.session(use_gpu=dml_test_util.is_gpu_available()) as sess:
       with self.assertRaisesRegexp(
           ValueError, "Nonzero explicit padding in the batch or depth "
                       "dimensions is not supported"):
@@ -2462,7 +2463,7 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
             inp, grad, argmax, ksize=[1, 1, 1, 1], strides=[1, 1, 1, 1],
             padding="VALID")
       # max_pool_grad_grad_with_argmax is only implemented for GPUs
-      if test.is_gpu_available():
+      if dml_test_util.is_gpu_available():
         with self.assertRaisesRegex(
             errors_impl.InvalidArgumentError,
             r"Expected grad shape to be \[1,1,1,1\], but got \[1,1,1,2\]"):
@@ -2480,7 +2481,7 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
             inp, grad, argmax, ksize=[1, 1, 1, 1], strides=[1, 1, 1, 1],
             padding="VALID")
       # max_pool_grad_grad_with_argmax is only implemented for GPUs
-      if test.is_gpu_available():
+      if dml_test_util.is_gpu_available():
         with self.assertRaisesRegex(
             errors_impl.InvalidArgumentError,
             r"Expected argmax shape to be \[1,1,1,1\], but got \[1,1,1,2\]"):
@@ -2493,7 +2494,7 @@ def GetMaxPoolFwdTest(input_size, filter_size, strides, padding):
 
   def Test(self):
     # MaxPoolWithArgMax is implemented only on CUDA.
-    if not test.is_gpu_available(cuda_only=True):
+    if not dml_test_util.is_gpu_available(cuda_only=True):
       return
     self._CompareMaxPoolingFwd(input_size, filter_size, strides, padding)
 
@@ -2504,7 +2505,7 @@ def GetMaxPoolGradTest(input_size, filter_size, output_size, strides, padding):
 
   def Test(self):
     # MaxPoolWithArgMax is implemented only on CUDA.
-    if not test.is_gpu_available(cuda_only=True):
+    if not dml_test_util.is_gpu_available(cuda_only=True):
       return
     self._CompareMaxPoolingBk(input_size, output_size, filter_size, strides,
                               padding)
@@ -2517,7 +2518,7 @@ def GetMaxPoolGradGradTest(input_size, filter_size, output_size, strides,
 
   def Test(self):
     # MaxPoolWithArgMax is implemented only on CUDA.
-    if not test.is_gpu_available(cuda_only=True):
+    if not dml_test_util.is_gpu_available(cuda_only=True):
       return
     self._CompareMaxPoolingGradBk(input_size, output_size, filter_size, strides,
                                   padding)

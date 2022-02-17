@@ -30,6 +30,7 @@ import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
 from tensorflow.python.util.compat import collections_abc
 from tensorflow.python.eager import context
+import dml_test_util
 
 def GetTestConfigs():
   """Get all the valid tests configs to run.
@@ -38,7 +39,7 @@ def GetTestConfigs():
     all the valid test configs as tuples of data_format and use_gpu.
   """
   test_configs = [("NDHWC", False), ("NDHWC", True)]
-  if test.is_gpu_available(cuda_only=True):
+  if dml_test_util.is_gpu_available(cuda_only=True):
     # "NCDHW" format is only supported on CUDA.
     test_configs += [("NCDHW", True)]
   return test_configs
@@ -281,7 +282,7 @@ class Conv3DTest(test.TestCase):
   def testConv3D1x1x1Filter2x1x1Dilation(self):
     ctx = context.context()
     is_eager = ctx is not None and ctx.executing_eagerly()
-    if test.is_gpu_available(cuda_only=True) or \
+    if dml_test_util.is_gpu_available(cuda_only=True) or \
       (test_util.IsMklEnabled() and is_eager is False):
       self._VerifyDilatedConvValues(
           tensor_in_sizes=[1, 3, 6, 1, 1],
@@ -309,7 +310,7 @@ class Conv3DTest(test.TestCase):
   def testConv3D2x2x2Filter1x2x1Dilation(self):
     ctx = context.context()
     is_eager = ctx is not None and ctx.executing_eagerly()
-    if test.is_gpu_available(cuda_only=True) or \
+    if dml_test_util.is_gpu_available(cuda_only=True) or \
       (test_util.IsMklEnabled() and is_eager is False):
       self._VerifyDilatedConvValues(
           tensor_in_sizes=[1, 4, 6, 3, 1],
@@ -842,7 +843,7 @@ class Conv3DTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testConv3D2x2Depth3ValidBackpropFilterStride1x1Dilation2x1(self):
-    if test.is_gpu_available(cuda_only=True):
+    if dml_test_util.is_gpu_available(cuda_only=True):
       for (data_format, use_gpu) in GetTestConfigs():
         self._RunAndVerifyBackprop(
             input_sizes=[1, 3, 6, 1, 1],
@@ -858,7 +859,7 @@ class Conv3DTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testConv3D2x2Depth3ValidBackpropInputStride1x1Dilation2x1(self):
-    if test.is_gpu_available(cuda_only=True):
+    if dml_test_util.is_gpu_available(cuda_only=True):
       for (data_format, use_gpu) in GetTestConfigs():
         self._RunAndVerifyBackprop(
             input_sizes=[1, 3, 6, 1, 1],

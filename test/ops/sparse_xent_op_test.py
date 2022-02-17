@@ -31,6 +31,7 @@ from tensorflow.python.ops import sparse_ops
 from tensorflow.python.ops.nn_grad import _SparseSoftmaxCrossEntropyWithLogitsGrad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
 import sparse_xent_op_test_base
+import dml_test_util
 
 
 SparseXentOpTest = sparse_xent_op_test_base.SparseXentOpTestBase
@@ -100,7 +101,7 @@ def sparse_vs_dense_xent_benchmark(batch_size, num_entries, use_gpu):
   # Using sparse_softmax_cross_entropy_with_logits
   with session.Session(config=config) as sess:
     if not use_gpu:
-      with test_util.device("/cpu:0"):
+      with dml_test_util.device("/cpu:0"):
         ops = _sparse_vs_dense_xent_benchmark_sparse(labels, logits)
     else:
       ops = _sparse_vs_dense_xent_benchmark_sparse(labels, logits)

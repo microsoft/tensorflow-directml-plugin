@@ -34,7 +34,7 @@ from tensorflow.python.ops import resource_variable_ops
 from tensorflow.python.ops import state_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
-
+import dml_test_util
 
 GRADIENT_TESTS_DTYPES = (dtypes.float16, dtypes.float32, dtypes.float64)
 
@@ -114,7 +114,7 @@ class StatefulScatterNdTest(test.TestCase):
     np.random.seed(8)
     ref_shapes = [(3, 6), (3, 6), (3, 6, 9), (3, 6, 9), (3, 6, 9), (3, 6, 9)]
     indices_shapes = [(2,), (2, 2), (2,), (2, 2), (2, 3), (2, 3, 3)]
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
       for ref_shape, indices_shape in zip(ref_shapes, indices_shapes):
         num_updates = indices_shape[0]
         ixdim = indices_shape[-1]
@@ -170,7 +170,7 @@ class StatefulScatterNdTest(test.TestCase):
       scatter = state_ops.scatter_nd_update(ref, indices, updates)
       init = variables.global_variables_initializer()
 
-      with test_util.use_gpu():
+      with dml_test_util.use_gpu():
         self.evaluate(init)
         result = self.evaluate(scatter)
         self.assertAllClose(result, expected)
@@ -194,7 +194,7 @@ class StatefulScatterNdTest(test.TestCase):
       expected = np.array([0, 11, 0, 10, 9, 0, 0, 12])
       scatter = state_ops.scatter_nd_update(ref, indices, updates)
 
-      with test_util.device(use_gpu=True):
+      with dml_test_util.device(use_gpu=True):
         self.evaluate(ref.initializer)
         self.evaluate(scatter)
         self.assertAllClose(ref, expected)
@@ -275,7 +275,7 @@ class StatefulScatterNdTest(test.TestCase):
                state_ops.scatter_nd_update):
       params = np.array([1, 2, 3, 4, 5, 6]).astype(np.float32)
       updates = np.array([-3, -4, -5]).astype(np.float32)
-      with test_util.device(use_gpu=False):
+      with dml_test_util.device(use_gpu=False):
         ref = variables.VariableV1(params)
         self.evaluate(ref.initializer)
 
@@ -933,7 +933,7 @@ class ScatterNdTensorTest(test.TestCase):
 
   @test_util.run_in_graph_and_eager_modes
   def testUpdateRepeatedIndices1D(self):
-    if test_util.is_gpu_available():
+    if dml_test_util.is_gpu_available():
       self.skipTest("Duplicate indices scatter is non-deterministic on GPU")
     a = array_ops.zeros([10, 1])
     b = array_ops.tensor_scatter_update(a, [[5], [5]], [[4], [8]])
@@ -944,7 +944,7 @@ class ScatterNdTensorTest(test.TestCase):
 
   @test_util.run_in_graph_and_eager_modes
   def testUpdateRepeatedIndices2D(self):
-    if test_util.is_gpu_available():
+    if dml_test_util.is_gpu_available():
       self.skipTest("Duplicate indices scatter is non-deterministic on GPU")
     a = array_ops.zeros([10, 10])
     b = array_ops.tensor_scatter_update(

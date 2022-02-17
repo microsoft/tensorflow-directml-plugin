@@ -30,6 +30,7 @@ from tensorflow.python.ops import nn_grad
 from tensorflow.python.ops import nn_impl
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.platform import test
+import dml_test_util
 
 class BatchNormalizationTest(test.TestCase):
 
@@ -389,7 +390,7 @@ class BatchNormalizationTest(test.TestCase):
     else:
       data_format_list = ['NCDHW', 'NDHWC']
     use_gpu_vals = [False]
-    if test.is_gpu_available(cuda_only=True) and not cpu_only:
+    if dml_test_util.is_gpu_available(cuda_only=True) and not cpu_only:
       use_gpu_vals += [True]
     # TODO #37545850: also run tests with the 0.6 factor when we support exponential_avg_factor
     # factors = [1.0, 0.6]
@@ -579,7 +580,7 @@ class BatchNormalizationTest(test.TestCase):
       data_format_nhwc, features_nhwc = 'NDHWC', shape[4]
       data_format_nchw, features_nchw = 'NCDHW', shape[1]
     for is_training in [True, False]:
-      if test.is_gpu_available(cuda_only=True):
+      if dml_test_util.is_gpu_available(cuda_only=True):
         self._test_grad_grad(
             shape,
             dtype, [features_nhwc],

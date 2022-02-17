@@ -28,6 +28,7 @@ from tensorflow.python.ops import gradients_impl
 from tensorflow.python.ops import nn_ops
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 def GetTestConfigs():
@@ -37,7 +38,7 @@ def GetTestConfigs():
     all the valid test configs as tuples of data_format and use_gpu.
   """
   test_configs = [("NDHWC", False), ("NDHWC", True)]
-  if test.is_gpu_available(cuda_only=True):
+  if dml_test_util.is_gpu_available(cuda_only=True):
     # "NCHW" format is currently supported exclusively on CUDA GPUs.
     test_configs += [("NCDHW", True)]
   return test_configs

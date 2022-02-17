@@ -27,6 +27,7 @@ from tensorflow.python.ops import variable_scope
 from tensorflow.python.ops import variables
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
+import dml_test_util
 
 class Conv2DTransposeTest(test.TestCase):
 
@@ -179,7 +180,7 @@ class Conv2DTransposeTest(test.TestCase):
 
   def testConv2DTransposeSingleStrideNCHW(self):
     # `NCHW` data format is only supported for CUDA device.
-    if test.is_gpu_available(cuda_only=True):
+    if dml_test_util.is_gpu_available(cuda_only=True):
       with self.session():
         strides = [1, 1, 1, 1]
 
@@ -214,7 +215,7 @@ class Conv2DTransposeTest(test.TestCase):
 
   def testConv2DTransposeSameNCHW(self):
     # `NCHW` data format is only supported for CUDA device.
-    if test.is_gpu_available(cuda_only=True):
+    if dml_test_util.is_gpu_available(cuda_only=True):
       with self.session():
         strides = [1, 1, 2, 2]
 
@@ -250,7 +251,7 @@ class Conv2DTransposeTest(test.TestCase):
 
   def testConv2DTransposeValidNCHW(self):
     # `NCHW` data format is only supported for CUDA device.
-    if test.is_gpu_available(cuda_only=True):
+    if dml_test_util.is_gpu_available(cuda_only=True):
       with self.session():
         strides = [1, 1, 2, 2]
 

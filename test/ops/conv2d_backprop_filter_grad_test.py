@@ -24,6 +24,7 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import nn_ops
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 @test_util.run_all_without_tensor_float_32(
@@ -66,7 +67,7 @@ class Conv2DBackpropFilterGradTest(test.TestCase):
               [in_val, out_backprop_val], [in_shape, out_backprop_shape],
               output, filter_shape)
           print("conv2d_backprop_filter gradient err = %g " % err)
-          err_tolerance = 3e-2 if test.is_gpu_available() else 2e-3
+          err_tolerance = 3e-2 if dml_test_util.is_gpu_available() else 2e-3
           self.assertLess(
               err,
               err_tolerance,
@@ -74,7 +75,7 @@ class Conv2DBackpropFilterGradTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testGradientDilatedConv(self):
-    if test.is_gpu_available(cuda_only=True):
+    if dml_test_util.is_gpu_available(cuda_only=True):
       with self.session():
         for padding in [
             "SAME",
