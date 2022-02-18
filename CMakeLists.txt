@@ -224,6 +224,7 @@ add_library(
     tfdml/kernels/dml_resize_op.cc
     tfdml/kernels/dml_reverse_op.cc
     tfdml/kernels/dml_reverse_sequence_op.cc
+    tfdml/kernels/dml_roll_op.cc
     tfdml/kernels/dml_scatter_nd_ops.cc
     tfdml/kernels/dml_scatter_ops.cc
     tfdml/kernels/dml_select_op.cc
