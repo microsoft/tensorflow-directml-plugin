@@ -21,7 +21,7 @@ from tensorflow.python.platform import test
 class RollTest(test.TestCase):
 
   @test_util.run_in_graph_and_eager_modes
-  def testFillBasic(self):
+  def testRollBasic(self):
     with self.cached_session():
       t = np.array([0, 1, 2, 3, 4])
       roll = manip_ops.roll(t, shift=2, axis=0)
@@ -29,7 +29,7 @@ class RollTest(test.TestCase):
       self.assertAllEqual(np_roll, roll)
 
   @test_util.run_in_graph_and_eager_modes
-  def testFillMultipleDims(self):
+  def testRollMultipleDims(self):
     with self.cached_session():
       t = np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
       roll = manip_ops.roll(t, shift=[1, -2], axis=[0, 1])
@@ -37,14 +37,14 @@ class RollTest(test.TestCase):
       self.assertAllEqual(np_roll, roll)
 
   @test_util.run_in_graph_and_eager_modes
-  def testFillSameDim(self):
+  def testRollSameDim(self):
     with self.cached_session():
       t = np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
       roll = manip_ops.roll(t, shift=[2, -3], axis=[1, 1])
       np_roll = np.roll(t, [2, -3], [1, 1])
       self.assertAllEqual(np_roll, roll)
 
-  def testFillBadAxis(self):
+  def testRollBadAxis(self):
     with self.cached_session():
       t = np.array([0, 1, 2, 3, 4])
       with self.assertRaisesOpError(
@@ -54,20 +54,20 @@ class RollTest(test.TestCase):
           r"axis must be a scalar or a 1-D vector. Found: \[2,1\]"):
         manip_ops.roll(t, shift=2, axis=[[1],[1]])
 
-  def testFillBadInput(self):
+  def testRollBadInput(self):
     with self.cached_session():
       with self.assertRaisesOpError(
           r"input must be 1-D or higher"):
         manip_ops.roll(0, shift=1, axis=0)
 
-  def testFillBadShift(self):
+  def testRollBadShift(self):
     with self.cached_session():
       t = np.array([0, 1, 2, 3, 4])
       with self.assertRaisesOpError(
           r"shift must be a scalar or a 1-D vector. Found: \[2,1\]"):
         manip_ops.roll(t, shift=[[1],[1]], axis=1)
 
-  def testFillShiftAxisMismatch(self):
+  def testRollShiftAxisMismatch(self):
     with self.cached_session():
       t = np.array([0, 1, 2, 3, 4])
       with self.assertRaisesOpError(
