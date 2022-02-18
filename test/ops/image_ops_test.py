@@ -54,6 +54,7 @@ from tensorflow.python.ops import stateless_random_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import googletest
 from tensorflow.python.platform import test
+import dml_test_util
 
 TEST_DATA_PATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), "testdata")
@@ -1101,7 +1102,7 @@ class FlipTransposeRotateTest(test_util.TensorFlowTestCase,
       ("_RandomFlipUpDown", image_ops.stateless_random_flip_up_down),
   )
   def testRandomFlipStateless(self, func):
-    with test_util.use_gpu():
+    with dml_test_util.use_gpu():
       x_np = np.array([[1, 2, 3], [4, 5, 6]], dtype=np.uint8).reshape([2, 3, 1])
       y_np = np.array([[3, 2, 1], [6, 5, 4]], dtype=np.uint8).reshape([2, 3, 1])
       if "RandomFlipUpDown" in self.id():
@@ -1145,7 +1146,7 @@ class FlipTransposeRotateTest(test_util.TensorFlowTestCase,
       ("_RandomFlipUpDown", image_ops.stateless_random_flip_up_down)
   )
   def testRandomFlipStatelessWithBatch(self, func):
-    with test_util.use_gpu():
+    with dml_test_util.use_gpu():
       batch_size = 16
 
       # create single item of test data
@@ -2499,7 +2500,7 @@ class SelectDistortedCropBoxTest(test_util.TensorFlowTestCase):
   def _testStatelessSampleDistortedBoundingBox(self, image, bounding_box,
                                                min_object_covered,
                                                aspect_ratio_range, area_range):
-    with test_util.use_gpu():
+    with dml_test_util.use_gpu():
       original_area = float(np.prod(image.shape))
       bounding_box_area = float((bounding_box[3] - bounding_box[1]) *
                                 (bounding_box[2] - bounding_box[0]))
@@ -2595,7 +2596,7 @@ class SelectDistortedCropBoxTest(test_util.TensorFlowTestCase):
           area_range=(0.05, 1.0))
 
   def testSampleDistortedBoundingBoxShapeStateless(self):
-    with test_util.use_gpu():
+    with dml_test_util.use_gpu():
       image_size = constant_op.constant(
           [40, 50, 1], shape=[3], dtype=dtypes.int32)
       bounding_box = constant_op.constant(
@@ -2893,7 +2894,7 @@ class ResizeImagesV2Test(test_util.TensorFlowTestCase, parameterized.TestCase):
         img_np = np.array(data, dtype=nptype).reshape(img_shape)
 
         for method in self.METHODS:
-          if test.is_gpu_available() and self.shouldRunOnGPU(method, nptype):
+          if dml_test_util.is_gpu_available() and self.shouldRunOnGPU(method, nptype):
             with self.cached_session():
               image = constant_op.constant(img_np, shape=img_shape)
               y = image_ops.resize_images_v2(
@@ -3019,7 +3020,7 @@ class ResizeImagesV2Test(test_util.TensorFlowTestCase, parameterized.TestCase):
 
   @test_util.disable_xla("align_corners=False not supported by XLA")
   def testCompareNearestNeighbor(self):
-    if test.is_gpu_available():
+    if dml_test_util.is_gpu_available():
       input_shape = [1, 5, 6, 3]
       target_height = 8
       target_width = 12
@@ -3060,7 +3061,7 @@ class ResizeImagesV2Test(test_util.TensorFlowTestCase, parameterized.TestCase):
       self.assertAllClose(bf16_val, f32_val, rtol=1e-2, atol=1e-2)
 
   def testCompareBilinear(self):
-    if test.is_gpu_available():
+    if dml_test_util.is_gpu_available():
       input_shape = [1, 5, 6, 3]
       target_height = 8
       target_width = 12
@@ -3444,7 +3445,7 @@ class ResizeImagesTest(test_util.TensorFlowTestCase,
         img_np = np.array(data, dtype=nptype).reshape(img_shape)
 
         for method in self.METHODS:
-          if test.is_gpu_available() and self.shouldRunOnGPU(method, nptype):
+          if dml_test_util.is_gpu_available() and self.shouldRunOnGPU(method, nptype):
             with self.cached_session():
               image = constant_op.constant(img_np, shape=img_shape)
               y = image_ops.resize_images(image, [target_height, target_width],
@@ -3579,7 +3580,7 @@ class ResizeImagesTest(test_util.TensorFlowTestCase,
 
   @test_util.disable_xla("align_corners=False not supported by XLA")
   def testCompareNearestNeighbor(self):
-    if test.is_gpu_available():
+    if dml_test_util.is_gpu_available():
       input_shape = [1, 5, 6, 3]
       target_height = 8
       target_width = 12
@@ -3608,7 +3609,7 @@ class ResizeImagesTest(test_util.TensorFlowTestCase,
           self.assertAllClose(cpu_val, gpu_val, rtol=1e-5, atol=1e-5)
 
   def testCompareBilinear(self):
-    if test.is_gpu_available():
+    if dml_test_util.is_gpu_available():
       input_shape = [1, 5, 6, 3]
       target_height = 8
       target_width = 12
@@ -4427,7 +4428,7 @@ class JpegTest(test_util.TensorFlowTestCase):
     # Test deterministic randomness in jpeg quality by checking that the same
     # sequence of jpeg quality adjustments are returned each round given the
     # same seed.
-    with test_util.use_gpu():
+    with dml_test_util.use_gpu():
       path = os.path.join(TEST_DATA_PATH, "medium.jpg")
       jpeg = io_ops.read_file(path)
       image = image_ops.decode_jpeg(jpeg)
@@ -5872,7 +5873,7 @@ class DecodeImageTest(test_util.TensorFlowTestCase, parameterized.TestCase):
   def testBmpChannels(self):
     for horizon in self._FORWARD_COMPATIBILITY_HORIZONS:
       with compat.forward_compatibility_horizon(*horizon):
-        with test_util.use_gpu():
+        with dml_test_util.use_gpu():
           base = TEST_DATA_PATH
           # `rgba_transparent.bmp` has 4 channels with transparent pixels.
           # Test consistency between `decode_image` and `decode_bmp` functions.
@@ -6054,7 +6055,7 @@ class DecodeImageTest(test_util.TensorFlowTestCase, parameterized.TestCase):
           self.assertAllEqual(image2, image3)
 
   def testImageCropAndResize(self):
-    if test_util.is_gpu_available():
+    if dml_test_util.is_gpu_available():
       op = image_ops_impl.crop_and_resize_v2(
           image=array_ops.zeros((2, 1, 1, 1)),
           boxes=[[1.0e+40, 0, 0, 0]],

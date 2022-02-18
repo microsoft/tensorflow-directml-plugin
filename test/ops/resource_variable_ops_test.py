@@ -56,6 +56,7 @@ from tensorflow.python.training import momentum
 from tensorflow.python.training import saver
 from tensorflow.python.training import training_util
 from tensorflow.python.util import compat
+import dml_test_util
 
 
 def _eager_safe_var_handle_op(*args, **kwargs):
@@ -723,7 +724,7 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
         compat.as_bytes(self.evaluate(read)[0][0]), compat.as_bytes("b"))
 
   def testGPU(self):
-    with test_util.use_gpu():
+    with dml_test_util.use_gpu():
       abc = variable_scope.get_variable(
           "abc",
           shape=[1],
@@ -1611,7 +1612,7 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
 
   @test_util.run_v2_only
   def testUninitializedVariableMemoryUsage(self):
-    if test_util.is_gpu_available():
+    if dml_test_util.is_gpu_available():
       self.skipTest("Disabled when a GPU is available")
     if memory_checker.CppMemoryChecker is None:
       self.skipTest("Requires the C++ memory checker")

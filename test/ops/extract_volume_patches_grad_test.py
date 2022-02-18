@@ -26,6 +26,7 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradient_checker_v2
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 class ExtractVolumePatchesGradTest(test.TestCase, parameterized.TestCase):
@@ -54,7 +55,7 @@ class ExtractVolumePatchesGradTest(test.TestCase, parameterized.TestCase):
       },
   ])
   def testGradient(self, in_shape, ksizes, strides):
-    if test_util.is_gpu_available():
+    if dml_test_util.is_gpu_available():
       self.skipTest('b/171837334: skip gpu test.')
 
     # Set graph seed for determinism.

@@ -23,6 +23,7 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import nn_ops
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 class Conv1DTransposeTest(test.TestCase):
@@ -147,7 +148,7 @@ class Conv1DTransposeTest(test.TestCase):
 
   def testConv1DTransposeSingleStrideNCW(self):
     # `NCW` data format is only supported for CUDA device.
-    if test.is_gpu_available(cuda_only=True):
+    if dml_test_util.is_gpu_available(cuda_only=True):
       with self.session():
         strides = [1, 1, 1]
 
@@ -178,7 +179,7 @@ class Conv1DTransposeTest(test.TestCase):
 
   def testConv1DTransposeSameNCW(self):
     # `NCW` data format is only supported for CUDA device.
-    if test.is_gpu_available(cuda_only=True):
+    if dml_test_util.is_gpu_available(cuda_only=True):
       with self.session():
         strides = [1, 1, 2]
 
@@ -210,7 +211,7 @@ class Conv1DTransposeTest(test.TestCase):
 
   def testConv1DTransposeValidNCW(self):
     # `NCW` data format is only supported for CUDA device.
-    if test.is_gpu_available(cuda_only=True):
+    if dml_test_util.is_gpu_available(cuda_only=True):
       with self.session():
         strides = [1, 1, 2]
 

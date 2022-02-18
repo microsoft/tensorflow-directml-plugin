@@ -34,6 +34,7 @@ from tensorflow.python.ops import random_ops
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging
+import dml_test_util
 
 
 def _DepthwiseConv2dNumpyBasic(x1, x2, strides):
@@ -430,7 +431,7 @@ class DepthwiseConv2DTest(test.TestCase):
   @test_util.run_v1_only("b/120545219")
   def testDepthwiseConv2DWithUnknownShape(self):
     # GitHub issue 22110.
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
     with self.session():
       x = array_ops.placeholder(dtypes.float32)
@@ -443,7 +444,7 @@ class DepthwiseConv2DTest(test.TestCase):
 
   @test_util.run_v1_only("b/120545219")
   def testDepthwiseConv2DFormat(self):
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
 
     for index, (input_size, filter_size, _, stride,
@@ -477,7 +478,7 @@ class DepthwiseConv2DTest(test.TestCase):
       # double datatype is currently not supported for convolution ops
       # on the ROCm platform
       optional_float64 = [] if test.is_built_with_rocm() else [dtypes.float64]
-      data_formats = ["NHWC", "NCHW"] if test.is_gpu_available() else ["NHWC"]
+      data_formats = ["NHWC", "NCHW"] if dml_test_util.is_gpu_available() else ["NHWC"]
       for data_type in [dtypes.float16, dtypes.float32] + optional_float64:
         for data_format in data_formats:
           self._VerifyValues(
@@ -743,7 +744,7 @@ class DepthwiseConv2DTest(test.TestCase):
 
   @test_util.run_v1_only("b/120545219")
   def testDepthwiseConv2DInputGradFormat(self):
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
 
     for index, (input_size, filter_size, output_size, stride,
@@ -779,7 +780,7 @@ class DepthwiseConv2DTest(test.TestCase):
       # double datatype is currently not supported for convolution ops
       # on the ROCm platform
       optional_float64 = [] if test.is_built_with_rocm() else [dtypes.float64]
-      data_formats = ["NHWC", "NCHW"] if test.is_gpu_available() else ["NHWC"]
+      data_formats = ["NHWC", "NCHW"] if dml_test_util.is_gpu_available() else ["NHWC"]
       for data_type in [dtypes.float16, dtypes.float32] + optional_float64:
         for data_format in data_formats:
           self._ConstructAndTestGradient(
@@ -853,7 +854,7 @@ class DepthwiseConv2DTest(test.TestCase):
 
   @test_util.run_v1_only("b/120545219")
   def testDepthwiseConv2DFilterGradFormat(self):
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
 
     for index, (input_size, filter_size, output_size, stride,
@@ -889,7 +890,7 @@ class DepthwiseConv2DTest(test.TestCase):
       # double datatype is currently not supported for convolution ops
       # on the ROCm platform
       optional_float64 = [] if test.is_built_with_rocm() else [dtypes.float64]
-      data_formats = ["NHWC", "NCHW"] if test.is_gpu_available() else ["NHWC"]
+      data_formats = ["NHWC", "NCHW"] if dml_test_util.is_gpu_available() else ["NHWC"]
       for data_type in [dtypes.float16, dtypes.float32] + optional_float64:
         for data_format in data_formats:
           self._ConstructAndTestGradient(

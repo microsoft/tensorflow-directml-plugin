@@ -26,6 +26,7 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import benchmark
 from tensorflow.python.platform import test as test_lib
+import dml_test_util
 
 
 def _AddTest(test, op_name, testcase_name, fn):

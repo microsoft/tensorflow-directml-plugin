@@ -14,7 +14,7 @@
 # ==============================================================================
 """Functional tests for Image Op Gradients."""
 
-from tensorflow.python.ops import image_grad_test_base as test_base
+import image_grad_test_base as test_base
 from tensorflow.python.platform import test
 
 ResizeNearestNeighborOpTest = test_base.ResizeNearestNeighborOpTestBase
@@ -25,4 +25,4 @@ CropAndResizeOpTest = test_base.CropAndResizeOpTestBase
 RGBToHSVOpTest = test_base.RGBToHSVOpTestBase
 
 if __name__ == "__main__":
-  test.main()
+    test.main()

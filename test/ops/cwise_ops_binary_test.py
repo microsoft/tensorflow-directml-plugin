@@ -30,6 +30,7 @@ from tensorflow.python.ops import nn_grad  # pylint: disable=unused-import
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging
+import dml_test_util
 
 _ADD = lambda x, y: x + y
 _SUB = lambda x, y: x - y
@@ -815,7 +816,7 @@ class BinaryOpTest(test.TestCase):
           self.evaluate(math_ops.pow(x, y))
 
   def testPowNegativeExponentGpu(self):
-    if not test_util.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       self.skipTest("Requires GPU")
     # Negative integer powers return zero on GPUs for abs(LHS) > 1. Negative
     # integer powers for 1 and -1 will return the correct result.

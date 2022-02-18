@@ -49,7 +49,7 @@ from tensorflow.python.ops import variable_scope
 from tensorflow.python.ops import variables
 from tensorflow.python.ops.ragged.ragged_tensor import RaggedTensor
 from tensorflow.python.platform import test as test_lib
-
+import dml_test_util
 
 @test_util.run_all_in_graph_and_eager_modes
 class BatchMatrixTransposeTest(test_util.TensorFlowTestCase):
@@ -528,7 +528,7 @@ class MeshgridTest(test_util.TensorFlowTestCase):
           x += 1j
         inputs.append(x)
       numpy_out = np.meshgrid(*inputs, indexing=index)
-      with test_util.device(use_gpu=use_gpu):
+      with dml_test_util.device(use_gpu=use_gpu):
         tf_out = array_ops.meshgrid(*inputs, indexing=index)
         for x_np, x_tf in zip(numpy_out, tf_out):
           self.assertAllEqual(x_np, x_tf)
@@ -651,10 +651,10 @@ class StridedSliceTest(test_util.TensorFlowTestCase):
         _ = checker2[tuple()]
 
   def testInt64GPU(self):
-    if not test_util.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       self.skipTest("No GPU available")
 
-    with test_util.force_gpu():
+    with dml_test_util.force_gpu():
       x = constant_op.constant([1., 2., 3.])
       begin = constant_op.constant([2], dtype=dtypes.int64)
       end = constant_op.constant([3], dtype=dtypes.int64)
@@ -679,7 +679,7 @@ class StridedSliceTest(test_util.TensorFlowTestCase):
       v[0]  # pylint: disable=pointless-statement
 
   def testDegenerateSlices(self):
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
       checker = StridedSliceChecker(self, StridedSliceChecker.REF_TENSOR)
       # degenerate by offering a forward interval with a negative stride
       _ = checker[0:-1:-1, :, :]
@@ -698,7 +698,7 @@ class StridedSliceTest(test_util.TensorFlowTestCase):
     self.assertAllEqual(t[d:d:d], t)
 
   def testEllipsis(self):
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
       raw = [[[[[1, 2], [3, 4], [5, 6]]], [[[7, 8], [9, 10], [11, 12]]]]]
       checker = StridedSliceChecker(self, raw)
 
@@ -719,7 +719,7 @@ class StridedSliceTest(test_util.TensorFlowTestCase):
         _ = checker[..., :, ...].eval()
 
   def testShrink(self):
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
       raw = [[[[[1, 2, 4, 5], [5, 6, 7, 8], [9, 10, 11, 12]]],
               [[[13, 14, 15, 16], [17, 18, 19, 20], [21, 22, 23, 24]]]]]
       checker = StridedSliceChecker(self, raw)
@@ -729,7 +729,7 @@ class StridedSliceTest(test_util.TensorFlowTestCase):
       _ = checker[:, :, 0]
 
   def testBothNewAxisAndShrink(self):
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
 
       @def_function.function
       def func(inp):
@@ -743,7 +743,7 @@ class StridedSliceTest(test_util.TensorFlowTestCase):
       self.assertAllEqual([[1, 1]], self.evaluate(f(ones)))
 
   def testTensorIndexing(self):
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
       raw = [[[[[1, 2, 4, 5], [5, 6, 7, 8], [9, 10, 11, 12]]],
               [[[13, 14, 15, 16], [17, 18, 19, 20], [21, 22, 23, 24]]]]]
       checker = StridedSliceChecker(self, raw, check_type_infer=False)
@@ -772,7 +772,7 @@ class StridedSliceTest(test_util.TensorFlowTestCase):
         _ = checker[[2.1, -0.7, 1.5]]
 
   def testExpand(self):
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
       raw = [[[[[1, 2, 4, 5], [5, 6, 7, 8], [9, 10, 11, 12]]],
               [[[13, 14, 15, 16], [17, 18, 19, 20], [21, 22, 23, 24]]]]]
       checker = StridedSliceChecker(self, raw)
@@ -789,7 +789,7 @@ class StridedSliceTest(test_util.TensorFlowTestCase):
       _ = checker[np.newaxis, ..., np.newaxis]
 
   def testExpandVariable(self):
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
       x = variables.Variable(7, dtype=dtypes.int32)
       self.evaluate(x.initializer)
       y = self.evaluate(x[None])
@@ -797,7 +797,7 @@ class StridedSliceTest(test_util.TensorFlowTestCase):
       self.assertAllEqual(y, (7,))
 
   def testOptimizedCases(self):
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
       checker = StridedSliceChecker(self,
                                     StridedSliceChecker.REF_TENSOR_ALIGNED)
       # Identity
@@ -812,7 +812,7 @@ class StridedSliceTest(test_util.TensorFlowTestCase):
       _ = checker[np.newaxis, 1:]
 
   def testMasks(self):
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
       scalar = np.array(0)
       # Test tensor type mask
       checker = StridedSliceChecker(self, StridedSliceChecker.REF_TENSOR)
@@ -841,7 +841,7 @@ class StridedSliceShapeTest(test_util.TensorFlowTestCase):
   """Test the shape inference of StridedSliceShapes."""
 
   def testUnknown(self):
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
 
       @def_function.function
       def f(x):
@@ -855,7 +855,7 @@ class StridedSliceShapeTest(test_util.TensorFlowTestCase):
     self.assertEqual(x.as_list(), y.as_list())
 
   def testTensorShapeUncertain(self):
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
 
       @def_function.function
       def f1(x):
@@ -1040,7 +1040,7 @@ class StridedSliceGradTest(test_util.TensorFlowTestCase,
       "b/210077724: Auto-clustering with where op isn't supported. Has loose "
       "output shape bounds")
   def testGradient(self, use_tape):
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
       var = variables.Variable(
           array_ops.reshape(
               math_ops.range(1, 97, 1, dtype=dtypes.float32), shape=(6, 4, 4)))
@@ -1068,7 +1068,7 @@ class StridedSliceGradTest(test_util.TensorFlowTestCase,
 
   @parameterized.parameters(set((True, context.executing_eagerly())))
   def testGradientZero(self, use_tape):
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
       var = variables.Variable(8.)
       self.evaluate(var.initializer)
       grad = GradSliceChecker(self, var, np.array(8), use_tape)
@@ -1198,7 +1198,7 @@ class StridedSliceAssignChecker(object):
     if self.tensor_type.is_complex:
       value -= 1j * value
 
-    with test_util.device(use_gpu=True):
+    with dml_test_util.device(use_gpu=True):
       if self._use_resource:
         var = resource_variable_ops.ResourceVariable(self.x)
       else:
@@ -1486,9 +1486,9 @@ class IdentityTest(test_util.TensorFlowTestCase):
         self.assertAllEqual(x.numpy(), y.numpy())
         self.assertTrue(device in y.device.lower())
 
-      with test_util.force_gpu():
+      with dml_test_util.force_gpu():
         a = constant_op.constant([[2], [3]], dtype=dtypes.float32)
-      with test_util.force_gpu():
+      with dml_test_util.force_gpu():
         b = array_ops.identity(a)
         _test(a, b, "gpu")
       with test_util.force_cpu():
@@ -1497,7 +1497,7 @@ class IdentityTest(test_util.TensorFlowTestCase):
       with test_util.force_cpu():
         d = array_ops.identity(c)
         _test(c, d, "cpu")
-      with test_util.force_gpu():
+      with dml_test_util.force_gpu():
         e = array_ops.identity(d)
         _test(d, e, "gpu")
 
