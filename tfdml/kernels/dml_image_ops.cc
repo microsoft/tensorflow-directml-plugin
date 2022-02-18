@@ -526,7 +526,7 @@ struct DmlAdjustContrastFunctorV2
     }
 };
 
-void RegisterRGBToHSV()
+static void RegisterRGBToHSV()
 {
 
     using K = KernelDefinition<
@@ -538,7 +538,7 @@ void RegisterRGBToHSV()
     RegisterWithTypes<K, ops::RGBToHSV::Attribute::T, TF_FLOAT>();
 }
 
-void RegisterHSVToRGB()
+static void RegisterHSVToRGB()
 {
     using K = KernelDefinition<
         ops::HSVToRGB,
@@ -549,7 +549,7 @@ void RegisterHSVToRGB()
     RegisterWithTypes<K, ops::HSVToRGB::Attribute::T, TF_FLOAT>();
 }
 
-void RegisterAdjustSaturation()
+static void RegisterAdjustSaturation()
 {
     using half_kernel = KernelDefinition<
         ops::AdjustSaturation,
@@ -573,7 +573,7 @@ void RegisterAdjustSaturation()
         TF_FLOAT>();
 }
 
-void RegisterAdjustHue()
+static void RegisterAdjustHue()
 {
     using half_kernel = KernelDefinition<
         ops::AdjustHue,
@@ -591,7 +591,7 @@ void RegisterAdjustHue()
     RegisterWithTypes<float_kernel, ops::AdjustHue::Attribute::T, TF_FLOAT>();
 }
 
-void RegisterAdjustContrast()
+static void RegisterAdjustContrast()
 {
     using K = KernelDefinition<
         ops::AdjustContrast,
@@ -609,7 +609,7 @@ void RegisterAdjustContrast()
         TF_INT32>();
 }
 
-void RegisterAdjustContrastV2()
+static void RegisterAdjustContrastV2()
 {
     using K = KernelDefinition<
         ops::AdjustContrastv2,
@@ -629,6 +629,8 @@ void RegisterAdjustContrastV2()
 
 void RegisterKernels_Image()
 {
+    RegisterRGBToHSV();
+    RegisterHSVToRGB();
     RegisterAdjustSaturation();
     RegisterAdjustHue();
     RegisterAdjustContrast();
