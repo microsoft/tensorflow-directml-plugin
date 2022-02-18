@@ -29,6 +29,7 @@ from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import gradients_impl
 import tensorflow.python.ops.data_flow_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 class DynamicStitchTestBase(object):
@@ -37,7 +38,7 @@ class DynamicStitchTestBase(object):
     self.stitch_op = stitch_op
 
   def testScalar(self):
-    with test_util.use_gpu():
+    with dml_test_util.use_gpu():
       indices = [constant_op.constant(0), constant_op.constant(1)]
       data = [constant_op.constant(40), constant_op.constant(60)]
       for step in -1, 1:
@@ -49,7 +50,7 @@ class DynamicStitchTestBase(object):
 
   @test_util.run_deprecated_v1
   def testShapeInferenceForScalarWithNonConstantIndices(self):
-    with test_util.use_gpu():
+    with dml_test_util.use_gpu():
       indices = [
           array_ops.placeholder(dtype=dtypes.int32),
           constant_op.constant(1)
@@ -224,7 +225,7 @@ class ParallelDynamicStitchTest(DynamicStitchTestBase, test.TestCase):
     DynamicStitchTestBase.__init__(self, data_flow_ops.parallel_dynamic_stitch)
 
   def testScalar(self):
-    with test_util.use_gpu():
+    with dml_test_util.use_gpu():
       indices = [constant_op.constant(0), constant_op.constant(1)]
       data = [constant_op.constant(40.0), constant_op.constant(60.0)]
       for step in -1, 1:

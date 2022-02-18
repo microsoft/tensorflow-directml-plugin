@@ -180,6 +180,9 @@
                     "file": "ops/sparse_xent_op_test.py"
                 },
                 {
+                    "file": "ops/split_op_test.py"
+                },
+                {
                     "file": "ops/stack_op_test.py"
                 },
                 {

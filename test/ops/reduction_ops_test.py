@@ -30,6 +30,7 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
+import dml_test_util
 
 # The maximum input rank to test.
 _MAX_RANK = 5
@@ -230,7 +231,7 @@ class SumReductionTest(BaseReductionTest):
 
     # test that mean doesn't overflow
     # only on GPU, since it has the more accurate implementation
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
 
     arr = np.ones([68000], dtype=np.float16)

@@ -910,75 +910,6 @@ static void RegisterScatterNdNonAliasingAdd()
 }
 
 template <typename Index, typename DataType>
-using ScatterNdAddKernel = typename KernelDefinition<
-    ops::ScatterNdAdd,
-    DmlKernelWrapper<
-        DmlScatterNdBinaryKernel<Index, ScatterNdPlusOp<DataType>>,
-        GetOutputShapeAsInputShapeHelper>>::
-    template WithTypeConstraint<
-        ops::ScatterNdAdd::Attribute::Tindices,
-        DataTypeToEnum<Index>()>::
-        template WithTypeConstraint<
-            ops::ScatterNdAdd::Attribute::T,
-            DataTypeToEnum<DataType>()>;
-
-static void RegisterScatterNdAdd()
-{
-    ScatterNdAddKernel<int32_t, float>::Register();
-    ScatterNdAddKernel<int64_t, float>::Register();
-    ScatterNdAddKernel<int32_t, Eigen::half>::Register();
-    ScatterNdAddKernel<int64_t, Eigen::half>::Register();
-    ScatterNdAddKernel<int32_t, int64_t>::Register();
-    ScatterNdAddKernel<int64_t, int64_t>::Register();
-}
-
-template <typename Index, typename DataType>
-using ScatterNdSubKernel = typename KernelDefinition<
-    ops::ScatterNdSub,
-    DmlKernelWrapper<
-        DmlScatterNdBinaryKernel<Index, ScatterNdMinusOp<DataType>>,
-        GetOutputShapeAsInputShapeHelper>>::
-    template WithTypeConstraint<
-        ops::ScatterNdSub::Attribute::Tindices,
-        DataTypeToEnum<Index>()>::
-        template WithTypeConstraint<
-            ops::ScatterNdSub::Attribute::T,
-            DataTypeToEnum<DataType>()>;
-
-static void RegisterScatterNdSub()
-{
-    ScatterNdSubKernel<int32_t, float>::Register();
-    ScatterNdSubKernel<int64_t, float>::Register();
-    ScatterNdSubKernel<int32_t, Eigen::half>::Register();
-    ScatterNdSubKernel<int64_t, Eigen::half>::Register();
-    ScatterNdSubKernel<int32_t, int64_t>::Register();
-    ScatterNdSubKernel<int64_t, int64_t>::Register();
-}
-
-template <typename Index, typename DataType>
-using ScatterNdUpdateKernel = typename KernelDefinition<
-    ops::ScatterNdUpdate,
-    DmlKernelWrapper<
-        DmlScatterNdUpdateKernel<Index>,
-        GetOutputShapeAsInputShapeHelper>>::
-    template WithTypeConstraint<
-        ops::ScatterNdUpdate::Attribute::Tindices,
-        DataTypeToEnum<Index>()>::
-        template WithTypeConstraint<
-            ops::ScatterNdUpdate::Attribute::T,
-            DataTypeToEnum<DataType>()>;
-
-static void RegisterScatterNdUpdate()
-{
-    ScatterNdUpdateKernel<int32_t, float>::Register();
-    ScatterNdUpdateKernel<int64_t, float>::Register();
-    ScatterNdUpdateKernel<int32_t, Eigen::half>::Register();
-    ScatterNdUpdateKernel<int64_t, Eigen::half>::Register();
-    ScatterNdUpdateKernel<int32_t, int64_t>::Register();
-    ScatterNdUpdateKernel<int64_t, int64_t>::Register();
-}
-
-template <typename Index, typename DataType>
 using ResourceScatterNdAddKernel = typename KernelDefinition<
     ops::ResourceScatterNdAdd,
     DmlKernelWrapper<
@@ -1081,9 +1012,6 @@ static void RegisterScatterNd()
 void RegisterKernels_ScatterNd()
 {
     RegisterScatterNdNonAliasingAdd();
-    RegisterScatterNdAdd();
-    RegisterScatterNdSub();
-    RegisterScatterNdUpdate();
     RegisterResourceScatterNdAdd();
     RegisterResourceScatterNdSub();
     RegisterResourceScatterNdUpdate();

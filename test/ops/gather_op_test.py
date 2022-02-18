@@ -34,6 +34,7 @@ from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import resource_variable_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
+import dml_test_util
 
 _TEST_TYPES = (dtypes.int64, dtypes.float32,)
 
@@ -299,7 +300,7 @@ class GatherTest(test.TestCase, parameterized.TestCase):
         self.evaluate(array_ops.gather(params, [[7]], axis=1))
 
   def _disabledTestBadIndicesGPU(self):
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
     with self.session():
       params = [[0, 1, 2], [3, 4, 5]]

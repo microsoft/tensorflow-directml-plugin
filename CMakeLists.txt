@@ -197,6 +197,9 @@ add_library(
     tfdml/kernels/dml_cast_op.cc
     tfdml/kernels/dml_concat_op.cc
     tfdml/kernels/dml_conv_ops.cc
+    tfdml/kernels/dml_crop_and_resize_grad_boxes_op.cc
+    tfdml/kernels/dml_crop_and_resize_grad_image_op.cc
+    tfdml/kernels/dml_crop_and_resize_op.cc
     tfdml/kernels/dml_cwise_ops.cc
     tfdml/kernels/dml_data_format_dim_map.cc
     tfdml/kernels/dml_data_format_vec_permute.cc
@@ -232,6 +235,7 @@ add_library(
     tfdml/kernels/dml_space_depth_ops.cc
     tfdml/kernels/dml_space_to_batch_op.cc
     tfdml/kernels/dml_sparse_xent_op.cc
+    tfdml/kernels/dml_split_op.cc
     tfdml/kernels/dml_strided_slice_op.cc
     tfdml/kernels/dml_tile_op.cc
     tfdml/kernels/dml_topk_op.cc
