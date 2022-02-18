@@ -192,11 +192,6 @@ class SelectInitHelper : public BaseSelectInitHelper
                 else_shape.DebugString());
         }
 
-        const uint32_t batch_size =
-            static_cast<uint32_t>(then_shape.dim_size(0));
-        const uint32_t outer_dims_size =
-            then_shape.num_elements() / then_shape.dim_size(0);
-
         const uint32_t num_elements = then_shape.num_elements();
         simple_ternary_.cond_shape = {1};
         simple_ternary_.then_shape = {num_elements};
