@@ -17,6 +17,9 @@ parameters:
 - name: tensorflowPackage
   type: string
   default: tf-nightly-cpu==2.9.0.dev20220123
+- name: kerasPackage
+  type: string
+  default: keras-nightly==2.9.0.dev2022010508
 - name: pluginBuildPipeline
   type: string
   default: current
@@ -131,7 +134,7 @@ jobs:
             $ScriptPathWsl = wsl wslpath -a $ScriptPath
             $TestArtifactPath = "$(buildArtifactsPathRoot)/${{artifact}}" -replace '\\','/'
             $TestArtifactPathWsl = wsl wslpath -a $TestArtifactPath
-            wsl bash $ScriptPathWsl $TestArtifactPathWsl ${{parameters.tensorflowPackage}}
+            wsl bash $ScriptPathWsl $TestArtifactPathWsl ${{parameters.tensorflowPackage}} ${{parameters.kerasPackage}}
 
       - task: PowerShell@2
         displayName: Test ${{artifact}}
@@ -162,6 +165,7 @@ jobs:
           arguments: >
             -TestArtifactPath $(buildArtifactsPathRoot)/${{artifact}}
             -TensorFlowPackage ${{parameters.tensorflowPackage}}
+            -KerasPackage ${{parameters.kerasPackage}}
 
       - task: PowerShell@2
         displayName: Test ${{artifact}}
