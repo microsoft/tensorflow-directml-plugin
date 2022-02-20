@@ -14,6 +14,7 @@
 
 import contextlib
 from tensorflow.python.framework import ops
+from tensorflow.python.client import device_lib
 
 @contextlib.contextmanager
 def device(use_gpu):
