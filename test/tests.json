@@ -3,7 +3,7 @@
     "groups": [
         {
             "name": "ops",
-            "timeout_seconds": 1800,
+            "timeout_seconds": 7200,
             "tests": [
                 {
                     "file": "ops/argmax_op_test.py"
