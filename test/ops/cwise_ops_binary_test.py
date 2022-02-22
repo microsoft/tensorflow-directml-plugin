@@ -100,7 +100,7 @@ class BinaryOpTest(test.TestCase):
     self.assertShapeEqual(np_ans, out)
 
   _GRAD_TOL = {
-      dtypes_lib.float16: 1e-3,
+      dtypes_lib.float16: 2e-3,
       dtypes_lib.float32: 1e-3,
       dtypes_lib.complex64: 1e-2,
       dtypes_lib.float64: 1e-5,
