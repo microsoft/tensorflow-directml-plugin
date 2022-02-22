@@ -645,7 +645,7 @@ class BatchNormalizationTest(test.TestCase):
   def testBatchNormGradGradConfig4(self):
     config = {
         'shape': [2, 3, 2, 2],
-        'err_tolerance': 3e-3,
+        'err_tolerance': 2e-2,
         'dtype': np.float16,
     }
     self._testBatchNormGradGrad(config)
@@ -663,7 +663,7 @@ class BatchNormalizationTest(test.TestCase):
   def testBatchNormGradGradConfig6(self):
     config = {
         'shape': [2, 3, 2, 2, 2],
-        'err_tolerance': 3e-3,
+        'err_tolerance': 3e-2,
         'dtype': np.float16,
     }
     self._testBatchNormGradGrad(config)
