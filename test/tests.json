@@ -75,10 +75,10 @@
                     "file": "ops/dynamic_stitch_op_test.py"
                 },
                 {
-                    "file": "ops/extract_images_patches_grad_test.py"
+                    "file": "ops/extract_image_patches_grad_test.py"
                 },
                 {
-                    "file": "ops/extract_images_patches_op_test.py"
+                    "file": "ops/extract_image_patches_op_test.py"
                 },
                 {
                     "file": "ops/extract_volume_patches_grad_test.py"
@@ -214,9 +214,6 @@
                 },
                 {
                     "file": "ops/training_ops_test.py"
-                },
-                {
-                    "file": "ops/training_test.py"
                 },
                 {
                     "file": "ops/training_util_test.py"
