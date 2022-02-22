@@ -71,6 +71,9 @@ class ReluTest(test.TestCase):
           np.array([[-9, 7, -5, 3, -1], [1, -3, 5, -7, 9]]).astype(t))
 
   def testReluInt8x4GoodShape(self):
+    # TODO: Enable when/if our kernels support quantized data type
+    # TFDML 38256707
+    self.skipTest("DML doesn't support quantized ops yet.")
     if not dml_test_util.is_gpu_available(cuda_only=True):
       self.skipTest("No GPU available")
     inputs = np.array([[-50, 7, 23, 0], [-1, -5, 6, 11]])
@@ -81,6 +84,9 @@ class ReluTest(test.TestCase):
 
   @test_util.disable_xla("b/123338077")  # Passes with XLA
   def testReluInt8x4BadShape(self):
+    # TODO: Enable when/if our kernels support quantized data type
+    # TFDML 38256707
+    self.skipTest("DML doesn't support quantized ops yet.")
     if not dml_test_util.is_gpu_available(cuda_only=True):
       self.skipTest("No GPU available")
     inputs = constant_op.constant(
