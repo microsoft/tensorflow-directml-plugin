@@ -19,9 +19,10 @@ import numpy as np
 from tensorflow.python.framework import constant_op
 from tensorflow.python.ops import array_ops
 from tensorflow.python.platform import test
+import dml_test_util
 
 
-class ExtractImagePatches(test.TestCase):
+class ExtractImagePatches(dml_test_util.TestCase):
   """Functional tests for ExtractImagePatches op."""
 
   def _VerifyValues(self, image, ksizes, strides, rates, padding, patches):

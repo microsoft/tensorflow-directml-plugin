@@ -30,7 +30,7 @@ from tensorflow.python.platform import test
 import dml_test_util
 
 
-class ConcatOpTest(test.TestCase):
+class ConcatOpTest(dml_test_util.TestCase):
 
   @test_util.run_deprecated_v1
   def testHStack(self):
@@ -665,7 +665,7 @@ class ConcatOpTest(test.TestCase):
         self.assertAllEqual([[1, 2, 3, 7, 8, 9], [4, 5, 6, 10, 11, 12]], output)
 
 
-class ConcatOffsetTest(test.TestCase):
+class ConcatOffsetTest(dml_test_util.TestCase):
 
   def testBasic(self):
     with dml_test_util.use_gpu():

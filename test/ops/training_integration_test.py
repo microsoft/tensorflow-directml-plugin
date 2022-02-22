@@ -28,6 +28,7 @@ from tensorflow.python.keras import keras_parameterized
 from tensorflow.python.keras import testing_utils
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 def _conv2d_filter(**kwargs):

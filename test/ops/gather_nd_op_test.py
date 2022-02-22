@@ -34,7 +34,7 @@ from tensorflow.python.platform import test
 import dml_test_util
 
 
-class GatherNdTest(test.TestCase):
+class GatherNdTest(dml_test_util.TestCase):
 
   def _testSimpleDtype(self, dtype):
     with self.cached_session():

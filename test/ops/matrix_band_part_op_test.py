@@ -125,7 +125,7 @@ class MatrixBandPartBenchmark(test_lib.Benchmark):
         if test_lib.is_gpu_available(True):
           with ops.Graph().as_default(), \
               session.Session(config=benchmark.benchmark_config()) as sess, \
-              ops.device("/gpu:0"):
+              ops.device("/dml:0"):
             matrix = variables.Variable(array_ops.ones(shape_))
             band = array_ops.matrix_band_part(matrix, limits[0], limits[1])
             self.evaluate(variables.global_variables_initializer())

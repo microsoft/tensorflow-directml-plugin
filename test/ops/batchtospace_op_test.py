@@ -28,6 +28,7 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gen_array_ops
 from tensorflow.python.ops import gradient_checker
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 class PythonOpImpl(object):
@@ -44,7 +45,7 @@ class CppOpImpl(object):
     return gen_array_ops.batch_to_space(*args, **kwargs)
 
 
-class BatchToSpaceDepthToSpace(test.TestCase, PythonOpImpl):
+class BatchToSpaceDepthToSpace(dml_test_util.TestCase, PythonOpImpl):
 
   # Verifies that: batch_to_space(x) = transpose(depth_to_space(transpose(x)))
   @test_util.run_deprecated_v1
@@ -66,7 +67,7 @@ class BatchToSpaceDepthToSpaceCpp(BatchToSpaceDepthToSpace, CppOpImpl):
   pass
 
 
-class BatchToSpaceErrorHandlingTest(test.TestCase, PythonOpImpl):
+class BatchToSpaceErrorHandlingTest(dml_test_util.TestCase, PythonOpImpl):
 
   @test_util.run_deprecated_v1
   def testInputWrongDimMissingBatch(self):
@@ -130,7 +131,7 @@ class BatchToSpaceErrorHandlingCppTest(BatchToSpaceErrorHandlingTest,
   pass
 
 
-class BatchToSpaceNDErrorHandlingTest(test.TestCase):
+class BatchToSpaceNDErrorHandlingTest(dml_test_util.TestCase):
 
   def _testStaticShape(self, input_shape, block_shape, paddings, error):
     block_shape = np.array(block_shape)
@@ -241,7 +242,7 @@ class BatchToSpaceNDErrorHandlingTest(test.TestCase):
     self.assertEqual([3, 2, 3, 2], t.get_shape().as_list())
 
 
-class BatchToSpaceGradientTest(test.TestCase, PythonOpImpl):
+class BatchToSpaceGradientTest(dml_test_util.TestCase, PythonOpImpl):
 
   # Check the gradients.
   def _checkGrad(self, x, crops, block_size):
@@ -300,7 +301,7 @@ class BatchToSpaceGradientCppTest(BatchToSpaceGradientTest, CppOpImpl):
   pass
 
 
-class BatchToSpaceNDGradientTest(test.TestCase):
+class BatchToSpaceNDGradientTest(dml_test_util.TestCase):
 
   # Check the gradients.
   def _checkGrad(self, x, block_shape, crops, crops_dtype):

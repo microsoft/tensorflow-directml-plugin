@@ -29,7 +29,7 @@ import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
 import dml_test_util
 
-class Conv2DTransposeTest(test.TestCase):
+class Conv2DTransposeTest(dml_test_util.TestCase):
 
   def testConv2DTransposeSingleStride(self):
     with self.cached_session():

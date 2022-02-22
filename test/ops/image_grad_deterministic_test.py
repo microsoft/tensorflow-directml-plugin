@@ -36,7 +36,7 @@ from tensorflow.python.platform import test
 import dml_test_util
 
 
-class ResizeNearestNeighborOpDeterminismExceptionsTest(test.TestCase,
+class ResizeNearestNeighborOpDeterminismExceptionsTest(dml_test_util.TestCase,
                                                        parameterized.TestCase):
   """Test d9m-unimplemented exceptions from ResizeNearestNeighborOpGrad.
 
@@ -187,7 +187,7 @@ class ResizeBilinearOpDeterministicTest(test_base.ResizeBilinearOpTestBase):
           self.assertAllEqual(result_a, result_b)
 
 
-class CropAndResizeOpDeterminismExceptionsTest(test.TestCase):
+class CropAndResizeOpDeterminismExceptionsTest(dml_test_util.TestCase):
   """Test d9m-unimplemented exceptions from CropAndResizeBackprop{Image|Boxes}.
 
   Test that tf.errors.UnimplementedError is thrown or not thrown, as

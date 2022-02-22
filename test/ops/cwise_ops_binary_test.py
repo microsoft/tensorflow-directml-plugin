@@ -68,7 +68,7 @@ def _default_tolerance(dtype):
     return None  # Fail fast for unexpected types
 
 
-class BinaryOpTest(test.TestCase):
+class BinaryOpTest(dml_test_util.TestCase):
 
   def _compareCpu(self, x, y, np_func, tf_func, also_compare_variables=False):
     np_ans = np_func(x, y)
@@ -826,7 +826,7 @@ class BinaryOpTest(test.TestCase):
     self.assertAllEqual(self.evaluate(z), [0, 1, 1, 1, -1])
 
 
-class ComparisonOpTest(test.TestCase):
+class ComparisonOpTest(dml_test_util.TestCase):
 
   def _compareScalar(self, func, x, y, dtype):
     out = func(

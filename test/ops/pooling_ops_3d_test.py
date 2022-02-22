@@ -45,7 +45,7 @@ def GetTestConfigs():
 
 
 @test_util.with_eager_op_as_function
-class PoolingTest(test.TestCase):
+class PoolingTest(dml_test_util.TestCase):
 
   def _VerifyOneTest(self, pool_func, input_sizes, window, strides, padding,
                      data_format, expected, use_gpu):

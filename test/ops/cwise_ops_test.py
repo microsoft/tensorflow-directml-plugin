@@ -27,6 +27,7 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
+import dml_test_util
 
 _ADD = lambda x, y: x + y
 _SUB = lambda x, y: x - y
@@ -75,7 +76,7 @@ def _default_tolerance(dtype):
     return None  # Fail fast for unexpected types
 
 
-class ComparisonOpTest(test.TestCase):
+class ComparisonOpTest(dml_test_util.TestCase):
 
   def _compareScalar(self, func, x, y, dtype):
     out = func(
@@ -214,7 +215,7 @@ class ComparisonOpTest(test.TestCase):
             f(x.astype(t), y.astype(t))
 
 
-class LogicalOpTest(test.TestCase):
+class LogicalOpTest(dml_test_util.TestCase):
 
   def _compareBinary(self, x, y, np_func, tf_func, use_gpu=False):
     np_ans = np_func(x, y)
@@ -330,7 +331,7 @@ class LogicalOpTest(test.TestCase):
       _ = x < y < z
 
 
-class SelectOpTest(test.TestCase):
+class SelectOpTest(dml_test_util.TestCase):
 
   def _compare(self, fn, c, x, y, use_gpu):
     np_ans = np.where(c, x, y)
@@ -638,7 +639,7 @@ class SelectOpTest(test.TestCase):
     self._testNan(array_ops.where_v2)
 
 
-class BatchSelectOpTest(test.TestCase):
+class BatchSelectOpTest(dml_test_util.TestCase):
   """Test broadcasting of Select when 'c' is a vec and 't' &'e' are rank2+."""
 
   def _compare(self, c, x, y, use_gpu):
@@ -756,7 +757,7 @@ class BatchSelectOpTest(test.TestCase):
 
 
 @test_util.with_eager_op_as_function
-class MinMaxOpTest(test.TestCase):
+class MinMaxOpTest(dml_test_util.TestCase):
 
   def _compare(self, x, y, use_gpu):
     np_min, np_max = np.minimum(x, y), np.maximum(x, y)
@@ -850,7 +851,7 @@ class MinMaxOpTest(test.TestCase):
     self._compareGradientY(math_ops.minimum, x, y)
 
 
-class MathOpsOverloadTest(test.TestCase):
+class MathOpsOverloadTest(dml_test_util.TestCase):
 
   def _computeTensorAndLiteral(self, x, y, dtype, func):
     with test_util.force_cpu():
@@ -963,7 +964,7 @@ class MathOpsOverloadTest(test.TestCase):
     self._compareUnary([True, False], dtypes_lib.bool, np.logical_not, _INV)
 
 
-class IsFiniteInfNanTest(test.TestCase):
+class IsFiniteInfNanTest(dml_test_util.TestCase):
 
   def _compare(self, x, use_gpu):
     if not use_gpu:
@@ -1037,7 +1038,7 @@ class IsFiniteInfNanTest(test.TestCase):
               self.assertAllCloseAccordingToType(np_y, self.evaluate(tf_y))
 
 
-class RoundingTest(test.TestCase):
+class RoundingTest(dml_test_util.TestCase):
 
   def _compare_values(self, x, y=None):
     y = np.rint(x) if y is None else np.asarray(y)
@@ -1082,7 +1083,7 @@ class RoundingTest(test.TestCase):
         self._testDtype(dtype)
 
 
-class ComplexMakeRealImagTest(test.TestCase):
+class ComplexMakeRealImagTest(dml_test_util.TestCase):
 
   def _compareMake(self, real, imag, use_gpu):
     np_ans = real + (1j) * imag
@@ -1332,7 +1333,7 @@ class ComplexMakeRealImagTest(test.TestCase):
     self._compareMulGradient(data)
 
 
-class PolyvalTest(test.TestCase):
+class PolyvalTest(dml_test_util.TestCase):
 
   def _runtest(self, dtype, degree):
     x = np.random.rand(2, 2).astype(dtype)

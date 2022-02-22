@@ -20,9 +20,10 @@ from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
 from tensorflow.python.training import monitored_session
 from tensorflow.python.training import training_util
+import dml_test_util
 
 
-class GlobalStepTest(test.TestCase):
+class GlobalStepTest(dml_test_util.TestCase):
 
   def _assert_global_step(self, global_step, expected_dtype=dtypes.int64):
     self.assertEqual('%s:0' % ops.GraphKeys.GLOBAL_STEP, global_step.name)
@@ -89,7 +90,7 @@ class GlobalStepTest(test.TestCase):
       self._assert_global_step(training_util.get_or_create_global_step(g))
 
 
-class GlobalStepReadTest(test.TestCase):
+class GlobalStepReadTest(dml_test_util.TestCase):
 
   def test_global_step_read_is_none_if_there_is_no_global_step(self):
     with ops.Graph().as_default():

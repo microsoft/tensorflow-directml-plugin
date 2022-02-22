@@ -35,6 +35,7 @@ from tensorflow.python.keras.optimizer_v2 import rmsprop
 from tensorflow.python.keras.utils import data_utils
 from tensorflow.python.platform import test
 from tensorflow.python.util import nest
+import dml_test_util
 
 
 def custom_generator(mode=2):
@@ -481,7 +482,7 @@ class TestGeneratorMethodsWithSequences(keras_parameterized.TestCase):
 
 
 @combinations.generate(combinations.combine(mode=['graph', 'eager']))
-class TestConvertToGeneratorLike(test.TestCase, parameterized.TestCase):
+class TestConvertToGeneratorLike(dml_test_util.TestCase, parameterized.TestCase):
   simple_inputs = (np.ones((10, 10)), np.ones((10, 1)))
   nested_inputs = ((np.ones((10, 10)), np.ones((10, 20))), (np.ones((10, 1)),
                                                             np.ones((10, 3))))

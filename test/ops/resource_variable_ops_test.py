@@ -71,7 +71,7 @@ def _eager_safe_var_handle_op(*args, **kwargs):
 
 @test_util.with_eager_op_as_function
 @test_util.with_control_flow_v2
-class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
+class ResourceVariableOpsTest(dml_test_util.TestCase,
                               parameterized.TestCase):
 
   def tearDown(self):
@@ -100,15 +100,15 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
 
   @test_util.run_gpu_only
   def testGPUInt64(self):
-    with context.eager_mode(), context.device("gpu:0"):
+    with context.eager_mode(), context.device("dml:0"):
       v = resource_variable_ops.ResourceVariable(1, dtype=dtypes.int64)
       self.assertAllEqual(1, v.numpy())
 
   @test_util.run_gpu_only
   def testGPUBfloat16(self):
-    with context.eager_mode(), ops.device("gpu:0"):
+    with context.eager_mode(), ops.device("dml:0"):
       v = resource_variable_ops.ResourceVariable(1, dtype=dtypes.bfloat16)
-      self.assertEqual("/job:localhost/replica:0/task:0/device:GPU:0",
+      self.assertEqual("/job:localhost/replica:0/task:0/device:DML:0",
                        v.device)
       self.assertAllEqual(1, v.numpy())
 

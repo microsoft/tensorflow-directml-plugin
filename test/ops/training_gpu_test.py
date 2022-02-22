@@ -26,7 +26,7 @@ from tensorflow.python.platform import test
 import dml_test_util
 
 
-class TrainingGPUTest(test.TestCase, parameterized.TestCase):
+class TrainingGPUTest(dml_test_util.TestCase, parameterized.TestCase):
 
   @combinations.generate(combinations.combine(mode=['graph', 'eager']))
   def test_model_with_crossentropy_losses_channels_first(self):
@@ -68,7 +68,7 @@ class TrainingGPUTest(test.TestCase, parameterized.TestCase):
       return simple_model
 
     if dml_test_util.is_gpu_available(cuda_only=True):
-      with testing_utils.use_gpu():
+      with dml_test_util.use_gpu():
         losses_to_test = ['sparse_categorical_crossentropy',
                           'categorical_crossentropy', 'binary_crossentropy']
 

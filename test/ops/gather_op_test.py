@@ -47,7 +47,7 @@ def _to_str_elements(values):
     return str(values).encode("utf-8")
 
 
-class GatherTest(test.TestCase, parameterized.TestCase):
+class GatherTest(dml_test_util.TestCase, parameterized.TestCase):
 
   def _buildParams(self, data, dtype):
     data = data.astype(dtype.as_numpy_dtype)

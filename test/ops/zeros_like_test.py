@@ -15,8 +15,9 @@
 import tensorflow as tf
 from tensorflow.python.framework import test_util
 from tensorflow.python.platform import test
+import dml_test_util
 
-class ZerosLikeTest(test.TestCase):
+class ZerosLikeTest(dml_test_util.TestCase):
 
   @test_util.run_in_graph_and_eager_modes
   def testZerosLike(self):

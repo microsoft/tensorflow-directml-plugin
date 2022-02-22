@@ -52,7 +52,7 @@ from tensorflow.python.platform import test as test_lib
 import dml_test_util
 
 @test_util.run_all_in_graph_and_eager_modes
-class BatchMatrixTransposeTest(test_util.TensorFlowTestCase):
+class BatchMatrixTransposeTest(dml_test_util.TestCase):
 
   def testNonBatchMatrix(self):
     matrix = [[1, 2, 3], [4, 5, 6]]  # Shape (2, 3)
@@ -140,7 +140,7 @@ class BatchMatrixTransposeTest(test_util.TensorFlowTestCase):
           self.assertAllEqual(expected_transposed, transposed)
 
 
-class BooleanMaskTest(test_util.TensorFlowTestCase):
+class BooleanMaskTest(dml_test_util.TestCase):
 
   def setUp(self):
     self.rng = np.random.RandomState(42)
@@ -320,7 +320,7 @@ class BooleanMaskTest(test_util.TensorFlowTestCase):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class OperatorShapeTest(test_util.TensorFlowTestCase):
+class OperatorShapeTest(dml_test_util.TestCase):
 
   def testExpandScalar(self):
     scalar = "hello"
@@ -353,7 +353,7 @@ class OperatorShapeTest(test_util.TensorFlowTestCase):
 
 
 @test_util.with_eager_op_as_function
-class ReverseV2Test(test_util.TensorFlowTestCase):
+class ReverseV2Test(dml_test_util.TestCase):
 
   def testReverse0DimAuto(self):
     x_np = 4
@@ -509,7 +509,7 @@ class ReverseV2Test(test_util.TensorFlowTestCase):
     self.assertAllEqual(self.evaluate(v), v)
 
 
-class MeshgridTest(test_util.TensorFlowTestCase):
+class MeshgridTest(dml_test_util.TestCase):
 
   def _compareDiff(self, x, y, use_gpu):
     for index in ("ij", "xy"):
@@ -620,7 +620,7 @@ STRIDED_SLICE_TYPES = [
 ]
 
 
-class StridedSliceTest(test_util.TensorFlowTestCase):
+class StridedSliceTest(dml_test_util.TestCase):
   """Test the strided slice operation with variants of slices."""
 
   def test_basic_slice(self):
@@ -837,7 +837,7 @@ class StridedSliceTest(test_util.TensorFlowTestCase):
       _ = checker2[ops.convert_to_tensor(mask)]
 
 
-class StridedSliceShapeTest(test_util.TensorFlowTestCase):
+class StridedSliceShapeTest(dml_test_util.TestCase):
   """Test the shape inference of StridedSliceShapes."""
 
   def testUnknown(self):
@@ -1031,7 +1031,7 @@ class GradSliceChecker(object):
     self.test.assertAllEqual(slice_val_grad_evaled, np_sliceval_grad)
 
 
-class StridedSliceGradTest(test_util.TensorFlowTestCase,
+class StridedSliceGradTest(dml_test_util.TestCase,
                            parameterized.TestCase):
   """Test that strided slice's custom gradient produces correct gradients."""
 
@@ -1085,7 +1085,7 @@ class StridedSliceGradTest(test_util.TensorFlowTestCase,
     self.assertAllEqual(self.evaluate(grad), [0., 2., 0.])
 
 
-class StridedSliceGradTypeTest(test_util.TensorFlowTestCase):
+class StridedSliceGradTypeTest(dml_test_util.TestCase):
   """Test varied index types and host located memory."""
 
   def testHostVsDevice(self):
@@ -1214,7 +1214,7 @@ class StridedSliceAssignChecker(object):
       self.test.assertAllEqual(val_copy, valnp)
 
 
-class SliceAssignTest(test_util.TensorFlowTestCase, parameterized.TestCase):
+class SliceAssignTest(dml_test_util.TestCase, parameterized.TestCase):
 
   def testInvalidSlice(self):
     foo = constant_op.constant([1, 2, 3])
@@ -1334,7 +1334,7 @@ class SliceAssignTest(test_util.TensorFlowTestCase, parameterized.TestCase):
       self.assertAllClose(theoretical, numerical)
 
 
-class ShapeSizeRankTest(test_util.TensorFlowTestCase):
+class ShapeSizeRankTest(dml_test_util.TestCase):
 
   @test_util.run_in_graph_and_eager_modes
   def testDenseShape(self):
@@ -1370,7 +1370,7 @@ class ShapeSizeRankTest(test_util.TensorFlowTestCase):
         self.evaluate(array_ops.size(tensor, out_type=dtypes.int64)).dtype)
 
 
-class SequenceMaskTest(test_util.TensorFlowTestCase):
+class SequenceMaskTest(dml_test_util.TestCase):
 
   def testExceptions(self):
     with self.cached_session():
@@ -1463,7 +1463,7 @@ class SequenceMaskTest(test_util.TensorFlowTestCase):
     check_output_dtype(np.float64)
 
 
-class ConcatSliceResourceTest(test_util.TensorFlowTestCase):
+class ConcatSliceResourceTest(dml_test_util.TestCase):
 
   @test_util.run_in_graph_and_eager_modes
   def testConcatSlice(self):
@@ -1476,7 +1476,7 @@ class ConcatSliceResourceTest(test_util.TensorFlowTestCase):
       self.evaluate(test_ops.resource_create_op(r2))
 
 
-class IdentityTest(test_util.TensorFlowTestCase):
+class IdentityTest(dml_test_util.TestCase):
 
   @test_util.run_gpu_only
   def testEagerIdentity(self):
@@ -1502,7 +1502,7 @@ class IdentityTest(test_util.TensorFlowTestCase):
         _test(d, e, "gpu")
 
 
-class PadTest(test_util.TensorFlowTestCase):
+class PadTest(dml_test_util.TestCase):
 
   def testEager(self):
     with context.eager_mode():
@@ -1542,7 +1542,7 @@ class PadTest(test_util.TensorFlowTestCase):
     self.assertAllEqual(result, expected)
 
 
-class InvertPermutationTest(test_util.TensorFlowTestCase):
+class InvertPermutationTest(dml_test_util.TestCase):
 
   def testInvertPermutation(self):
     for dtype in [dtypes.int32, dtypes.int64]:
@@ -1553,7 +1553,7 @@ class InvertPermutationTest(test_util.TensorFlowTestCase):
         self.assertAllEqual(y, [2, 4, 3, 0, 1])
 
 
-class UnravelIndexTest(test_util.TensorFlowTestCase):
+class UnravelIndexTest(dml_test_util.TestCase):
 
   @unittest.skip("Test does not pass internally.")
   def testUnravelIndex(self):
@@ -1600,7 +1600,7 @@ class UnravelIndexTest(test_util.TensorFlowTestCase):
           self.evaluate(array_ops.unravel_index(indices=indices, dims=dims))
 
 
-class GuaranteeConstOpTest(test_util.TensorFlowTestCase):
+class GuaranteeConstOpTest(dml_test_util.TestCase):
 
   def testSimple(self):
     a = array_ops.constant(10)
@@ -1631,7 +1631,7 @@ class GuaranteeConstOpTest(test_util.TensorFlowTestCase):
       self.evaluate(guarantee_a)
 
 
-class SnapshotOpTest(test_util.TensorFlowTestCase):
+class SnapshotOpTest(dml_test_util.TestCase):
 
   def testInvertPermutation(self):
     for dtype in [dtypes.int32, dtypes.int64, dtypes.float32, dtypes.float64]:
@@ -1643,7 +1643,7 @@ class SnapshotOpTest(test_util.TensorFlowTestCase):
 
 @test_util.with_eager_op_as_function
 @test_util.run_all_in_graph_and_eager_modes
-class QuantizeAndDequantizeTest(test_util.TensorFlowTestCase):
+class QuantizeAndDequantizeTest(dml_test_util.TestCase):
 
   # Generates a tensor of the specified `shape` using values from `values`
   # scaled by (slice_idx + 1) along `axis` dimension.
@@ -1739,7 +1739,7 @@ class QuantizeAndDequantizeTest(test_util.TensorFlowTestCase):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class SortedSearchTest(test_util.TensorFlowTestCase):
+class SortedSearchTest(dml_test_util.TestCase):
 
   def testUpperBoundFloatHandCoded(self):
     cdf = np.array([0, .2, .5, .6, .8, 1.], dtype=np.float32)
@@ -1978,7 +1978,7 @@ class SortedSearchTest(test_util.TensorFlowTestCase):
     _ = g.get_concrete_function()
 
 
-class BatchGatherNdTest(test_util.TensorFlowTestCase):
+class BatchGatherNdTest(dml_test_util.TestCase):
 
   def testShapesMatch(self):
     """Tests for various different shape combinations."""
@@ -2181,7 +2181,7 @@ class BatchGatherNdTest(test_util.TensorFlowTestCase):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class RepeatTest(test_util.TensorFlowTestCase, parameterized.TestCase):
+class RepeatTest(dml_test_util.TestCase, parameterized.TestCase):
 
   @parameterized.parameters(
       (3, 4, None),
@@ -2271,7 +2271,7 @@ class RepeatBenchmark(test_lib.Benchmark):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class TileVariantTest(test_util.TensorFlowTestCase):
+class TileVariantTest(dml_test_util.TestCase):
 
   def test_tile_tensor_list(self):
     # TODO 37940089: Enable once DML supports tensor lists
@@ -2299,7 +2299,7 @@ class TileVariantTest(test_util.TensorFlowTestCase):
     self.assertAllEqual(t, tiled_tensor_1)
 
 
-class StopGradientTest(test_util.TensorFlowTestCase):
+class StopGradientTest(dml_test_util.TestCase):
 
   def testStopGradient(self):
     x = array_ops.zeros(3)

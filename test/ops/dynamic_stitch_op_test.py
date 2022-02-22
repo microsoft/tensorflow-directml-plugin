@@ -211,17 +211,17 @@ class DynamicStitchTestBase(object):
       self.stitch_op(indices, data)
 
 
-class DynamicStitchTest(DynamicStitchTestBase, test.TestCase):
+class DynamicStitchTest(DynamicStitchTestBase, dml_test_util.TestCase):
 
   def __init__(self, *test_case_args):
-    test.TestCase.__init__(self, *test_case_args)
+    dml_test_util.TestCase.__init__(self, *test_case_args)
     DynamicStitchTestBase.__init__(self, data_flow_ops.dynamic_stitch)
 
 
-class ParallelDynamicStitchTest(DynamicStitchTestBase, test.TestCase):
+class ParallelDynamicStitchTest(DynamicStitchTestBase, dml_test_util.TestCase):
 
   def __init__(self, *test_case_args):
-    test.TestCase.__init__(self, *test_case_args)
+    dml_test_util.TestCase.__init__(self, *test_case_args)
     DynamicStitchTestBase.__init__(self, data_flow_ops.parallel_dynamic_stitch)
 
   def testScalar(self):

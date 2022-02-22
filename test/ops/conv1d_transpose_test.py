@@ -26,7 +26,7 @@ from tensorflow.python.platform import test
 import dml_test_util
 
 
-class Conv1DTransposeTest(test.TestCase):
+class Conv1DTransposeTest(dml_test_util.TestCase):
 
   def testConv1DTransposeSingleStride(self):
     with self.cached_session():

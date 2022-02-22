@@ -21,8 +21,9 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
+import dml_test_util
 
-class BaseReductionTest(test.TestCase):
+class BaseReductionTest(dml_test_util.TestCase):
 
   def _tf_reduce(self, x, reduction_axes, keepdims):
     raise NotImplementedError()

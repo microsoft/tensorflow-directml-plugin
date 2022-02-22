@@ -29,9 +29,10 @@ from tensorflow.python.ops import random_ops
 from tensorflow.python.ops import resource_variable_ops
 from tensorflow.python.platform import benchmark
 from tensorflow.python.platform import test
+import dml_test_util
 
 
-class WhereOpTest(test.TestCase):
+class WhereOpTest(dml_test_util.TestCase):
 
   def _testWhere(self, x, truth, expected_err_re=None, fn=array_ops.where):
     with self.cached_session():

@@ -157,7 +157,7 @@ def GetTestConfigs():
 
 
 @test_util.run_all_without_tensor_float_32("Avoid TF32 conv on GPU")
-class Conv2DTest(test.TestCase):
+class Conv2DTest(dml_test_util.TestCase):
 
   def _DtypesToTest(self, use_gpu):
     if test_util.IsMklEnabled():
@@ -2601,7 +2601,7 @@ class Conv2DTest(test.TestCase):
 
 
 @test_util.run_all_without_tensor_float_32("Avoid TF32 conv on GPU")
-class DepthwiseConv2DTest(test.TestCase):
+class DepthwiseConv2DTest(dml_test_util.TestCase):
 
   def _VerifyValues(self, tensor_in_sizes, filter_in_sizes, stride, padding,
                     expected):
@@ -2696,7 +2696,7 @@ class DepthwiseConv2DTest(test.TestCase):
 
 
 @test_util.run_all_without_tensor_float_32("Avoid TF32 conv on GPU")
-class SeparableConv2DTest(test.TestCase):
+class SeparableConv2DTest(dml_test_util.TestCase):
 
   def _InitValues(self, sizes):
     """Initializes values for input tensors.
@@ -2880,7 +2880,7 @@ class SeparableConv2DTest(test.TestCase):
 
 
 @test_util.run_all_without_tensor_float_32("Avoid TF32 conv on GPU")
-class DeepConv2DTest(test.TestCase):
+class DeepConv2DTest(dml_test_util.TestCase):
 
   def _CompareFwdConv2D(self, tensor_in_sizes, filter_in_sizes, conv_strides,
                         padding):
@@ -3213,7 +3213,7 @@ def GetInceptionBackFilterTest(input_size, filter_size, output_size, strides,
 
 
 @test_util.run_all_without_tensor_float_32("Avoid TF32 conv on GPU")
-class FusedConv2DTest(test.TestCase):
+class FusedConv2DTest(dml_test_util.TestCase):
 
   def _CreateNumpyTensor(self, shape):
     total_size = np.prod(shape)

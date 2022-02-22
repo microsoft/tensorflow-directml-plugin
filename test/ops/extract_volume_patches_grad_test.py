@@ -29,7 +29,7 @@ from tensorflow.python.platform import test
 import dml_test_util
 
 
-class ExtractVolumePatchesGradTest(test.TestCase, parameterized.TestCase):
+class ExtractVolumePatchesGradTest(dml_test_util.TestCase, parameterized.TestCase):
   """Gradient-checking for ExtractVolumePatches op."""
 
   @parameterized.parameters([

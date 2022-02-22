@@ -38,7 +38,7 @@ def _elu_grad_grad(activation):
   return 0
 
 
-class ReluTest(test.TestCase):
+class ReluTest(dml_test_util.TestCase):
 
   def _npRelu(self, np_features):
     return np.maximum(np_features, np.zeros(np_features.shape))
@@ -198,7 +198,7 @@ class ReluTest(test.TestCase):
       self.assertAllEqual(z, np.reshape(x, (0, 0)))
 
 
-class Relu6Test(test.TestCase):
+class Relu6Test(dml_test_util.TestCase):
 
   def _npRelu6(self, np_features):
     sixes = np.copy(np_features)
@@ -257,7 +257,7 @@ class Relu6Test(test.TestCase):
     self.assertLess(err, 1e-10)
 
 
-class LeakyReluTest(test.TestCase):
+class LeakyReluTest(dml_test_util.TestCase):
 
   def _npLeakyRelu(self, np_features, alpha=0.1):
     return np.maximum(np_features, alpha * np_features)
@@ -385,7 +385,7 @@ class LeakyReluTest(test.TestCase):
             alpha=-10))
 
 
-class EluTest(test.TestCase):
+class EluTest(dml_test_util.TestCase):
 
   def _npElu(self, np_features):
     return np.where(np_features < 0, np.exp(np_features) - 1, np_features)
@@ -490,7 +490,7 @@ class EluTest(test.TestCase):
     self.assertLess(err, 1e-6)
 
 
-class SeluTest(test.TestCase):
+class SeluTest(dml_test_util.TestCase):
 
   def _npSelu(self, np_features):
     scale = 1.0507009873554804934193349852946
@@ -574,7 +574,7 @@ class SeluTest(test.TestCase):
     self.assertLess(err, 1e-6)
 
 
-class CreluTest(test.TestCase):
+class CreluTest(dml_test_util.TestCase):
 
   def testCreluShape(self):
     f = random_ops.random_normal([50, 5, 7, 10])

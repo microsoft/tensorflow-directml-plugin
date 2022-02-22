@@ -49,7 +49,7 @@ def GetTestConfigs():
     "Tests Conv3d, which in some cases is implemented with a matmul. With "
     "TensorFloat-32, tests fail in some of those cases (and as of August 13 "
     "2020, only those cases)")
-class Conv3DTest(test.TestCase):
+class Conv3DTest(dml_test_util.TestCase):
 
   def _DtypesToTest(self, use_gpu):
     # double datatype is currently not supported for convolution ops

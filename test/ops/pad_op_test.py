@@ -24,9 +24,10 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradient_checker_v2
 from tensorflow.python.platform import test
+import dml_test_util
 
 
-class PadOpTest(test.TestCase):
+class PadOpTest(dml_test_util.TestCase):
 
   def setUp(self):
     super().setUp()

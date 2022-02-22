@@ -32,7 +32,7 @@ from tensorflow.python.ops import nn_ops
 from tensorflow.python.platform import test
 import dml_test_util
 
-class BatchNormalizationTest(test.TestCase):
+class BatchNormalizationTest(dml_test_util.TestCase):
 
   def _batch_norm(self, x, mean, var, offset, scale, epsilon):
     # We compute the batch norm manually in this function because

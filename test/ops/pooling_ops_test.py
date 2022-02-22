@@ -43,7 +43,7 @@ import dml_test_util
 def GetDeviceScope(self, use_gpu=False):
   if context.executing_eagerly():
     if use_gpu and dml_test_util.is_gpu_available():
-      return ops.device("GPU:0")
+      return ops.device("DML:0")
     return ops.device("CPU:0")
   else:
     return self.session(use_gpu=use_gpu)
@@ -178,7 +178,7 @@ def GetShrunkInceptionMaxPoolShapes(shrink=30):
 
 
 @test_util.with_eager_op_as_function
-class PoolingTest(test.TestCase, parameterized.TestCase):
+class PoolingTest(dml_test_util.TestCase, parameterized.TestCase):
 
   def _isMaxPool(self, func):
     return func in (nn_ops.max_pool, nn_ops.max_pool_v2)

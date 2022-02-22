@@ -30,7 +30,7 @@ from tensorflow.python.platform import test
 import dml_test_util
 
 
-class LRNOpTest(test.TestCase):
+class LRNOpTest(dml_test_util.TestCase):
 
   def _LRN(self, input_image, lrn_depth_radius=5, bias=1.0, alpha=1.0,
            beta=0.5):
