@@ -38,9 +38,10 @@ from tensorflow.python.ops.ragged import ragged_tensor
 from tensorflow.python.ops.ragged import ragged_tensor_value
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging as logging
+import dml_test_util
 
 
-class ModelInputsTest(test.TestCase):
+class ModelInputsTest(dml_test_util.TestCase):
 
   def test_single_thing(self):
     a = np.ones(10)
@@ -103,7 +104,7 @@ class ModelInputsTest(test.TestCase):
     self.assertIsInstance(vals['b'], keras_tensor.KerasTensor)
 
 
-class DatasetUtilsTest(test.TestCase, parameterized.TestCase):
+class DatasetUtilsTest(dml_test_util.TestCase, parameterized.TestCase):
 
   @parameterized.named_parameters(
       # pylint: disable=g-long-lambda

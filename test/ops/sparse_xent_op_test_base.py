@@ -29,9 +29,10 @@ from tensorflow.python.ops import gradient_checker_v2
 from tensorflow.python.ops import nn_ops
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
+import dml_test_util
 
 
-class SparseXentOpTestBase(test.TestCase):
+class SparseXentOpTestBase(dml_test_util.TestCase):
 
   def _opFwdBwd(self, labels, logits):
     """Runs the op-under-test both forwards and backwards"""

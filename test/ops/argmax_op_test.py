@@ -22,9 +22,10 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
+import dml_test_util
 
 
-class ArgMaxTest(test.TestCase):
+class ArgMaxTest(dml_test_util.TestCase):
 
   def _testArg(self,
                method,

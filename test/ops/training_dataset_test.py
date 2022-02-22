@@ -30,6 +30,7 @@ from tensorflow.python.keras import testing_utils
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging as logging
+import dml_test_util
 
 
 class BatchCounterCallback(callbacks.Callback):

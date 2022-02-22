@@ -43,6 +43,11 @@ parameters:
   type: string
   default: tf-nightly-cpu==2.9.0.dev20220123
 
+- name: testKerasPackage
+  displayName: TensorFlow Package Version
+  type: string
+  default: keras-nightly==2.9.0.dev2022010508
+
 - name: enableTests
   displayName: Enable Tests
   type: boolean
@@ -79,6 +84,7 @@ stages:
         testGroups: ${{parameters.testGroups}}
         artifacts: ${{parameters.testArtifacts}}
         tensorflowPackage: ${{parameters.testTensorflowPackage}}
+        kerasPackage: ${{parameters.testKerasPackage}}
 
 - stage: reportStage
   displayName: Report Results

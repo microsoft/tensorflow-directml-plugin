@@ -24,9 +24,10 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradient_checker_v2
 from tensorflow.python.platform import test
+import dml_test_util
 
 
-class PadOpTest(test.TestCase):
+class PadOpTest(dml_test_util.TestCase):
 
   def setUp(self):
     super().setUp()
@@ -268,8 +269,6 @@ class PadOpTest(test.TestCase):
           np.array(123).astype(t))
 
   def testIntTypes(self):
-    # TODO(touts): Figure out why the padding tests do not work on GPU
-    # for int types and rank > 2.
     for t in [np.int8, np.uint8, np.int32, np.int64]:
       self._testAll(
           np.random.randint(-100, 100, (4, 4, 3)).astype(t),

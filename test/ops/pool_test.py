@@ -25,6 +25,7 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import nn_ops
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 def pool_direct_single_axis(
@@ -139,7 +140,7 @@ def pool_direct(
   return output
 
 
-class PoolingTest(test.TestCase):
+class PoolingTest(dml_test_util.TestCase):
 
   def _test(self, input_shape, **kwargs):
     # Use negative numbers to make sure there isn't any zero padding getting
@@ -151,7 +152,7 @@ class PoolingTest(test.TestCase):
     self.assertAllClose(y1, self.evaluate(y2), rtol=1e-2, atol=1e-2)
 
   def testPoolSimple(self):
-    with self.session(use_gpu=test.is_gpu_available()):
+    with self.session(use_gpu=dml_test_util.is_gpu_available()):
       for padding in ["SAME", "VALID"]:
         for pooling_type in ["MAX", "AVG"]:
           self._test(
@@ -163,7 +164,7 @@ class PoolingTest(test.TestCase):
               strides=[1, 2])
 
   def testPool1D(self):
-    with self.session(use_gpu=test.is_gpu_available()):
+    with self.session(use_gpu=dml_test_util.is_gpu_available()):
       for padding in ["SAME", "VALID"]:
         for pooling_type in ["MAX", "AVG"]:
           for input_shape in [[2, 9, 2], [2, 10, 2]]:
@@ -189,7 +190,7 @@ class PoolingTest(test.TestCase):
                     strides=strides)
 
   def testPool2D(self):
-    with self.session(use_gpu=test.is_gpu_available()):
+    with self.session(use_gpu=dml_test_util.is_gpu_available()):
       for padding in ["SAME", "VALID"]:
         for pooling_type in ["MAX", "AVG"]:
           for input_shape in [[2, 9, 10, 2], [2, 10, 9, 2]]:
@@ -215,7 +216,7 @@ class PoolingTest(test.TestCase):
                     strides=strides)
 
   def testPool3D(self):
-    with self.session(use_gpu=test.is_gpu_available()):
+    with self.session(use_gpu=dml_test_util.is_gpu_available()):
       for padding in ["SAME", "VALID"]:
         for pooling_type in ["MAX", "AVG"]:
           for input_shape in [[2, 9, 10, 11, 2], [2, 10, 9, 11, 2]]:
@@ -242,7 +243,7 @@ class PoolingTest(test.TestCase):
                     strides=strides)
 
   def testPoolNC(self):
-    if test.is_gpu_available(cuda_only=True):
+    if dml_test_util.is_gpu_available(cuda_only=True):
       # "NC*" format is currently only supported on CUDA.
       with self.session():
         for padding in ["SAME", "VALID"]:
@@ -302,7 +303,7 @@ class PoolingTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testGradient1D(self):
-    with self.session(use_gpu=test.is_gpu_available()):
+    with self.session(use_gpu=dml_test_util.is_gpu_available()):
       for padding in ["SAME", "VALID"]:
         for pooling_type in ["AVG", "MAX"]:
           for input_shape in [[2, 5, 2], [1, 4, 1]]:
@@ -329,7 +330,7 @@ class PoolingTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testGradient2D(self):
-    with self.session(use_gpu=test.is_gpu_available()):
+    with self.session(use_gpu=dml_test_util.is_gpu_available()):
       for padding in ["SAME", "VALID"]:
         for pooling_type in ["AVG", "MAX"]:
           for input_shape in [[2, 4, 5, 2], [1, 5, 4, 1]]:
@@ -356,7 +357,7 @@ class PoolingTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testGradient3D(self):
-    with self.session(use_gpu=test.is_gpu_available()):
+    with self.session(use_gpu=dml_test_util.is_gpu_available()):
       for padding in ["SAME", "VALID"]:
         for pooling_type in ["AVG", "MAX"]:
           for input_shape in [[1, 3, 5, 4, 1], [1, 5, 4, 3, 1]]:

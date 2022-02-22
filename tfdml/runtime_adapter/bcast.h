@@ -96,8 +96,6 @@ inline void ComputeBatchIndices(
 //
 // The multiplication in the grad * backprop_x itself is also
 // broadcasting following the same rule.
-//
-// TODO(zhifengc): Adds support for n-ary (n >= 2).
 class BCast
 {
   public:

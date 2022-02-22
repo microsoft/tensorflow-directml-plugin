@@ -114,7 +114,7 @@ void plugin_deallocate(const SP_Device* device, SP_DeviceMemoryBase* mem)
 void* plugin_host_memory_allocate(const SP_Device* device, uint64_t size)
 {
 #if _WIN32
-    void* ptr = _aligned_malloc(64, size);
+    void* ptr = _aligned_malloc(size, 64);
 #else
     void* ptr = aligned_alloc(64, size);
 #endif
@@ -123,7 +123,11 @@ void* plugin_host_memory_allocate(const SP_Device* device, uint64_t size)
 
 void plugin_host_memory_deallocate(const SP_Device* device, void* mem)
 {
+#if _WIN32
+    _aligned_free(mem);
+#else
     free(mem);
+#endif
 }
 
 TF_Bool plugin_get_allocator_stats(

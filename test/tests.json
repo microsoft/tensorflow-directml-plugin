@@ -3,7 +3,7 @@
     "groups": [
         {
             "name": "ops",
-            "timeout_seconds": 1800,
+            "timeout_seconds": 7200,
             "tests": [
                 {
                     "file": "ops/argmax_op_test.py"
@@ -75,6 +75,18 @@
                     "file": "ops/dynamic_stitch_op_test.py"
                 },
                 {
+                    "file": "ops/extract_image_patches_grad_test.py"
+                },
+                {
+                    "file": "ops/extract_image_patches_op_test.py"
+                },
+                {
+                    "file": "ops/extract_volume_patches_grad_test.py"
+                },
+                {
+                    "file": "ops/extract_volume_patches_op_test.py"
+                },
+                {
                     "file": "ops/fill_op_test.py"
                 },
                 {
@@ -100,6 +112,9 @@
                 },
                 {
                     "file": "ops/matmul_op_test.py"
+                },
+                {
+                    "file": "ops/matrix_band_part_op_test.py"
                 },
                 {
                     "file": "ops/nn_batchnorm_test.py"
@@ -147,6 +162,15 @@
                     "file": "ops/resource_variable_ops_test.py"
                 },
                 {
+                    "file": "ops/reverse_sequence_op_test.py"
+                },
+                {
+                    "file": "ops/roll_op_test.py"
+                },
+                {
+                    "file": "ops/scatter_nd_ops_test.py"
+                },
+                {
                     "file": "ops/slice_op_test.py"
                 },
                 {
@@ -157,6 +181,9 @@
                 },
                 {
                     "file": "ops/sparse_xent_op_test.py"
+                },
+                {
+                    "file": "ops/split_op_test.py"
                 },
                 {
                     "file": "ops/stack_op_test.py"
@@ -187,9 +214,6 @@
                 },
                 {
                     "file": "ops/training_ops_test.py"
-                },
-                {
-                    "file": "ops/training_test.py"
                 },
                 {
                     "file": "ops/training_util_test.py"

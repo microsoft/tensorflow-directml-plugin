@@ -56,6 +56,7 @@ from tensorflow.python.training import momentum
 from tensorflow.python.training import saver
 from tensorflow.python.training import training_util
 from tensorflow.python.util import compat
+import dml_test_util
 
 
 def _eager_safe_var_handle_op(*args, **kwargs):
@@ -70,7 +71,7 @@ def _eager_safe_var_handle_op(*args, **kwargs):
 
 @test_util.with_eager_op_as_function
 @test_util.with_control_flow_v2
-class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
+class ResourceVariableOpsTest(dml_test_util.TestCase,
                               parameterized.TestCase):
 
   def tearDown(self):
@@ -99,15 +100,15 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
 
   @test_util.run_gpu_only
   def testGPUInt64(self):
-    with context.eager_mode(), context.device("gpu:0"):
+    with context.eager_mode(), context.device("dml:0"):
       v = resource_variable_ops.ResourceVariable(1, dtype=dtypes.int64)
       self.assertAllEqual(1, v.numpy())
 
   @test_util.run_gpu_only
   def testGPUBfloat16(self):
-    with context.eager_mode(), ops.device("gpu:0"):
+    with context.eager_mode(), ops.device("dml:0"):
       v = resource_variable_ops.ResourceVariable(1, dtype=dtypes.bfloat16)
-      self.assertEqual("/job:localhost/replica:0/task:0/device:GPU:0",
+      self.assertEqual("/job:localhost/replica:0/task:0/device:DML:0",
                        v.device)
       self.assertAllEqual(1, v.numpy())
 
@@ -352,7 +353,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
 
     c = constant_op.constant(1.)
     identity = array_ops.identity_n([c, v.handle])
-    # TODO(b/137403775): Remove this.
     handle_data_util.copy_handle_data(v.handle, identity[1])
 
     g = gradients_impl.gradients(identity[0], [c, v.handle])
@@ -584,11 +584,9 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
     read = resource_variable_ops.read_variable_op(handle, dtype=dtypes.int32)
     self.assertEqual(self.evaluate(read), [[6]])
 
-  @parameterized.parameters(dtypes.float16, dtypes.float32, dtypes.float64)
+  @parameterized.parameters(dtypes.float16, dtypes.float32)
   @test_util.run_in_graph_and_eager_modes
   def testScatterAddVariableMethod(self, dtype):
-    # TODO #37619508: Enable when we support ResourceScatterAdd
-    self.skipTest("DML doesn't support ResourceScatterAdd yet")
     v = resource_variable_ops.ResourceVariable([0.0, 1.5],
                                                name="add",
                                                dtype=dtype)
@@ -599,11 +597,9 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
                 indices=[1], values=constant_op.constant([2.5], dtype=dtype))))
     self.assertAllCloseAccordingToType([0.0, 4.0], self.evaluate(v))
 
-  @parameterized.parameters(dtypes.float16, dtypes.float32, dtypes.float64)
+  @parameterized.parameters(dtypes.float16, dtypes.float32)
   @test_util.run_in_graph_and_eager_modes
   def testScatterSubVariableMethod(self, dtype):
-    # TODO #37619315: Enable when we support ResourceScatterSub
-    self.skipTest("DML doesn't support ResourceScatterSub yet")
     v = resource_variable_ops.ResourceVariable([0.0, 2.5],
                                                name="sub",
                                                dtype=dtype)
@@ -614,11 +610,9 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
                 indices=[1], values=constant_op.constant([1.5], dtype=dtype))))
     self.assertAllCloseAccordingToType([0.0, 1.0], self.evaluate(v))
 
-  @parameterized.parameters(dtypes.float16, dtypes.float32, dtypes.float64)
+  @parameterized.parameters(dtypes.float16, dtypes.float32)
   @test_util.run_in_graph_and_eager_modes
   def testScatterMaxVariableMethod(self, dtype):
-    # TODO #37619461: Enable when we support ResourceScatterMax
-    self.skipTest("DML doesn't support ResourceScatterMax yet")
     v = resource_variable_ops.ResourceVariable([0.0, 4.0],
                                                name="max1",
                                                dtype=dtype)
@@ -639,11 +633,9 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
                 indices=[1], values=constant_op.constant([2.0], dtype=dtype))))
     self.assertAllCloseAccordingToType([0.0, 3.5], self.evaluate(v))
 
-  @parameterized.parameters(dtypes.float16, dtypes.float32, dtypes.float64)
+  @parameterized.parameters(dtypes.float16, dtypes.float32)
   @test_util.run_in_graph_and_eager_modes
   def testScatterMinVariableMethod(self, dtype):
-    # TODO #37619446: Enable when we support ResourceScatterMin
-    self.skipTest("DML doesn't support ResourceScatterMin yet")
     v = resource_variable_ops.ResourceVariable([0.0, 4.0],
                                                name="min1",
                                                dtype=dtype)
@@ -664,11 +656,9 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
                 indices=[1], values=constant_op.constant([2.0], dtype=dtype))))
     self.assertAllCloseAccordingToType([0.0, 2.0], self.evaluate(v))
 
-  @parameterized.parameters(dtypes.float16, dtypes.float32, dtypes.float64)
+  @parameterized.parameters(dtypes.float16, dtypes.float32)
   @test_util.run_in_graph_and_eager_modes
   def testScatterMulVariableMethod(self, dtype):
-    # TODO #37619418: Enable when we support ResourceScatterMul
-    self.skipTest("DML doesn't support ResourceScatterMul yet")
     v = resource_variable_ops.ResourceVariable([0.0, 4.0],
                                                name="mul",
                                                dtype=dtype)
@@ -679,11 +669,9 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
                 indices=[1], values=constant_op.constant([3.0], dtype=dtype))))
     self.assertAllCloseAccordingToType([0.0, 12.0], self.evaluate(v))
 
-  @parameterized.parameters(dtypes.float16, dtypes.float32, dtypes.float64)
+  @parameterized.parameters(dtypes.float16, dtypes.float32)
   @test_util.run_in_graph_and_eager_modes
   def testScatterDivVariableMethod(self, dtype):
-    # TODO #37619474: Enable when we support ResourceScatterDiv
-    self.skipTest("DML doesn't support ResourceScatterDiv yet")
     v = resource_variable_ops.ResourceVariable([0.0, 6.0],
                                                name="div",
                                                dtype=dtype)
@@ -694,11 +682,9 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
                 indices=[1], values=constant_op.constant([2.0], dtype=dtype))))
     self.assertAllCloseAccordingToType([0.0, 3.0], self.evaluate(v))
 
-  @parameterized.parameters(dtypes.float16, dtypes.float32, dtypes.float64)
+  @parameterized.parameters(dtypes.float16, dtypes.float32)
   @test_util.run_in_graph_and_eager_modes
   def testScatterUpdateVariableMethod(self, dtype):
-    # TODO #37618425: Enable when we support ResourceScatterUpdate
-    self.skipTest("DML doesn't support ResourceScatterUpdate yet")
     v = resource_variable_ops.ResourceVariable([0.0, 6.0],
                                                name="update",
                                                dtype=dtype)
@@ -737,9 +723,8 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
     self.assertEqual(
         compat.as_bytes(self.evaluate(read)[0][0]), compat.as_bytes("b"))
 
-  # TODO(alive): get this to work in Eager mode.
   def testGPU(self):
-    with test_util.use_gpu():
+    with dml_test_util.use_gpu():
       abc = variable_scope.get_variable(
           "abc",
           shape=[1],
@@ -753,8 +738,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
           True)
 
   def testScatterBool(self):
-    # TODO #37618425: Enable when we support ResourceScatterUpdate
-    self.skipTest("DML doesn't support ResourceScatterUpdate yet")
     with context.eager_mode():
       ref = resource_variable_ops.ResourceVariable(
           [False, True, False], trainable=False)
@@ -775,7 +758,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
       v = resource_variable_ops.ResourceVariable(
           initial_value=lambda: 1, constraint=constraint, name="var1")
 
-  # TODO(alive): how should this work in Eager mode?
   @test_util.run_deprecated_v1
   def testInitFn(self):
     with self.cached_session():
@@ -1077,8 +1059,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
 
   @test_util.run_in_graph_and_eager_modes
   def testAssignReturnsVariable(self):
-    # TODO #37589560: Enable after ResourceScatterAdd is implemented
-    self.skipTest("ResourceScatterAdd is not supported on DML yet")
     var = resource_variable_ops.ResourceVariable(1.)
     self.evaluate(variables.global_variables_initializer())
     assigned = var.assign(2.)
@@ -1136,7 +1116,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
     self.assertIsInstance(w.dtype, dtypes.DType)
     self.assertEqual(v.dtype, w.dtype)
 
-  # TODO(alive): get caching to work in eager mode.
   @test_util.run_deprecated_v1
   def testCachingDevice(self):
     with ops.device("/job:server/task:1"):
@@ -1319,25 +1298,18 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
                                                   ignore_lookup_error=False)
 
   def testScatterUpdate(self):
-    # TODO #37618425: Enable when we support ResourceScatterUpdate
-    self.skipTest("DML doesn't support ResourceScatterUpdate yet")
-
     with context.eager_mode():
       v = resource_variable_ops.ResourceVariable([1.0, 2.0], name="update")
       state_ops.scatter_update(v, [1], [3.0])
       self.assertAllEqual([1.0, 3.0], v.numpy())
 
   def testScatterAddStateOps(self):
-    # TODO #37619508: Enable when we support ResourceScatterAdd
-    self.skipTest("DML doesn't support ResourceScatterAdd yet")
     with context.eager_mode():
       v = resource_variable_ops.ResourceVariable([1.0, 2.0], name="add")
       state_ops.scatter_add(v, [1], [3])
       self.assertAllEqual([1.0, 5.0], v.numpy())
 
   def testScatterSubStateOps(self):
-    # TODO #37619315: Enable when we support ResourceScatterSub
-    self.skipTest("DML doesn't support ResourceScatterSub yet")
     with context.eager_mode():
       v = resource_variable_ops.ResourceVariable([1.0, 2.0], name="sub")
       state_ops.scatter_sub(v, [1], [3])
@@ -1366,8 +1338,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
       self.assertEqual(g.control_inputs[0].type, "AssignAddVariableOp")
 
   def testScatterNdAddStateOps(self):
-    # TODO #37619412: Enable when we support ResourceScatterNdAdd
-    self.skipTest("DML doesn't support ResourceScatterNdAdd yet")
     with context.eager_mode():
       v = resource_variable_ops.ResourceVariable(
           [1, 2, 3, 4, 5, 6, 7, 8], dtype=dtypes.float32, name="add")
@@ -1390,8 +1360,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
                         for x in graph.get_operations()))
 
   def testScatterNdSubStateOps(self):
-    # TODO #37619394: Enable when we support ResourceScatterNdSub
-    self.skipTest("DML doesn't support ResourceScatterNdSub yet")
     with context.eager_mode():
       v = resource_variable_ops.ResourceVariable(
           [1, 2, 3, 4, 5, 6, 7, 8], dtype=dtypes.float32, name="sub")
@@ -1402,9 +1370,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
       self.assertAllClose(expected, v.numpy())
 
   def testScatterUpdateCast(self):
-    # TODO #37618425: Enable when we support ResourceScatterUpdate
-    self.skipTest("DML doesn't support ResourceScatterUpdate yet")
-
     with context.eager_mode():
       v = resource_variable_ops.ResourceVariable([1.0, 2.0], name="update")
       state_ops.scatter_update(v, [1], [3])
@@ -1423,8 +1388,10 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
 
   @test_util.disable_xla("b/208334252")  # XLA doesn't have a deterministic impl
   def testScatterAddDeterministic(self):
-    # TODO #37619508: Enable when we support ResourceScatterAdd
-    self.skipTest("DML doesn't support ResourceScatterAdd yet")
+    # TODO #38100209: Enable when Scatter ops use less memory to add duplicated
+    # indices together
+    self.skipTest("DML uses too much memory for some scatter operations")
+
     with context.eager_mode(), test_util.deterministic_ops():
       # Normally a nondeterministic codepath occurs when the variable has at
       # least 1024 elements. Test that op determinism ensures the op is
@@ -1487,8 +1454,6 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
             ]))
     return value
 
-  # TODO(ebrevdo): Add run_in_graph_and_eager_modes once we can create
-  # EagerTensor constants with TensorProto inputs.
   @test_util.disable_tfrt("Does not support tf.Const in lowering.")
   @test_util.run_in_graph_and_eager_modes()
   def testVariantInitializer(self):
@@ -1647,11 +1612,8 @@ class ResourceVariableOpsTest(test_util.TensorFlowTestCase,
 
   @test_util.run_v2_only
   def testUninitializedVariableMemoryUsage(self):
-    if test_util.is_gpu_available():
-      # TODO(allenl): Investigate possible GPU-specific memory leaks
+    if dml_test_util.is_gpu_available():
       self.skipTest("Disabled when a GPU is available")
-    # TODO(kkb): Python memory checker complains continuous `weakref`
-    # allocations, investigate.
     if memory_checker.CppMemoryChecker is None:
       self.skipTest("Requires the C++ memory checker")
 

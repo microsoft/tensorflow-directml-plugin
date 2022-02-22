@@ -192,11 +192,6 @@ class SelectInitHelper : public BaseSelectInitHelper
                 else_shape.DebugString());
         }
 
-        const uint32_t batch_size =
-            static_cast<uint32_t>(then_shape.dim_size(0));
-        const uint32_t outer_dims_size =
-            then_shape.num_elements() / then_shape.dim_size(0);
-
         const uint32_t num_elements = then_shape.num_elements();
         simple_ternary_.cond_shape = {1};
         simple_ternary_.then_shape = {num_elements};
@@ -341,18 +336,9 @@ class SelectV2InitHelper : public BaseSelectInitHelper
 
         // Broadcast `cond`, `then` and `else` to combined shape,
         // in order to obtain the reshape.
-        BCast cond_bcast(
-            BCast::FromShape(BCast::ToShape(bcast.output_shape())),
-            BCast::FromShape(cond_shape),
-            false);
-        BCast then_bcast(
-            BCast::FromShape(BCast::ToShape(bcast.output_shape())),
-            BCast::FromShape(then_shape),
-            false);
-        BCast else_bcast(
-            BCast::FromShape(BCast::ToShape(bcast.output_shape())),
-            BCast::FromShape(else_shape),
-            false);
+        BCast cond_bcast(bcast.output_shape(), cond_shape.dim_sizes(), false);
+        BCast then_bcast(bcast.output_shape(), then_shape.dim_sizes(), false);
+        BCast else_bcast(bcast.output_shape(), else_shape.dim_sizes(), false);
         OP_REQUIRES(
             ctx,
             cond_bcast.IsValid() && then_bcast.IsValid() &&
@@ -383,11 +369,18 @@ class SelectV2InitHelper : public BaseSelectInitHelper
 
         broadcasted_output_shape_ = BCast::ToShape(bcast.output_shape());
 
+        // The shape simplification doesn't handle "scalars" (i.e. shapes with 0
+        // dimensions), so make sure that scalars are actually represented as a
+        // vector of 1 element
+        TensorShape dml_output_shape = broadcasted_output_shape_.dims() == 0
+                                           ? TensorShape({1})
+                                           : broadcasted_output_shape_;
+
         absl::optional<SimpleTernary> simple_ternary = SimplifyTernary(
-            BCast::ToShape(cond_bcast.output_shape()),
-            BCast::ToShape(then_bcast.output_shape()),
-            BCast::ToShape(else_bcast.output_shape()),
-            broadcasted_output_shape_);
+            BCast::ToShape(cond_bcast.y_reshape()),
+            BCast::ToShape(then_bcast.y_reshape()),
+            BCast::ToShape(else_bcast.y_reshape()),
+            dml_output_shape);
 
         OP_REQUIRES(
             ctx,

@@ -23,9 +23,10 @@ from tensorflow.python.keras.engine import input_layer
 from tensorflow.python.keras.engine import training
 from tensorflow.python.keras.layers.convolutional import Conv2D
 from tensorflow.python.platform import test
+import dml_test_util
 
 
-class TrainingGPUTest(test.TestCase, parameterized.TestCase):
+class TrainingGPUTest(dml_test_util.TestCase, parameterized.TestCase):
 
   @combinations.generate(combinations.combine(mode=['graph', 'eager']))
   def test_model_with_crossentropy_losses_channels_first(self):
@@ -66,8 +67,8 @@ class TrainingGPUTest(test.TestCase, parameterized.TestCase):
       simple_model.compile(optimizer='rmsprop', loss=loss)
       return simple_model
 
-    if test.is_gpu_available(cuda_only=True):
-      with testing_utils.use_gpu():
+    if dml_test_util.is_gpu_available(cuda_only=True):
+      with dml_test_util.use_gpu():
         losses_to_test = ['sparse_categorical_crossentropy',
                           'categorical_crossentropy', 'binary_crossentropy']
 

@@ -29,6 +29,7 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradients_impl
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 class BiasAddDeterministicTest(bias_op_base.BiasAddTestBase,
@@ -130,8 +131,6 @@ class BiasAddDeterministicTest(bias_op_base.BiasAddTestBase,
           result_b = bias_gradients.eval(feed_dict=feed_dict)
           self.assertAllEqual(result_a, result_b)
 
-  # TODO(duncanriach): Re-enable the following three tests for the error checks
-  #   after deterministic functionality is implemented at the CUDA kernel level.
   def testInputDims(self):
     pass
 
@@ -143,6 +142,5 @@ class BiasAddDeterministicTest(bias_op_base.BiasAddTestBase,
 
 
 if __name__ == '__main__':
-  # TODO(reedwm): Merge this file with bias_op_base.py and bias_op_test.py
   config.enable_op_determinism()
   test.main()

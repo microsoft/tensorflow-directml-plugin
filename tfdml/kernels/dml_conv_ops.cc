@@ -915,6 +915,7 @@ class Conv2DGradInitHelper : public InitializationHelper
     }
 
     const Conv2DParameters& GetParams() const { return attr_->params; }
+    virtual ~Conv2DGradInitHelper() = default;
 
   private:
     const std::shared_ptr<const Attributes> attr_;
@@ -1057,11 +1058,13 @@ class DmlConv2DKernel : public DmlKernel
         const Conv2DParameters& conv_params = init_helper->GetParams();
 
         Conv2DDimensions conv_dims;
-        TF_CHECK_OK(ComputeConv2DDimension(
-            conv_params,
-            ctx->GetInputTensorShape(0),
-            ctx->GetInputTensorShape(1),
-            &conv_dims));
+        OP_REQUIRES_OK(
+            ctx->GetOpKernelContext(),
+            ComputeConv2DDimension(
+                conv_params,
+                ctx->GetInputTensorShape(0),
+                ctx->GetInputTensorShape(1),
+                &conv_dims));
 
         uint32_t strides[] = {
             static_cast<uint32_t>(conv_dims.stride_rows),
@@ -1155,11 +1158,13 @@ class DmlFusedConv2DKernel : public DmlKernel
             init_helper->GetFusedComputationArgs();
 
         Conv2DDimensions conv_dims;
-        TF_CHECK_OK(ComputeConv2DDimension(
-            conv_params,
-            ctx->GetInputTensorShape(0),
-            ctx->GetInputTensorShape(1),
-            &conv_dims));
+        OP_REQUIRES_OK(
+            ctx->GetOpKernelContext(),
+            ComputeConv2DDimension(
+                conv_params,
+                ctx->GetInputTensorShape(0),
+                ctx->GetInputTensorShape(1),
+                &conv_dims));
 
         uint32_t strides[] = {
             static_cast<uint32_t>(conv_dims.stride_rows),
@@ -1403,10 +1408,199 @@ class DmlFusedConv2DKernel : public DmlKernel
     }
 };
 
+Status Conv2DBackpropComputeInputShape(
+    const Tensor& input_sizes,
+    const TensorShape& filter_shape,
+    const TensorShape& out_backprop_shape,
+    const TensorFormat& data_format,
+    TensorShape* input_shape)
+{
+    if (!TensorShapeUtils::IsVector(input_sizes.shape()))
+    {
+        return errors::InvalidArgument(
+            "Conv2DBackpropInput: input_sizes input must be 1-dim, not ",
+            input_sizes.dims());
+    }
+
+    if (input_sizes.dim_size(0) == 4)
+    {
+        return TensorShapeUtils::MakeShape(input_sizes, input_shape);
+    }
+
+    if (input_sizes.dim_size(0) == 2)
+    {
+        const int batch_size =
+            GetTensorDim(out_backprop_shape, data_format, 'N');
+        const int output_height = input_sizes.base<int32_t>()[0];
+        const int output_width = input_sizes.base<int32_t>()[1];
+        const int output_depth = filter_shape.dim_size(2);
+        *input_shape = ShapeFromFormat(
+            data_format,
+            batch_size,
+            output_height,
+            output_width,
+            output_depth);
+        return Status::OK();
+    }
+
+    return errors::InvalidArgument(
+        "Conv2DBackpropInput requires input_sizes to "
+        "contain 4 values or 2 values, but got: ",
+        input_sizes.dim_size(0));
+}
+
+class Conv2DGradInputInitHelper : public Conv2DGradInitHelper
+{
+  public:
+    Conv2DGradInputInitHelper(
+        OpKernelContext* ctx,
+        std::shared_ptr<const Attributes> attr)
+        : Conv2DGradInitHelper(ctx, attr)
+    {
+        const Tensor& input_sizes = ctx->input(0);
+        const Tensor& filter = ctx->input(1);
+        const Tensor& out_backprop = ctx->input(2);
+        TensorShape output_shape;
+
+        OP_REQUIRES_OK(
+            ctx,
+            Conv2DBackpropComputeInputShape(
+                input_sizes,
+                filter.shape(),
+                out_backprop.shape(),
+                attr->params.data_format,
+                &output_shape));
+
+        const TensorShape& filter_shape = filter.shape();
+
+        ConvBackpropDimensions dims;
+        OP_REQUIRES_OK(
+            ctx,
+            ConvBackpropComputeDimensionsV2(
+                "Conv2DBackpropInput",
+                /*num_spatial_dims=*/2,
+                output_shape,
+                filter_shape,
+                out_backprop.shape(),
+                attr->params.dilations,
+                attr->params.strides,
+                attr->params.padding,
+                attr->params.explicit_paddings,
+                attr->params.data_format,
+                &dims));
+
+        int64_t padding_top = -1, padding_bottom = -1;
+        int64_t padding_left = -1, padding_right = -1;
+        if (attr->params.padding == EXPLICIT)
+        {
+            GetExplicitPaddingForDim(
+                attr->params.explicit_paddings,
+                attr->params.data_format,
+                'H',
+                &padding_top,
+                &padding_bottom);
+            GetExplicitPaddingForDim(
+                attr->params.explicit_paddings,
+                attr->params.data_format,
+                'W',
+                &padding_left,
+                &padding_right);
+        }
+
+        const int stride_rows =
+            GetTensorDim(attr->params.strides, attr->params.data_format, 'H');
+        const int stride_cols =
+            GetTensorDim(attr->params.strides, attr->params.data_format, 'W');
+        const int dilation_rows =
+            GetTensorDim(attr->params.dilations, attr->params.data_format, 'H');
+        const int dilation_cols =
+            GetTensorDim(attr->params.dilations, attr->params.data_format, 'W');
+
+        int64_t expected_out_rows, expected_out_cols;
+        // The function is guaranteed to succeed because we checked the output
+        // and padding was valid earlier.
+        OP_REQUIRES_OK(
+            ctx,
+            GetWindowedOutputSizeVerboseV2(
+                dims.spatial_dims[0].input_size,
+                dims.spatial_dims[0].filter_size,
+                dilation_rows,
+                stride_rows,
+                attr->params.padding,
+                &expected_out_rows,
+                &padding_top,
+                &padding_bottom));
+        assert(dims.spatial_dims[0].output_size == expected_out_rows);
+
+        OP_REQUIRES_OK(
+            ctx,
+            GetWindowedOutputSizeVerboseV2(
+                dims.spatial_dims[1].input_size,
+                dims.spatial_dims[1].filter_size,
+                dilation_cols,
+                stride_cols,
+                attr->params.padding,
+                &expected_out_cols,
+                &padding_left,
+                &padding_right));
+        assert(dims.spatial_dims[1].output_size == expected_out_cols);
+
+        output_shape_ = std::move(output_shape);
+        stride_rows_ = stride_rows;
+        stride_cols_ = stride_cols;
+        dilation_rows_ = dilation_rows;
+        dilation_cols_ = dilation_cols;
+        pad_rows_before_ = padding_top;
+        pad_cols_before_ = padding_left;
+        pad_rows_after_ = padding_bottom;
+        pad_cols_after_ = padding_right;
+        input_depth_ = dims.in_depth;
+        patch_depth_ = filter_shape.dim_size(2);
+    }
+
+    const TensorShape& GetOutputShape() const { return output_shape_; }
+    uint32_t GetStrideRows() const { return stride_rows_; }
+    uint32_t GetStrideCols() const { return stride_cols_; }
+    uint32_t GetDilationRows() const { return dilation_rows_; }
+    uint32_t GetDilationCols() const { return dilation_cols_; }
+    uint32_t GetPadRowsBefore() const { return pad_rows_before_; }
+    uint32_t GetPadColsBefore() const { return pad_cols_before_; }
+    uint32_t GetPadRowsAfter() const { return pad_rows_after_; }
+    uint32_t GetPadColsAfter() const { return pad_cols_after_; }
+    uint32_t GetInputDepth() const { return input_depth_; }
+    uint32_t GetPatchDepth() const { return patch_depth_; }
+
+  private:
+    TensorShape output_shape_;
+    uint32_t stride_rows_;
+    uint32_t stride_cols_;
+    uint32_t dilation_rows_;
+    uint32_t dilation_cols_;
+    uint32_t pad_rows_before_;
+    uint32_t pad_cols_before_;
+    uint32_t pad_rows_after_;
+    uint32_t pad_cols_after_;
+    uint32_t input_depth_;
+    uint32_t patch_depth_;
+};
+
+class Conv2DBackpropInputShapeHelper : public ShapeHelper
+{
+  public:
+    std::vector<TensorShape> GetOutputShapes(
+        OpKernelContext* ctx,
+        const InitializationHelper* initialization_helper) const
+    {
+        auto* init_helper = static_cast<const Conv2DGradInputInitHelper*>(
+            initialization_helper);
+        return {init_helper->GetOutputShape()};
+    }
+};
+
 class DmlConv2DBackpropInputKernel : public DmlKernel
 {
   public:
-    using InitHelper = Conv2DGradInitHelper;
+    using InitHelper = Conv2DGradInputInitHelper;
 
     explicit DmlConv2DBackpropInputKernel(
         DmlKernelConstruction* ctx,
@@ -1438,28 +1632,25 @@ class DmlConv2DBackpropInputKernel : public DmlKernel
         DmlKernelTensors tensors = GetTensorInfos(ctx, params);
         const Conv2DParameters& conv_params = init_helper->GetParams();
 
-        Conv2DDimensions conv_dims;
-        TF_CHECK_OK(ComputeConv2DDimension(
-            conv_params,
-            input_shape,
-            ctx->GetInputTensorShape(1),
-            &conv_dims));
-
         uint32_t strides[] = {
-            static_cast<uint32_t>(conv_dims.stride_rows),
-            static_cast<uint32_t>(conv_dims.stride_cols)};
+            init_helper->GetStrideRows(),
+            init_helper->GetStrideCols(),
+        };
         uint32_t dilations[] = {
-            static_cast<uint32_t>(conv_dims.dilation_rows),
-            static_cast<uint32_t>(conv_dims.dilation_cols)};
+            init_helper->GetDilationRows(),
+            init_helper->GetDilationCols(),
+        };
         uint32_t start_padding[] = {
-            static_cast<uint32_t>(conv_dims.pad_rows_before),
-            static_cast<uint32_t>(conv_dims.pad_cols_before)};
+            init_helper->GetPadRowsBefore(),
+            init_helper->GetPadColsBefore(),
+        };
         uint32_t end_padding[] = {
-            static_cast<uint32_t>(conv_dims.pad_rows_after),
-            static_cast<uint32_t>(conv_dims.pad_cols_after)};
+            init_helper->GetPadRowsAfter(),
+            init_helper->GetPadColsAfter(),
+        };
         uint32_t output_padding[] = {0, 0};
         uint32_t group_count =
-            static_cast<uint32_t>(conv_dims.in_depth / conv_dims.patch_depth);
+            init_helper->GetInputDepth() / init_helper->GetPatchDepth();
 
         using namespace DmlTensorAxes;
 
@@ -1535,11 +1726,13 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
         const Conv2DParameters& conv_params = init_helper->GetParams();
 
         Conv2DDimensions conv_dims;
-        TF_CHECK_OK(ComputeConv2DDimension(
-            conv_params,
-            ctx->GetInputTensorShape(0),
-            filter_shape,
-            &conv_dims));
+        OP_REQUIRES_OK(
+            ctx->GetOpKernelContext(),
+            ComputeConv2DDimension(
+                conv_params,
+                ctx->GetInputTensorShape(0),
+                filter_shape,
+                &conv_dims));
 
         uint32_t strides[] = {
             static_cast<uint32_t>(conv_dims.stride_rows),
@@ -2911,7 +3104,7 @@ void RegisterConv2DBackpropInput()
         ops::Conv2DBackpropInput,
         DmlKernelWrapper<
             DmlConv2DBackpropInputKernel,
-            GetOutputShapeFromDimsTensorHelper<int32_t, 0>>>::
+            Conv2DBackpropInputShapeHelper>>::
         WithHostMemoryArguments<
             ops::Conv2DBackpropInput::Argument::input_sizes>;
 

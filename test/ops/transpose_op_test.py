@@ -28,9 +28,10 @@ from tensorflow.python.framework import tensor_spec
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradient_checker_v2
 from tensorflow.python.platform import test
+import dml_test_util
 
 
-class TransposeTest(test.TestCase):
+class TransposeTest(dml_test_util.TestCase):
 
   def _np_transpose(self, x, perm):
     ret = np.copy(x)
@@ -145,7 +146,7 @@ class TransposeTest(test.TestCase):
 
   def test5DGPU(self):
     # If no GPU available, skip the test
-    if not test.is_gpu_available(cuda_only=True):
+    if not dml_test_util.is_gpu_available(cuda_only=True):
       return
     large_shapes = [[4, 10, 10, 10, 3], [4, 10, 10, 10, 8], [4, 10, 10, 10, 13],
                     [4, 3, 10, 10, 10], [4, 8, 10, 10, 10], [4, 13, 10, 10,
@@ -172,7 +173,7 @@ class TransposeTest(test.TestCase):
 
   def test4DGPU(self):
     # If no GPU available, skip the test
-    if not test.is_gpu_available(cuda_only=True):
+    if not dml_test_util.is_gpu_available(cuda_only=True):
       return
     large_shapes = [[4, 10, 10, 3], [4, 10, 10, 8], [4, 10, 10, 13],
                     [4, 3, 10, 10], [4, 8, 10, 10], [4, 13, 10, 10]] * 3
@@ -232,7 +233,7 @@ class TransposeTest(test.TestCase):
 
   def test3DGPU(self):
     # If no GPU available, skip the test
-    if not test.is_gpu_available(cuda_only=True):
+    if not dml_test_util.is_gpu_available(cuda_only=True):
       return
 
     datatypes = [np.int8, np.float16, np.float32, np.float64, np.complex128]
@@ -257,7 +258,7 @@ class TransposeTest(test.TestCase):
 
   def testLargeSizeGPU(self):
     # If no GPU available, skip the test
-    if not test.is_gpu_available(cuda_only=True):
+    if not dml_test_util.is_gpu_available(cuda_only=True):
       return
 
     large_shapes = [[1000000, 31, 3], [3, 1000000, 31], [3, 31, 1000000],
@@ -280,7 +281,7 @@ class TransposeTest(test.TestCase):
 
   def testRandomizedSmallDimLargeSizeGPU(self):
     # If no GPU available, skip the test
-    if not test.is_gpu_available(cuda_only=True):
+    if not dml_test_util.is_gpu_available(cuda_only=True):
       return
 
     # Draw 10 random shapes with large dimension sizes.
@@ -373,29 +374,6 @@ class TransposeTest(test.TestCase):
         np.arange(0, 210).reshape([2, 3, 5, 7]).astype(np.float64))
     self._compare_cpu_gpu(
         np.arange(0, 16).reshape([1, 2, 1, 2, 1, 2, 1, 2]).astype(np.float64))
-
-  def testComplex64(self):
-    self._testBoth(np.array(1 + 2j).astype(np.complex64))
-    self._testBoth((1 + 2j) * np.arange(0, 21).astype(np.complex64))
-    self._testBoth(
-        (1 + 2j) * np.arange(0, 21).reshape([3, 7]).astype(np.complex64))
-    self._testBoth(
-        (1 + 2j) * np.arange(0, 210).reshape([2, 3, 5, 7]).astype(np.complex64))
-    self._testBoth(
-        (1 + 2j) *
-        np.arange(0, 1260).reshape([2, 3, 5, 7, 2, 3]).astype(np.complex64))
-
-  def testComplex128(self):
-    self._testBoth(np.array(1 + 2j).astype(np.complex128))
-    self._testBoth((1 + 2j) * np.arange(0, 21).astype(np.complex128))
-    self._testBoth(
-        (1 + 2j) * np.arange(0, 21).reshape([3, 7]).astype(np.complex128))
-    self._testBoth(
-        (1 + 2j) *
-        np.arange(0, 210).reshape([2, 3, 5, 7]).astype(np.complex128))
-    self._testBoth(
-        (1 + 2j) *
-        np.arange(0, 1260).reshape([2, 3, 5, 7, 2, 3]).astype(np.complex128))
 
   def testInt8(self):
     self._testBoth(np.arange(0, 21).reshape([3, 7]).astype(np.int8))

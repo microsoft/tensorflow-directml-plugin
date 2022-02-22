@@ -30,9 +30,10 @@ from tensorflow.python.ops import nn_ops
 # The following import is required to register the gradient function.
 from tensorflow.python.ops.nn_grad import _SoftmaxCrossEntropyWithLogitsGrad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
+import dml_test_util
 
 
-class XentOpTestBase(test.TestCase):
+class XentOpTestBase(dml_test_util.TestCase):
 
   def _opFwdBwd(self, labels, logits, axis=-1):
     """ Runs the op-under-test both forwards and backwards."""
@@ -54,8 +55,6 @@ class XentOpTestBase(test.TestCase):
     l = -np.sum(labels * np.log(probs + 1.0e-20), axis=dim)
     return l, bp
 
-  # TODO(b/123860949): The values are constant folded for XLA, so placeholders
-  # are needed.
   def _testXent2D(self,
                   np_labels,
                   np_logits,
@@ -135,8 +134,6 @@ class XentOpTestBase(test.TestCase):
     self.assertAllClose(
         np.array([1.3862, 1.9401]), np_loss, rtol=1.e-3, atol=1.e-3)
 
-  # TODO(b/123860949): The values are constant folded for XLA, so placeholders
-  # are needed.
   @test_util.run_deprecated_v1
   def _testLabelsBroadcast(self, uniform_labels_gradient):
     labels = np.array([[0., 0., 0., 1.]]).astype(np.float16)

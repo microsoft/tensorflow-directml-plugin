@@ -27,6 +27,7 @@ from tensorflow.python.keras import keras_parameterized
 from tensorflow.python.keras import testing_utils
 from tensorflow.python.keras.layers import core
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 @keras_parameterized.run_with_all_model_types

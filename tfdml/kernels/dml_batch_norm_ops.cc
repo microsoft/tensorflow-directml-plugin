@@ -1008,29 +1008,70 @@ class DmlFusedBatchNormGradKernel : public DmlKernel
         // y_backprop, x, and x_backprop have their layout specified by the
         // "data_format" attribute. The rest are 1D tensors in the C dimension
         using namespace DmlTensorAxes;
-        DmlTensorLayout layout_4D =
-            GetDmlTensorLayout(init_helper->GetFormat(), kNchwDimensionCount);
-        DmlTensorLayout layout_1D = {C};
+
+        int64_t dim_count = ctx->GetInputTensorShape(kX).dims();
+
+        DmlTensorLayout layout =
+            GetDmlTensorLayout(init_helper->GetFormat(), dim_count);
+
+        TensorShape scale_dml_shape;
+        TensorShape reserve_space_1_dml_shape;
+        TensorShape reserve_space_2_dml_shape;
+        TensorShape scale_backprop_dml_shape;
+        TensorShape offset_backprop_dml_shape;
+
+        for (int i = 0; i < dim_count; ++i)
+        {
+            scale_dml_shape.AddDim(1);
+            reserve_space_1_dml_shape.AddDim(1);
+            reserve_space_2_dml_shape.AddDim(1);
+            scale_backprop_dml_shape.AddDim(1);
+            offset_backprop_dml_shape.AddDim(1);
+        }
+
+        scale_dml_shape.set_dim(
+            1,
+            ctx->GetInputTensorShape(kScale).num_elements());
+        reserve_space_1_dml_shape.set_dim(
+            1,
+            ctx->GetInputTensorShape(kReserveSpace1).num_elements());
+        reserve_space_2_dml_shape.set_dim(
+            1,
+            ctx->GetInputTensorShape(kReserveSpace2).num_elements());
 
         // Inputs
         tensors.inputs[kYBackprop]->desc =
-            CreateTensorDescFromInput(ctx, kYBackprop, layout_4D);
-        tensors.inputs[kX]->desc =
-            CreateTensorDescFromInput(ctx, kX, layout_4D);
-        tensors.inputs[kScale]->desc =
-            CreateTensorDescFromInput(ctx, kScale, layout_1D);
-        tensors.inputs[kReserveSpace1]->desc =
-            CreateTensorDescFromInput(ctx, kReserveSpace1, layout_1D);
-        tensors.inputs[kReserveSpace2]->desc =
-            CreateTensorDescFromInput(ctx, kReserveSpace2, layout_1D);
+            CreateTensorDescFromInput(ctx, kYBackprop, layout);
+        tensors.inputs[kX]->desc = CreateTensorDescFromInput(ctx, kX, layout);
+        tensors.inputs[kScale]->desc = DmlTensorDesc::Create(
+            ctx->GetInputDataType(kScale),
+            scale_dml_shape,
+            scale_dml_shape);
+        tensors.inputs[kReserveSpace1]->desc = DmlTensorDesc::Create(
+            ctx->GetInputDataType(kReserveSpace1),
+            reserve_space_1_dml_shape,
+            reserve_space_1_dml_shape);
+        tensors.inputs[kReserveSpace2]->desc = DmlTensorDesc::Create(
+            ctx->GetInputDataType(kReserveSpace2),
+            reserve_space_2_dml_shape,
+            reserve_space_2_dml_shape);
 
         // Outputs
         tensors.outputs[kXBackprop]->desc =
-            CreateTensorDescFromOutput(ctx, kXBackprop, layout_4D);
-        tensors.outputs[kScaleBackprop]->desc =
-            CreateTensorDescFromOutput(ctx, kScaleBackprop, layout_1D);
-        tensors.outputs[kOffsetBackprop]->desc =
-            CreateTensorDescFromOutput(ctx, kOffsetBackprop, layout_1D);
+            CreateTensorDescFromInput(ctx, kYBackprop, layout);
+        tensors.inputs[kX]->desc = CreateTensorDescFromInput(ctx, kX, layout);
+        tensors.inputs[kScale]->desc = DmlTensorDesc::Create(
+            ctx->GetInputDataType(kScale),
+            scale_dml_shape,
+            scale_dml_shape);
+        tensors.inputs[kReserveSpace1]->desc = DmlTensorDesc::Create(
+            ctx->GetInputDataType(kReserveSpace1),
+            reserve_space_1_dml_shape,
+            reserve_space_1_dml_shape);
+        tensors.inputs[kReserveSpace2]->desc = DmlTensorDesc::Create(
+            ctx->GetInputDataType(kReserveSpace2),
+            reserve_space_2_dml_shape,
+            reserve_space_2_dml_shape);
 
         auto input_descs = GetDmlTensorDescs(tensors.inputs);
 

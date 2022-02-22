@@ -35,6 +35,7 @@ from tensorflow.python.keras.optimizer_v2 import rmsprop
 from tensorflow.python.keras.utils import data_utils
 from tensorflow.python.platform import test
 from tensorflow.python.util import nest
+import dml_test_util
 
 
 def custom_generator(mode=2):
@@ -326,8 +327,10 @@ class TestGeneratorMethods(keras_parameterized.TestCase):
   @keras_parameterized.run_all_keras_modes
   @data_utils.dont_use_multiprocessing_pool
   def test_generator_dynamic_shapes(self):
-    # TODO #37589560: Enable after ResourceScatterAdd is implemented
-    self.skipTest("ResourceScatterAdd is not supported on DML yet")
+    # TODO: Enable once tensor lists are enabled on Windows
+    # https://github.com/tensorflow/tensorflow/pull/54468
+    self.skipTest("Tensor Lists are not enabled on Windows yet")
+
     x = [
         'I think juice is great',
         'unknown is the best language since slicedbread',
@@ -483,7 +486,7 @@ class TestGeneratorMethodsWithSequences(keras_parameterized.TestCase):
 
 
 @combinations.generate(combinations.combine(mode=['graph', 'eager']))
-class TestConvertToGeneratorLike(test.TestCase, parameterized.TestCase):
+class TestConvertToGeneratorLike(dml_test_util.TestCase, parameterized.TestCase):
   simple_inputs = (np.ones((10, 10)), np.ones((10, 1)))
   nested_inputs = ((np.ones((10, 10)), np.ones((10, 20))), (np.ones((10, 1)),
                                                             np.ones((10, 3))))

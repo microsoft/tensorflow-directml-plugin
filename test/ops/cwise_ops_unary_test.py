@@ -32,13 +32,12 @@ from tensorflow.python.ops import nn_grad  # pylint: disable=unused-import
 from tensorflow.python.ops import special_math_ops
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging
+import dml_test_util
 
 _NEG = lambda x: -x
 _ABS = abs
 
 
-# TODO(zongheng): it'd be great to factor out this function and various random
-# SparseTensor gen funcs.
 def _sparsify(x, thresh=0.5, index_dtype=np.int64):
   x[x < thresh] = 0
 
@@ -69,7 +68,7 @@ def _default_tolerance(dtype):
     return None  # Fail fast for unexpected types
 
 
-class UnaryOpTest(test.TestCase):
+class UnaryOpTest(dml_test_util.TestCase):
 
   def _compareCpu(self, x, np_func, tf_func, grad_rtol=None, grad_atol=None):
     if grad_rtol is None:

@@ -28,6 +28,7 @@ from tensorflow.python.keras import keras_parameterized
 from tensorflow.python.keras import testing_utils
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 def _conv2d_filter(**kwargs):
@@ -178,8 +179,9 @@ class CoreLayerIntegrationTest(keras_parameterized.TestCase):
   @parameterized.named_parameters(*OUTPUT_TEST_CASES)
   def test_model_loops(self, layer_to_test, input_shape, fuzz_dims,
                        layer_kwargs):
-    # TODO 37940089: Enable once DML supports tensor lists
-    self.skipTest("DML doesn't support tensor lists yet")
+    # TODO: Enable once tensor lists are enabled on Windows
+    # https://github.com/tensorflow/tensorflow/pull/54468
+    self.skipTest("Tensor Lists are not enabled on Windows yet")
     self._run_fit_eval_predict(layer_to_test, input_shape,
                                input_shape, layer_kwargs)
 

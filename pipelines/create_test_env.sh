@@ -5,6 +5,7 @@
 
 test_artifact_path=$1
 tensorflow_package=$2
+keras_package=$3
 
 # Windows agents use the agent artifacts directory for the conda installation, but
 # this is slow in WSL (filesystem networking overhead). Instead the agent will use
@@ -28,6 +29,7 @@ conda create --prefix $test_env_path python=$py_version_major_dot_minor -y
 
 conda activate $test_env_path
 pip install $tensorflow_package
+pip install $keras_package
 pip install tensorboard_plugin_profile
 pip install $plugin_package
 pip list

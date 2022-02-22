@@ -29,9 +29,10 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging
+import dml_test_util
 
 
-class DepthToSpaceTest(test.TestCase):
+class DepthToSpaceTest(dml_test_util.TestCase):
 
   def _testOne(self, inputs, block_size, outputs, dtype=dtypes.float32):
     input_nhwc = math_ops.cast(inputs, dtype)
@@ -325,12 +326,12 @@ class DepthToSpaceTest(test.TestCase):
     # self.compareToTranspose(3, 200, 300, 32, 2, "NCHW_VECT_C", True)
 
 
-class DepthToSpaceGradientTest(test.TestCase):
+class DepthToSpaceGradientTest(dml_test_util.TestCase):
 
   # Check the gradients.
   def _checkGrad(self, x, block_size, data_format):
     # NCHW is implemented for only GPU.
-    if data_format == "NCHW" and not test.is_gpu_available():
+    if data_format == "NCHW" and not dml_test_util.is_gpu_available():
       return
 
     assert 4 == x.ndim

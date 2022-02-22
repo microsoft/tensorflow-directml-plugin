@@ -30,13 +30,13 @@ from tensorflow.python.ops import nn_grad
 from tensorflow.python.ops import nn_impl
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.platform import test
+import dml_test_util
 
-class BatchNormalizationTest(test.TestCase):
+class BatchNormalizationTest(dml_test_util.TestCase):
 
   def _batch_norm(self, x, mean, var, offset, scale, epsilon):
     # We compute the batch norm manually in this function because
     # nn_impl.batch_normalization does not support float16 yet.
-    # TODO(reedwm): Add float16 support to nn_impl.batch_normalization.
     inv = math_ops.rsqrt(var + epsilon) * scale
     y = math_ops.cast(x, scale.dtype) * inv + (offset - mean * inv)
     return math_ops.cast(y, x.dtype)
@@ -206,8 +206,6 @@ class BatchNormalizationTest(test.TestCase):
     x_init_val = np.random.random_sample(x_shape).astype(np.float16)
     x32_init_val = x_init_val.astype(np.float32)
 
-    # TODO(reedwm): Do not perform the unnecessary computations in
-    # compute_gradient, since they double the computation time of this function.
     theoretical_grad, _ = gradient_checker.compute_gradient(
         x, x_shape, y, y_shape, delta=1e-3, x_init_value=x_init_val)
     _, numerical_grad = gradient_checker.compute_gradient(
@@ -392,7 +390,7 @@ class BatchNormalizationTest(test.TestCase):
     else:
       data_format_list = ['NCDHW', 'NDHWC']
     use_gpu_vals = [False]
-    if test.is_gpu_available(cuda_only=True) and not cpu_only:
+    if dml_test_util.is_gpu_available(cuda_only=True) and not cpu_only:
       use_gpu_vals += [True]
     # TODO #37545850: also run tests with the 0.6 factor when we support exponential_avg_factor
     # factors = [1.0, 0.6]
@@ -582,7 +580,7 @@ class BatchNormalizationTest(test.TestCase):
       data_format_nhwc, features_nhwc = 'NDHWC', shape[4]
       data_format_nchw, features_nchw = 'NCDHW', shape[1]
     for is_training in [True, False]:
-      if test.is_gpu_available(cuda_only=True):
+      if dml_test_util.is_gpu_available(cuda_only=True):
         self._test_grad_grad(
             shape,
             dtype, [features_nhwc],
@@ -638,7 +636,7 @@ class BatchNormalizationTest(test.TestCase):
   def testBatchNormGradGradConfig3(self):
     config = {
         'shape': [2, 3, 4, 5],
-        'err_tolerance': 2e-2,
+        'err_tolerance': 3e-2,
         'dtype': np.float16,
     }
     self._testBatchNormGradGrad(config)
@@ -647,7 +645,7 @@ class BatchNormalizationTest(test.TestCase):
   def testBatchNormGradGradConfig4(self):
     config = {
         'shape': [2, 3, 2, 2],
-        'err_tolerance': 2e-3,
+        'err_tolerance': 2e-2,
         'dtype': np.float16,
     }
     self._testBatchNormGradGrad(config)
@@ -665,7 +663,7 @@ class BatchNormalizationTest(test.TestCase):
   def testBatchNormGradGradConfig6(self):
     config = {
         'shape': [2, 3, 2, 2, 2],
-        'err_tolerance': 3e-3,
+        'err_tolerance': 3e-2,
         'dtype': np.float16,
     }
     self._testBatchNormGradGrad(config)

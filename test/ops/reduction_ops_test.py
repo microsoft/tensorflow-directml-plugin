@@ -30,6 +30,7 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
+import dml_test_util
 
 # The maximum input rank to test.
 _MAX_RANK = 5
@@ -51,7 +52,7 @@ def _powerset(iterable):
       itertools.combinations(s, r) for r in range(len(s) + 1))
 
 
-class ReducedShapeTest(test.TestCase):
+class ReducedShapeTest(dml_test_util.TestCase):
 
   def _check(self, shape, axes, result):
     output = math_ops.reduced_shape(shape, axes=axes)
@@ -92,7 +93,7 @@ class ReducedShapeTest(test.TestCase):
       self._check([10, 10, 10], [-3], [1, 10, 10])
 
 
-class ReductionUnknownShape(test.TestCase):
+class ReductionUnknownShape(dml_test_util.TestCase):
 
   @test_util.run_deprecated_v1
   def testBasic(self):
@@ -111,7 +112,7 @@ class ReductionUnknownShape(test.TestCase):
           self.assertEqual(y.shape, ())
 
 
-class ReductionInvalidKeepdims(test.TestCase):
+class ReductionInvalidKeepdims(dml_test_util.TestCase):
 
   def testBasic(self):
     # Test case for GitHub issue 46700.
@@ -129,7 +130,7 @@ class ReductionInvalidKeepdims(test.TestCase):
           self.evaluate(y)
 
 
-class BaseReductionTest(test.TestCase):
+class BaseReductionTest(dml_test_util.TestCase):
 
   def _tf_reduce(self, x, reduction_axes, keepdims):
     raise NotImplementedError()
@@ -230,7 +231,7 @@ class SumReductionTest(BaseReductionTest):
 
     # test that mean doesn't overflow
     # only on GPU, since it has the more accurate implementation
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
 
     arr = np.ones([68000], dtype=np.float16)
@@ -687,7 +688,7 @@ class ProdReductionTest(BaseReductionTest):
         self.assertAllEqual(y, np.ones(9938))
 
 
-class MinReductionTest(test.TestCase):
+class MinReductionTest(dml_test_util.TestCase):
 
   def _compare(self, x, reduction_axes, keepdims, use_gpu=False):
     np_ans = x
@@ -796,7 +797,7 @@ class MinReductionTest(test.TestCase):
       self.assertEqual(error, 0)
 
 
-class MaxReductionTest(test.TestCase):
+class MaxReductionTest(dml_test_util.TestCase):
 
   def _compare(self, x, reduction_axes, keepdims, use_gpu=False):
     np_ans = x
@@ -919,7 +920,7 @@ class MaxReductionTest(test.TestCase):
       self.assertEqual(error, 0)
 
 
-class AllReductionTest(test.TestCase):
+class AllReductionTest(dml_test_util.TestCase):
 
   def _compare(self, x, reduction_axes, keepdims, use_gpu=False):
     np_ans = x
@@ -968,7 +969,7 @@ class AllReductionTest(test.TestCase):
     self._compareAll([], [0])
 
 
-class AnyReductionTest(test.TestCase):
+class AnyReductionTest(dml_test_util.TestCase):
 
   def _compare(self, x, reduction_axes, keepdims, use_gpu=False):
     np_ans = x
@@ -1017,7 +1018,7 @@ class AnyReductionTest(test.TestCase):
     self._compareAll([], [0])
 
 
-class CountNonzeroReductionTest(test.TestCase):
+class CountNonzeroReductionTest(dml_test_util.TestCase):
 
   def _compare(self, x, reduction_axes, keepdims, use_gpu=False, zero=0,
                feed_dict=None):

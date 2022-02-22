@@ -31,6 +31,7 @@ from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import benchmark
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 def GetRandomNormalInput(shape, dtype):
@@ -44,7 +45,7 @@ def GetRandomNormalInput(shape, dtype):
   return vals.reshape(shape)
 
 
-class BatchMatmulOpTest(test.TestCase):
+class BatchMatmulOpTest(dml_test_util.TestCase):
 
   # Uses numpy to compute batch_matmul(x, y, adjoint_a, adjoint_b).
   def _npBatchMatmul(self, x, y, adjoint_a, adjoint_b):
@@ -150,7 +151,7 @@ def _GetBatchMatmulOpBroadcastingTest(dtype, adjoint_a, adjoint_b,
   return Test
 
 
-class BatchMatmulGradientTest(test.TestCase):
+class BatchMatmulGradientTest(dml_test_util.TestCase):
 
   # loss = sum(batch_matmul(x, y)). Verify dl/dx and dl/dy via the
   # gradient checker.

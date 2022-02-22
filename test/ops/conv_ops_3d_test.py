@@ -30,6 +30,7 @@ import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
 from tensorflow.python.util.compat import collections_abc
 from tensorflow.python.eager import context
+import dml_test_util
 
 def GetTestConfigs():
   """Get all the valid tests configs to run.
@@ -38,7 +39,7 @@ def GetTestConfigs():
     all the valid test configs as tuples of data_format and use_gpu.
   """
   test_configs = [("NDHWC", False), ("NDHWC", True)]
-  if test.is_gpu_available(cuda_only=True):
+  if dml_test_util.is_gpu_available(cuda_only=True):
     # "NCDHW" format is only supported on CUDA.
     test_configs += [("NCDHW", True)]
   return test_configs
@@ -48,21 +49,18 @@ def GetTestConfigs():
     "Tests Conv3d, which in some cases is implemented with a matmul. With "
     "TensorFloat-32, tests fail in some of those cases (and as of August 13 "
     "2020, only those cases)")
-class Conv3DTest(test.TestCase):
+class Conv3DTest(dml_test_util.TestCase):
 
   def _DtypesToTest(self, use_gpu):
-    # double datatype is currently not supported for convolution ops
-    # on the ROCm platform
-    optional_float64 = [] if test.is_built_with_rocm() else [dtypes.float64]
     if use_gpu:
       if not test_util.GpuSupportsHalfMatMulAndConv():
-        return optional_float64 + [dtypes.float32]
+        return [dtypes.float32]
       else:
         # It is important that float32 comes before float16 here,
         # as we will be using its gradients as reference for fp16 gradients.
-        return optional_float64 + [dtypes.float32, dtypes.float16]
+        return [dtypes.float32, dtypes.float16]
     else:
-      return optional_float64 + [dtypes.float32, dtypes.float16]
+      return [dtypes.float32, dtypes.float16]
 
   def _SetupValuesForDevice(self, tensor_in_sizes, filter_in_sizes, stride,
                             padding, data_format, dtype, use_gpu):
@@ -281,7 +279,7 @@ class Conv3DTest(test.TestCase):
   def testConv3D1x1x1Filter2x1x1Dilation(self):
     ctx = context.context()
     is_eager = ctx is not None and ctx.executing_eagerly()
-    if test.is_gpu_available(cuda_only=True) or \
+    if dml_test_util.is_gpu_available(cuda_only=True) or \
       (test_util.IsMklEnabled() and is_eager is False):
       self._VerifyDilatedConvValues(
           tensor_in_sizes=[1, 3, 6, 1, 1],
@@ -309,7 +307,7 @@ class Conv3DTest(test.TestCase):
   def testConv3D2x2x2Filter1x2x1Dilation(self):
     ctx = context.context()
     is_eager = ctx is not None and ctx.executing_eagerly()
-    if test.is_gpu_available(cuda_only=True) or \
+    if dml_test_util.is_gpu_available(cuda_only=True) or \
       (test_util.IsMklEnabled() and is_eager is False):
       self._VerifyDilatedConvValues(
           tensor_in_sizes=[1, 4, 6, 3, 1],
@@ -505,9 +503,6 @@ class Conv3DTest(test.TestCase):
     filter_data = [x * 1.0 / filter_size for x in range(0, filter_size)]
 
     for data_type in self._DtypesToTest(use_gpu=use_gpu):
-      # TODO(mjanusz): Modify gradient_checker to also provide max relative
-      # error and synchronize the tolerance levels between the tests for forward
-      # and backward computations.
       if data_type == dtypes.float64:
         tolerance = 1e-8
       elif data_type == dtypes.float32:
@@ -845,7 +840,7 @@ class Conv3DTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testConv3D2x2Depth3ValidBackpropFilterStride1x1Dilation2x1(self):
-    if test.is_gpu_available(cuda_only=True):
+    if dml_test_util.is_gpu_available(cuda_only=True):
       for (data_format, use_gpu) in GetTestConfigs():
         self._RunAndVerifyBackprop(
             input_sizes=[1, 3, 6, 1, 1],
@@ -861,7 +856,7 @@ class Conv3DTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testConv3D2x2Depth3ValidBackpropInputStride1x1Dilation2x1(self):
-    if test.is_gpu_available(cuda_only=True):
+    if dml_test_util.is_gpu_available(cuda_only=True):
       for (data_format, use_gpu) in GetTestConfigs():
         self._RunAndVerifyBackprop(
             input_sizes=[1, 3, 6, 1, 1],

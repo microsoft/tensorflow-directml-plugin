@@ -33,9 +33,10 @@ from tensorflow.python.ops import image_grad_test_base as test_base
 from tensorflow.python.ops import image_ops
 from tensorflow.python.ops import random_ops
 from tensorflow.python.platform import test
+import dml_test_util
 
 
-class ResizeNearestNeighborOpDeterminismExceptionsTest(test.TestCase,
+class ResizeNearestNeighborOpDeterminismExceptionsTest(dml_test_util.TestCase,
                                                        parameterized.TestCase):
   """Test d9m-unimplemented exceptions from ResizeNearestNeighborOpGrad.
 
@@ -73,7 +74,7 @@ class ResizeNearestNeighborOpDeterminismExceptionsTest(test.TestCase,
   @test_util.run_gpu_only
   @test_util.run_all_in_graph_and_eager_modes
   def testExceptionThrowing(self, align_corners, half_pixel_centers, data_type):
-    with self.session(), test_util.force_gpu():
+    with self.session(), dml_test_util.force_gpu():
       input_image = array_ops.zeros((1, 2, 2, 1), dtype=data_type)
       with backprop.GradientTape() as tape:
         tape.watch(input_image)
@@ -186,7 +187,7 @@ class ResizeBilinearOpDeterministicTest(test_base.ResizeBilinearOpTestBase):
           self.assertAllEqual(result_a, result_b)
 
 
-class CropAndResizeOpDeterminismExceptionsTest(test.TestCase):
+class CropAndResizeOpDeterminismExceptionsTest(dml_test_util.TestCase):
   """Test d9m-unimplemented exceptions from CropAndResizeBackprop{Image|Boxes}.
 
   Test that tf.errors.UnimplementedError is thrown or not thrown, as
@@ -367,7 +368,5 @@ class CropAndResizeOpDeterministicTest(test_base.CropAndResizeOpTestBase):
 
 
 if __name__ == '__main__':
-  # TODO(reedwm): Merge this file with image_grad_test.py and
-  # image_grad_test_base.py
   config.enable_op_determinism()
   test.main()

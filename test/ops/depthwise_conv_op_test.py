@@ -34,6 +34,7 @@ from tensorflow.python.ops import random_ops
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging
+import dml_test_util
 
 
 def _DepthwiseConv2dNumpyBasic(x1, x2, strides):
@@ -266,7 +267,7 @@ def CheckGradConfigsToTestExplicit():
   ]
 
 
-class DepthwiseConv2DTest(test.TestCase):
+class DepthwiseConv2DTest(dml_test_util.TestCase):
 
   # This tests depthwise_conv2d and depthwise_conv2d_native
   def _VerifyValues(self,
@@ -430,7 +431,7 @@ class DepthwiseConv2DTest(test.TestCase):
   @test_util.run_v1_only("b/120545219")
   def testDepthwiseConv2DWithUnknownShape(self):
     # GitHub issue 22110.
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
     with self.session():
       x = array_ops.placeholder(dtypes.float32)
@@ -443,7 +444,7 @@ class DepthwiseConv2DTest(test.TestCase):
 
   @test_util.run_v1_only("b/120545219")
   def testDepthwiseConv2DFormat(self):
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
 
     for index, (input_size, filter_size, _, stride,
@@ -477,7 +478,7 @@ class DepthwiseConv2DTest(test.TestCase):
       # double datatype is currently not supported for convolution ops
       # on the ROCm platform
       optional_float64 = [] if test.is_built_with_rocm() else [dtypes.float64]
-      data_formats = ["NHWC", "NCHW"] if test.is_gpu_available() else ["NHWC"]
+      data_formats = ["NHWC", "NCHW"] if dml_test_util.is_gpu_available() else ["NHWC"]
       for data_type in [dtypes.float16, dtypes.float32] + optional_float64:
         for data_format in data_formats:
           self._VerifyValues(
@@ -670,9 +671,6 @@ class DepthwiseConv2DTest(test.TestCase):
           err = gradient_checker.compute_gradient_error(
               filter_tensor, filter_shape, depthwise_conv2d, output_shape)
       except errors.InvalidArgumentError as e:
-        # TODO(xjun): Tests depend on error messages could be brittle.
-        # Grouped convolution kernel is only registered for cuDNN 7. Silently
-        # return when we are running on an earlier version or without GPU.
         if grouped_conv and ("No OpKernel was registered to support Op "
                              "'DepthwiseConv2dNative'") in e.message:
           tf_logging.warn("Skipping grouped convolution test")
@@ -746,7 +744,7 @@ class DepthwiseConv2DTest(test.TestCase):
 
   @test_util.run_v1_only("b/120545219")
   def testDepthwiseConv2DInputGradFormat(self):
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
 
     for index, (input_size, filter_size, output_size, stride,
@@ -782,7 +780,7 @@ class DepthwiseConv2DTest(test.TestCase):
       # double datatype is currently not supported for convolution ops
       # on the ROCm platform
       optional_float64 = [] if test.is_built_with_rocm() else [dtypes.float64]
-      data_formats = ["NHWC", "NCHW"] if test.is_gpu_available() else ["NHWC"]
+      data_formats = ["NHWC", "NCHW"] if dml_test_util.is_gpu_available() else ["NHWC"]
       for data_type in [dtypes.float16, dtypes.float32] + optional_float64:
         for data_format in data_formats:
           self._ConstructAndTestGradient(
@@ -856,7 +854,7 @@ class DepthwiseConv2DTest(test.TestCase):
 
   @test_util.run_v1_only("b/120545219")
   def testDepthwiseConv2DFilterGradFormat(self):
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
 
     for index, (input_size, filter_size, output_size, stride,
@@ -892,7 +890,7 @@ class DepthwiseConv2DTest(test.TestCase):
       # double datatype is currently not supported for convolution ops
       # on the ROCm platform
       optional_float64 = [] if test.is_built_with_rocm() else [dtypes.float64]
-      data_formats = ["NHWC", "NCHW"] if test.is_gpu_available() else ["NHWC"]
+      data_formats = ["NHWC", "NCHW"] if dml_test_util.is_gpu_available() else ["NHWC"]
       for data_type in [dtypes.float16, dtypes.float32] + optional_float64:
         for data_format in data_formats:
           self._ConstructAndTestGradient(
@@ -1026,7 +1024,7 @@ class DepthwiseConv2DTest(test.TestCase):
 
 # Please refer to the following gist for more info:
 # https://gist.github.com/duncanriach/4c18cb07a73510c5fcb2deb52adbffaa
-class DepthwiseConv2DDeterministicTest(test.TestCase):
+class DepthwiseConv2DDeterministicTest(dml_test_util.TestCase):
   """Test determinism-related functionality of tf.nn.depthwise_conv2d."""
 
   def _genParams(self,

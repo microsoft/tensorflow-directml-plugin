@@ -28,6 +28,7 @@ from tensorflow.python.ops import gradients_impl
 from tensorflow.python.ops import nn_ops
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 def GetTestConfigs():
@@ -37,15 +38,14 @@ def GetTestConfigs():
     all the valid test configs as tuples of data_format and use_gpu.
   """
   test_configs = [("NDHWC", False), ("NDHWC", True)]
-  if test.is_gpu_available(cuda_only=True):
+  if dml_test_util.is_gpu_available(cuda_only=True):
     # "NCHW" format is currently supported exclusively on CUDA GPUs.
     test_configs += [("NCDHW", True)]
   return test_configs
 
 
-# TODO(mjanusz): Add microbenchmarks for 3d pooling.
 @test_util.with_eager_op_as_function
-class PoolingTest(test.TestCase):
+class PoolingTest(dml_test_util.TestCase):
 
   def _VerifyOneTest(self, pool_func, input_sizes, window, strides, padding,
                      data_format, expected, use_gpu):
@@ -312,6 +312,10 @@ class PoolingTest(test.TestCase):
       t = input_tensor
 
       if data_format == "NCDHW":
+        # TODO: Enable when MaxPooling3dGradGrad is supported
+        # TFDML 37915658
+        return
+
         ksize = test_util.NHWCToNCHW(ksize)
         strides = test_util.NHWCToNCHW(strides)
         t = test_util.NHWCToNCHW(t)

@@ -240,8 +240,6 @@ Status ValidateStridedSliceOp(
     // Step 1: Account for ellipsis and new axis
     //
     // Check for ellipses and count how many non-newaxis' there are after
-    // TODO(aselle): Convert this to do a fast log2 followed by iteration
-    //               counting ones in next guys
     bool ellipsis_seen = false;
 
     StridedSliceSparseSpec sparse_spec = {
@@ -1430,30 +1428,6 @@ void RegisterStridedSliceGrad()
         TF_INT64>();
 }
 
-void RegisterStridedSliceAssign()
-{
-    using K = KernelDefinition<
-        ops::StridedSliceAssign,
-        DmlKernelWrapper<
-            DmlStridedSliceAssignKernel,
-            GetOutputShapeAsInputShapeHelper>>::
-        WithHostMemoryArguments<
-            ops::StridedSliceAssign::Argument::begin,
-            ops::StridedSliceAssign::Argument::end,
-            ops::StridedSliceAssign::Argument::strides>;
-
-    RegisterWithTypes<
-        K,
-        ops::StridedSliceAssign::Attribute::T,
-        TF_FLOAT,
-        TF_HALF,
-        TF_BOOL,
-        TF_INT8,
-        TF_UINT8,
-        TF_UINT32,
-        TF_INT64>();
-}
-
 void RegisterResourceStridedSliceAssign()
 {
     using K = KernelDefinition<
@@ -1484,7 +1458,6 @@ void RegisterKernels_StridedSlice()
 {
     RegisterStridedSlice();
     RegisterStridedSliceGrad();
-    RegisterStridedSliceAssign();
     RegisterResourceStridedSliceAssign();
 }
 } // namespace tfdml
