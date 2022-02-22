@@ -100,7 +100,7 @@ class BinaryOpTest(test.TestCase):
     self.assertShapeEqual(np_ans, out)
 
   _GRAD_TOL = {
-      dtypes_lib.float16: 1e-3,
+      dtypes_lib.float16: 2e-3,
       dtypes_lib.float32: 1e-3,
       dtypes_lib.complex64: 1e-2,
       dtypes_lib.float64: 1e-5,
@@ -448,6 +448,11 @@ class BinaryOpTest(test.TestCase):
         if (dtype in (np.complex64, np.complex128) and
             tf_func in (_FLOORDIV, math_ops.floordiv)):
           continue  # floordiv makes no sense for complex numbers
+
+        if dtype == np.float16 and tf_func == math_ops.pow:
+          # POW can easily produce numbers that overflow for float16
+          continue
+
         self._compareBCast(xs, ys, dtype, np_func, tf_func)
         self._compareBCast(ys, xs, dtype, np_func, tf_func)
 
@@ -818,6 +823,8 @@ class BinaryOpTest(test.TestCase):
   def testPowNegativeExponentGpu(self):
     if not dml_test_util.is_gpu_available():
       self.skipTest("Requires GPU")
+    # TFDML #24881131
+    self.skipTest("DML doesn't support negative int64 numbers yet.")
     # Negative integer powers return zero on GPUs for abs(LHS) > 1. Negative
     # integer powers for 1 and -1 will return the correct result.
     x = np.array([2, 3, 1, -1, -1]).astype(np.int64)

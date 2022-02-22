@@ -901,6 +901,11 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
 
   def _CompareMaxPoolingGradBk(self, input_shape, output_shape, ksize, strides,
                                padding):
+    # TODO: Enable when MaxPoolGradGrad and MaxPoolGradGradWithArgmax are
+    # supported
+    # TFDML 38244545
+    self.skipTest("DML doesn't support MaxPoolGradGrad and "
+                  "MaxPoolGradGradWithArgmax yet.")
     for dtype in [np.float32, np.float16]:
       # Generate numbers in a narrow range, so that there are many duplicates
       # in the input.

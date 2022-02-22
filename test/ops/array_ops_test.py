@@ -615,8 +615,7 @@ class StridedSliceChecker(object):
 
 STRIDED_SLICE_TYPES = [
     dtypes.int32, dtypes.int64, dtypes.int16, dtypes.int8, dtypes.uint8,
-    dtypes.float32, dtypes.float64, dtypes.complex64, dtypes.complex128,
-    dtypes.bool
+    dtypes.float32, dtypes.bool
 ]
 
 
@@ -2274,8 +2273,9 @@ class RepeatBenchmark(test_lib.Benchmark):
 class TileVariantTest(test_util.TensorFlowTestCase):
 
   def test_tile_tensor_list(self):
-    # TODO 37940089: Enable once DML supports tensor lists
-    self.skipTest("DML doesn't support tensor lists yet")
+    # TODO: Enable once tensor lists are enabled on Windows
+    # https://github.com/tensorflow/tensorflow/pull/54468
+    self.skipTest("Tensor Lists are not enabled on Windows yet")
     t = constant_op.constant(np.random.uniform(size=[2, 3, 4]))
     handle = list_ops.tensor_list_from_tensor(t, element_shape=None)
     with ops.device("CPU:0"):
