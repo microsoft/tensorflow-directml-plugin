@@ -31,7 +31,7 @@ from tensorflow.python.platform import test
 import dml_test_util
 
 
-class SliceTest(test.TestCase):
+class SliceTest(dml_test_util.TestCase):
 
   def testEmpty(self):
     inp = np.random.rand(4, 4).astype("f")

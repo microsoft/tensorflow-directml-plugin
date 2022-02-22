@@ -31,7 +31,7 @@ _TEST_DTYPES = (dtypes.float32, dtypes.float64, dtypes.complex64,
                 dtypes.complex128)
 
 
-class SplitOpTest(test.TestCase):
+class SplitOpTest(dml_test_util.TestCase):
 
   def _makeData(self, shape, dtype):
     data = np.random.rand(*shape).astype(dtype.as_numpy_dtype)

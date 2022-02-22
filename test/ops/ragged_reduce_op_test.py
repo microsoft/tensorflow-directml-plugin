@@ -25,6 +25,7 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops.ragged import ragged_factory_ops
 from tensorflow.python.ops.ragged import ragged_math_ops
 from tensorflow.python.platform import googletest
+import dml_test_util
 
 _MAX_INT32 = dtypes.int32.max
 _MIN_INT32 = dtypes.int32.min
@@ -44,7 +45,7 @@ def std(*values):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class RaggedReduceOpsTest(test_util.TensorFlowTestCase, parameterized.TestCase):
+class RaggedReduceOpsTest(dml_test_util.TestCase, parameterized.TestCase):
 
   @parameterized.parameters(
       #=========================================================================

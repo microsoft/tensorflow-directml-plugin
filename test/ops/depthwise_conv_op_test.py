@@ -267,7 +267,7 @@ def CheckGradConfigsToTestExplicit():
   ]
 
 
-class DepthwiseConv2DTest(test.TestCase):
+class DepthwiseConv2DTest(dml_test_util.TestCase):
 
   # This tests depthwise_conv2d and depthwise_conv2d_native
   def _VerifyValues(self,
@@ -1024,7 +1024,7 @@ class DepthwiseConv2DTest(test.TestCase):
 
 # Please refer to the following gist for more info:
 # https://gist.github.com/duncanriach/4c18cb07a73510c5fcb2deb52adbffaa
-class DepthwiseConv2DDeterministicTest(test.TestCase):
+class DepthwiseConv2DDeterministicTest(dml_test_util.TestCase):
   """Test determinism-related functionality of tf.nn.depthwise_conv2d."""
 
   def _genParams(self,

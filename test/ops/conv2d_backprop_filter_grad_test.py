@@ -29,7 +29,7 @@ import dml_test_util
 
 @test_util.run_all_without_tensor_float_32(
     "Run Conv2D backprop without TF32 on GPU")
-class Conv2DBackpropFilterGradTest(test.TestCase):
+class Conv2DBackpropFilterGradTest(dml_test_util.TestCase):
 
   @test_util.run_deprecated_v1
   def testGradient(self):

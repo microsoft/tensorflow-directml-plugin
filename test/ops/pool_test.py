@@ -140,7 +140,7 @@ def pool_direct(
   return output
 
 
-class PoolingTest(test.TestCase):
+class PoolingTest(dml_test_util.TestCase):
 
   def _test(self, input_shape, **kwargs):
     # Use negative numbers to make sure there isn't any zero padding getting

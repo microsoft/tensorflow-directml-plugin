@@ -24,10 +24,11 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradient_checker_v2
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 @test_util.with_eager_op_as_function
-class ReverseSequenceTest(test.TestCase):
+class ReverseSequenceTest(dml_test_util.TestCase):
 
   def _testReverseSequence(self,
                            x,

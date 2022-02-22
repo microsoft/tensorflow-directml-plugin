@@ -21,13 +21,15 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.ops import boosted_trees_ops
 from tensorflow.python.ops import resources
 from tensorflow.python.platform import googletest
+import dml_test_util
+
 
 _INEQUALITY_DEFAULT_LEFT = 'INEQUALITY_DEFAULT_LEFT'.encode('utf-8')
 _INEQUALITY_DEFAULT_RIGHT = 'INEQUALITY_DEFAULT_RIGHT'.encode('utf-8')
 _EQUALITY_DEFAULT_RIGHT = 'EQUALITY_DEFAULT_RIGHT'.encode('utf-8')
 
 
-class UpdateTreeEnsembleOpTest(test_util.TensorFlowTestCase):
+class UpdateTreeEnsembleOpTest(dml_test_util.TestCase):
   """Tests for growing tree ensemble from split candidates."""
 
   @test_util.run_deprecated_v1

@@ -31,7 +31,7 @@ from tensorflow.python.platform import test
 import dml_test_util
 
 
-class RandomOpTestCommon(test.TestCase):
+class RandomOpTestCommon(dml_test_util.TestCase):
 
   # Checks that executing the same rng_func multiple times rarely produces the
   # same result.
@@ -157,7 +157,7 @@ class RandomNormalTest(RandomOpTestCommon):
 
 
 @test_util.with_eager_op_as_function
-class TruncatedNormalTest(test.TestCase):
+class TruncatedNormalTest(dml_test_util.TestCase):
 
   def _Sampler(self, num, mu, sigma, dtype, use_gpu, seed=None):
 
@@ -427,7 +427,7 @@ class RandomUniformTest(RandomOpTestCommon):
             graph_seed=965)
 
 
-class RandomShapeTest(test.TestCase):
+class RandomShapeTest(dml_test_util.TestCase):
 
   @test_util.run_deprecated_v1
   def testTruncatedNormal(self):
@@ -469,7 +469,7 @@ class RandomShapeTest(test.TestCase):
     self.assertIs(None, rnd3.get_shape().ndims)
 
 
-class DeterministicOpsTest(test.TestCase):
+class DeterministicOpsTest(dml_test_util.TestCase):
 
   def setUp(self):
     super().setUp()

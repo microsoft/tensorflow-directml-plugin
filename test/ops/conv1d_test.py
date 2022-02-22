@@ -23,7 +23,7 @@ from tensorflow.python.platform import test
 import dml_test_util
 
 
-class Conv1DTest(test.TestCase):
+class Conv1DTest(dml_test_util.TestCase):
 
   def testBasic(self):
     """Test that argument passing to conv1d is handled properly."""

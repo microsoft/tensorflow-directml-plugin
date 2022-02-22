@@ -27,6 +27,7 @@ from tensorflow.python.keras import testing_utils
 from tensorflow.python.keras.optimizer_v2 import rmsprop
 from tensorflow.python.ops import array_ops
 from tensorflow.python.platform import test
+import dml_test_util
 
 
 class TrainingTest(keras_parameterized.TestCase):

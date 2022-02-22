@@ -59,7 +59,7 @@ import dml_test_util
 TEST_DATA_PATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)), "testdata")
 
-class RGBToHSVTest(test_util.TensorFlowTestCase):
+class RGBToHSVTest(dml_test_util.TestCase):
 
   def testBatch(self):
     # Build an arbitrary RGB image
@@ -99,7 +99,7 @@ class RGBToHSVTest(test_util.TensorFlowTestCase):
       self.assertAllClose(rgb_tf, rgb_np)
 
 
-class RGBToYIQTest(test_util.TensorFlowTestCase):
+class RGBToYIQTest(dml_test_util.TestCase):
 
   @test_util.run_without_tensor_float_32(
       "Calls rgb_to_yiq and yiq_to_rgb, which use matmul")
@@ -131,7 +131,7 @@ class RGBToYIQTest(test_util.TensorFlowTestCase):
       self.assertAllClose(batch2, inp, rtol=1e-4, atol=1e-4)
 
 
-class RGBToYUVTest(test_util.TensorFlowTestCase):
+class RGBToYUVTest(dml_test_util.TestCase):
 
   @test_util.run_without_tensor_float_32(
       "Calls rgb_to_yuv and yuv_to_rgb, which use matmul")
@@ -163,7 +163,7 @@ class RGBToYUVTest(test_util.TensorFlowTestCase):
       self.assertAllClose(batch2, inp, rtol=1e-4, atol=1e-4)
 
 
-class GrayscaleToRGBTest(test_util.TensorFlowTestCase):
+class GrayscaleToRGBTest(dml_test_util.TestCase):
 
   def _RGBToGrayscale(self, images):
     is_batch = True
@@ -285,7 +285,7 @@ class GrayscaleToRGBTest(test_util.TensorFlowTestCase):
         self.assertFalse(rgb_unknown.get_shape())
 
 
-class AdjustGamma(test_util.TensorFlowTestCase):
+class AdjustGamma(dml_test_util.TestCase):
 
   def test_adjust_gamma_less_zero_float32(self):
     """White image should be returned for gamma equal to zero"""
@@ -413,7 +413,7 @@ class AdjustGamma(test_util.TensorFlowTestCase):
     self._test_adjust_gamma_float32(0.0)
 
 
-class AdjustHueTest(test_util.TensorFlowTestCase):
+class AdjustHueTest(dml_test_util.TestCase):
 
   def testAdjustNegativeHue(self):
     x_shape = [2, 2, 3]
@@ -638,7 +638,7 @@ class FlipImageBenchmark(test.Benchmark):
     self._benchmarkFlipLeftRight("/cpu:0", None)
 
   def benchmarkFlipLeftRightGpu(self):
-    self._benchmarkFlipLeftRight(test.gpu_device_name(), None)
+    self._benchmarkFlipLeftRight(dml_test_util.gpu_device_name(), None)
 
   def benchmarkRandomFlipLeftRightCpu1(self):
     self._benchmarkRandomFlipLeftRight("/cpu:0", 1)
@@ -647,7 +647,7 @@ class FlipImageBenchmark(test.Benchmark):
     self._benchmarkRandomFlipLeftRight("/cpu:0", None)
 
   def benchmarkRandomFlipLeftRightGpu(self):
-    self._benchmarkRandomFlipLeftRight(test.gpu_device_name(), None)
+    self._benchmarkRandomFlipLeftRight(dml_test_util.gpu_device_name(), None)
 
   def benchmarkBatchedRandomFlipLeftRightCpu1(self):
     self._benchmarkBatchedRandomFlipLeftRight("/cpu:0", 1)
@@ -656,7 +656,7 @@ class FlipImageBenchmark(test.Benchmark):
     self._benchmarkBatchedRandomFlipLeftRight("/cpu:0", None)
 
   def benchmarkBatchedRandomFlipLeftRightGpu(self):
-    self._benchmarkBatchedRandomFlipLeftRight(test.gpu_device_name(), None)
+    self._benchmarkBatchedRandomFlipLeftRight(dml_test_util.gpu_device_name(), None)
 
 
 class AdjustHueBenchmark(test.Benchmark):
@@ -699,7 +699,7 @@ class AdjustHueBenchmark(test.Benchmark):
     self._benchmarkAdjustHue("/cpu:0", None)
 
   def benchmarkAdjustHueGpu(self):
-    self._benchmarkAdjustHue(test.gpu_device_name(), None)
+    self._benchmarkAdjustHue(dml_test_util.gpu_device_name(), None)
 
 
 class AdjustSaturationBenchmark(test.Benchmark):
@@ -743,7 +743,7 @@ class AdjustSaturationBenchmark(test.Benchmark):
     self._benchmarkAdjustSaturation("/cpu:0", None)
 
   def benchmarkAdjustSaturationGpu(self):
-    self._benchmarkAdjustSaturation(test.gpu_device_name(), None)
+    self._benchmarkAdjustSaturation(dml_test_util.gpu_device_name(), None)
 
 
 class ResizeBilinearBenchmark(test.Benchmark):
@@ -899,7 +899,7 @@ class ResizeAreaBenchmark(test.Benchmark):
     self._benchmarkResize((749, 603), 1)
 
 
-class AdjustSaturationTest(test_util.TensorFlowTestCase):
+class AdjustSaturationTest(dml_test_util.TestCase):
 
   def testHalfSaturation(self):
     x_shape = [2, 2, 3]
@@ -1002,7 +1002,7 @@ class AdjustSaturationTest(test_util.TensorFlowTestCase):
           self.assertAllClose(y_fused, y_baseline, rtol=2e-5, atol=1e-5)
 
 
-class FlipTransposeRotateTest(test_util.TensorFlowTestCase,
+class FlipTransposeRotateTest(dml_test_util.TestCase,
                               parameterized.TestCase):
 
   def testInvolutionLeftRight(self):
@@ -1498,7 +1498,7 @@ class FlipTransposeRotateTest(test_util.TensorFlowTestCase,
     self.assertAllEqual(image_flipped_via_dataset_map, expected_output)
 
 
-class AdjustContrastTest(test_util.TensorFlowTestCase):
+class AdjustContrastTest(dml_test_util.TestCase):
 
   def _testContrast(self, x_np, y_np, contrast_factor):
     with self.cached_session():
@@ -1624,7 +1624,7 @@ class AdjustContrastTest(test_util.TensorFlowTestCase):
           self.evaluate(output_images)
 
 
-class AdjustBrightnessTest(test_util.TensorFlowTestCase):
+class AdjustBrightnessTest(dml_test_util.TestCase):
 
   def _testBrightness(self, x_np, y_np, delta, tol=1e-6):
     with self.cached_session():
@@ -1674,7 +1674,7 @@ class AdjustBrightnessTest(test_util.TensorFlowTestCase):
     self._testBrightness(x_np, y_np, delta=-10. / 255.)
 
 
-class PerImageWhiteningTest(test_util.TensorFlowTestCase,
+class PerImageWhiteningTest(dml_test_util.TestCase,
                             parameterized.TestCase):
 
   def _NumpyPerImageWhitening(self, x):
@@ -1724,7 +1724,7 @@ class PerImageWhiteningTest(test_util.TensorFlowTestCase,
         self.assertAllClose(w_tf, w_np, atol=1e-4)
 
 
-class CropToBoundingBoxTest(test_util.TensorFlowTestCase):
+class CropToBoundingBoxTest(dml_test_util.TestCase):
 
   def _CropToBoundingBox(self, x, offset_height, offset_width, target_height,
                          target_width, use_tensor_inputs):
@@ -1896,7 +1896,7 @@ class CropToBoundingBoxTest(test_util.TensorFlowTestCase):
       self.assertTrue(y.name.startswith("crop_to_bounding_box"))
 
 
-class CentralCropTest(test_util.TensorFlowTestCase):
+class CentralCropTest(dml_test_util.TestCase):
 
   def _assertShapeInference(self, pre_shape, fraction, post_shape):
     image = array_ops.placeholder(dtypes.float32, shape=pre_shape)
@@ -2050,7 +2050,7 @@ class CentralCropTest(test_util.TensorFlowTestCase):
     self.assertAllEqual(y_tf.shape, y_np.shape)
 
 
-class PadToBoundingBoxTest(test_util.TensorFlowTestCase,
+class PadToBoundingBoxTest(dml_test_util.TestCase,
                            parameterized.TestCase):
 
   def _PadToBoundingBox(self, x, offset_height, offset_width, target_height,
@@ -2300,7 +2300,7 @@ class PadToBoundingBoxTest(test_util.TensorFlowTestCase,
         self.evaluate(v)
 
 
-class SelectDistortedCropBoxTest(test_util.TensorFlowTestCase):
+class SelectDistortedCropBoxTest(dml_test_util.TestCase):
 
   def _testSampleDistortedBoundingBox(self, image, bounding_box,
                                       min_object_covered, aspect_ratio_range,
@@ -2654,7 +2654,7 @@ class SelectDistortedCropBoxTest(test_util.TensorFlowTestCase):
       image_ops_impl.sample_distorted_bounding_box(
           image_size=[50, 50, 1], bounding_boxes=[[[0., 0., 1., 1.]]], seed=1)
 
-class ResizeImagesV2Test(test_util.TensorFlowTestCase, parameterized.TestCase):
+class ResizeImagesV2Test(dml_test_util.TestCase, parameterized.TestCase):
 
   METHODS = [
       image_ops.ResizeMethod.BILINEAR, image_ops.ResizeMethod.NEAREST_NEIGHBOR,
@@ -3219,7 +3219,7 @@ class ResizeImagesV2Test(test_util.TensorFlowTestCase, parameterized.TestCase):
         _ = self.evaluate(v)
 
 
-class ResizeImagesTest(test_util.TensorFlowTestCase,
+class ResizeImagesTest(dml_test_util.TestCase,
                        parameterized.TestCase):
 
   METHODS = [
@@ -3746,7 +3746,7 @@ class ResizeImagesTest(test_util.TensorFlowTestCase,
     self._assertResizeCheckShape(x, x_shape, [320, 320], [320, 320, 3])
 
 
-class ResizeImageWithPadV1Test(test_util.TensorFlowTestCase):
+class ResizeImageWithPadV1Test(dml_test_util.TestCase):
 
   def _ResizeImageWithPad(self, x, target_height, target_width,
                           use_tensor_inputs):
@@ -3866,7 +3866,7 @@ class ResizeImageWithPadV1Test(test_util.TensorFlowTestCase):
 
 # half_pixel_centers not supported by XLA
 @test_util.for_all_test_methods(test_util.disable_xla, "b/127616992")
-class ResizeImageWithPadV2Test(test_util.TensorFlowTestCase):
+class ResizeImageWithPadV2Test(dml_test_util.TestCase):
 
   def _ResizeImageWithPad(self, x, target_height, target_width,
                           use_tensor_inputs):
@@ -3984,7 +3984,7 @@ class ResizeImageWithPadV2Test(test_util.TensorFlowTestCase):
     self._assertReturns(x, x_shape, y, y_shape)
 
 
-class ResizeImageWithCropOrPadTest(test_util.TensorFlowTestCase):
+class ResizeImageWithCropOrPadTest(dml_test_util.TestCase):
 
   def _ResizeImageWithCropOrPad(self, x, target_height, target_width,
                                 use_tensor_inputs):
@@ -4234,7 +4234,7 @@ def simple_color_ramp():
   return image
 
 
-class JpegTest(test_util.TensorFlowTestCase):
+class JpegTest(dml_test_util.TestCase):
 
   def averageError(self, image0, image1):
     self.assertEqual(image0.shape, image1.shape)
@@ -4473,7 +4473,7 @@ class JpegTest(test_util.TensorFlowTestCase):
       adjusted_image.shape.assert_is_compatible_with([None, None, 3])
 
 
-class PngTest(test_util.TensorFlowTestCase):
+class PngTest(dml_test_util.TestCase):
 
   def testExisting(self):
     # Read some real PNGs, converting to different channel numbers
@@ -4553,7 +4553,7 @@ class PngTest(test_util.TensorFlowTestCase):
                            [None, None, channels or None])
 
 
-class GifTest(test_util.TensorFlowTestCase):
+class GifTest(dml_test_util.TestCase):
 
   def _testValid(self, filename):
     # Read some real GIFs
@@ -4616,7 +4616,7 @@ class GifTest(test_util.TensorFlowTestCase):
       self.assertAllEqual(image[2], frame2)
 
 
-class ConvertImageTest(test_util.TensorFlowTestCase):
+class ConvertImageTest(dml_test_util.TestCase):
 
   def _convert(self, original, original_dtype, output_dtype, expected):
     x_np = np.array(original, dtype=original_dtype.as_numpy_dtype())
@@ -4687,7 +4687,7 @@ class ConvertImageTest(test_util.TensorFlowTestCase):
       self._convert([0, 255 * 128], dtypes.int16, dtypes.uint16, [0, 255 * 256])
 
 
-class TotalVariationTest(test_util.TensorFlowTestCase):
+class TotalVariationTest(dml_test_util.TestCase):
   """Tests the function total_variation() in image_ops.
 
   We test a few small handmade examples, as well as
@@ -4864,7 +4864,7 @@ class TotalVariationTest(test_util.TensorFlowTestCase):
     self._test(multi, tot_var * np.array([1.0, 1.1, 1.2]))
 
 
-class FormatTest(test_util.TensorFlowTestCase):
+class FormatTest(dml_test_util.TestCase):
 
   def testFormats(self):
     prefix = TEST_DATA_PATH
@@ -4895,7 +4895,7 @@ class FormatTest(test_util.TensorFlowTestCase):
           decode(io_ops.read_file(path)).eval()
 
 
-class CombinedNonMaxSuppressionTest(test_util.TensorFlowTestCase):
+class CombinedNonMaxSuppressionTest(dml_test_util.TestCase):
 
   # NOTE(b/142795960): parameterized tests do not work well with tf.tensor
   # inputs. Due to failures, creating another test `testInvalidTensorInput`
@@ -4938,7 +4938,7 @@ class CombinedNonMaxSuppressionTest(test_util.TensorFlowTestCase):
           max_total_size=max_total_size)
 
 
-class NonMaxSuppressionTest(test_util.TensorFlowTestCase):
+class NonMaxSuppressionTest(dml_test_util.TestCase):
 
   def testNonMaxSuppression(self):
     boxes_np = [[0, 0, 1, 1], [0, 0.1, 1, 1.1], [0, -0.1, 1, 0.9],
@@ -5106,7 +5106,7 @@ class NonMaxSuppressionTest(test_util.TensorFlowTestCase):
       self.assertAllClose(selected_indices, [0, 3, 5])
 
 
-class NonMaxSuppressionWithScoresTest(test_util.TensorFlowTestCase):
+class NonMaxSuppressionWithScoresTest(dml_test_util.TestCase):
 
   @test_util.xla_allow_fallback(
       "non_max_suppression with dynamic output shape unsupported.")
@@ -5140,7 +5140,7 @@ class NonMaxSuppressionWithScoresTest(test_util.TensorFlowTestCase):
                         rtol=1e-2, atol=1e-2)
 
 
-class NonMaxSuppressionPaddedTest(test_util.TensorFlowTestCase,
+class NonMaxSuppressionPaddedTest(dml_test_util.TestCase,
                                   parameterized.TestCase):
 
   @test_util.disable_xla(
@@ -5310,7 +5310,7 @@ class NonMaxSuppressionPaddedTest(test_util.TensorFlowTestCase,
       image_ops.non_max_suppression_padded(boxes, scores, max_output_size)
 
 
-class NonMaxSuppressionWithOverlapsTest(test_util.TensorFlowTestCase):
+class NonMaxSuppressionWithOverlapsTest(dml_test_util.TestCase):
 
   def testSelectOneFromThree(self):
     overlaps_np = [
@@ -5334,7 +5334,7 @@ class NonMaxSuppressionWithOverlapsTest(test_util.TensorFlowTestCase):
       self.assertAllClose(selected_indices, [1])
 
 
-class VerifyCompatibleImageShapesTest(test_util.TensorFlowTestCase):
+class VerifyCompatibleImageShapesTest(dml_test_util.TestCase):
   """Tests utility function used by ssim() and psnr()."""
 
   def testWrongDims(self):
@@ -5364,7 +5364,7 @@ class VerifyCompatibleImageShapesTest(test_util.TensorFlowTestCase):
           sess.run(checks, {img1: img1_np, img2: img2_np})
 
 
-class PSNRTest(test_util.TensorFlowTestCase):
+class PSNRTest(dml_test_util.TestCase):
   """Tests for PSNR."""
 
   def _LoadTestImage(self, sess, filename):
@@ -5462,7 +5462,7 @@ class PSNRTest(test_util.TensorFlowTestCase):
           self.evaluate(psnr_uint8), self.evaluate(psnr_float32), atol=0.001)
 
 
-class SSIMTest(test_util.TensorFlowTestCase):
+class SSIMTest(dml_test_util.TestCase):
   """Tests for SSIM."""
 
   _filenames = ["checkerboard1.png",
@@ -5596,7 +5596,7 @@ class SSIMTest(test_util.TensorFlowTestCase):
           self.evaluate(ssim_uint8), self.evaluate(ssim_float32), atol=0.001)
 
 
-class MultiscaleSSIMTest(test_util.TensorFlowTestCase):
+class MultiscaleSSIMTest(dml_test_util.TestCase):
   """Tests for MS-SSIM."""
 
   _filenames = ["checkerboard1.png",
@@ -5776,7 +5776,7 @@ class MultiscaleSSIMTest(test_util.TensorFlowTestCase):
       _ = self.evaluate(score_tensor)
 
 
-class ImageGradientsTest(test_util.TensorFlowTestCase):
+class ImageGradientsTest(dml_test_util.TestCase):
 
   def testImageGradients(self):
     shape = [1, 2, 4, 1]
@@ -5825,7 +5825,7 @@ class ImageGradientsTest(test_util.TensorFlowTestCase):
       image_ops.image_gradients(img)
 
 
-class SobelEdgesTest(test_util.TensorFlowTestCase):
+class SobelEdgesTest(dml_test_util.TestCase):
 
   def disabled_testSobelEdges1x2x3x1(self):
     img = constant_op.constant([[1, 3, 6], [4, 1, 5]],
@@ -5861,7 +5861,7 @@ class SobelEdgesTest(test_util.TensorFlowTestCase):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class DecodeImageTest(test_util.TensorFlowTestCase, parameterized.TestCase):
+class DecodeImageTest(dml_test_util.TestCase, parameterized.TestCase):
 
   _FORWARD_COMPATIBILITY_HORIZONS = [
       (2020, 1, 1),

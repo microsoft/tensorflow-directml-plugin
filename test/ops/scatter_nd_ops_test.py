@@ -103,7 +103,7 @@ def _NumpyMax(ref, indices, updates):
 
 
 @test_util.with_eager_op_as_function
-class StatefulScatterNdTest(test.TestCase):
+class StatefulScatterNdTest(dml_test_util.TestCase):
 
   def _VariableRankTest(self,
                         np_scatter,
@@ -451,7 +451,7 @@ class StatefulScatterNdTest(test.TestCase):
 
 
 @test_util.with_eager_op_as_function
-class ScatterNdTest(test.TestCase, parameterized.TestCase):
+class ScatterNdTest(dml_test_util.TestCase, parameterized.TestCase):
   non_aliasing_add_test = False
 
   def scatter_nd(self, indices, updates, shape, input_=None):
@@ -793,7 +793,7 @@ class ScatterNdNonAliasingAddDeterminismTest(ScatterNdDeterminismTest,
   pass
 
 
-class ScatterNdTensorTest(test.TestCase):
+class ScatterNdTensorTest(dml_test_util.TestCase):
 
   @test_util.run_in_graph_and_eager_modes
   def testUpdateAddSub(self):

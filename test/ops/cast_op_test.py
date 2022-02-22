@@ -31,9 +31,10 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
+import dml_test_util
 
 
-class CastOpTest(test.TestCase):
+class CastOpTest(dml_test_util.TestCase):
 
   def _toDataType(self, dtype):
     """Returns TensorFlow data type for numpy type."""
@@ -208,7 +209,7 @@ class CastOpTest(test.TestCase):
           self.assertLess(err, 1e-3)
 
 
-class SparseTensorCastTest(test.TestCase):
+class SparseTensorCastTest(dml_test_util.TestCase):
 
   @test_util.run_deprecated_v1
   def testCast(self):
@@ -224,7 +225,7 @@ class SparseTensorCastTest(test.TestCase):
       self.assertAllEqual(st_cast.dense_shape.eval(), [3])
 
 
-class SaturateCastTest(test.TestCase):
+class SaturateCastTest(dml_test_util.TestCase):
 
   def testSaturate(self):
     in_types = dtypes.float32,

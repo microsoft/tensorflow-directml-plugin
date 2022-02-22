@@ -31,7 +31,7 @@ from tensorflow.python.platform import test
 import dml_test_util
 
 
-class TransposeTest(test.TestCase):
+class TransposeTest(dml_test_util.TestCase):
 
   def _np_transpose(self, x, perm):
     ret = np.copy(x)

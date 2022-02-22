@@ -39,7 +39,7 @@ def np_split_squeeze(array, axis):
   ]
 
 
-class StackOpTest(test.TestCase):
+class StackOpTest(dml_test_util.TestCase):
 
   def randn(self, shape, dtype):
     data = np.random.randn(*shape)
@@ -287,7 +287,7 @@ class StackOpTest(test.TestCase):
             self.assertAllEqual(self.evaluate(c), data)
 
 
-class AutomaticStackingTest(test.TestCase):
+class AutomaticStackingTest(dml_test_util.TestCase):
 
   def testSimple(self):
     self.assertAllEqual([1, 0, 2],
