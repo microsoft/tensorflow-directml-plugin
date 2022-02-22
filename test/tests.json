@@ -216,9 +216,6 @@
                     "file": "ops/training_ops_test.py"
                 },
                 {
-                    "file": "ops/training_test.py"
-                },
-                {
                     "file": "ops/training_util_test.py"
                 },
                 {
