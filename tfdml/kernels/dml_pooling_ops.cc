@@ -390,6 +390,13 @@ class PoolInitHelper : public InitializationHelper
             {
                 OP_REQUIRES_OK(ctx, ctx->GetAttr("ksize", &ksize));
                 OP_REQUIRES_OK(ctx, ctx->GetAttr("strides", &stride));
+
+                OP_REQUIRES(
+                    ctx,
+                    GetTensorDim(ksize, data_format, 'N') == 1 &&
+                        GetTensorDim(stride, data_format, 'N') == 1,
+                    errors::Unimplemented("Pooling is not yet supported on the "
+                                          "batch dimension."));
             }
 
             OP_REQUIRES_OK(ctx, ctx->GetAttr("padding", &padding));
@@ -436,6 +443,13 @@ class PoolInitHelper : public InitializationHelper
             stride_.assign(
                 stride_values,
                 stride_values + stride_tensor.NumElements());
+
+            OP_REQUIRES(
+                ctx,
+                GetTensorDim(ksize_, attr_->data_format, 'N') == 1 &&
+                    GetTensorDim(stride_, attr_->data_format, 'N') == 1,
+                errors::Unimplemented(
+                    "Pooling is not yet supported on the batch dimension."));
         }
 
         OP_REQUIRES(
@@ -454,19 +468,42 @@ class PoolInitHelper : public InitializationHelper
                 ctx->input(0).dims(),
                 "dimensions"));
 
-        OP_REQUIRES(
-            ctx,
-            GetTensorDim(ksize_, attr_->data_format, 'N') == 1 &&
-                GetTensorDim(stride_, attr_->data_format, 'N') == 1,
-            errors::Unimplemented(
-                "Pooling is not yet supported on the batch dimension."));
-
         for (int i = 0; i < ksize_.size(); ++i)
         {
             OP_REQUIRES(
                 ctx,
                 ksize_[i] != 0,
                 errors::InvalidArgument("ksize cannot be zero"));
+        }
+
+        if (ctx->input(0).shape().dims() == kNcdhwDimensionCount)
+        {
+            Pool3dParameters params(
+                ctx,
+                ksize_,
+                stride_,
+                attr_->padding,
+                attr_->data_format,
+                ctx->input(0).shape());
+
+            OP_REQUIRES_OK(ctx, ctx->status());
+
+            output_shape_ = params.forward_output_shape();
+        }
+        else
+        {
+            PoolParameters params(
+                ctx,
+                ksize_,
+                stride_,
+                attr_->padding,
+                attr_->explicit_paddings,
+                attr_->data_format,
+                ctx->input(0).shape());
+
+            OP_REQUIRES_OK(ctx, ctx->status());
+
+            output_shape_ = params.forward_output_shape();
         }
     }
 
@@ -480,11 +517,13 @@ class PoolInitHelper : public InitializationHelper
 
     Padding GetPadding() const { return attr_->padding; }
     TensorFormat GetDataFormat() const { return attr_->data_format; }
+    const TensorShape& GetOutputShape() const { return output_shape_; }
 
   private:
     const std::shared_ptr<const Attributes> attr_;
     std::vector<int32_t> ksize_;
     std::vector<int32_t> stride_;
+    TensorShape output_shape_;
 };
 
 class MaxPoolGradInitHelper : public InitializationHelper
@@ -602,6 +641,9 @@ class MaxPoolGradInitHelper : public InitializationHelper
                 attr_->padding,
                 attr_->data_format,
                 input.shape());
+
+            OP_REQUIRES_OK(ctx, ctx->status());
+
             forward_output_shape = params.forward_output_shape();
         }
         else
@@ -614,6 +656,9 @@ class MaxPoolGradInitHelper : public InitializationHelper
                 attr_->explicit_paddings,
                 attr_->data_format,
                 input.shape());
+
+            OP_REQUIRES_OK(ctx, ctx->status());
+
             forward_output_shape = params.forward_output_shape();
         }
 
@@ -732,35 +777,7 @@ class PoolingShapeHelper : public ShapeHelper
     {
         auto init_helper =
             static_cast<const PoolInitHelper*>(initialization_helper);
-
-        const std::vector<int32_t>& ksize = init_helper->GetKernelSizes();
-        const std::vector<int32_t>& stride = init_helper->GetKernelStrides();
-        TensorShape output_shape;
-        Padding padding = init_helper->GetPadding();
-        TensorFormat data_format = init_helper->GetDataFormat();
-
-        const Tensor& input = ctx->input(0);
-
-        if (input.shape().dims() == kNcdhwDimensionCount)
-        {
-            Pool3dParameters
-                params(ctx, ksize, stride, padding, data_format, input.shape());
-            output_shape = params.forward_output_shape();
-        }
-        else
-        {
-            PoolParameters params(
-                ctx,
-                ksize,
-                stride,
-                padding,
-                init_helper->GetExplicitPaddings(),
-                data_format,
-                input.shape());
-            output_shape = params.forward_output_shape();
-        }
-
-        return {std::move(output_shape)};
+        return {init_helper->GetOutputShape()};
     }
 };
 
