@@ -274,7 +274,7 @@ class LeakyReluTest(test.TestCase):
   def _testLeakyRelu(self, np_features, alpha):
     np_leaky_relu = self._npLeakyRelu(np_features, alpha)
     tf_leaky_relu = nn_ops.leaky_relu(np_features, alpha)
-    self.assertAllClose(np_leaky_relu, tf_leaky_relu)
+    self.assertAllCloseAccordingToType(np_leaky_relu, tf_leaky_relu)
     self.assertShapeEqual(np_leaky_relu, tf_leaky_relu)
 
   def testNumbersCPU(self):
