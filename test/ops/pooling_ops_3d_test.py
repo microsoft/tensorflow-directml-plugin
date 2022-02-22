@@ -312,6 +312,10 @@ class PoolingTest(test.TestCase):
       t = input_tensor
 
       if data_format == "NCDHW":
+        # TODO: Enable when MaxPooling3dGradGrad is supported
+        # TFDML 37915658
+        return
+
         ksize = test_util.NHWCToNCHW(ksize)
         strides = test_util.NHWCToNCHW(strides)
         t = test_util.NHWCToNCHW(t)
