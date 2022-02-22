@@ -66,23 +66,12 @@ def GetTestConfigsDicts(v1_fn,
         ("NHWC", True),
         ("NCHW", True),
     ]
-    # NCHW_VECT_C only supported for max_pool.
-    if (v1_fn == nn_ops.max_pool or v1_fn == nn_ops.max_pool1d or
-        v2_fn == nn_ops.max_pool_v2 or v2_fn == gen_nn_ops.max_pool_v2):
-      configs0.append(("NCHW_VECT_C", True))
 
   # (data_format, use_gpu, data_type) tuple
   configs1 = []
   for data_format, use_gpu in configs0:
     configs1.append((data_format, use_gpu, dtypes.float32))
-
-    # In our test, VECT_C always uses float32.  (It gets converted to int8 in
-    # the test runner.)
-    if data_format == "NCHW_VECT_C":
-      continue
-
-    configs1 += [(data_format, use_gpu, dtypes.float16),
-                 (data_format, use_gpu, dtypes.float64)]
+    configs1.append((data_format, use_gpu, dtypes.float16))
 
   # Convert from tuple to dict and add v1/v2 versions.
   ret = []
@@ -207,22 +196,11 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
     # haven't initialized enough of TF to know what our hardware is!)
     if use_gpu and not dml_test_util.is_gpu_available():
       self.skipTest("No GPU is available.")
-    if use_gpu and data_type == dtypes.float64 and test.is_built_with_rocm():
-      self.skipTest("ROCm pooling ops don't support float64.")
-    if use_gpu and data_format == "NCHW_VECT_C" and not dml_test_util.is_gpu_available(
-        cuda_only=True, min_cuda_compute_capability=(6, 1)):
-      self.skipTest("NCHW_VECT_C requires sm61+.")
 
     if v2 and data_format != "NHWC":
       self.skipTest("v2 not supported for %s" % data_format)
     if v2 and not isinstance(padding, str):
       self.skipTest("non-constant ksize/strides requires nonexplicit padding")
-    if data_format == "NCHW_VECT_C":
-      if data_type != dtypes.float32:
-        self.skipTest("quantization to qint8 not implemented for %r" %
-                      data_type)
-      if input_sizes[-1] % 4 != 0:
-        self.skipTest("Skipping test for depth %d" % input_sizes[-1])
 
     total_size = 1
     for s in input_sizes:
@@ -309,11 +287,6 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
     self._VerifyOneType(pool_func, input_sizes, ksize, strides, padding,
                         data_format, dtypes.float32, expected, use_gpu, v2,
                         use_negative_input)
-    if not test.is_built_with_rocm():
-      # double datatype is not supported for pooling ops on the ROCm platform
-      self._VerifyOneType(pool_func, input_sizes, ksize, strides, padding,
-                          data_format, dtypes.float64, expected, use_gpu, v2,
-                          use_negative_input)
 
     if not use_gpu or test_util.GpuSupportsHalfMatMulAndConv():
       self._VerifyOneType(pool_func, input_sizes, ksize, strides, padding,
@@ -884,10 +857,7 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
   # The following are tests that verify that the CPU and GPU implementations
   # produce the same results.
   def _CompareMaxPoolingFwd(self, input_shape, ksize, strides, padding):
-    # double datatype is currently not supported for pooling ops
-    # on the ROCm platform
-    for dtype in [np.float32, np.float16] \
-        + [np.float64] if not test.is_built_with_rocm() else []:
+    for dtype in [np.float32, np.float16]:
       tensor_input = np.random.rand(*input_shape).astype(dtype)
       with self.cached_session():
         t = constant_op.constant(tensor_input, shape=input_shape)
@@ -901,10 +871,7 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
 
   def _CompareMaxPoolingBk(self, input_shape, output_shape, ksize, strides,
                            padding):
-    # double datatype is currently not supported for pooling ops
-    # on the ROCm platform
-    for dtype in [np.float32, np.float16] \
-        + [np.float64] if not test.is_built_with_rocm() else []:
+    for dtype in [np.float32, np.float16]:
       # Generate numbers in a narrow range, so that there are many duplicates
       # in the input.
       tensor_input = np.random.random_integers(0, 3, input_shape).astype(dtype)
@@ -939,11 +906,7 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
     # TFDML 38244545
     self.skipTest("DML doesn't support MaxPoolGradGrad and "
                   "MaxPoolGradGradWithArgmax yet.")
-
-    # double datatype is currently not supported for pooling ops
-    # on the ROCm platform
-    for dtype in [np.float32, np.float16] \
-        + [np.float64] if not test.is_built_with_rocm() else []:
+    for dtype in [np.float32, np.float16]:
       # Generate numbers in a narrow range, so that there are many duplicates
       # in the input.
       tensor_input = np.random.random_integers(0, 3, input_shape).astype(dtype)
@@ -1041,59 +1004,30 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
         ])
 
   def testMaxPoolingGradThrowDeterminismError(self):
-    if dml_test_util.is_gpu_available(cuda_only=True):
-      try:
-        config_exec.enable_op_determinism()
-        orig_input = [
-            1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 1.0
-        ]
-        tensor_input = [11.0, 12.0, 13.0, 14.0, 21.0, 22.0, 23.0, 24.0]
+    try:
+      config_exec.enable_op_determinism()
+      orig_input = [
+          1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0,
+          0.0, 1.0, 0.0, 1.0
+      ]
+      tensor_input = [11.0, 12.0, 13.0, 14.0, 21.0, 22.0, 23.0, 24.0]
 
-        with GetDeviceScope(self, True):
-          orig_in = constant_op.constant(orig_input, shape=[2, 3, 3, 1])
-          t = constant_op.constant(tensor_input, shape=[2, 2, 2, 1])
-          argmax_t = constant_op.constant(
-              [0, 1, 3, 5, 0, 2, 6, 8], shape=[2, 2, 2, 1], dtype=dtypes.int64)
-          with self.assertRaisesRegexp(
-              errors_impl.UnimplementedError, "Determinism is not yet supported "
-              "for MaxPoolGradWithArgmax."):
-            out_op = gen_nn_ops.max_pool_grad_with_argmax(
-                orig_in,
-                t,
-                argmax_t,
-                ksize=[1, 2, 2, 1],
-                strides=[1, 1, 1, 1],
-                padding="VALID",
-                include_batch_in_index=False)
-            self.evaluate(out_op)
-      finally:
-        config_exec.disable_op_determinism()
-    else:
-      try:
-        config_exec.enable_op_determinism()
-        orig_input = [
-            1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 1.0
-        ]
-        tensor_input = [11.0, 12.0, 13.0, 14.0, 21.0, 22.0, 23.0, 24.0]
-
-        with GetDeviceScope(self, False):
-          orig_in = constant_op.constant(orig_input, shape=[2, 3, 3, 1])
-          t = constant_op.constant(tensor_input, shape=[2, 2, 2, 1])
-          argmax_t = constant_op.constant(
-              [0, 1, 3, 5, 0, 2, 6, 8], shape=[2, 2, 2, 1], dtype=dtypes.int64)
-          out_op = gen_nn_ops.max_pool_grad_with_argmax(
-              orig_in,
-              t,
-              argmax_t,
-              ksize=[1, 2, 2, 1],
-              strides=[1, 1, 1, 1],
-              padding="VALID",
-              include_batch_in_index=False)
-          self.evaluate(out_op)
-      finally:
-        config_exec.disable_op_determinism()
+      with GetDeviceScope(self, False):
+        orig_in = constant_op.constant(orig_input, shape=[2, 3, 3, 1])
+        t = constant_op.constant(tensor_input, shape=[2, 2, 2, 1])
+        argmax_t = constant_op.constant(
+            [0, 1, 3, 5, 0, 2, 6, 8], shape=[2, 2, 2, 1], dtype=dtypes.int64)
+        out_op = gen_nn_ops.max_pool_grad_with_argmax(
+            orig_in,
+            t,
+            argmax_t,
+            ksize=[1, 2, 2, 1],
+            strides=[1, 1, 1, 1],
+            padding="VALID",
+            include_batch_in_index=False)
+        self.evaluate(out_op)
+    finally:
+      config_exec.disable_op_determinism()
 
   def testMaxPoolingGradGradWithArgmax(self):
     # TODO #37915658: Enable once MaxPoolGradGrad is implemented
