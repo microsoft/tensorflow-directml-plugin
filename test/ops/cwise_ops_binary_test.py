@@ -448,6 +448,11 @@ class BinaryOpTest(test.TestCase):
         if (dtype in (np.complex64, np.complex128) and
             tf_func in (_FLOORDIV, math_ops.floordiv)):
           continue  # floordiv makes no sense for complex numbers
+
+        if dtype == np.float16 and tf_func == math_ops.pow:
+          # POW can easily produce numbers that overflow for float16
+          continue
+
         self._compareBCast(xs, ys, dtype, np_func, tf_func)
         self._compareBCast(ys, xs, dtype, np_func, tf_func)
 
