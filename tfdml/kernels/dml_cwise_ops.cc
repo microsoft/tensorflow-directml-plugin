@@ -1111,6 +1111,14 @@ struct DmlRsqrtFunctor
     }
 };
 
+struct DmlRsqrtGradFunctor
+{
+    dml::Expression operator()(dml::Expression x, dml::Expression y)
+    {
+        return (y * (-0.5f * x) * (x * x));
+    }
+};
+
 struct DmlSigmoidGradFunctor
 {
     dml::Expression operator()(dml::Expression x, dml::Expression y)
@@ -2187,6 +2195,19 @@ static void RegisterRsqrt()
     RegisterWithTypes<K, ops::Rsqrt::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
+static void RegisterRsqrtGrad()
+{
+    using K = KernelDefinition<
+        ops::RsqrtGrad,
+        DmlKernelWrapper<
+            DmlCompositeBinaryKernel<
+                DmlRsqrtGradFunctor,
+                kBinaryCwiseOpMaxDimCount>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::RsqrtGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 static void RegisterSelu()
 {
     using K = KernelDefinition<
@@ -2519,6 +2540,7 @@ void RegisterKernels_Cwise()
     RegisterRightShift();
     RegisterRound();
     RegisterRsqrt();
+    RegisterRsqrtGrad();
     RegisterSelu();
     RegisterSigmoid();
     RegisterSigmoidGrad();
