@@ -2410,6 +2410,24 @@ static void RegisterTanhGrad()
     RegisterWithTypes<K, ops::TanhGrad::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
+static void RegisterTruncateDiv()
+{
+    using K = KernelDefinition<
+        ops::TruncateDiv,
+        DmlKernelWrapper<
+            DmlBinaryKernel<
+                DML_OPERATOR_ELEMENT_WISE_DIVIDE,
+                DML_ELEMENT_WISE_DIVIDE_OPERATOR_DESC>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::TruncateDiv::Attribute::T,
+        TF_UINT8,
+        TF_UINT16,
+        TF_INT16>();
+}
+
 static void RegisterTruncateMod()
 {
     using K = KernelDefinition<
@@ -2535,6 +2553,7 @@ void RegisterKernels_Cwise()
     RegisterTan();
     RegisterTanh();
     RegisterTanhGrad();
+    RegisterTruncateDiv();
     RegisterTruncateMod();
     RegisterXdivy();
     RegisterXlogy();
