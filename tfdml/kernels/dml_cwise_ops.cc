@@ -1297,6 +1297,20 @@ static void RegisterAtan()
     RegisterWithTypes<K, ops::Atan::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
+
+static void RegisterAtan2()
+{
+    using K = KernelDefinition<
+        ops::Atan2,
+        DmlKernelWrapper<
+            DmlBinaryKernel<
+                DML_OPERATOR_ELEMENT_WISE_ATAN_YX,
+                DML_ELEMENT_WISE_ATAN_YX_OPERATOR_DESC>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::Atan2::Attribute::T, TF_FLOAT>();
+}
+
 static void RegisterAtanh()
 {
     using K = KernelDefinition<
@@ -2467,6 +2481,7 @@ void RegisterKernels_Cwise()
     RegisterAsin();
     RegisterAsinh();
     RegisterAtan();
+    RegisterAtan2();
     RegisterAtanh();
     RegisterBitwiseAnd();
     RegisterBitwiseOr();
