@@ -1044,6 +1044,14 @@ struct DmlExpm1Functor
     }
 };
 
+struct DmlInvGradFunctor
+{
+    dml::Expression operator()(dml::Expression x, dml::Expression y)
+    {
+        return (-y * x * x);
+    }
+};
+
 struct DmlIsFiniteFunctor
 {
     dml::Expression operator()(dml::Expression x)
@@ -1692,6 +1700,19 @@ static void RegisterInvert()
         TF_UINT16,
         TF_UINT32,
         TF_UINT64>();
+}
+
+static void RegisterInvGrad()
+{
+    using K = KernelDefinition<
+        ops::InvGrad,
+        DmlKernelWrapper<
+            DmlCompositeBinaryKernel<
+                DmlInvGradFunctor,
+                kBinaryCwiseOpMaxDimCount>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::InvGrad::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
 static void RegisterIsFinite()
@@ -2490,6 +2511,7 @@ void RegisterKernels_Cwise()
     RegisterGreaterEqual();
     RegisterInv();
     RegisterInvert();
+    RegisterInvGrad();
     RegisterIsFinite();
     RegisterIsInf();
     RegisterIsNan();
