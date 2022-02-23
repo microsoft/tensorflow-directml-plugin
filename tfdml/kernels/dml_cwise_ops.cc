@@ -1119,6 +1119,14 @@ struct DmlSigmoidGradFunctor
     }
 };
 
+struct DmlSoftplusGradFunctor
+{
+    dml::Expression operator()(dml::Expression x, dml::Expression y)
+    {
+        return (x / (dml::Exp(-y) + 1));
+    }
+};
+
 struct DmlTanhGradFunctor
 {
     dml::Expression operator()(dml::Expression x, dml::Expression y)
@@ -2294,6 +2302,19 @@ static void RegisterSoftplus()
     RegisterWithTypes<K, ops::Softplus::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
+static void RegisterSoftplusGrad()
+{
+    using K = KernelDefinition<
+        ops::SoftplusGrad,
+        DmlKernelWrapper<
+            DmlCompositeBinaryKernel<
+                DmlSoftplusGradFunctor,
+                kBinaryCwiseOpMaxDimCount>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::SoftplusGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 static void RegisterSoftsign()
 {
     using K = KernelDefinition<
@@ -2527,6 +2548,7 @@ void RegisterKernels_Cwise()
     RegisterSinh();
     RegisterSoftmax();
     RegisterSoftplus();
+    RegisterSoftplusGrad();
     RegisterSoftsign();
     RegisterSqrt();
     RegisterSquare();
