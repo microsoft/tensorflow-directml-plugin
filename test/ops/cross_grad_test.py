@@ -20,8 +20,6 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
 import dml_test_util
-import os
-input(os.getpid())
 
 
 class CrossOpTest(dml_test_util.TestCase):
