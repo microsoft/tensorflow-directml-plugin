@@ -437,7 +437,7 @@ class DmlMaxActivationKernel : public DmlKernel
     }
 };
 
-template <typename ExpressionFunctor, uint32_t max_dim_count>
+template <typename ExpressionFunctor>
 class DmlCompositeUnaryKernel : public DmlKernel
 {
   public:
@@ -1103,6 +1103,14 @@ struct DmlReciprocalGradFunctor
     }
 };
 
+struct DmlRintFunctor
+{
+    dml::Expression operator()(dml::Expression x)
+    {
+        return dml::Round(x, DML_ROUNDING_MODE_HALVES_TO_NEAREST_EVEN);
+    }
+};
+
 struct DmlRsqrtFunctor
 {
     dml::Expression operator()(dml::Expression x)
@@ -1534,7 +1542,7 @@ static void RegisterErfc()
     using K = KernelDefinition<
         ops::Erfc,
         DmlKernelWrapper<
-            DmlCompositeUnaryKernel<DmlErfcFunctor, kNchwDimensionCount>,
+            DmlCompositeUnaryKernel<DmlErfcFunctor>,
             GetBroadcastedOutputShapeHelper>>;
 
     RegisterWithTypes<K, ops::Erfc::Attribute::T, TF_FLOAT, TF_HALF>();
@@ -1558,7 +1566,7 @@ static void RegisterExpm1()
     using K = KernelDefinition<
         ops::Expm1,
         DmlKernelWrapper<
-            DmlCompositeUnaryKernel<DmlExpm1Functor, kNchwDimensionCount>,
+            DmlCompositeUnaryKernel<DmlExpm1Functor>,
             GetBroadcastedOutputShapeHelper>>;
 
     RegisterWithTypes<K, ops::Expm1::Attribute::T, TF_FLOAT, TF_HALF>();
@@ -1699,7 +1707,7 @@ static void RegisterIsFinite()
     using K = KernelDefinition<
         ops::IsFinite,
         DmlKernelWrapper<
-            DmlCompositeUnaryKernel<DmlIsFiniteFunctor, kNchwDimensionCount>,
+            DmlCompositeUnaryKernel<DmlIsFiniteFunctor>,
             GetBroadcastedOutputShapeHelper>>;
 
     RegisterWithTypes<K, ops::IsFinite::Attribute::T, TF_FLOAT, TF_HALF>();
@@ -2163,6 +2171,17 @@ static void RegisterRightShift()
         TF_UINT32>();
 }
 
+static void RegisterRint()
+{
+    using K = KernelDefinition<
+        ops::Rint,
+        DmlKernelWrapper<
+            DmlCompositeUnaryKernel<DmlRintFunctor>,
+            GetBroadcastedOutputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::Rint::Attribute::T, TF_FLOAT>();
+}
+
 static void RegisterRound()
 {
     using K = KernelDefinition<
@@ -2181,7 +2200,7 @@ static void RegisterRsqrt()
     using K = KernelDefinition<
         ops::Rsqrt,
         DmlKernelWrapper<
-            DmlCompositeUnaryKernel<DmlRsqrtFunctor, kNchwDimensionCount>,
+            DmlCompositeUnaryKernel<DmlRsqrtFunctor>,
             GetBroadcastedOutputShapeHelper>>;
 
     RegisterWithTypes<K, ops::Rsqrt::Attribute::T, TF_FLOAT, TF_HALF>();
@@ -2517,6 +2536,7 @@ void RegisterKernels_Cwise()
     RegisterReciprocalGrad();
     RegisterRelu6();
     RegisterRightShift();
+    RegisterRint();
     RegisterRound();
     RegisterRsqrt();
     RegisterSelu();
