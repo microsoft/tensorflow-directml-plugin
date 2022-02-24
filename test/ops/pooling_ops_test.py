@@ -832,11 +832,6 @@ class PoolingTest(dml_test_util.TestCase, parameterized.TestCase):
 
   @test_util.disable_xla("b/123338077")  # Passes with XLA
   def testDepthwiseMaxPoolInvalidConfigs(self):
-    # TODO: Enable when Fill is registered on the CPU for int32
-    # https://github.com/tensorflow/tensorflow/pull/53619
-    if context.run_eager_op_as_function_enabled():
-      self.skipTest("Fill doesn't have a DEVICE_DEFAULT registration yet")
-
     self._testDepthwiseMaxPoolInvalidConfig(
         [1, 2, 2, 4], [1, 2, 2, 2], [1, 1, 1, 2],
         "exactly one of pooling across depth")
@@ -2344,11 +2339,6 @@ class PoolingTest(dml_test_util.TestCase, parameterized.TestCase):
   @test_util.disable_xla(
       "b/205634417")  # XLA is not throwing shape errors for multiple *Grad ops.
   def testMaxPoolGradEagerShapeErrors(self):
-    # TODO: Enable when Fill is registered on the CPU for int32
-    # https://github.com/tensorflow/tensorflow/pull/53619
-    if context.run_eager_op_as_function_enabled():
-      self.skipTest("Fill doesn't have a DEVICE_DEFAULT registration yet")
-
     with context.eager_mode():
       orig_in = array_ops.ones((1, 1, 1, 1))
 
@@ -2385,10 +2375,9 @@ class PoolingTest(dml_test_util.TestCase, parameterized.TestCase):
             padding="VALID")
 
   def testMaxPoolGradWithArgmaxEagerShapeErrors(self):
-    # TODO: Enable when Fill is registered on the CPU for int32
-    # https://github.com/tensorflow/tensorflow/pull/53619
     if context.run_eager_op_as_function_enabled():
-      self.skipTest("Fill doesn't have a DEVICE_DEFAULT registration yet")
+      # TODO #37915658: Enable once MaxPoolGradGrad is implemented
+      self.skipTest("MaxPoolGradGrad is not implemented yet on DML")
 
     with context.eager_mode():
       inp = array_ops.ones((1, 1, 1, 1))

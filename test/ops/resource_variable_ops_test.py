@@ -1284,9 +1284,6 @@ class ResourceVariableOpsTest(dml_test_util.TestCase,
       self.assertEqual(2, v2.read_value().numpy())
 
   def testDestruction(self):
-    # TODO: Enable when TF has the registration for MakeWeakResourceHandle
-    # https://github.com/tensorflow/tensorflow/pull/53670
-    self.skipTest("DML doesn't support ResourceScatterUpdate yet")
     with context.eager_mode():
       var = resource_variable_ops.ResourceVariable(initial_value=1.0,
                                                    name="var8")

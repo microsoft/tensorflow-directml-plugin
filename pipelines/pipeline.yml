@@ -41,7 +41,7 @@ parameters:
 - name: testTensorflowPackage
   displayName: TensorFlow Package Version
   type: string
-  default: tf-nightly-cpu==2.9.0.dev20220123
+  default: tf-nightly-cpu==2.9.0.dev20220223
 
 - name: testKerasPackage
   displayName: TensorFlow Package Version
