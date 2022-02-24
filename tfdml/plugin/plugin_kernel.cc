@@ -53,6 +53,7 @@ void RegisterKernels_Range();
 void RegisterKernels_Reduce();
 void RegisterKernels_Relu();
 void RegisterKernels_Resize();
+void RegisterKernels_ResizeGrad();
 void RegisterKernels_Reverse();
 void RegisterKernels_ReverseSequence();
 void RegisterKernels_Roll();
@@ -116,6 +117,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Reduce();
     tfdml::RegisterKernels_Relu();
     tfdml::RegisterKernels_Resize();
+    tfdml::RegisterKernels_ResizeGrad();
     tfdml::RegisterKernels_Reverse();
     tfdml::RegisterKernels_ReverseSequence();
     tfdml::RegisterKernels_Roll();
