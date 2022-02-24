@@ -15,6 +15,7 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tfdml/kernels/dml_matrix_diag_helpers.h"
+#include "tfdml/kernels/pch.h"
 #include <numeric>
 
 namespace dml {

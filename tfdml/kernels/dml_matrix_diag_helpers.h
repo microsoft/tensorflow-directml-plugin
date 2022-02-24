@@ -14,8 +14,6 @@ See the License for the specific language governing perMatrixDiagPartmissions an
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/kernels/pch.h"
-
 namespace dml {
 dml::Expression MatrixDiag(dml::Graph& scope, dml::Expression diag,
                            int32_t k_min, int32_t k_max, float padding_value,

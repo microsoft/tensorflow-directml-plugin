@@ -16,7 +16,7 @@ limitations under the License.
 
 #include <numeric>
 
-#include "tfdml/kernels/dml_matrix_diag_helpers.h"
+#include "tfdml/kernels/dml_matrix_diag_helpers.cc"
 
 namespace tfdml {
 
@@ -46,7 +46,7 @@ class MatrixDiagInitHelper : public InitializationHelper {
                   errors::InvalidArgument(
                       "diag_index must be a scalar or vector, received shape: ",
                       diag_index.shape().DebugString()));
-      lower_diag_index = diag_index.flat<int32>()(0);
+      lower_diag_index = diag_index.base<int32_t>()[0];
       upper_diag_index = lower_diag_index;
       if (TensorShapeUtils::IsVector(diag_index.shape())) {
         auto diag_index_size = diag_index.dim_size(0);
@@ -56,7 +56,7 @@ class MatrixDiagInitHelper : public InitializationHelper {
                 "diag_index must have only one or two elements, received ",
                 diag_index_size, " elements."));
         if (diag_index_size > 1) {
-          upper_diag_index = diag_index.flat<int32>()(1);
+          upper_diag_index = diag_index.base<int32_t>()[1];
         }
       }
       num_rows = ctx->input(2).base<int32_t>()[0];
@@ -121,8 +121,8 @@ class MatrixDiagInitHelper : public InitializationHelper {
   }
 
   TensorShape GetOutputShape() const { return output_shape_; }
-  int32 GetLowerDiagIndex() const { return lower_diag_index_; }
-  int32 GetUpperDiagIndex() const { return upper_diag_index_; }
+  int32_t GetLowerDiagIndex() const { return lower_diag_index_; }
+  int32_t GetUpperDiagIndex() const { return upper_diag_index_; }
   T GetPaddingValue() const { return padding_value_; }
 
  private:
@@ -147,7 +147,7 @@ class MatrixDiagShapeHelper : public ShapeHelper {
 template <typename T>
 class DmlMatrixDiagKernel : public DmlKernel {
  public:
-  using InitHelper = tensorflow::MatrixDiagInitHelper<T>;
+  using InitHelper = MatrixDiagInitHelper<T>;
   DmlMatrixDiagKernel(DmlKernelConstruction* ctx,
                       const InitHelper* init_helper) {
     const TensorShape& out_shape = ctx->GetOutputTensorShape(0);
@@ -313,9 +313,9 @@ class DmlMatrixDiagKernel : public DmlKernel {
     if (use_fast_path_) {
       // Fill the buffer with the padding value since we use strides to skip
       // over elements
-      Tensor* output = ctx->GetOutputTensor(0);
+      Tensor output = ctx->GetOutputTensor(0);
       ctx->GetDmlDeviceContext()->FillBufferWithValue(
-          ctx->GetDmlDeviceContext()->GetBufferForTensor(*output),
+          ctx->GetDmlDeviceContext()->GetBufferForTensor(output),
           static_cast<float>(padding_value_));
     }
 
@@ -326,34 +326,48 @@ class DmlMatrixDiagKernel : public DmlKernel {
   bool use_fast_path_ = false;
 };
 
-// #define REGISTER_DML_KERNEL(type)                                         \
-//   REGISTER_KERNEL_BUILDER(Name("MatrixDiagV2")                            \
-//                               .Device(DEVICE_DML)                         \
-//                               .TypeConstraint<type>("T")                  \
-//                               .HostMemory("k")                            \
-//                               .HostMemory("num_rows")                     \
-//                               .HostMemory("num_cols")                     \
-//                               .HostMemory("padding_value"),               \
-//                           DmlKernelWrapper<DmlMatrixDiagKernel<type>,     \
-//                                            MatrixDiagShapeHelper<type>>); \
-//   REGISTER_KERNEL_BUILDER(                                                \
-//       Name("MatrixDiag").Device(DEVICE_DML).TypeConstraint<type>("T"),    \
-//       DmlKernelWrapper<DmlMatrixDiagKernel<type>,                         \
-//                        MatrixDiagShapeHelper<type>>);
+template <typename Op, typename T>
+using K = typename KernelDefinition<
+    Op,
+    DmlKernelWrapper<
+        DmlMatrixDiagKernel<T>,
+        MatrixDiagShapeHelper<T>>>;
 
-// TF_CALL_float(REGISTER_DML_KERNEL);
-// TF_CALL_half(REGISTER_DML_KERNEL);
-// TF_CALL_bool(REGISTER_DML_KERNEL);
-// #undef REGISTER_DML_KERNEL
+template <typename T, typename... Ts>
+static void RegisterMatrixDiag()
+{
+  using Op = ops::MatrixDiagV2;
+  K<Op, T>::template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::Register();
+  if constexpr (sizeof...(Ts) > 0) RegisterMatrixDiag<Ts...>();
+}
 
-// #define REGISTER_DML_KERNEL(type)                                           \
-//   REGISTER_KERNEL_BUILDER(                                                  \
-//       Name("BatchMatrixDiag").Device(DEVICE_DML).TypeConstraint<type>("T"), \
-//       DmlKernelWrapper<DmlMatrixDiagKernel<type>,                           \
-//                        MatrixDiagShapeHelper<type>>);
+template <typename T, typename... Ts>
+static void RegisterMatrixDiagV2()
+{
+  using Op = ops::MatrixDiagV2;
+    K<Op, T>
+      ::template WithHostMemoryArguments<Op::Argument::k>
+      ::template WithHostMemoryArguments<Op::Argument::num_rows>
+      ::template WithHostMemoryArguments<Op::Argument::num_cols>
+      ::template WithHostMemoryArguments<Op::Argument::padding_value>
+      ::template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::Register();
+  
+  if constexpr (sizeof...(Ts) > 0) RegisterMatrixDiagV2<Ts...>();
+}
 
-// TF_CALL_float(REGISTER_DML_KERNEL);
-// TF_CALL_half(REGISTER_DML_KERNEL);
-// #undef REGISTER_DML_KERNEL
+template <typename T, typename... Ts>
+static void RegisterBatchMatrixDiag()
+{
+  using Op = ops::BatchMatrixDiag;
+  K<Op, T>::template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::Register();
+  if constexpr (sizeof...(Ts) > 0) RegisterBatchMatrixDiag<Ts...>();
+}
+
+void RegisterKernels_MatrixDiag()
+{
+    RegisterMatrixDiag<float, Eigen::half, bool>();
+    RegisterMatrixDiagV2<float, Eigen::half, bool>();
+    RegisterBatchMatrixDiag<float, Eigen::half>();
+}
 
 }  // namespace tfdml
