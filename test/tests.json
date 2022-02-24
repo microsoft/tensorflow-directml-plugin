@@ -168,6 +168,9 @@
                     "file": "ops/roll_op_test.py"
                 },
                 {
+                    "file": "ops/scan_ops_test.py"
+                },
+                {
                     "file": "ops/scatter_nd_ops_test.py"
                 },
                 {
