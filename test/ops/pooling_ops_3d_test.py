@@ -95,11 +95,6 @@ class PoolingTest(dml_test_util.TestCase):
                           data_format, expected, use_gpu)
 
   def testAvgPool3dValidPadding(self):
-    # TODO: Enable when Fill is registered on the CPU for int32
-    # https://github.com/tensorflow/tensorflow/pull/53619
-    if context.run_eager_op_as_function_enabled():
-      self.skipTest("Fill doesn't have a DEVICE_DEFAULT registration yet")
-
     expected_output = [20.5, 21.5, 22.5]
     self._VerifyValues(
         nn_ops.avg_pool3d,
@@ -110,11 +105,6 @@ class PoolingTest(dml_test_util.TestCase):
         expected=expected_output)
 
   def testAvgPool3dSamePadding(self):
-    # TODO: Enable when Fill is registered on the CPU for int32
-    # https://github.com/tensorflow/tensorflow/pull/53619
-    if context.run_eager_op_as_function_enabled():
-      self.skipTest("Fill doesn't have a DEVICE_DEFAULT registration yet")
-
     expected_output = [20.5, 21.5, 22.5, 26.5, 27.5, 28.5]
     self._VerifyValues(
         nn_ops.avg_pool3d,
@@ -125,11 +115,6 @@ class PoolingTest(dml_test_util.TestCase):
         expected=expected_output)
 
   def testAvgPool3dSamePaddingDifferentStrides(self):
-    # TODO: Enable when Fill is registered on the CPU for int32
-    # https://github.com/tensorflow/tensorflow/pull/53619
-    if context.run_eager_op_as_function_enabled():
-      self.skipTest("Fill doesn't have a DEVICE_DEFAULT registration yet")
-
     expected_output = [1.5, 4.5, 7.5, 17.5, 20.5, 23.5, 33.5, 36.5, 39.5]
     self._VerifyValues(
         nn_ops.avg_pool3d,
@@ -140,11 +125,6 @@ class PoolingTest(dml_test_util.TestCase):
         expected=expected_output)
 
   def testMaxPool3dValidPadding(self):
-    # TODO: Enable when Fill is registered on the CPU for int32
-    # https://github.com/tensorflow/tensorflow/pull/53619
-    if context.run_eager_op_as_function_enabled():
-      self.skipTest("Fill doesn't have a DEVICE_DEFAULT registration yet")
-
     expected_output = [40.0, 41.0, 42.0]
     self._VerifyValues(
         nn_ops.max_pool3d,
@@ -155,11 +135,6 @@ class PoolingTest(dml_test_util.TestCase):
         expected=expected_output)
 
   def testMaxPool3dSamePadding(self):
-    # TODO: Enable when Fill is registered on the CPU for int32
-    # https://github.com/tensorflow/tensorflow/pull/53619
-    if context.run_eager_op_as_function_enabled():
-      self.skipTest("Fill doesn't have a DEVICE_DEFAULT registration yet")
-
     expected_output = [31., 32., 33., 34., 35., 36.]
     self._VerifyValues(
         nn_ops.max_pool3d,
@@ -170,11 +145,6 @@ class PoolingTest(dml_test_util.TestCase):
         expected=expected_output)
 
   def testMaxPool3dSamePaddingDifferentStrides(self):
-    # TODO: Enable when Fill is registered on the CPU for int32
-    # https://github.com/tensorflow/tensorflow/pull/53619
-    if context.run_eager_op_as_function_enabled():
-      self.skipTest("Fill doesn't have a DEVICE_DEFAULT registration yet")
-
     expected_output = [2., 5., 8., 18., 21., 24., 34., 37., 40.]
     self._VerifyValues(
         nn_ops.max_pool3d,
@@ -205,11 +175,6 @@ class PoolingTest(dml_test_util.TestCase):
         expected=expected_output.flatten())
 
   def testKernelSmallerThanStride(self):
-    # TODO: Enable when Fill is registered on the CPU for int32
-    # https://github.com/tensorflow/tensorflow/pull/53619
-    if context.run_eager_op_as_function_enabled():
-      self.skipTest("Fill doesn't have a DEVICE_DEFAULT registration yet")
-
     self._VerifyValues(
         nn_ops.max_pool3d,
         input_sizes=[1, 3, 3, 3, 1],
@@ -247,11 +212,6 @@ class PoolingTest(dml_test_util.TestCase):
 
     Args: none
     """
-    # TODO: Enable when Fill is registered on the CPU for int32
-    # https://github.com/tensorflow/tensorflow/pull/53619
-    if context.run_eager_op_as_function_enabled():
-      self.skipTest("Fill doesn't have a DEVICE_DEFAULT registration yet")
-
     input_sizes = [0, 112, 112, 112, 64]
 
     input_data = 1.
@@ -552,11 +512,6 @@ class PoolingTest(dml_test_util.TestCase):
         padding="SAME")
 
   def testMaxPool3DZeroPoolSize(self):
-    # TODO: Enable when Fill is registered on the CPU for int32
-    # https://github.com/tensorflow/tensorflow/pull/53619
-    if context.run_eager_op_as_function_enabled():
-      self.skipTest("Fill doesn't have a DEVICE_DEFAULT registration yet")
-
     # Test case for GitHub issue 51936.
     for f in [nn_ops.max_pool3d, nn_ops.avg_pool3d]:
       with self.session():
@@ -571,11 +526,6 @@ class PoolingTest(dml_test_util.TestCase):
 
   @test_util.disable_xla("b/205634417")  # XLA does not raise these errors.
   def testMaxPoolGradEagerShapeErrors(self):
-    # TODO: Enable when Fill is registered on the CPU for int32
-    # https://github.com/tensorflow/tensorflow/pull/53619
-    if context.run_eager_op_as_function_enabled():
-      self.skipTest("Fill doesn't have a DEVICE_DEFAULT registration yet")
-
     with context.eager_mode():
       orig_in = array_ops.ones((1, 1, 1, 1, 1))
 
