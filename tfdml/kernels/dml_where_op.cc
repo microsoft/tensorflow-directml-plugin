@@ -39,7 +39,9 @@ class DmlWhereHelper : public DmlKernel
         auto input_desc = DmlTensorDesc::Create(
             input_tensor.dtype(),
             input_tensor.shape(),
-            input_tensor.shape());
+            input_tensor.shape(),
+            0,
+            false);
 
         auto output_count_desc = DmlTensorDesc::Create(
             TF_UINT32,
@@ -71,9 +73,7 @@ class DmlWhereHelper : public DmlKernel
         auto inputs = GetDmlTensorDescs(tensors.inputs);
         auto scope = dml::Graph(dml_device->GetDmlDevice());
         const auto input = dml::InputTensor(scope, 0, inputs[0]);
-        auto nonzero_coordinates_result = dml::NonZeroCoordinates(
-            input,
-            static_cast<uint32_t>(input_tensor.dims()));
+        auto nonzero_coordinates_result = dml::NonZeroCoordinates(input);
         auto num_nonzero_coordinates = nonzero_coordinates_result.count;
         auto nonzero_coordinates = nonzero_coordinates_result.coordinates;
 
