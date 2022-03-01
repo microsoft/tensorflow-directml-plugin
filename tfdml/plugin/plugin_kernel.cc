@@ -71,6 +71,7 @@ void RegisterKernels_Tile();
 void RegisterKernels_TopK();
 void RegisterKernels_Transpose();
 void RegisterKernels_Training();
+void RegisterKernels_Where();
 void RegisterKernels_Xent();
 void RegisterKernels_ZerosLike();
 } // namespace tfdml
@@ -135,6 +136,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_TopK();
     tfdml::RegisterKernels_Transpose();
     tfdml::RegisterKernels_Training();
+    tfdml::RegisterKernels_Where();
     tfdml::RegisterKernels_Xent();
     tfdml::RegisterKernels_ZerosLike();
 }

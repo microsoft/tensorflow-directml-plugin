@@ -245,6 +245,7 @@ add_library(
     tfdml/kernels/dml_topk_op.cc
     tfdml/kernels/dml_training_ops.cc
     tfdml/kernels/dml_transpose_op.cc
+    tfdml/kernels/dml_where_op.cc
     tfdml/kernels/dml_xent_op.cc
     tfdml/kernels/dml_zeros_like_op.cc
 )
