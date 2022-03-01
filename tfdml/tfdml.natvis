@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
-  <Type Name="absl::lts_20210324::InlinedVector&lt;*,*&gt;">
+  <Type Name="absl::lts_20211102::InlinedVector&lt;*,*&gt;">
       <DisplayString>{{ Count={storage_.metadata_.value >> 1} }}</DisplayString>
       <Expand>
           <Item Name="[Count]" ExcludeView="simple">storage_.metadata_.value &gt;&gt; 1</Item>
