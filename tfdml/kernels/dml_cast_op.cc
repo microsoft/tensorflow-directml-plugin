@@ -94,7 +94,7 @@ class DmlCastKernel : public DmlKernel
     bool zero_outputs_ = false;
 };
 
-template <TF_DataType SrcT, TF_DataType T, TF_DataType... Ts>
+template <TF_DataType T>
 void RegisterCastDstT()
 {
     using Op = ops::Cast;
@@ -102,16 +102,10 @@ void RegisterCastDstT()
         Op,
         DmlKernelWrapper<DmlCastKernel, GetOutputShapeAsInputShapeHelper>>::
         template WithTypeConstraint<Op::Attribute::DstT, T>;
-    K::template WithTypeConstraint<Op::Attribute::SrcT, SrcT>::Register();
 
-    if constexpr (sizeof...(Ts) > 0) RegisterCastDstT<SrcT, Ts...>();
-}
-
-template <TF_DataType T, TF_DataType... Ts>
-void RegisterCastSrcT()
-{
-    RegisterCastDstT<
-        T,
+    RegisterWithTypes<
+        K,
+        Op::Attribute::SrcT,
         TF_FLOAT,
         TF_HALF,
         TF_BOOL,
@@ -123,23 +117,21 @@ void RegisterCastSrcT()
         TF_INT16,
         TF_INT32,
         TF_INT64>();
-    if constexpr (sizeof...(Ts) > 0) RegisterCastDstT<Ts...>();
 }
 
 void RegisterKernels_Cast()
 {
-    RegisterCastSrcT<
-        TF_FLOAT,
-        TF_HALF,
-        TF_BOOL,
-        TF_UINT8,
-        TF_UINT16,
-        TF_UINT32,
-        TF_UINT64,
-        TF_INT8,
-        TF_INT16,
-        TF_INT32,
-        TF_INT64>();
+    RegisterCastDstT<TF_FLOAT>();
+    RegisterCastDstT<TF_HALF>();
+    RegisterCastDstT<TF_BOOL>();
+    RegisterCastDstT<TF_UINT8>();
+    RegisterCastDstT<TF_UINT16>();
+    RegisterCastDstT<TF_UINT32>();
+    RegisterCastDstT<TF_UINT64>();
+    RegisterCastDstT<TF_INT8>();
+    RegisterCastDstT<TF_INT16>();
+    RegisterCastDstT<TF_INT32>();
+    RegisterCastDstT<TF_INT64>();
 }
 
 } // namespace tfdml
