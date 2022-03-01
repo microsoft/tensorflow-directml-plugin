@@ -164,6 +164,15 @@ class DmlWhereKernel : public OpKernel
 
         int input_dims = input_tensor.dims();
 
+        if (input_tensor.NumElements() == 0)
+        {
+            TensorShape output_shape({0, input_dims});
+            StatusOr<Tensor> status_or_output_tensor =
+                ctx->allocate_output(0, output_shape);
+            OP_REQUIRES_OK(ctx, status_or_output_tensor.status());
+            return;
+        }
+
         TensorShape output_count_shape;
         for (int i = 0; i < input_dims; ++i)
         {
@@ -176,7 +185,7 @@ class DmlWhereKernel : public OpKernel
             output_coordinates_shape.AddDim(1);
         }
 
-        output_coordinates_shape.AddDim(ctx->input(0).NumElements());
+        output_coordinates_shape.AddDim(input_tensor.NumElements());
         output_coordinates_shape.AddDim(input_dims);
 
         Tensor output_count_tensor;
@@ -240,9 +249,12 @@ class DmlWhereKernel : public OpKernel
             ctx->allocate_output(0, output_shape);
         OP_REQUIRES_OK(ctx, status_or_output.status());
 
-        dml_device->CopyTensorInSameDevice(
-            &output_coordinates_tensor,
-            &status_or_output.ValueOrDie());
+        if (num_nonzero_elements != 0)
+        {
+            dml_device->CopyTensorInSameDevice(
+                &output_coordinates_tensor,
+                &status_or_output.ValueOrDie());
+        }
     }
 };
 
