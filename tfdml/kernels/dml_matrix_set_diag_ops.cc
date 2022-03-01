@@ -14,14 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/core/common_runtime/dml/dml_operator_helper.h"
-#include "tensorflow/core/common_runtime/dml/dml_util.h"
-#include "tensorflow/core/framework/register_types.h"
-#include "tensorflow/core/kernels/dml_kernel_wrapper.h"
-#include "tensorflow/core/kernels/dml_matrix_diag_helpers.h"
-#include "tensorflow/core/kernels/dml_ops_common.h"
+#include "tfdml/kernels/dml_matrix_diag_helpers.h"
+#include "tfdml/kernels/pch.h"
+#include <numeric>
 
-namespace tensorflow {
+namespace tfdml {
+
 class MatrixSetDiagInitHelper : public InitializationHelper {
  public:
   using Attributes = EmptyAttributes;
@@ -31,13 +29,13 @@ class MatrixSetDiagInitHelper : public InitializationHelper {
     const Tensor& input = ctx->input(0);
     const Tensor& diag = ctx->input(1);
 
-    // MatrixSetDiag and MatrixSetDiagV2 both use this OpKernel. MatrixSetDiag
+    // MatrixSetDiag, MatrixSetDiagV2, and MatrixSetDiagV3 both use this OpKernel. MatrixSetDiag
     // only has two inputs, so we have to check the number of inputs before
-    // reading additional parameters in MatrixSetDiagV2.
-    int32 lower_diag_index = 0;
-    int32 upper_diag_index = 0;
+    // reading additional parameters in MatrixSetDiagV2/MatrixSetDiagV3.
+    int32_t lower_diag_index = 0;
+    int32_t upper_diag_index = 0;
 
-    // MatrixSetDiagV2-specific.
+    // MatrixSetDiagV2/V3-specific.
     if (ctx->num_inputs() > 2) {
       auto& diag_index = ctx->input(2);
       OP_REQUIRES(ctx,
@@ -46,7 +44,7 @@ class MatrixSetDiagInitHelper : public InitializationHelper {
                   errors::InvalidArgument(
                       "diag_index must be a scalar or vector, received shape: ",
                       diag_index.shape().DebugString()));
-      lower_diag_index = diag_index.flat<int32>()(0);
+      lower_diag_index = diag_index.base<int32_t>()[0];
       upper_diag_index = lower_diag_index;
       if (TensorShapeUtils::IsVector(diag_index.shape())) {
         auto diag_index_size = diag_index.dim_size(0);
@@ -56,7 +54,7 @@ class MatrixSetDiagInitHelper : public InitializationHelper {
                 "diag_index must have only one or two elements, received ",
                 diag_index_size, " elements."));
         if (diag_index_size > 1) {
-          upper_diag_index = diag_index.flat<int32>()(1);
+          upper_diag_index = diag_index.base<int32_t>()[1];
         }
       }
     }
@@ -110,7 +108,7 @@ class MatrixSetDiagInitHelper : public InitializationHelper {
     TensorShape expected_diag_shape = input_shape;
     expected_diag_shape.RemoveLastDims(2);
     if (num_diags > 1) expected_diag_shape.AddDim(num_diags);
-    const int32 max_diag_len =
+    const int32_t max_diag_len =
         std::min(num_rows + std::min(upper_diag_index, 0),
                  num_cols - std::max(lower_diag_index, 0));
     expected_diag_shape.AddDim(max_diag_len);
@@ -128,12 +126,12 @@ class MatrixSetDiagInitHelper : public InitializationHelper {
     upper_diag_index_ = upper_diag_index;
   }
 
-  int32 GetLowerDiagIndex() const { return lower_diag_index_; }
-  int32 GetUpperDiagIndex() const { return upper_diag_index_; }
+  int32_t GetLowerDiagIndex() const { return lower_diag_index_; }
+  int32_t GetUpperDiagIndex() const { return upper_diag_index_; }
 
  private:
-  int32 lower_diag_index_;
-  int32 upper_diag_index_;
+  int32_t lower_diag_index_;
+  int32_t upper_diag_index_;
 };
 
 template <typename T>
@@ -146,23 +144,23 @@ class DmlMatrixSetDiagKernel : public DmlKernel {
     const TensorShape& in_out_shape = ctx->GetInputTensorShape(0);
     const TensorShape& diag_shape = ctx->GetInputTensorShape(1);
 
-    int64 batch_size = 1;
+    int64_t batch_size = 1;
     for (int i = 0; i < in_out_shape.dims() - 2; ++i) {
       batch_size *= in_out_shape.dim_size(i);
     }
 
-    int64 height = in_out_shape.dim_size(in_out_shape.dims() - 2);
-    int64 width = in_out_shape.dim_size(in_out_shape.dims() - 1);
+    int64_t height = in_out_shape.dim_size(in_out_shape.dims() - 2);
+    int64_t width = in_out_shape.dim_size(in_out_shape.dims() - 1);
     const TensorShape flattened_in_out_shape({1, batch_size, height, width});
 
-    int32 k0 = init_helper->GetLowerDiagIndex();
-    int32 k1 = init_helper->GetUpperDiagIndex();
+    int32_t k0 = init_helper->GetLowerDiagIndex();
+    int32_t k1 = init_helper->GetUpperDiagIndex();
 
-    int64 diag_tail_width = diag_shape.dim_size(diag_shape.dims() - 1);
-    int64 diag_tail_depth =
+    int64_t diag_tail_width = diag_shape.dim_size(diag_shape.dims() - 1);
+    int64_t diag_tail_depth =
         k0 == k1 ? 1 : diag_shape.dim_size(diag_shape.dims() - 2);
 
-    int64 diag_head_size = 1;
+    int64_t diag_head_size = 1;
     for (int i = 0; i < in_out_shape.dims() - 2; ++i) {
       diag_head_size *= diag_shape.dim_size(i);
     }
@@ -207,31 +205,59 @@ class DmlMatrixSetDiagKernel : public DmlKernel {
   }
 };
 
-// #define REGISTER_DML_KERNEL(T)                                         \
-//   REGISTER_KERNEL_BUILDER(                                             \
-//       Name("MatrixSetDiag").Device(DEVICE_DML).TypeConstraint<T>("T"), \
-//       DmlKernelWrapper<DmlMatrixSetDiagKernel<T>,                      \
-//                        GetOutputShapeAsInputShapeHelper>);             \
-//   REGISTER_KERNEL_BUILDER(Name("MatrixSetDiagV2")                      \
-//                               .Device(DEVICE_DML)                      \
-//                               .TypeConstraint<T>("T")                  \
-//                               .HostMemory("k"),                        \
-//                           DmlKernelWrapper<DmlMatrixSetDiagKernel<T>,  \
-//                                            GetOutputShapeAsInputShapeHelper>);
+template <typename Op, typename T>
+using K = typename KernelDefinition<
+    Op,
+    DmlKernelWrapper<
+        DmlMatrixSetDiagKernel<T>,
+        GetOutputShapeAsInputShapeHelper>>;
 
-// TF_CALL_half(REGISTER_DML_KERNEL);
-// TF_CALL_float(REGISTER_DML_KERNEL);
-// TF_CALL_bool(REGISTER_DML_KERNEL);
-// #undef REGISTER_DML_KERNEL
+template <typename T, typename... Ts>
+static void RegisterMatrixSetDiag()
+{
+  using Op = ops::MatrixSetDiag;
+  K<Op, T>::template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::Register();
+  
+  if constexpr (sizeof...(Ts) > 0) RegisterMatrixSetDiag<Ts...>();
+}
 
-// #define REGISTER_DML_KERNEL(T)                                              \
-//   REGISTER_KERNEL_BUILDER(                                                  \
-//       Name("BatchMatrixSetDiag").Device(DEVICE_DML).TypeConstraint<T>("T"), \
-//       DmlKernelWrapper<DmlMatrixSetDiagKernel<T>,                           \
-//                        GetOutputShapeAsInputShapeHelper>);
+template <typename T, typename... Ts>
+static void RegisterMatrixSetDiagV2()
+{
+  using Op = ops::MatrixSetDiagV2;
+    K<Op, T>
+      ::template WithHostMemoryArguments<Op::Argument::k>
+      ::template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::Register();
+  
+  if constexpr (sizeof...(Ts) > 0) RegisterMatrixSetDiagV2<Ts...>();
+}
 
-// TF_CALL_half(REGISTER_DML_KERNEL);
-// TF_CALL_float(REGISTER_DML_KERNEL);
-// #undef REGISTER_DML_KERNEL
+template <typename T, typename... Ts>
+static void RegisterMatrixSetDiagV3()
+{
+  using Op = ops::MatrixSetDiagV3;
+    K<Op, T>
+      ::template WithHostMemoryArguments<Op::Argument::k>
+      ::template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::Register();
+  
+  if constexpr (sizeof...(Ts) > 0) RegisterMatrixSetDiagV3<Ts...>();
+}
 
-}  // namespace tensorflow
+template <typename T, typename... Ts>
+static void RegisterBatchMatrixSetDiag()
+{
+  using Op = ops::BatchMatrixSetDiag;
+  K<Op, T>::template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::Register();
+
+  if constexpr (sizeof...(Ts) > 0) RegisterBatchMatrixSetDiag<Ts...>();
+}
+
+void RegisterKernels_MatrixSetDiag()
+{
+    RegisterMatrixSetDiag<float, Eigen::half, bool>();
+    RegisterMatrixSetDiagV2<float, Eigen::half, bool>();
+    RegisterMatrixSetDiagV3<float, Eigen::half, bool>();
+    RegisterBatchMatrixSetDiag<float, Eigen::half>();
+}
+
+}  // namespace tfdml

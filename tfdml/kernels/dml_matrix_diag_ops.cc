@@ -14,9 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include "tfdml/kernels/dml_matrix_diag_helpers.h"
+#include "tfdml/kernels/pch.h"
 #include <numeric>
-
-#include "tfdml/kernels/dml_matrix_diag_helpers.cc"
 
 namespace tfdml {
 
@@ -28,9 +28,9 @@ class MatrixDiagInitHelper : public InitializationHelper {
                        std::shared_ptr<const Attributes> attr) {
     const Tensor& diagonal = ctx->input(0);
 
-    // MatrixDiag and MatrixDiagV2 both use this init helper. MatrixDiag only
+    // MatrixDiag, MatrixDiagV2 and MatrixDiagV3 all use this init helper. MatrixDiag only
     // has one input, so we have to check the number of inputs before reading
-    // additional parameters in MatrixDiagV2.
+    // additional parameters in MatrixDiagV2/MatrixDiagV3.
     int32_t lower_diag_index = 0;
     int32_t upper_diag_index = 0;
     int32_t num_rows = -1;
@@ -336,8 +336,9 @@ using K = typename KernelDefinition<
 template <typename T, typename... Ts>
 static void RegisterMatrixDiag()
 {
-  using Op = ops::MatrixDiagV2;
+  using Op = ops::MatrixDiag;
   K<Op, T>::template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::Register();
+  
   if constexpr (sizeof...(Ts) > 0) RegisterMatrixDiag<Ts...>();
 }
 
@@ -356,10 +357,25 @@ static void RegisterMatrixDiagV2()
 }
 
 template <typename T, typename... Ts>
+static void RegisterMatrixDiagV3()
+{
+  using Op = ops::MatrixDiagV3;
+    K<Op, T>
+      ::template WithHostMemoryArguments<Op::Argument::k>
+      ::template WithHostMemoryArguments<Op::Argument::num_rows>
+      ::template WithHostMemoryArguments<Op::Argument::num_cols>
+      ::template WithHostMemoryArguments<Op::Argument::padding_value>
+      ::template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::Register();
+  
+  if constexpr (sizeof...(Ts) > 0) RegisterMatrixDiagV3<Ts...>();
+}
+
+template <typename T, typename... Ts>
 static void RegisterBatchMatrixDiag()
 {
   using Op = ops::BatchMatrixDiag;
   K<Op, T>::template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::Register();
+
   if constexpr (sizeof...(Ts) > 0) RegisterBatchMatrixDiag<Ts...>();
 }
 
@@ -367,6 +383,7 @@ void RegisterKernels_MatrixDiag()
 {
     RegisterMatrixDiag<float, Eigen::half, bool>();
     RegisterMatrixDiagV2<float, Eigen::half, bool>();
+    RegisterMatrixDiagV3<float, Eigen::half, bool>();
     RegisterBatchMatrixDiag<float, Eigen::half>();
 }
 

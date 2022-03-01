@@ -14,13 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/core/common_runtime/dml/dml_operator_helper.h"
-#include "tensorflow/core/common_runtime/dml/dml_util.h"
-#include "tensorflow/core/framework/register_types.h"
-#include "tensorflow/core/kernels/dml_kernel_wrapper.h"
-#include "tensorflow/core/kernels/dml_ops_common.h"
+#include "tfdml/kernels/pch.h"
 
-namespace tensorflow {
+namespace tfdml {
 
 template <typename T>
 class MatrixDiagPartInitHelper : public InitializationHelper {
@@ -31,14 +27,14 @@ class MatrixDiagPartInitHelper : public InitializationHelper {
                            std::shared_ptr<const Attributes> attr) {
     const Tensor& input = ctx->input(0);
 
-    // MatrixDiagPart and MatrixDiagPartV2 both use this OpKernel.
+    // MatrixDiagPart, MatrixDiagPartV2, and MatrixDiagPartV3 all use this OpKernel.
     // MatrixDiagPart only has one input, so we have to check the number of
-    // inputs before reading additional parameters in MatrixDiagV2.
-    int32 lower_diag_index = 0;
-    int32 upper_diag_index = 0;
+    // inputs before reading additional parameters in MatrixDiagV2/MatrixDiagV3.
+    int32_t lower_diag_index = 0;
+    int32_t upper_diag_index = 0;
     T padding_value(0);
 
-    // MatrixDiagPartV2-specific.
+    // MatrixDiagPartV2/V3-specific.
     if (ctx->num_inputs() > 1) {
       auto& diag_index = ctx->input(1);
       OP_REQUIRES(ctx,
@@ -47,7 +43,7 @@ class MatrixDiagPartInitHelper : public InitializationHelper {
                   errors::InvalidArgument(
                       "diag_index must be a scalar or vector, received shape: ",
                       diag_index.shape().DebugString()));
-      lower_diag_index = diag_index.flat<int32>()(0);
+      lower_diag_index = diag_index.base<int32_t>()[0];
       upper_diag_index = lower_diag_index;
       if (TensorShapeUtils::IsVector(diag_index.shape())) {
         auto diag_index_size = diag_index.dim_size(0);
@@ -57,10 +53,10 @@ class MatrixDiagPartInitHelper : public InitializationHelper {
                 "diag_index must have only one or two elements, received ",
                 diag_index_size, " elements."));
         if (diag_index_size > 1) {
-          upper_diag_index = diag_index.flat<int32>()(1);
+          upper_diag_index = diag_index.base<int32_t>()[1];
         }
       }
-      padding_value = ctx->input(2).flat<T>()(0);
+      padding_value = ctx->input(2).base<T>()[0];
     }
     const TensorShape& input_shape = input.shape();
 
@@ -98,7 +94,7 @@ class MatrixDiagPartInitHelper : public InitializationHelper {
     }
     const Eigen::Index num_diags = upper_diag_index - lower_diag_index + 1;
     if (num_diags > 1) output_shape_.AddDim(num_diags);
-    const int32 max_diag_len =
+    const int32_t max_diag_len =
         std::min(num_rows + std::min(upper_diag_index, 0),
                  num_cols - std::max(lower_diag_index, 0));
     output_shape_.AddDim(max_diag_len);
@@ -109,15 +105,15 @@ class MatrixDiagPartInitHelper : public InitializationHelper {
   }
 
   TensorShape GetOutputShape() const { return output_shape_; }
-  int32 GetLowerDiagIndex() const { return lower_diag_index_; }
-  int32 GetUpperDiagIndex() const { return upper_diag_index_; }
+  int32_t GetLowerDiagIndex() const { return lower_diag_index_; }
+  int32_t GetUpperDiagIndex() const { return upper_diag_index_; }
   T GetPaddingValue() const { return padding_value_; }
 
  private:
   TensorShape output_shape_;
   T padding_value_;
-  int32 lower_diag_index_;
-  int32 upper_diag_index_;
+  int32_t lower_diag_index_;
+  int32_t upper_diag_index_;
 };
 
 template <typename T>
@@ -141,10 +137,10 @@ class DmlMatrixDiagPartKernel : public DmlKernel {
   DmlMatrixDiagPartKernel(DmlKernelConstruction* ctx,
                           const InitHelper* init_helper) {
     const TensorShape& in_shape = ctx->GetInputTensorShape(0);
-    int32 k_min = init_helper->GetLowerDiagIndex();
-    int32 k_max = init_helper->GetUpperDiagIndex();
+    int32_t k_min = init_helper->GetLowerDiagIndex();
+    int32_t k_max = init_helper->GetUpperDiagIndex();
 
-    // Fast path for MatrixDiag and MatrixDiagV2 when k=0, num_rows=num_cols
+    // Fast path for MatrixDiag and MatrixDiagV2/V3 when k=0, num_rows=num_cols
     const bool is_square_matrix = in_shape.dim_size(in_shape.dims() - 2) ==
                                   in_shape.dim_size(in_shape.dims() - 1);
 
@@ -226,8 +222,8 @@ class DmlMatrixDiagPartKernel : public DmlKernel {
     uint32_t leading_dims_size = input_shape.num_elements() / xlen / ylen;
     dml::TensorDesc::Dimensions m_shape({1, leading_dims_size, ylen, xlen});
 
-    int32 k0 = init_helper->GetLowerDiagIndex();
-    int32 k1 = init_helper->GetUpperDiagIndex();
+    int32_t k0 = init_helper->GetLowerDiagIndex();
+    int32_t k1 = init_helper->GetUpperDiagIndex();
 
     uint32_t out_cols = output_shape.dim_size(output_shape.dims() - 1);
     uint32_t out_rows =
@@ -238,10 +234,10 @@ class DmlMatrixDiagPartKernel : public DmlKernel {
     dml::TensorDesc::Dimensions flattened_out_shape(
         {1, out_leading_dim_size, out_rows, out_cols});
 
-    int32 xlenp = xlen + 1;
-    int32 stride = xlenp + 1;
-    int32 xmax = xlen * xlenp + xlenp - 1;
-    int32 ymax = xlenp * ylen - 1;
+    int32_t xlenp = xlen + 1;
+    int32_t stride = xlenp + 1;
+    int32_t xmax = xlen * xlenp + xlenp - 1;
+    int32_t ymax = xlenp * ylen - 1;
 
     DmlTensorInfo input;
     input.kernel_index = 0;
@@ -271,13 +267,13 @@ class DmlMatrixDiagPartKernel : public DmlKernel {
     uint32_t minxy = std::min(xlen, ylen);
 
     auto diag_distances =
-        dml::Sequence<int32>(scope, 0, stride, {1, 1, 1, minxy});
+        dml::Sequence<int32_t>(scope, 0, stride, {1, 1, 1, minxy});
 
     dml::Expression diags_indices;
 
     // Starting indices for super diagonals
-    int32 xstart_end = std::max(0, k0) - 1;
-    int32 xdiag_size = k1 - xstart_end;
+    int32_t xstart_end = std::max(0, k0) - 1;
+    int32_t xdiag_size = k1 - xstart_end;
     dml::Expression xdiags;
 
     if (xdiag_size > 0) {
@@ -286,12 +282,12 @@ class DmlMatrixDiagPartKernel : public DmlKernel {
       dml::TensorDesc::Dimensions xstart_sizes(
           {1, 1, static_cast<uint32_t>(xdiag_size), 1});
 
-      auto xstart = dml::Sequence<int32>(scope, k1, -1, xstart_sizes);
+      auto xstart = dml::Sequence<int32_t>(scope, k1, -1, xstart_sizes);
       xstart = dml::Reinterpret(xstart, broadcast_sizes,
                                 dml::TensorDesc::Dimensions({0, 0, 1, 0}));
 
       auto xmax_sequence =
-          dml::Sequence<int32>(scope, xmax - k1 * xlenp, xlenp, xstart_sizes);
+          dml::Sequence<int32_t>(scope, xmax - k1 * xlenp, xlenp, xstart_sizes);
       xmax_sequence =
           dml::Reinterpret(xmax_sequence, broadcast_sizes,
                            dml::TensorDesc::Dimensions({0, 0, 1, 0}));
@@ -305,8 +301,8 @@ class DmlMatrixDiagPartKernel : public DmlKernel {
     }
 
     // Starting indices for sub diagonals
-    int32 ystart_begin = -std::min(-1, k1);
-    int32 ydiag_size = 1 - k0 - ystart_begin;
+    int32_t ystart_begin = -std::min(-1, k1);
+    int32_t ydiag_size = 1 - k0 - ystart_begin;
     dml::Expression ydiags;
 
     if (ydiag_size > 0) {
@@ -315,12 +311,12 @@ class DmlMatrixDiagPartKernel : public DmlKernel {
       dml::TensorDesc::Dimensions ystart_sizes(
           {1, 1, static_cast<uint32_t>(ydiag_size), 1});
 
-      auto ystart = dml::Sequence<int32>(scope, ystart_begin * xlenp, xlenp,
+      auto ystart = dml::Sequence<int32_t>(scope, ystart_begin * xlenp, xlenp,
                                          ystart_sizes);
       ystart = dml::Reinterpret(ystart, broadcast_sizes,
                                 dml::TensorDesc::Dimensions({0, 0, 1, 0}));
 
-      auto ymax_scalar = dml::ScalarTensor<int32>(scope, ymax, ystart_sizes);
+      auto ymax_scalar = dml::ScalarTensor<int32_t>(scope, ymax, ystart_sizes);
       ymax_scalar = dml::Reinterpret(ymax_scalar, broadcast_sizes,
                                      dml::TensorDesc::Dimensions({0, 0, 1, 0}));
 
@@ -352,33 +348,63 @@ class DmlMatrixDiagPartKernel : public DmlKernel {
 
     Initialize(ctx, std::move(tensors), compiled_op.Get());
   }
-};  // namespace tensorflow
+};
 
-// #define REGISTER_DML_KERNEL(T)                                          \
-//   REGISTER_KERNEL_BUILDER(                                              \
-//       Name("MatrixDiagPart").Device(DEVICE_DML).TypeConstraint<T>("T"), \
-//       DmlKernelWrapper<DmlMatrixDiagPartKernel<T>,                      \
-//                        MatrixDiagPartShapeHelper<T>>);                  \
-//   REGISTER_KERNEL_BUILDER(Name("MatrixDiagPartV2")                      \
-//                               .Device(DEVICE_DML)                       \
-//                               .TypeConstraint<T>("T")                   \
-//                               .HostMemory("k")                          \
-//                               .HostMemory("padding_value"),             \
-//                           DmlKernelWrapper<DmlMatrixDiagPartKernel<T>,  \
-//                                            MatrixDiagPartShapeHelper<T>>);
+template <typename Op, typename T>
+using K = typename KernelDefinition<
+    Op,
+    DmlKernelWrapper<
+        DmlMatrixDiagPartKernel<T>,
+        MatrixDiagPartShapeHelper<T>>>;
 
-// TF_CALL_half(REGISTER_DML_KERNEL);
-// TF_CALL_float(REGISTER_DML_KERNEL);
-// TF_CALL_bool(REGISTER_DML_KERNEL);
-// #undef REGISTER_DML_KERNEL
+template <typename T, typename... Ts>
+static void RegisterMatrixDiagPart()
+{
+  using Op = ops::MatrixDiagPart;
+  K<Op, T>::template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::Register();
+  
+  if constexpr (sizeof...(Ts) > 0) RegisterMatrixDiagPart<Ts...>();
+}
 
-// #define REGISTER_DML_KERNEL(T)                                               \
-//   REGISTER_KERNEL_BUILDER(                                                   \
-//       Name("BatchMatrixDiagPart").Device(DEVICE_DML).TypeConstraint<T>("T"), \
-//       DmlKernelWrapper<DmlMatrixDiagPartKernel<T>,                           \
-//                        MatrixDiagPartShapeHelper<T>>);
+template <typename T, typename... Ts>
+static void RegisterMatrixDiagPartV2()
+{
+  using Op = ops::MatrixDiagPartV2;
+    K<Op, T>
+      ::template WithHostMemoryArguments<Op::Argument::k>
+      ::template WithHostMemoryArguments<Op::Argument::padding_value>
+      ::template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::Register();
+  
+  if constexpr (sizeof...(Ts) > 0) RegisterMatrixDiagPartV2<Ts...>();
+}
 
-// TF_CALL_half(REGISTER_DML_KERNEL);
-// TF_CALL_float(REGISTER_DML_KERNEL);
-// #undef REGISTER_DML_KERNEL
-}  // namespace tensorflow
+template <typename T, typename... Ts>
+static void RegisterMatrixDiagPartV3()
+{
+  using Op = ops::MatrixDiagPartV3;
+    K<Op, T>
+      ::template WithHostMemoryArguments<Op::Argument::k>
+      ::template WithHostMemoryArguments<Op::Argument::padding_value>
+      ::template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::Register();
+  
+  if constexpr (sizeof...(Ts) > 0) RegisterMatrixDiagPartV3<Ts...>();
+}
+
+template <typename T, typename... Ts>
+static void RegisterBatchMatrixDiagPart()
+{
+  using Op = ops::BatchMatrixDiagPart;
+  K<Op, T>::template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::Register();
+
+  if constexpr (sizeof...(Ts) > 0) RegisterBatchMatrixDiagPart<Ts...>();
+}
+
+void RegisterKernels_MatrixDiagPart()
+{
+    RegisterMatrixDiagPart<float, Eigen::half, bool>();
+    RegisterMatrixDiagPartV2<float, Eigen::half, bool>();
+    RegisterMatrixDiagPartV3<float, Eigen::half, bool>();
+    RegisterBatchMatrixDiagPart<float, Eigen::half>();
+}
+
+}  // namespace tfdml

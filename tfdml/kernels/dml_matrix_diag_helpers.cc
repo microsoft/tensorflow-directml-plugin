@@ -75,9 +75,9 @@ dml::Expression MatrixDiag(dml::Graph& scope, dml::Expression diag,
   auto diag_strides = diag.GetOutputDesc().strides;
 
   // Diag's stride should either be a broadcasted scalar or empty
-  CHECK(!diag_strides.has_value() ||
-         std::all_of(diag_strides->begin(), diag_strides->end(),
-                     [](uint32_t stride) { return stride == 0; }));
+//   CHECK(!diag_strides.has_value() ||
+//          std::all_of(diag_strides->begin(), diag_strides->end(),
+//                      [](uint32_t stride) { return stride == 0; }));
 
   dml::TensorDesc::Dimensions diag_rev_shape(
       {1u, 1u, diag_elem_count / diag_width, diag_width});
