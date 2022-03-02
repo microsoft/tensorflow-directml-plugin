@@ -126,6 +126,9 @@
                     "file": "ops/nn_fused_batchnorm_test.py"
                 },
                 {
+                    "file": "ops/one_hot_op_test.py"
+                },
+                {
                     "file": "ops/pad_op_test.py"
                 },
                 {
@@ -136,6 +139,9 @@
                 },
                 {
                     "file": "ops/pooling_ops_test.py"
+                },
+                {
+                    "file": "ops/ragged_one_hot_op_test.py"
                 },
                 {
                     "file": "ops/ragged_reduce_op_test.py"

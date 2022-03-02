@@ -45,6 +45,7 @@ void RegisterKernels_LRN();
 void RegisterKernels_MatMul();
 void RegisterKernels_MatrixBandPart();
 void RegisterKernels_MirrorPadGrad();
+void RegisterKernels_OneHot();
 void RegisterKernels_Pack();
 void RegisterKernels_Pad();
 void RegisterKernels_Pooling();
@@ -110,6 +111,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_MatMul();
     tfdml::RegisterKernels_MatrixBandPart();
     tfdml::RegisterKernels_MirrorPadGrad();
+    tfdml::RegisterKernels_OneHot();
     tfdml::RegisterKernels_Pack();
     tfdml::RegisterKernels_Pad();
     tfdml::RegisterKernels_Pooling();

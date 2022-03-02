@@ -219,6 +219,7 @@ add_library(
     tfdml/kernels/dml_matmul_op.cc
     tfdml/kernels/dml_matrix_band_part_ops.cc
     tfdml/kernels/dml_mirror_pad_grad_op.cc
+    tfdml/kernels/dml_one_hot_op.cc
     tfdml/kernels/dml_pack_op.cc
     tfdml/kernels/dml_pad_op.cc
     tfdml/kernels/dml_pooling_ops.cc
