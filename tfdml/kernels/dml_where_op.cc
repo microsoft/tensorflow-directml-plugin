@@ -16,7 +16,6 @@ limitations under the License.
 
 #include "absl/cleanup/cleanup.h"
 #include "tfdml/kernels/pch.h"
-#include <Windows.h>
 
 namespace tfdml
 {
