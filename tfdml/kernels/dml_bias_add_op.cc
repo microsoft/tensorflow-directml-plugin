@@ -145,8 +145,10 @@ class DmlBiasAddKernel : public DmlKernel
         tensors.outputs.resize(1);
 
         tensors.inputs[0].emplace();
-        tensors.inputs[0]->desc = DmlTensorDesc::Create(ctx->GetInputDataType(0),
-                                                    output_shape, output_shape);
+        tensors.inputs[0]->desc = DmlTensorDesc::Create(
+            ctx->GetInputDataType(0),
+            output_shape,
+            output_shape);
         tensors.inputs[0]->kernel_index = 0;
 
         // Broadcast the bias tensor over the output shape
@@ -333,14 +335,20 @@ class DmlBiasAddGradKernel : public DmlKernel
 
         DmlTensorInfo input_info = {};
         input_info.desc = DmlTensorDesc::Create(
-            ctx->GetInputDataType(0), input_shape, input_shape, input_layout);
+            ctx->GetInputDataType(0),
+            input_shape,
+            input_shape,
+            input_layout);
         input_info.kernel_index = 0;
 
         const TensorShape& output_shape = ctx->GetOutputTensorShape(0);
         auto output_layout = {C};
         DmlTensorInfo output_info = {};
         output_info.desc = DmlTensorDesc::Create(
-            ctx->GetOutputDataType(0), output_shape, output_shape, output_layout);
+            ctx->GetOutputDataType(0),
+            output_shape,
+            output_shape,
+            output_layout);
         output_info.kernel_index = 0;
 
         DmlKernelTensors tensors = {};
