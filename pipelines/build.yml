@@ -98,7 +98,7 @@ jobs:
       PathtoPublish: $(buildPubPath)
       ArtifactName: ${{parameters.artifact}}
 
-  - ${{if eq(parameters.addToBlobStorage, 'True')}}:
+  - ${{if parameters.addToBlobStorage }}:
     - powershell: |
         $InstallPath = "$(buildPubPath)\*"
         $ZipPath = "$(buildPubPath)\${{artifact}}.zip"
