@@ -135,6 +135,8 @@ class BinaryOpTest(dml_test_util.TestCase):
             inxf, xs, outf, zs, x_init_value=xf, delta=1e-3)
         jacob_n = jacob_n.astype(x.dtype)
       tol = self._GRAD_TOL[dtypes_lib.as_dtype(x.dtype)]
+      if tf_func == math_ops.atan2:
+        tol = 2e-2
       self.assertAllClose(jacob_t, jacob_n, rtol=tol, atol=tol)
 
   def _compareGradientY(self,
@@ -165,18 +167,24 @@ class BinaryOpTest(dml_test_util.TestCase):
             inyf, ys, outf, zs, x_init_value=yf)
         jacob_n = jacob_n.astype(x.dtype)
     tol = self._GRAD_TOL[dtypes_lib.as_dtype(x.dtype)]
+    if tf_func == math_ops.atan2:
+      tol = 2e-2
     self.assertAllClose(jacob_t, jacob_n, rtol=tol, atol=tol)
 
   def _compareGpu(self, x, y, np_func, tf_func):
     np_ans = np_func(x, y)
-    inx = ops.convert_to_tensor(x)
-    iny = ops.convert_to_tensor(y)
-    out = tf_func(inx, iny)
-    tf_gpu = self.evaluate(out)
+    with dml_test_util.use_gpu():
+      inx = ops.convert_to_tensor(x)
+      iny = ops.convert_to_tensor(y)
+      out = tf_func(inx, iny)
+      tf_gpu = self.evaluate(out)
     if x.dtype == np.float16:
       self.assertAllClose(np_ans, tf_gpu, rtol=2e-3)
     else:
-      self.assertAllClose(np_ans, tf_gpu)
+      if tf_func == math_ops.atan2:
+        self.assertAllClose(np_ans, tf_gpu, atol=2e-5)
+      else:
+        self.assertAllClose(np_ans, tf_gpu)
     self.assertShapeEqual(np_ans, out)
 
   def _compareBoth(self, x, y, np_func, tf_func, also_compare_variables=False):
@@ -295,23 +303,35 @@ class BinaryOpTest(dml_test_util.TestCase):
     x = np.arange(1, 13, 2).reshape(1, 3, 2).astype(np.uint8)
     y = np.arange(1, 7, 1).reshape(1, 3, 2).astype(np.uint8)
     self._compareBoth(x, y, np.add, math_ops.add)
+    self._compareBoth(x, y, np.subtract, math_ops.subtract)
+    self._compareBoth(x, y, np.subtract, _SUB)
 
   def testInt8Basic(self):
     x = np.arange(1, 13, 2).reshape(1, 3, 2).astype(np.int8)
     y = np.arange(1, 7, 1).reshape(1, 3, 2).astype(np.int8)
+    self._compareBoth(x, y, np.subtract, math_ops.subtract)
     self._compareBoth(x, y, np.multiply, math_ops.multiply)
+    self._compareBoth(x, y, np.true_divide, math_ops.truediv)
+    self._compareBoth(x, y, np.floor_divide, math_ops.floordiv)
+    self._compareBoth(x, y, np.subtract, _SUB)
     self._compareBoth(x, y, np.multiply, _MUL)
+    self._compareBoth(x, y, np.true_divide, _TRUEDIV)
+    self._compareBoth(x, y, np.floor_divide, _FLOORDIV)
 
   def testInt16Basic(self):
     x = np.arange(1, 13, 2).reshape(1, 3, 2).astype(np.int16)
     y = np.arange(1, 7, 1).reshape(1, 3, 2).astype(np.int16)
+    self._compareBoth(x, y, np.subtract, math_ops.subtract)
     self._compareBoth(x, y, np.multiply, math_ops.multiply)
+    self._compareBoth(x, y, np.subtract, _SUB)
     self._compareBoth(x, y, np.multiply, _MUL)
 
   def testUint16Basic(self):
     x = np.arange(1, 13, 2).reshape(1, 3, 2).astype(np.uint16)
     y = np.arange(1, 7, 1).reshape(1, 3, 2).astype(np.uint16)
+    self._compareBoth(x, y, np.subtract, math_ops.subtract)
     self._compareBoth(x, y, np.multiply, math_ops.multiply)
+    self._compareBoth(x, y, np.subtract, _SUB)
     self._compareBoth(x, y, np.multiply, _MUL)
     self._compareBoth(x, y, np.true_divide, math_ops.truediv)
     self._compareBoth(x, y, np.floor_divide, math_ops.floordiv)
@@ -341,6 +361,10 @@ class BinaryOpTest(dml_test_util.TestCase):
     x = np.arange(1, 13, 2).reshape(1, 3, 2).astype(np.uint32)
     y = np.arange(1, 7, 1).reshape(1, 3, 2).astype(np.uint32)
     self._compareBoth(x, y, np.add, math_ops.add_v2)
+    self._compareBoth(x, y, np.true_divide, math_ops.truediv)
+    self._compareBoth(x, y, np.floor_divide, math_ops.floordiv)
+    self._compareBoth(x, y, np.true_divide, _TRUEDIV)
+    self._compareBoth(x, y, np.floor_divide, _FLOORDIV)
 
   def testInt64Basic(self):
     x = np.arange(1 << 40, 13 << 40, 2 << 40).reshape(1, 3, 2).astype(np.int64)
@@ -355,6 +379,14 @@ class BinaryOpTest(dml_test_util.TestCase):
     self._compareBoth(x, y, np.true_divide, _TRUEDIV)
     self._compareBoth(x, y, np.floor_divide, _FLOORDIV)
     self._compareBoth(x, y, np.mod, _MOD)
+
+  def testUint64Basic(self):
+    x = np.arange(1, 13, 2).reshape(1, 3, 2).astype(np.uint32)
+    y = np.arange(1, 7, 1).reshape(1, 3, 2).astype(np.uint32)
+    self._compareBoth(x, y, np.true_divide, math_ops.truediv)
+    self._compareBoth(x, y, np.floor_divide, math_ops.floordiv)
+    self._compareBoth(x, y, np.true_divide, _TRUEDIV)
+    self._compareBoth(x, y, np.floor_divide, _FLOORDIV)
 
   @test_util.run_deprecated_v1
   def testComplex64Basic(self):
@@ -836,10 +868,11 @@ class BinaryOpTest(dml_test_util.TestCase):
 class ComparisonOpTest(dml_test_util.TestCase):
 
   def _compareScalar(self, func, x, y, dtype):
-    out = func(
-        ops.convert_to_tensor(np.array([x]).astype(dtype)),
-        ops.convert_to_tensor(np.array([y]).astype(dtype)))
-    ret = self.evaluate(out)
+    with dml_test_util.use_gpu():
+      out = func(
+          ops.convert_to_tensor(np.array([x]).astype(dtype)),
+          ops.convert_to_tensor(np.array([y]).astype(dtype)))
+      ret = self.evaluate(out)
     return ret[0]
 
   def testScalarCompareScalar(self):
@@ -868,8 +901,9 @@ class ComparisonOpTest(dml_test_util.TestCase):
 
   def _compare(self, x, y, np_func, tf_func):
     np_ans = np_func(x, y)
-    out = tf_func(ops.convert_to_tensor(x), ops.convert_to_tensor(y))
-    tf_ans = self.evaluate(out)
+    with dml_test_util.use_gpu():
+      out = tf_func(ops.convert_to_tensor(x), ops.convert_to_tensor(y))
+      tf_ans = self.evaluate(out)
     self.assertAllEqual(np_ans, tf_ans)
 
   def testTensorCompareTensor(self):
