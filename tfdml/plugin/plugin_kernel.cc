@@ -66,6 +66,7 @@ void RegisterKernels_Scatter();
 void RegisterKernels_ScatterNd();
 void RegisterKernels_Select();
 void RegisterKernels_Slice();
+void RegisterKernels_Snapshot();
 void RegisterKernels_SpaceDepth();
 void RegisterKernels_SpaceToBatch();
 void RegisterKernels_SparseXent();
@@ -135,6 +136,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_ScatterNd();
     tfdml::RegisterKernels_Select();
     tfdml::RegisterKernels_Slice();
+    tfdml::RegisterKernels_Snapshot();
     tfdml::RegisterKernels_SpaceDepth();
     tfdml::RegisterKernels_SpaceToBatch();
     tfdml::RegisterKernels_SparseXent();
