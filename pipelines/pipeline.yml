@@ -71,13 +71,13 @@ parameters:
 #
 # Variables with the same name as a parameter should always be preferred: this is to work around
 # the limitation that default parameter values cannot use expressions.
-variables:
-  isScheduledRun: ${{eq(variables['Build.Reason'], 'schedule')}}
-  isMasterBranch: ${{eq(variables['Build.SourceBranch'], 'refs/heads/master')}}
-  isReleaseBranch: ${{startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')}}
-  isMasterOrReleaseBranch: ${{or(eq(variables.isMasterBranch, 'True'), eq(variables.isReleaseBranch, 'True'))}}
-  isScheduledRunOnMasterOrReleaseBranch: ${{and(eq(variables.isScheduledRun, 'True'), eq(variables.isMasterOrReleaseBranch, 'True'))}}
-  blobStorageDropEnabled: ${{or(parameters.blobStorageDropEnabled, eq(variables.isScheduledRunOnMasterOrReleaseBranch, 'True'))}}
+# variables:
+#   isScheduledRun: ${{eq(variables['Build.Reason'], 'schedule')}}
+#   isMasterBranch: ${{eq(variables['Build.SourceBranch'], 'refs/heads/master')}}
+#   isReleaseBranch: ${{startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')}}
+#   isMasterOrReleaseBranch: ${{or(eq(variables.isMasterBranch, 'True'), eq(variables.isReleaseBranch, 'True'))}}
+#   isScheduledRunOnMasterOrReleaseBranch: ${{and(eq(variables.isScheduledRun, 'True'), eq(variables.isMasterOrReleaseBranch, 'True'))}}
+#   blobStorageDropEnabled: ${{or(parameters.blobStorageDropEnabled, eq(variables.isScheduledRunOnMasterOrReleaseBranch, 'True'))}}
 
 # For building manylinux2010-compliant Linux wheels:
 # resources:
