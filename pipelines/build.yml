@@ -100,11 +100,11 @@ jobs:
 
   - ${{if parameters.addToBlobStorage}}:
     - powershell: |
-          $InstallPath = "$(buildPubPath)\*"
-          $ZipPath = "$(buildPubPath)\${{artifact}}.zip"
-          Compress-Archive -Path $InstallPath -DestinationPath $ZipPath -Verbose
-        displayName: Compress Build Archive
-        continueOnError: true
+        $InstallPath = "$(buildPubPath)\*"
+        $ZipPath = "$(buildPubPath)\${{artifact}}.zip"
+        Compress-Archive -Path $InstallPath -DestinationPath $ZipPath -Verbose
+      displayName: Compress Build Archive
+      continueOnError: true
 
     - task: PowerShell@1
         displayName: Submit artifacts to blob storage
