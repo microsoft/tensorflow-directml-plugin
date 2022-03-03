@@ -8,6 +8,9 @@ parameters:
 - name: releaseBuild
   type: boolean
   default: false
+- name: addToBlobStorage
+  type: boolean
+  default: false
 
 jobs:
 - job:
@@ -94,6 +97,26 @@ jobs:
     inputs:
       PathtoPublish: $(buildPubPath)
       ArtifactName: ${{parameters.artifact}}
+
+  - ${{if parameters.addToBlobStorage }}:
+    - powershell: |
+        $InstallPath = "$(buildPubPath)\*"
+        $ZipPath = "$(buildPubPath)\${{parameters.artifact}}.zip"
+        Compress-Archive -Path $InstallPath -DestinationPath $ZipPath -Verbose
+      displayName: Compress Build Archive
+      continueOnError: true
+
+    - task: PowerShell@1
+      displayName: Submit artifacts to blob storage
+      continueOnError: true
+      # regenerate azureBlobToken in the winaiblob storage account in CoreOS_Sigma_Graphics Azure subscription. Currently set to expire in Feb 2024
+      inputs:
+        scriptName: pipelines/SubmitFilesToBlobStorage.ps1
+        arguments: >
+          -AzureBlobLink "https://winaiblob.blob.core.windows.net/windowsai/"
+          -AzureBlobLinkToken "$(azureBlobToken)"
+          -SourcePath "$(buildPubPath)\${{parameters.artifact}}.zip"
+          -TargetPath tf2_directml_builds\$(Build.BuildNumber).$(Build.SourceVersion)\${{parameters.artifact}}.zip
 
   - powershell: |
       $Duration = ((Get-Date) - [datetime]$(vars.startTicks)).ToString("c")
