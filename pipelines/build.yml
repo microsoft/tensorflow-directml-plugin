@@ -115,8 +115,8 @@ jobs:
         arguments: >
           -AzureBlobLink "https://winaiblob.blob.core.windows.net/windowsai/"
           -AzureBlobLinkToken "$(azureBlobToken)"
-          -SourcePath "$(buildPubPath)\${{artifact}}.zip"
-          -TargetPath tf2_directml_builds\$(Build.BuildNumber).$(Build.SourceVersion)\${{artifact}}.zip
+          -SourcePath "$(buildPubPath)\${{parameters.artifact}}.zip"
+          -TargetPath tf2_directml_builds\$(Build.BuildNumber).$(Build.SourceVersion)\${{parameters.artifact}}.zip
 
   - powershell: |
       $Duration = ((Get-Date) - [datetime]$(vars.startTicks)).ToString("c")
