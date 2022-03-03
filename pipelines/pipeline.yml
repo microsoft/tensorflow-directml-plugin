@@ -15,12 +15,12 @@ parameters:
   type: boolean
   default: false
 
-# Uploads artifacts to blob storage to be ushered to network share. Generally this should only be enabled for master
+# Uploads artifacts to blob storage to be ushered to network share. Generally this should only be enabled for main
 # and release branches.
 - name: blobStorageDropEnabled
   displayName: Submit artifacts to blob storage
   type: boolean
-  default: false # NOTE: scheduled runs on master/release branches will implicitly set this to true
+  default: false # NOTE: scheduled runs on main/release branches will implicitly set this to true
 
 - name: buildArtifacts
   displayName: Build Artifacts
