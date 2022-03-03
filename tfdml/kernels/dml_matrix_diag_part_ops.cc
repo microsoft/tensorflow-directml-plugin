@@ -42,7 +42,7 @@ class MatrixDiagPartInitHelper : public InitializationHelper
         // MatrixDiagPartV2/V3-specific.
         if (ctx->num_inputs() > 1)
         {
-            auto& diag_index = ctx->input(1);
+            const Tensor& diag_index = ctx->input(1);
             OP_REQUIRES(
                 ctx,
                 TensorShapeUtils::IsScalar(diag_index.shape()) ||
@@ -424,7 +424,7 @@ class DmlMatrixDiagPartKernel : public DmlKernel
 };
 
 template <typename Op, typename T>
-using K = typename KernelDefinition<
+using K = KernelDefinition<
     Op,
     DmlKernelWrapper<DmlMatrixDiagPartKernel<T>, MatrixDiagPartShapeHelper<T>>>;
 
