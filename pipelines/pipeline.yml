@@ -94,8 +94,8 @@ stages:
       parameters:
         artifact: ${{artifact}}
         releaseBuild: ${{parameters.releaseBuild}}
-        ${{if eq(variables.blobStorageDropEnabled, 'True') }}:
-          addToBlobStorage: true
+        # ${{if eq(variables.blobStorageDropEnabled, 'True') }}:
+        #   addToBlobStorage: true
 
 - ${{if parameters.enableTests}}:
   - stage: testStage
