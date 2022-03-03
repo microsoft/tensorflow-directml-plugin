@@ -96,8 +96,6 @@ stages:
         releaseBuild: ${{parameters.releaseBuild}}
         ${{if contains(artifact, '-win-release')}}:
         addToBlobStorage: true
-        ${{ else }}:
-        addToBlobStorage: false
 
 - ${{if parameters.enableTests}}:
   - stage: testStage
