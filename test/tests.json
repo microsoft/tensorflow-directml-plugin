@@ -75,6 +75,9 @@
                     "file": "ops/depthwise_conv_op_test.py"
                 },
                 {
+                    "file": "ops/diag_op_test.py"
+                },
+                {
                     "file": "ops/dynamic_stitch_op_test.py"
                 },
                 {
