@@ -73,11 +73,11 @@ parameters:
 # the limitation that default parameter values cannot use expressions.
 variables:
   isScheduledRun: ${{eq(variables['Build.Reason'], 'schedule')}}
-  isMasterBranch: ${{eq(variables['Build.SourceBranch'], 'refs/heads/master')}}
+  isMainBranch: ${{eq(variables['Build.SourceBranch'], 'refs/heads/main')}}
   isReleaseBranch: ${{startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')}}
-  isMasterOrReleaseBranch: ${{or(eq(variables.isMasterBranch, 'True'), eq(variables.isReleaseBranch, 'True'))}}
-  isScheduledRunOnMasterOrReleaseBranch: ${{and(eq(variables.isScheduledRun, 'True'), eq(variables.isMasterOrReleaseBranch, 'True'))}}
-  blobStorageDropEnabled: ${{or(parameters.blobStorageDropEnabled, eq(variables.isScheduledRunOnMasterOrReleaseBranch, 'True'))}}
+  isMainOrReleaseBranch: ${{or(eq(variables.isMainBranch, 'True'), eq(variables.isReleaseBranch, 'True'))}}
+  isScheduledRunOnMainOrReleaseBranch: ${{and(eq(variables.isScheduledRun, 'True'), eq(variables.isMainOrReleaseBranch, 'True'))}}
+  blobStorageDropEnabled: ${{or(parameters.blobStorageDropEnabled, eq(variables.isScheduledRunOnMainOrReleaseBranch, 'True'))}}
 
 # For building manylinux2010-compliant Linux wheels:
 # resources:
