@@ -94,11 +94,10 @@ stages:
       parameters:
         artifact: ${{artifact}}
         releaseBuild: ${{parameters.releaseBuild}}
-        ${{if eq(variables.blobStorageDropEnabled, 'True')}}:
-        blobStorageDropArtifacts:
-        - x64-win-release-cp37
-        - x64-win-release-cp38
-        - x64-win-release-cp39
+        ${{if contains(artifact, '-win-release')}}:
+        addToBlobStorage: true
+        ${{ else }}:
+        addToBlobStorage: false
 
 - ${{if parameters.enableTests}}:
   - stage: testStage
