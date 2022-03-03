@@ -15,6 +15,8 @@
 """Functional tests for Concat Op."""
 
 import numpy as np
+
+from tensorflow.python.eager import def_function
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import errors_impl
@@ -432,53 +434,58 @@ class ConcatOpTest(dml_test_util.TestCase):
     self.assertLess(err, 1e-11)
 
   # TODO: add back after uint64 support added (TF2 #36692608)
-  # @test_util.run_deprecated_v1
-  # def testIndexedSlicesConcatDim0Grad(self):
-  #   x_shapes = [[20, 7, 3], [10, 7, 3], [14, 7, 3]]
-  #   output_shape = [4, 7, 3]
-  #   x_vals = [
-  #       np.random.random_sample(x_shape).astype(np.float64)
-  #       for x_shape in x_shapes
-  #   ]
-  #   with self.cached_session():
-  #     xs = [constant_op.constant(x_val) for x_val in x_vals]
-  #     x_concat = array_ops.concat(xs, 0)
-  #     output = array_ops.gather(x_concat, [1, 2, 0, 5])
-  #     err = gradient_checker.compute_gradient_error(xs, x_shapes, output,
-  #                                                   output_shape)
-  #   self.assertLess(err, 1e-11)
+  @test_util.run_deprecated_v1
+  def testIndexedSlicesConcatDim0Grad(self):
+    self.skipTest("DML doesn't support uint64")
+    x_shapes = [[20, 7, 3], [10, 7, 3], [14, 7, 3]]
+    output_shape = [4, 7, 3]
+    x_vals = [
+        np.random.random_sample(x_shape).astype(np.float64)
+        for x_shape in x_shapes
+    ]
+    with self.cached_session():
+      xs = [constant_op.constant(x_val) for x_val in x_vals]
+      x_concat = array_ops.concat(xs, 0)
+      output = array_ops.gather(x_concat, [1, 2, 0, 5])
+      err = gradient_checker.compute_gradient_error(xs, x_shapes, output,
+                                                    output_shape)
+    self.assertLess(err, 1e-11)
 
-  # @test_util.run_deprecated_v1
-  # def testIndexedSlicesConcatDim1Grad(self):
-  #   x_shapes = [[20, 7, 3], [20, 3, 3], [20, 1, 3]]
-  #   output_shape = [4, 11, 3]
-  #   x_vals = [
-  #       np.random.random_sample(x_shape).astype(np.float64)
-  #       for x_shape in x_shapes
-  #   ]
-  #   with self.cached_session():
-  #     xs = [constant_op.constant(x_val) for x_val in x_vals]
-  #     x_concat = array_ops.concat(xs, 1)
-  #     output = array_ops.gather(x_concat, [1, 2, 0, 5])
-  #     err = gradient_checker.compute_gradient_error(xs, x_shapes, output,
-  #                                                   output_shape)
-  #   self.assertLess(err, 1e-11)
+  # TODO: add back after uint64 support added (TF2 #36692608)
+  @test_util.run_deprecated_v1
+  def testIndexedSlicesConcatDim1Grad(self):
+    self.skipTest("DML doesn't support uint64")
+    x_shapes = [[20, 7, 3], [20, 3, 3], [20, 1, 3]]
+    output_shape = [4, 11, 3]
+    x_vals = [
+        np.random.random_sample(x_shape).astype(np.float64)
+        for x_shape in x_shapes
+    ]
+    with self.cached_session():
+      xs = [constant_op.constant(x_val) for x_val in x_vals]
+      x_concat = array_ops.concat(xs, 1)
+      output = array_ops.gather(x_concat, [1, 2, 0, 5])
+      err = gradient_checker.compute_gradient_error(xs, x_shapes, output,
+                                                    output_shape)
+    self.assertLess(err, 1e-11)
 
-  # @test_util.run_deprecated_v1
-  # def testIndexedSlicesConcatDim2Grad(self):
-  #   x_shapes = [[20, 7, 3], [20, 7, 1], [20, 7, 2]]
-  #   output_shape = [4, 7, 6]
-  #   x_vals = [
-  #       np.random.random_sample(x_shape).astype(np.float64)
-  #       for x_shape in x_shapes
-  #   ]
-  #   with self.cached_session():
-  #     xs = [constant_op.constant(x_val) for x_val in x_vals]
-  #     x_concat = array_ops.concat(xs, 2)
-  #     output = array_ops.gather(x_concat, [1, 2, 0, 5])
-  #     err = gradient_checker.compute_gradient_error(xs, x_shapes, output,
-  #                                                   output_shape)
-  #   self.assertLess(err, 1e-11)
+  # TODO: add back after uint64 support added (TF2 #36692608)
+  @test_util.run_deprecated_v1
+  def testIndexedSlicesConcatDim2Grad(self):
+    self.skipTest("DML doesn't support uint64")
+    x_shapes = [[20, 7, 3], [20, 7, 1], [20, 7, 2]]
+    output_shape = [4, 7, 6]
+    x_vals = [
+        np.random.random_sample(x_shape).astype(np.float64)
+        for x_shape in x_shapes
+    ]
+    with self.cached_session():
+      xs = [constant_op.constant(x_val) for x_val in x_vals]
+      x_concat = array_ops.concat(xs, 2)
+      output = array_ops.gather(x_concat, [1, 2, 0, 5])
+      err = gradient_checker.compute_gradient_error(xs, x_shapes, output,
+                                                    output_shape)
+    self.assertLess(err, 1e-11)
 
   @test_util.run_deprecated_v1
   def testIndexedSlicesConcatDim1Grad_UnknownInputDim(self):
@@ -569,6 +576,17 @@ class ConcatOpTest(dml_test_util.TestCase):
         t1 = [1]
         t2 = [2]
         gen_array_ops.concat_v2([t1, t2], 1).eval()
+
+  def testConcatInvalidAxisInTfFunction(self):
+
+    @def_function.function
+    def concat_wrapper():
+      y = gen_array_ops.concat_v2(
+          values=[[1, 2, 3], [4, 5, 6]], axis=0xb500005b)
+      return y
+
+    with self.assertRaises(ValueError):
+      concat_wrapper()
 
   def testConcatNegativeAxis(self):
     with dml_test_util.use_gpu():
