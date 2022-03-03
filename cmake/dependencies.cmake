@@ -6,7 +6,7 @@ include(FetchContent)
 FetchContent_Declare(
     abseil
     GIT_REPOSITORY https://github.com/abseil/abseil-cpp
-    GIT_TAG 997aaf3a28308eba1b9156aa35ab7bca9688e9f6
+    GIT_TAG 215105818dfde3174fe799600bb0f3cae233d0bf
 )
 
 # Google Protobuf
@@ -25,14 +25,14 @@ set(protobuf_BUILD_TESTS OFF)
 if(WIN32)
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/6f/a6/16d2825ffb318f82a548205fd17822c4d9cbecf0577d2f5a9e7b8b75e3b0/tf_nightly_cpu-2.9.0.dev20220123-cp37-cp37m-win_amd64.whl
-        URL_HASH SHA256=d1900d59af1d01ac34089e5d50528c53b64723dda1e1d8ea79a2954e573e284a
+        URL https://files.pythonhosted.org/packages/8e/99/ba1035a3f92d4fd49f6833b908e388bf4de1b4a660d8ddf0744d8ee2d8c6/tf_nightly_cpu-2.9.0.dev20220223-cp37-cp37m-win_amd64.whl
+        URL_HASH SHA256=9ecfee8a346f95c459526701ff4fabf4df817913c25500e3148c5efb3a105839
     )
 else()
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/76/0f/d0502c20aa220518f8ac68adb15e27733a68308e597b9247ef3f84dcb6be/tf_nightly_cpu-2.9.0.dev20220123-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl
-        URL_HASH SHA256=b7ee40bb94774c7c7cc905785d3be290c369ab7369c921ec78a176706c3182b9
+        URL https://files.pythonhosted.org/packages/e7/a3/601afcd0c59cf5013563e4e4f7bc7c954ca1f20e095e8094e82a845b29ac/tf_nightly_cpu-2.9.0.dev20220223-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl
+        URL_HASH SHA256=547b07d2415dbdddfc6ae617a7c6b48b47ad124919976087bdccbbd20c2201f8
     )
 endif()
 
@@ -53,8 +53,8 @@ FetchContent_Declare(
 # DirectMLX helper library
 FetchContent_Declare(
     directmlx
-    URL https://raw.githubusercontent.com/microsoft/DirectML/36a8fcbac70fecb9f451a4e617d48ad3780de6cb/Libraries/DirectMLX.h
-    URL_HASH SHA256=d57487c96d63f58d2780dfa128817f387b8e4cb4655d851815c3b8ec51c5dd14
+    URL https://raw.githubusercontent.com/microsoft/DirectML/d4657006a60a7b7d9baf17638c42aee27258c836/Libraries/DirectMLX.h
+    URL_HASH SHA256=01f0c83ab8491e792326166e0b6d59473deecad2a3f8281f79f26f55e1fc613d
     DOWNLOAD_NO_EXTRACT TRUE
 )
 

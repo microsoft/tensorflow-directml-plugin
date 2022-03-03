@@ -50,6 +50,7 @@ class Tensor
     bool IsInitialized() const;
     TF_Tensor* raw() const;
     bool CopyFrom(const Tensor& other, const TensorShape& shape);
+    bool SharesBufferWith(const Tensor& other) const;
 
     template <typename T, size_t NDIMS>
     typename TTypes<T, NDIMS>::Tensor tensor();

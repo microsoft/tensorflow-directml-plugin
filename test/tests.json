@@ -54,6 +54,9 @@
                     "file": "ops/conv3d_transpose_test.py"
                 },
                 {
+                    "file": "ops/cross_grad_test.py"
+                },
+                {
                     "file": "ops/cwise_ops_binary_test.py"
                 },
                 {
@@ -66,10 +69,16 @@
                     "file": "ops/data_format_op_test.py"
                 },
                 {
+                    "file": "ops/deepcopy_op_test.py"
+                },
+                {
                     "file": "ops/depthtospace_op_test.py"
                 },
                 {
                     "file": "ops/depthwise_conv_op_test.py"
+                },
+                {
+                    "file": "ops/diag_op_test.py"
                 },
                 {
                     "file": "ops/dynamic_stitch_op_test.py"
@@ -123,6 +132,9 @@
                     "file": "ops/nn_fused_batchnorm_test.py"
                 },
                 {
+                    "file": "ops/one_hot_op_test.py"
+                },
+                {
                     "file": "ops/pad_op_test.py"
                 },
                 {
@@ -133,6 +145,9 @@
                 },
                 {
                     "file": "ops/pooling_ops_test.py"
+                },
+                {
+                    "file": "ops/ragged_one_hot_op_test.py"
                 },
                 {
                     "file": "ops/ragged_reduce_op_test.py"
@@ -166,6 +181,9 @@
                 },
                 {
                     "file": "ops/roll_op_test.py"
+                },
+                {
+                    "file": "ops/scan_ops_test.py"
                 },
                 {
                     "file": "ops/scatter_nd_ops_test.py"

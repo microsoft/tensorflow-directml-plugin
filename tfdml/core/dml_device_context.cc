@@ -107,7 +107,9 @@ Status DMLDeviceContext::CopyDeviceTensorToCPU(
         return status_or_event.status();
     }
 
-    return device->Sync();
+    TF_RETURN_IF_ERROR(device->Sync());
+    status_or_event.ConsumeValueOrDie().WaitForSignal();
+    return Status::OK();
 }
 
 Status DMLDeviceContext::CopyCPUMemoryToDevice(

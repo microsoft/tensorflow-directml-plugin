@@ -200,9 +200,11 @@ add_library(
     tfdml/kernels/dml_crop_and_resize_grad_boxes_op.cc
     tfdml/kernels/dml_crop_and_resize_grad_image_op.cc
     tfdml/kernels/dml_crop_and_resize_op.cc
+    tfdml/kernels/dml_cross_op.cc
     tfdml/kernels/dml_cwise_ops.cc
     tfdml/kernels/dml_data_format_dim_map.cc
     tfdml/kernels/dml_data_format_vec_permute.cc
+    tfdml/kernels/dml_deepcopy_op.cc
     tfdml/kernels/dml_diag_op.cc
     tfdml/kernels/dml_diag_part_op.cc
     tfdml/kernels/dml_dynamic_stitch_op.cc
@@ -217,7 +219,12 @@ add_library(
     tfdml/kernels/dml_lrn_ops.cc
     tfdml/kernels/dml_matmul_op.cc
     tfdml/kernels/dml_matrix_band_part_ops.cc
+    tfdml/kernels/dml_matrix_diag_helpers.cc
+    tfdml/kernels/dml_matrix_diag_ops.cc
+    tfdml/kernels/dml_matrix_diag_part_ops.cc
+    tfdml/kernels/dml_matrix_set_diag_ops.cc
     tfdml/kernels/dml_mirror_pad_grad_op.cc
+    tfdml/kernels/dml_one_hot_op.cc
     tfdml/kernels/dml_pack_op.cc
     tfdml/kernels/dml_pad_op.cc
     tfdml/kernels/dml_pooling_ops.cc
@@ -225,14 +232,17 @@ add_library(
     tfdml/kernels/dml_range_op.cc
     tfdml/kernels/dml_reduce_ops.cc
     tfdml/kernels/dml_relu_ops.cc
+    tfdml/kernels/dml_resize_grad_ops.cc
     tfdml/kernels/dml_resize_op.cc
     tfdml/kernels/dml_reverse_op.cc
     tfdml/kernels/dml_reverse_sequence_op.cc
     tfdml/kernels/dml_roll_op.cc
+    tfdml/kernels/dml_scan_ops.cc
     tfdml/kernels/dml_scatter_nd_ops.cc
     tfdml/kernels/dml_scatter_ops.cc
     tfdml/kernels/dml_select_op.cc
     tfdml/kernels/dml_slice_op.cc
+    tfdml/kernels/dml_snapshot_op.cc
     tfdml/kernels/dml_space_depth_ops.cc
     tfdml/kernels/dml_space_to_batch_op.cc
     tfdml/kernels/dml_sparse_xent_op.cc
@@ -242,6 +252,7 @@ add_library(
     tfdml/kernels/dml_topk_op.cc
     tfdml/kernels/dml_training_ops.cc
     tfdml/kernels/dml_transpose_op.cc
+    tfdml/kernels/dml_where_op.cc
     tfdml/kernels/dml_xent_op.cc
     tfdml/kernels/dml_zeros_like_op.cc
 )

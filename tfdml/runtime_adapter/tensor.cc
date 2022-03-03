@@ -102,6 +102,10 @@ bool Tensor::CopyFrom(const Tensor& other, const TensorShape& shape)
     return true;
 }
 
+bool Tensor::SharesBufferWith(const Tensor& other) const {
+    return raw_data() ==  other.raw_data();
+}
+
 Tensor::Tensor() : Tensor(TF_FLOAT) {}
 
 Tensor::Tensor(TF_DataType data_type)

@@ -641,9 +641,7 @@ extern "C"
         params->platform->name = "DML";
         params->platform->type = "DML";
         params->platform->supports_unified_memory = false;
-
-        // TODO: Set force_memory_growth to true once the PR is merged
-        // https://github.com/tensorflow/tensorflow/pull/51705
+        params->platform->force_memory_growth = true;
         params->platform->use_bfc_allocator = true;
         params->major_version = 0;
         params->minor_version = 0;
