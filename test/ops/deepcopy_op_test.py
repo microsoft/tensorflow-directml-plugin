@@ -12,51 +12,26 @@
 # ==============================================================================
 """Tests for tensorflow.ops.tf.deepcopy."""
 
+import numpy as np
+
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import gen_array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.framework import ops
-from tensorflow.python.framework import dtypes
-from tensorflow.python.ops import array_ops
-from tensorflow.python.ops import nn
 from tensorflow.python.platform import test
-from tensorflow.python.eager import context
-import numpy as np
 import dml_test_util
 
 class DeepcopyTest(dml_test_util.TestCase):
 
-#   @test_util.run_in_graph_and_eager_modes
-#   def testDeepcopy(self):
-#     with self.cached_session():
-#         x1 = np.array([[0, -1, 2, -3, 4], [-5, 6, -7, 8, -9]])
-#         x1 = ops.convert_to_tensor(x1)
-#         x1 = math_ops.abs(x1)
-#         y2 = x1
-#         y = gen_array_ops.DeepCopy(x=x1)
-#         x1 = math_ops.square(x1)
-#         print("x: ", x1)
-#         print("y: ", y)
-#         print("y2: ", y2)
-#         self.assertNotAllEqual(x1, y)
-#         self.assertAllEqual(x1, y2)
-
-
-  @test_util.run_deprecated_v1
+  @test_util.run_in_graph_and_eager_modes
   def testDeepcopy(self):
     with self.cached_session():
-        x1 = np.array([[0, -1, 2, -3, 4], [-5, 6, -7, 8, -9]])
-        x1 = ops.convert_to_tensor(x1)
-        x1 = math_ops.abs(x1)
-        y2 = x1
-        y = gen_array_ops.DeepCopy(x=x1)
-        x1 = math_ops.square(x1)
-        print("x: ", x1)
-        print("y: ", y)
-        print("y2: ", y2)
-        self.assertNotAllEqual(x1, y)
-        self.assertAllEqual(x1, y2)
-
+        for type in [np.float32, np.int64]:
+            x = np.array([[0, -1, 2, -3, 4], [-5, 6, -7, 8, -9]]).astype(type)
+            x = ops.convert_to_tensor(x)
+            y = gen_array_ops.DeepCopy(x=x)
+            x = math_ops.abs(x)
+            self.assertNotAllEqual(x, y)
 
 if __name__ == "__main__":
   test.main()
