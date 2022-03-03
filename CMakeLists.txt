@@ -195,6 +195,7 @@ add_library(
     tfdml/kernels/dml_bias_add_op.cc
     tfdml/kernels/dml_broadcast_to_op.cc
     tfdml/kernels/dml_cast_op.cc
+    tfdml/kernels/dml_check_numerics_op.cc
     tfdml/kernels/dml_concat_op.cc
     tfdml/kernels/dml_conv_ops.cc
     tfdml/kernels/dml_crop_and_resize_grad_boxes_op.cc

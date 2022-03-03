@@ -22,6 +22,7 @@ void RegisterKernels_BatchToSpace();
 void RegisterKernels_BiasAdd();
 void RegisterKernels_BroadcastTo();
 void RegisterKernels_Cast();
+void RegisterKernels_CheckNumerics();
 void RegisterKernels_Concat();
 void RegisterKernels_Conv();
 void RegisterKernels_CropAndResizeGradBoxes();
@@ -92,6 +93,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_BiasAdd();
     tfdml::RegisterKernels_BroadcastTo();
     tfdml::RegisterKernels_Cast();
+    tfdml::RegisterKernels_CheckNumerics();
     tfdml::RegisterKernels_Concat();
     tfdml::RegisterKernels_Conv();
     tfdml::RegisterKernels_CropAndResizeGradBoxes();
