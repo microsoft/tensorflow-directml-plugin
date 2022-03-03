@@ -107,16 +107,16 @@ jobs:
       continueOnError: true
 
     - task: PowerShell@1
-        displayName: Submit artifacts to blob storage
-        continueOnError: true
-        # regenerate azureBlobToken in the winaiblob storage account in CoreOS_Sigma_Graphics Azure subscription. Currently set to expire in Feb 2024
-        inputs:
-          scriptName: pipelines/SubmitFilesToBlobStorage.ps1
-          arguments: >
-            -AzureBlobLink "https://winaiblob.blob.core.windows.net/windowsai/"
-            -AzureBlobLinkToken "$(azureBlobToken)"
-            -SourcePath "$(buildPubPath)\${{artifact}}.zip"
-            -TargetPath tf2_directml_builds\$(Build.BuildNumber).$(Build.SourceVersion)\${{artifact}}.zip
+      displayName: Submit artifacts to blob storage
+      continueOnError: true
+      # regenerate azureBlobToken in the winaiblob storage account in CoreOS_Sigma_Graphics Azure subscription. Currently set to expire in Feb 2024
+      inputs:
+        scriptName: pipelines/SubmitFilesToBlobStorage.ps1
+        arguments: >
+          -AzureBlobLink "https://winaiblob.blob.core.windows.net/windowsai/"
+          -AzureBlobLinkToken "$(azureBlobToken)"
+          -SourcePath "$(buildPubPath)\${{artifact}}.zip"
+          -TargetPath tf2_directml_builds\$(Build.BuildNumber).$(Build.SourceVersion)\${{artifact}}.zip
 
   - powershell: |
       $Duration = ((Get-Date) - [datetime]$(vars.startTicks)).ToString("c")
