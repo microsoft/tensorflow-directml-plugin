@@ -15,6 +15,13 @@ parameters:
   type: boolean
   default: false
 
+# Uploads artifacts to blob storage to be ushered to network share. Generally this should only be enabled for master
+# and release branches.
+- name: blobStorageDropEnabled
+  displayName: Submit artifacts to blob storage
+  type: boolean
+  default: false # NOTE: scheduled runs on master/release branches will implicitly set this to true
+
 - name: buildArtifacts
   displayName: Build Artifacts
   type: object
@@ -57,13 +64,6 @@ parameters:
   displayName: Email Results To
   type: string
   default: $(emailTo) # the default is stored in the pipeline as a variable
-
-# Uploads artifacts to blob storage to be ushered to network share. Generally this should only be enabled for master
-# and release branches.
-- name: blobStorageDropEnabled
-  displayName: Submit artifacts to blob storage
-  type: boolean
-  default: false # NOTE: scheduled runs on master/release branches will implicitly set this to true
 
 # CAREFUL: remember that variables are always string to string mappings. Unlike boolean-typed 
 # parameters, they must be compared to 'True' or 'False' in expressions or they will be 
