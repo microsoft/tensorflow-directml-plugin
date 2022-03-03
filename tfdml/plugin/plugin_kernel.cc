@@ -48,6 +48,7 @@ void RegisterKernels_MatrixDiag();
 void RegisterKernels_MatrixDiagPart();
 void RegisterKernels_MatrixSetDiag();
 void RegisterKernels_MirrorPadGrad();
+void RegisterKernels_OneHot();
 void RegisterKernels_Pack();
 void RegisterKernels_Pad();
 void RegisterKernels_Pooling();
@@ -116,6 +117,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_MatrixDiagPart();
     tfdml::RegisterKernels_MatrixSetDiag();
     tfdml::RegisterKernels_MirrorPadGrad();
+    tfdml::RegisterKernels_OneHot();
     tfdml::RegisterKernels_Pack();
     tfdml::RegisterKernels_Pad();
     tfdml::RegisterKernels_Pooling();
