@@ -95,7 +95,7 @@ stages:
         artifact: ${{artifact}}
         releaseBuild: ${{parameters.releaseBuild}}
         ${{if and(contains(artifact, 'x64-win-release'),eq(variables.blobStorageDropEnabled, 'True'))}}:
-        addToBlobStorage: true
+          addToBlobStorage: true
 
 - ${{if parameters.enableTests}}:
   - stage: testStage
