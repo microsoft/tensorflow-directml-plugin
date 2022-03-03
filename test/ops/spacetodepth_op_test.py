@@ -39,12 +39,14 @@ class SpaceToDepthTest(dml_test_util.TestCase):
     x_tf = array_ops.space_to_depth(input_nhwc, block_size)
     self.assertAllEqual(self.evaluate(x_tf), outputs)
 
-    # test NCHW on GPU
-    input_nchw = test_util.NHWCToNCHW(input_nhwc)
-    output_nchw = array_ops.space_to_depth(
-        input_nchw, block_size, data_format="NCHW")
-    output_nhwc = test_util.NCHWToNHWC(output_nchw)
-    self.assertAllEqual(self.evaluate(output_nhwc), outputs)
+    if dml_test_util.is_gpu_available():
+      with dml_test_util.force_gpu():
+        # test NCHW on GPU
+        input_nchw = test_util.NHWCToNCHW(input_nhwc)
+        output_nchw = array_ops.space_to_depth(
+            input_nchw, block_size, data_format="NCHW")
+        output_nhwc = test_util.NCHWToNHWC(output_nchw)
+        self.assertAllEqual(self.evaluate(output_nhwc), outputs)
 
   def testBasic(self):
     x_np = [[[[1], [2]], [[3], [4]]]]
@@ -247,7 +249,7 @@ class SpaceToDepthTest(dml_test_util.TestCase):
 
     # Construct the input tensor in data_type and NHWC.
     # force_cpu is needed because quantize_v2 runs on only CPU.
-    with test_util.force_cpu():
+    with dml_test_util.force_cpu():
       if data_type == dtypes.qint8:
         # Quantized ops are not supported on Windows	
         if os.name == "nt":	
@@ -264,7 +266,7 @@ class SpaceToDepthTest(dml_test_util.TestCase):
         shape = nchw_input_shape if data_format == "NCHW" else nhwc_input_shape
         t = constant_op.constant(x, shape=shape, dtype=dtypes.float32)
 
-    if use_gpu:
+    with dml_test_util.device(use_gpu):
         # DML doesn't support NCHW_VECT_C
         if data_format != "NCHW_VECT_C":
             # Initialize the input tensor with ascending whole numbers as floats.
@@ -284,6 +286,10 @@ class SpaceToDepthTest(dml_test_util.TestCase):
     self.compareToTranspose(3, 2, 3, 1, 2, "NHWC", dtypes.qint8, False)
     self.compareToTranspose(1, 2, 3, 2, 2, "NHWC", dtypes.qint8, False)
     self.compareToTranspose(1, 2, 3, 2, 3, "NHWC", dtypes.qint8, False)
+
+    if not test.is_gpu_available():
+      tf_logging.info("skipping gpu tests since gpu not available")
+      return
 
     self.compareToTranspose(3, 2, 3, 1, 2, "NHWC", dtypes.float32, True)
     self.compareToTranspose(3, 2, 3, 2, 2, "NHWC", dtypes.float32, True)
@@ -310,7 +316,8 @@ class SpaceToDepthGradientTest(dml_test_util.TestCase):
     def func(x):
       return array_ops.space_to_depth(x, block_size, data_format=data_format)
 
-    with self.cached_session():
+    with dml_test_util.use_gpu():
+      with self.cached_session():
         theoretical, numerical = gradient_checker_v2.compute_gradient(
             func, [ops.convert_to_tensor(x)])
         self.assertAllClose(theoretical, numerical, rtol=1e-2, atol=1e-2)

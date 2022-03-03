@@ -131,14 +131,16 @@ class UnaryOpTest(dml_test_util.TestCase):
 
   def _compareGpu(self, x, np_func, tf_func):
     np_ans = np_func(x)
-    result = tf_func(ops.convert_to_tensor(x))
-    tf_gpu = self.evaluate(result)
-    self.assertAllCloseAccordingToType(np_ans, tf_gpu, atol=1e-4)
+    with dml_test_util.use_gpu():
+      result = tf_func(ops.convert_to_tensor(x))
+      tf_gpu = self.evaluate(result)
+      self.assertAllCloseAccordingToType(np_ans, tf_gpu, atol=1e-4)
 
   def _compareSparseGpu(self, x, np_func, tf_func, tol):
     x_sp, x_sp_vals = _sparsify(x)
     res_np = np_func(x_sp_vals)
-    self._check(tf_func(x_sp), res_np, x_sp, tol)
+    with dml_test_util.use_gpu():
+      self._check(tf_func(x_sp), res_np, x_sp, tol)
 
   def _compareBoth(self, x, np_func, tf_func, grad_tol=None):
     self._compareCpu(x, np_func, tf_func, grad_rtol=grad_tol,
@@ -431,6 +433,7 @@ class UnaryOpTest(dml_test_util.TestCase):
     self._compareBoth(k, compute_f32(np.arctanh), math_ops.atanh,
                       grad_tol=1e-2)
     self._compareBoth(x, compute_f32(np.vectorize(math.erf)), math_ops.erf)
+    self._compareBoth(x, compute_f32(np.vectorize(math.erfc)), math_ops.erfc)
 
   def testInt8Basic(self):
     x = np.arange(-6, 6, 2).reshape(1, 3, 2).astype(np.int8)
@@ -459,6 +462,7 @@ class UnaryOpTest(dml_test_util.TestCase):
     self._compareBoth(x, np.square, math_ops.square)
 
   def testInt32Basic(self):
+    self.skipTest("DML doesn't support int32")
     x = np.arange(-6, 6, 2).reshape(1, 3, 2).astype(np.int32)
     self._compareCpu(x, np.abs, math_ops.abs)
     self._compareCpu(x, np.abs, _ABS)
@@ -478,6 +482,7 @@ class UnaryOpTest(dml_test_util.TestCase):
     self._compareBoth(x, np.square, math_ops.square)
 
   def testInt64Basic(self):
+    self.skipTest("DML doesn't support int64")
     x = np.arange(-6 << 40, 6 << 40, 2 << 40).reshape(1, 3, 2).astype(np.int64)
     self._compareCpu(x, np.abs, math_ops.abs)
     self._compareCpu(x, np.abs, _ABS)
@@ -490,6 +495,7 @@ class UnaryOpTest(dml_test_util.TestCase):
     self._compareBothSparse(x, np.sign, math_ops.sign)
 
   def testInt64Square(self):
+    self.skipTest("DML doesn't support int64")
     x = np.arange(-6 << 20, 6 << 20, 2 << 20).reshape(1, 3, 2).astype(np.int64)
     self._compareCpu(x, np.square, math_ops.square)
     self._compareBothSparse(x, np.square, math_ops.square)
@@ -518,6 +524,8 @@ class UnaryOpTest(dml_test_util.TestCase):
     self._compareCpu(x, np.sinh, math_ops.sinh)
     self._compareCpu(x, np.cosh, math_ops.cosh)
     self._compareCpu(x, np.tanh, math_ops.tanh)
+    self._compareCpu(x, np.arcsin, math_ops.asin)
+    self._compareCpu(x, np.arctan, math_ops.atan)
 
     # Complex64 versions of asinh() and acosh() in libstdc++ only have 6 digits
     # of precision.
@@ -568,6 +576,8 @@ class UnaryOpTest(dml_test_util.TestCase):
     self._compareCpu(x, self._sigmoid, math_ops.sigmoid)
     self._compareCpu(x, np.sin, math_ops.sin)
     self._compareCpu(x, np.cos, math_ops.cos)
+    self._compareCpu(x, np.arcsin, math_ops.asin)
+    self._compareCpu(x, np.arctan, math_ops.atan)
 
     self._compareBothSparse(x, np.abs, math_ops.abs)
     self._compareBothSparse(x, np.negative, math_ops.negative)

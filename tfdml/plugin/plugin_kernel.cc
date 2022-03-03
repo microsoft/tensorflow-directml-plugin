@@ -32,6 +32,7 @@ void RegisterKernels_Cross();
 void RegisterKernels_Cwise();
 void RegisterKernels_DataFormatDimMap();
 void RegisterKernels_DataFormatVecPermute();
+void RegisterKernels_DeepCopy();
 void RegisterKernels_Diag();
 void RegisterKernels_DiagPart();
 void RegisterKernels_DynamicStitch();
@@ -103,6 +104,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Cwise();
     tfdml::RegisterKernels_DataFormatDimMap();
     tfdml::RegisterKernels_DataFormatVecPermute();
+    tfdml::RegisterKernels_DeepCopy();
     tfdml::RegisterKernels_Diag();
     tfdml::RegisterKernels_DiagPart();
     tfdml::RegisterKernels_DynamicStitch();

@@ -91,28 +91,18 @@ class PadOpTest(dml_test_util.TestCase):
   def _testPad(self, np_inputs, paddings, mode, constant_values):
     np_val = self._npPad(np_inputs, paddings, mode=mode,
                          constant_values=constant_values)
-    tf_val = array_ops.pad(np_inputs, paddings, mode=mode,
-                            constant_values=constant_values)
-    out = self.evaluate(tf_val)
-
-    if np_inputs.dtype in [self._qint8, self._quint8, self._qint32]:
-      # Cast quantized types back to their numpy equivalents.
-      np_val = np_val.astype(np_inputs.dtype[0])
-
-    self.assertAllEqual(np_val, out)
-    self.assertShapeEqual(np_val, tf_val)
-
-    with test_util.force_cpu():
-      tf_val = array_ops.pad(np_inputs, paddings, mode=mode,
+    for use_gpu in [True, False]:
+      with dml_test_util.device(use_gpu=use_gpu):
+        tf_val = array_ops.pad(np_inputs, paddings, mode=mode,
                                constant_values=constant_values)
-      out = self.evaluate(tf_val)
+        out = self.evaluate(tf_val)
 
-      if np_inputs.dtype in [self._qint8, self._quint8, self._qint32]:
-        # Cast quantized types back to their numpy equivalents.
-        np_val = np_val.astype(np_inputs.dtype[0])
+        if np_inputs.dtype in [self._qint8, self._quint8, self._qint32]:
+          # Cast quantized types back to their numpy equivalents.
+          np_val = np_val.astype(np_inputs.dtype[0])
 
-    self.assertAllEqual(np_val, out)
-    self.assertShapeEqual(np_val, tf_val)
+      self.assertAllEqual(np_val, out)
+      self.assertShapeEqual(np_val, tf_val)
 
   def _testGradient(self,
                     x,
@@ -146,79 +136,87 @@ class PadOpTest(dml_test_util.TestCase):
                              constant_values=constant_values)
 
   def testInputDims(self):
-    with self.assertRaisesRegex((ValueError, errors.InvalidArgumentError),
-                                "Shape must be rank 1 but is rank 6|"
-                                "paddings must be the rank of inputs"):
-      array_ops.pad(array_ops.reshape(
-          [1, 2], shape=[1, 2, 1, 1, 1, 1]),
-                    array_ops.reshape(
-                        [1, 2], shape=[1, 2]))
+    with dml_test_util.use_gpu():
+      with self.assertRaisesRegex((ValueError, errors.InvalidArgumentError),
+                                  "Shape must be rank 1 but is rank 6|"
+                                  "paddings must be the rank of inputs"):
+        array_ops.pad(array_ops.reshape(
+            [1, 2], shape=[1, 2, 1, 1, 1, 1]),
+                      array_ops.reshape(
+                          [1, 2], shape=[1, 2]))
 
   def testPaddingsDim(self):
-    with self.assertRaisesRegex((ValueError, errors.InvalidArgumentError),
-                                "Shape must be rank 2 but is rank 1|"
-                                "paddings must be a matrix with 2 columns"):
-      array_ops.pad(array_ops.reshape(
-          [1, 2], shape=[1, 2]),
-                    array_ops.reshape(
-                        [1, 2], shape=[2]))
+    with dml_test_util.use_gpu():
+      with self.assertRaisesRegex((ValueError, errors.InvalidArgumentError),
+                                  "Shape must be rank 2 but is rank 1|"
+                                  "paddings must be a matrix with 2 columns"):
+        array_ops.pad(array_ops.reshape(
+            [1, 2], shape=[1, 2]),
+                      array_ops.reshape(
+                          [1, 2], shape=[2]))
 
   def testPaddingsDim2(self):
-    with self.assertRaisesRegex((ValueError, errors.InvalidArgumentError),
-                                "Dimension must be 2 but is 1|"
-                                "paddings must be a matrix with 2 columns"):
-      array_ops.pad(array_ops.reshape(
-          [1, 2], shape=[1, 2]),
-                    array_ops.reshape(
-                        [1, 2], shape=[2, 1]))
+    with dml_test_util.use_gpu():
+      with self.assertRaisesRegex((ValueError, errors.InvalidArgumentError),
+                                  "Dimension must be 2 but is 1|"
+                                  "paddings must be a matrix with 2 columns"):
+        array_ops.pad(array_ops.reshape(
+            [1, 2], shape=[1, 2]),
+                      array_ops.reshape(
+                          [1, 2], shape=[2, 1]))
 
   def testPaddingsDim3(self):
-    with self.assertRaisesRegex((ValueError, errors.InvalidArgumentError),
-                                "Shape must be rank 1 but is rank 2|"
-                                "paddings must be the rank of inputs"):
-      array_ops.pad(array_ops.reshape(
-          [1, 2], shape=[1, 2]),
-                    array_ops.reshape(
-                        [1, 2], shape=[1, 2]))
+    with dml_test_util.use_gpu():
+      with self.assertRaisesRegex((ValueError, errors.InvalidArgumentError),
+                                  "Shape must be rank 1 but is rank 2|"
+                                  "paddings must be the rank of inputs"):
+        array_ops.pad(array_ops.reshape(
+            [1, 2], shape=[1, 2]),
+                      array_ops.reshape(
+                          [1, 2], shape=[1, 2]))
 
   def testPaddingsDim4(self):
-    with self.assertRaisesRegex((ValueError, errors.InvalidArgumentError),
-                                "Shape must be rank 3 but is rank 2|"
-                                "paddings must be the rank of inputs"):
-      array_ops.pad(array_ops.reshape(
-          [1, 2], shape=[1, 2]),
-                    array_ops.reshape(
-                        [1, 2, 3, 4, 5, 6], shape=[3, 2]))
+    with dml_test_util.use_gpu():
+      with self.assertRaisesRegex((ValueError, errors.InvalidArgumentError),
+                                  "Shape must be rank 3 but is rank 2|"
+                                  "paddings must be the rank of inputs"):
+        array_ops.pad(array_ops.reshape(
+            [1, 2], shape=[1, 2]),
+                      array_ops.reshape(
+                          [1, 2, 3, 4, 5, 6], shape=[3, 2]))
 
   def testPaddingsNonNegative(self):
-    with self.assertRaisesRegex((ValueError, errors.InvalidArgumentError),
-                                "must be non-negative"):
-      array_ops.pad(constant_op.constant(
-          [1], shape=[1]),
-                    constant_op.constant(
-                        [-1, 0], shape=[1, 2]))
+    with dml_test_util.use_gpu():
+      with self.assertRaisesRegex((ValueError, errors.InvalidArgumentError),
+                                  "must be non-negative"):
+        array_ops.pad(constant_op.constant(
+            [1], shape=[1]),
+                      constant_op.constant(
+                          [-1, 0], shape=[1, 2]))
 
   def testPaddingsNonNegative2(self):
-    with self.assertRaisesRegex((ValueError, errors.InvalidArgumentError),
-                                "must be non-negative"):
-      array_ops.pad(constant_op.constant(
-          [1], shape=[1]),
-                    constant_op.constant(
-                        [-1, 0], shape=[1, 2]))
+    with dml_test_util.use_gpu():
+      with self.assertRaisesRegex((ValueError, errors.InvalidArgumentError),
+                                  "must be non-negative"):
+        array_ops.pad(constant_op.constant(
+            [1], shape=[1]),
+                      constant_op.constant(
+                          [-1, 0], shape=[1, 2]))
 
   def testPaddingsMaximum(self):
-    with self.assertRaises(Exception):
-      array_ops.pad(constant_op.constant(
-          [1], shape=[2]),
-                    constant_op.constant(
-                        [2, 0], shape=[1, 2]),
-                    mode="REFLECT").eval()
-    with self.assertRaises(Exception):
-      array_ops.pad(constant_op.constant(
-          [1], shape=[2]),
-                    constant_op.constant(
-                        [0, 3], shape=[1, 2]),
-                    mode="SYMMETRIC").eval()
+    with dml_test_util.use_gpu():
+      with self.assertRaises(Exception):
+        array_ops.pad(constant_op.constant(
+            [1], shape=[2]),
+                      constant_op.constant(
+                          [2, 0], shape=[1, 2]),
+                      mode="REFLECT").eval()
+      with self.assertRaises(Exception):
+        array_ops.pad(constant_op.constant(
+            [1], shape=[2]),
+                      constant_op.constant(
+                          [0, 3], shape=[1, 2]),
+                      mode="SYMMETRIC").eval()
 
   def testInvalid(self):
     with self.cached_session():
@@ -239,12 +237,13 @@ class PadOpTest(dml_test_util.TestCase):
                              mode=mode,
                              constant_values=0)
 
-        tf_val = array_ops.pad(
-            inputs,
-            constant_op.constant(paddings, paddings_dtype),
-            mode=mode,
-            constant_values=0)
-        out = self.evaluate(tf_val)
+        with dml_test_util.use_gpu():
+          tf_val = array_ops.pad(
+              inputs,
+              constant_op.constant(paddings, paddings_dtype),
+              mode=mode,
+              constant_values=0)
+          out = self.evaluate(tf_val)
 
         self.assertAllEqual(np_val, out)
         self.assertShapeEqual(np_val, tf_val)
@@ -306,16 +305,17 @@ class PadOpTest(dml_test_util.TestCase):
                             constant_values="PAD")
     symmetric = array_ops.pad(x, [[1, 0], [0, 1]], mode="SYMMETRIC",
                               constant_values="PAD")
-    self.assertAllEqual(
-        [[b"PAD", b"PAD", b"PAD"], [b"Hello", b"World", b"PAD"],
-          [b"Goodnight", b"Moon", b"PAD"]], self.evaluate(constant))
-    self.assertAllEqual([[b"Goodnight", b"Moon", b"Goodnight"],
-                          [b"Hello", b"World", b"Hello"],
-                          [b"Goodnight", b"Moon", b"Goodnight"]],
-                        self.evaluate(reflect))
-    self.assertAllEqual(
-        [[b"Hello", b"World", b"World"], [b"Hello", b"World", b"World"],
-          [b"Goodnight", b"Moon", b"Moon"]], self.evaluate(symmetric))
+    with dml_test_util.use_gpu():
+      self.assertAllEqual(
+          [[b"PAD", b"PAD", b"PAD"], [b"Hello", b"World", b"PAD"],
+           [b"Goodnight", b"Moon", b"PAD"]], self.evaluate(constant))
+      self.assertAllEqual([[b"Goodnight", b"Moon", b"Goodnight"],
+                           [b"Hello", b"World", b"Hello"],
+                           [b"Goodnight", b"Moon", b"Goodnight"]],
+                          self.evaluate(reflect))
+      self.assertAllEqual(
+          [[b"Hello", b"World", b"World"], [b"Hello", b"World", b"World"],
+           [b"Goodnight", b"Moon", b"Moon"]], self.evaluate(symmetric))
 
   def testShapeFunctionEdgeCases(self):
     # Shape function requires placeholders and a graph
@@ -385,8 +385,9 @@ class PadOpTest(dml_test_util.TestCase):
   def testScalars(self):
     paddings = np.zeros((0, 2), dtype=np.int32)
     inp = np.asarray(7)
-    tf_val = array_ops.pad(inp, paddings)
-    out = self.evaluate(tf_val)
+    with dml_test_util.use_gpu():
+      tf_val = array_ops.pad(inp, paddings)
+      out = self.evaluate(tf_val)
     self.assertAllEqual(inp, out)
     self.assertShapeEqual(inp, tf_val)
 

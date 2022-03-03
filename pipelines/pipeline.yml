@@ -15,6 +15,13 @@ parameters:
   type: boolean
   default: false
 
+# Uploads artifacts to blob storage to be ushered to network share. Generally this should only be enabled for main
+# and release branches.
+- name: blobStorageDropEnabled
+  displayName: Submit artifacts to blob storage
+  type: boolean
+  default: false # NOTE: scheduled runs on main/release branches will implicitly set this to true
+
 - name: buildArtifacts
   displayName: Build Artifacts
   type: object
@@ -58,6 +65,20 @@ parameters:
   type: string
   default: $(emailTo) # the default is stored in the pipeline as a variable
 
+# CAREFUL: remember that variables are always string to string mappings. Unlike boolean-typed 
+# parameters, they must be compared to 'True' or 'False' in expressions or they will be 
+# implicitly cast: empty string -> false, any other string -> true.
+#
+# Variables with the same name as a parameter should always be preferred: this is to work around
+# the limitation that default parameter values cannot use expressions.
+variables:
+  isScheduledRun: ${{eq(variables['Build.Reason'], 'schedule')}}
+  isMainBranch: ${{eq(variables['Build.SourceBranch'], 'refs/heads/main')}}
+  isReleaseBranch: ${{startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')}}
+  isMainOrReleaseBranch: ${{or(eq(variables.isMainBranch, 'True'), eq(variables.isReleaseBranch, 'True'))}}
+  isScheduledRunOnMainOrReleaseBranch: ${{and(eq(variables.isScheduledRun, 'True'), eq(variables.isMainOrReleaseBranch, 'True'))}}
+  blobStorageDropEnabled: ${{or(parameters.blobStorageDropEnabled, eq(variables.isScheduledRunOnMainOrReleaseBranch, 'True'))}}
+
 # For building manylinux2010-compliant Linux wheels:
 # resources:
 #   containers:
@@ -73,6 +94,8 @@ stages:
       parameters:
         artifact: ${{artifact}}
         releaseBuild: ${{parameters.releaseBuild}}
+        ${{if and(contains(artifact, 'x64-win-release'),eq(variables.blobStorageDropEnabled, 'True'))}}:
+          addToBlobStorage: true
 
 - ${{if parameters.enableTests}}:
   - stage: testStage
