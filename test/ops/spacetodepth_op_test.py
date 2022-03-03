@@ -39,8 +39,8 @@ class SpaceToDepthTest(dml_test_util.TestCase):
     x_tf = array_ops.space_to_depth(input_nhwc, block_size)
     self.assertAllEqual(self.evaluate(x_tf), outputs)
 
-    if test_util.is_gpu_available():
-      with test_util.force_gpu():
+    if dml_test_util.is_gpu_available():
+      with dml_test_util.force_gpu():
         # test NCHW on GPU
         input_nchw = test_util.NHWCToNCHW(input_nhwc)
         output_nchw = array_ops.space_to_depth(
@@ -249,7 +249,7 @@ class SpaceToDepthTest(dml_test_util.TestCase):
 
     # Construct the input tensor in data_type and NHWC.
     # force_cpu is needed because quantize_v2 runs on only CPU.
-    with test_util.force_cpu():
+    with dml_test_util.force_cpu():
       if data_type == dtypes.qint8:
         # Quantized ops are not supported on Windows	
         if os.name == "nt":	
