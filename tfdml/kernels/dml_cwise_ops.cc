@@ -171,7 +171,8 @@ class DmlBinaryWithZeroKernel : public DmlKernel
         auto result = f(zero, x, y);
 
         // TFDML #24881131
-        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0))) {
+        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0)))
+        {
             result = dml::ConvertInt32ToInt64(result);
         }
 
@@ -181,15 +182,17 @@ class DmlBinaryWithZeroKernel : public DmlKernel
         Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 
-    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override {
+    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
+    {
         // Currently, 64-bit integers in DML are emulated using 32-bit integers
-        // using striding to emulate a larger type. Because we can't guarantee that
-        // our output tensor's memory is zero'd, we need to do so manually prior to
-        // running running gather.
+        // using striding to emulate a larger type. Because we can't guarantee
+        // that our output tensor's memory is zero'd, we need to do so manually
+        // prior to running running gather.
         Tensor output = ctx->GetOutputTensor(0);
 
         // TFDML #24881131
-        if (Is64BitUnsignedIntegerType(output.dtype())) {
+        if (Is64BitUnsignedIntegerType(output.dtype()))
+        {
             ctx->GetDmlDeviceContext()->ZeroBuffer(
                 ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
         }
@@ -233,8 +236,9 @@ class DmlCompositeBinaryKernel : public DmlKernel
         auto result = expression(x, y);
 
         // TFDML #24881131
-        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0))) {
-        result = dml::ConvertInt32ToInt64(result);
+        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0)))
+        {
+            result = dml::ConvertInt32ToInt64(result);
         }
 
         ComPtr<IDMLCompiledOperator> compiled_op =
@@ -243,15 +247,17 @@ class DmlCompositeBinaryKernel : public DmlKernel
         Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 
-    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override {
+    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
+    {
         // Currently, 64-bit integers in DML are emulated using 32-bit integers
-        // using striding to emulate a larger type. Because we can't guarantee that
-        // our output tensor's memory is zero'd, we need to do so manually prior to
-        // running running gather.
+        // using striding to emulate a larger type. Because we can't guarantee
+        // that our output tensor's memory is zero'd, we need to do so manually
+        // prior to running running gather.
         Tensor output = ctx->GetOutputTensor(0);
 
         // TFDML #24881131
-        if (Is64BitUnsignedIntegerType(output.dtype())) {
+        if (Is64BitUnsignedIntegerType(output.dtype()))
+        {
             ctx->GetDmlDeviceContext()->ZeroBuffer(
                 ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
         }
@@ -354,7 +360,8 @@ class DmlCompositeUnaryKernel : public DmlKernel
         auto result = expression(x);
 
         // TFDML #24881131
-        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0))) {
+        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0)))
+        {
             result = dml::ConvertInt32ToInt64(result);
         }
 
@@ -364,15 +371,17 @@ class DmlCompositeUnaryKernel : public DmlKernel
         Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 
-    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override {
+    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
+    {
         // Currently, 64-bit integers in DML are emulated using 32-bit integers
-        // using striding to emulate a larger type. Because we can't guarantee that
-        // our output tensor's memory is zero'd, we need to do so manually prior to
-        // running running gather.
+        // using striding to emulate a larger type. Because we can't guarantee
+        // that our output tensor's memory is zero'd, we need to do so manually
+        // prior to running running gather.
         Tensor output = ctx->GetOutputTensor(0);
 
         // TFDML #24881131
-        if (Is64BitUnsignedIntegerType(output.dtype())) {
+        if (Is64BitUnsignedIntegerType(output.dtype()))
+        {
             ctx->GetDmlDeviceContext()->ZeroBuffer(
                 ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
         }
@@ -414,12 +423,15 @@ class DmlClipByValueKernel : public DmlKernel
 
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto input = dml::InputTensor(scope, 0, inputs[0]);
-        auto result = dml::Clip(input, min_tensor.base<float>()[0],
-                                max_tensor.base<float>()[0]);
+        auto result = dml::Clip(
+            input,
+            min_tensor.base<float>()[0],
+            max_tensor.base<float>()[0]);
 
         // TFDML #24881131
-        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0))) {
-        result = dml::ConvertInt32ToInt64(result);
+        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0)))
+        {
+            result = dml::ConvertInt32ToInt64(result);
         }
 
         ComPtr<IDMLCompiledOperator> compiled_op =
@@ -814,28 +826,34 @@ struct DmlXlogyFunctor
     }
 };
 
-#define REGISTER_DML_COMPOSITE_BINARY_STRUCT(opName, op, expression,   \
-                                             max_dim_count)            \
-  struct Dml##opName##Functor {                                        \
-    dml::Expression operator()(dml::Expression x, dml::Expression y) { \
-      return (expression);                                             \
-    }                                                                  \
-  };                                                                   \
-  using K_##opName = KernelDefinition<                                 \
-      op,                                                              \
-      DmlKernelWrapper<                                                \
-      DmlCompositeBinaryKernel<Dml##opName##Functor, max_dim_count>,   \
-      GetBroadcastedOutputShapeHelper>>;
+#define REGISTER_DML_COMPOSITE_BINARY_STRUCT(                                  \
+    opName,                                                                    \
+    op,                                                                        \
+    expression,                                                                \
+    max_dim_count)                                                             \
+    struct Dml##opName##Functor                                                \
+    {                                                                          \
+        dml::Expression operator()(dml::Expression x, dml::Expression y)       \
+        {                                                                      \
+            return (expression);                                               \
+        }                                                                      \
+    };                                                                         \
+    using K_##opName = KernelDefinition<                                       \
+        op,                                                                    \
+        DmlKernelWrapper<                                                      \
+            DmlCompositeBinaryKernel<Dml##opName##Functor, max_dim_count>,     \
+            GetBroadcastedOutputShapeHelper>>;
 
-#define REGISTER_DML_COMPOSITE_UNARY_STRUCT(opName, op, expression)        \
-  struct Dml##opName##Functor {                                            \
-    dml::Expression operator()(dml::Expression x) { return (expression); } \
-  };                                                                       \
-    using K_##opName = KernelDefinition<                                   \
-        op,                                                                \
-        DmlKernelWrapper<                                                  \
-        DmlCompositeUnaryKernel<Dml##opName##Functor>,                     \
-        GetBroadcastedOutputShapeHelper>>;
+#define REGISTER_DML_COMPOSITE_UNARY_STRUCT(opName, op, expression)            \
+    struct Dml##opName##Functor                                                \
+    {                                                                          \
+        dml::Expression operator()(dml::Expression x) { return (expression); } \
+    };                                                                         \
+    using K_##opName = KernelDefinition<                                       \
+        op,                                                                    \
+        DmlKernelWrapper<                                                      \
+            DmlCompositeUnaryKernel<Dml##opName##Functor>,                     \
+            GetBroadcastedOutputShapeHelper>>;
 
 static void RegisterAbs()
 {
@@ -865,15 +883,18 @@ static void RegisterAcosh()
 
 static void RegisterAdd()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(AddUint8, ops::Add,
-        dml::Cast(dml::Cast(x, DML_TENSOR_DATA_TYPE_UINT32) +
-                  dml::Cast(y, DML_TENSOR_DATA_TYPE_UINT32),
-                  DML_TENSOR_DATA_TYPE_UINT8),
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        AddUint8,
+        ops::Add,
+        dml::Cast(
+            dml::Cast(x, DML_TENSOR_DATA_TYPE_UINT32) +
+                dml::Cast(y, DML_TENSOR_DATA_TYPE_UINT32),
+            DML_TENSOR_DATA_TYPE_UINT8),
         8)
-    K_AddUint8::template WithTypeConstraint<ops::Add::Attribute::T, TF_UINT8>::Register();
+    K_AddUint8::template WithTypeConstraint<ops::Add::Attribute::T, TF_UINT8>::
+        Register();
 
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Add, ops::Add,
-        x + y, 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Add, ops::Add, x + y, 8)
 
     RegisterWithTypes<
         K_Add,
@@ -885,15 +906,19 @@ static void RegisterAdd()
 
 static void RegisterAddV2()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(AddV2Uint8, ops::AddV2,
-        dml::Cast(dml::Cast(x, DML_TENSOR_DATA_TYPE_UINT32) +
-                  dml::Cast(y, DML_TENSOR_DATA_TYPE_UINT32),
-              DML_TENSOR_DATA_TYPE_UINT8),
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        AddV2Uint8,
+        ops::AddV2,
+        dml::Cast(
+            dml::Cast(x, DML_TENSOR_DATA_TYPE_UINT32) +
+                dml::Cast(y, DML_TENSOR_DATA_TYPE_UINT32),
+            DML_TENSOR_DATA_TYPE_UINT8),
         8)
-    K_AddV2Uint8::template WithTypeConstraint<ops::AddV2::Attribute::T, TF_UINT8>::Register();
+    K_AddV2Uint8::template WithTypeConstraint<
+        ops::AddV2::Attribute::T,
+        TF_UINT8>::Register();
 
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(AddV2, ops::AddV2,
-        x + y, 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(AddV2, ops::AddV2, x + y, 8)
     RegisterWithTypes<
         K_AddV2,
         ops::AddV2::Attribute::T,
@@ -949,8 +974,11 @@ static void RegisterAtan()
 
 static void RegisterAtan2()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Atan2, ops::Atan2,
-        dml::ATanYX(x, y), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        Atan2,
+        ops::Atan2,
+        dml::ATanYX(x, y),
+        8)
 
     RegisterWithTypes<K_Atan2, ops::Atan2::Attribute::T, TF_FLOAT>();
 }
@@ -1072,8 +1100,7 @@ static void RegisterCosh()
 
 static void RegisterDiv()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Div, ops::Div,
-        x / y, 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Div, ops::Div, x / y, 8)
 
     RegisterWithTypes<
         K_Div,
@@ -1094,11 +1121,7 @@ static void RegisterDivNoNan()
             DmlBinaryWithZeroKernel<DmlDivNoNanFunctor, kNchwDimensionCount>,
             GetBroadcastedOutputShapeHelper>>;
 
-    RegisterWithTypes<
-        K,
-        ops::DivNoNan::Attribute::T,
-        TF_FLOAT,
-        TF_HALF>();
+    RegisterWithTypes<K, ops::DivNoNan::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
 static void RegisterElu()
@@ -1110,8 +1133,7 @@ static void RegisterElu()
 
 static void RegisterEqual()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Equal, ops::Equal,
-        x == y, 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Equal, ops::Equal, x == y, 8)
 
     RegisterWithTypes<
         K_Equal,
@@ -1162,16 +1184,26 @@ static void RegisterFloor()
 
 static void RegisterFloorDiv()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(FloorDiv, ops::FloorDiv,
-        dml::Floor(x / y), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        FloorDiv,
+        ops::FloorDiv,
+        dml::Floor(x / y),
+        8)
 
-    RegisterWithTypes<K_FloorDiv, ops::FloorDiv::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        K_FloorDiv,
+        ops::FloorDiv::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
 }
 
 static void RegisterFloorMod()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(FloorMod, ops::FloorMod,
-        dml::ModulusFloor(x, y), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        FloorMod,
+        ops::FloorMod,
+        dml::ModulusFloor(x, y),
+        8)
 
     RegisterWithTypes<
         K_FloorMod,
@@ -1189,8 +1221,7 @@ static void RegisterFloorMod()
 
 static void RegisterGreater()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Greater, ops::Greater,
-        x > y, 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Greater, ops::Greater, x > y, 8)
 
     RegisterWithTypes<
         K_Greater,
@@ -1205,8 +1236,11 @@ static void RegisterGreater()
 
 static void RegisterGreaterEqual()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(GreaterEqual, ops::GreaterEqual,
-        x >= y, 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        GreaterEqual,
+        ops::GreaterEqual,
+        x >= y,
+        8)
 
     RegisterWithTypes<
         K_GreaterEqual,
@@ -1221,7 +1255,10 @@ static void RegisterGreaterEqual()
 
 static void RegisterInv()
 {
-    REGISTER_DML_COMPOSITE_UNARY_STRUCT(InvInt64, ops::Inv, dml::Recip(dml::Cast(x, DML_TENSOR_DATA_TYPE_FLOAT32)))
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(
+        InvInt64,
+        ops::Inv,
+        dml::Recip(dml::Cast(x, DML_TENSOR_DATA_TYPE_FLOAT32)))
 
     RegisterWithTypes<K_InvInt64, ops::Inv::Attribute::T, TF_INT64>();
 
@@ -1232,10 +1269,13 @@ static void RegisterInv()
 
 static void RegisterInvGrad()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(InvGrad, ops::InvGrad,
-        (-y * x * x), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(InvGrad, ops::InvGrad, (-y * x * x), 8)
 
-    RegisterWithTypes<K_InvGrad, ops::InvGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        K_InvGrad,
+        ops::InvGrad::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
 }
 
 static void RegisterInvert()
@@ -1261,9 +1301,16 @@ static void RegisterInvert()
 
 static void RegisterIsFinite()
 {
-    REGISTER_DML_COMPOSITE_UNARY_STRUCT(IsFinite, ops::IsFinite, !(dml::IsNaN(x) || dml::IsInfinity(x)))
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(
+        IsFinite,
+        ops::IsFinite,
+        !(dml::IsNaN(x) || dml::IsInfinity(x)))
 
-    RegisterWithTypes<K_IsFinite, ops::IsFinite::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        K_IsFinite,
+        ops::IsFinite::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
 }
 
 static void RegisterIsInf()
@@ -1312,8 +1359,7 @@ static void RegisterLeftShift()
 
 static void RegisterLess()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Less, ops::Less,
-        x < y, 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Less, ops::Less, x < y, 8)
 
     RegisterWithTypes<
         K_Less,
@@ -1328,8 +1374,7 @@ static void RegisterLess()
 
 static void RegisterLessEqual()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(LessEqual, ops::LessEqual,
-        x <= y, 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(LessEqual, ops::LessEqual, x <= y, 8)
 
     RegisterWithTypes<
         K_LessEqual,
@@ -1351,30 +1396,42 @@ static void RegisterLog()
 
 static void RegisterLog1p()
 {
-    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Log1p, ops::Log1p, dml::Log(x, DML_SCALE_BIAS{1, 1}))
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(
+        Log1p,
+        ops::Log1p,
+        dml::Log(x, DML_SCALE_BIAS{1, 1}))
 
     RegisterWithTypes<K_Log1p, ops::Log1p::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
 static void RegisterLogicalAnd()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(LogicalAnd, ops::LogicalAnd,
-        dml::LogicalAnd(x, y), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        LogicalAnd,
+        ops::LogicalAnd,
+        dml::LogicalAnd(x, y),
+        8)
 
     K_LogicalAnd::Register();
 }
 
 static void RegisterLogicalNot()
 {
-    REGISTER_DML_COMPOSITE_UNARY_STRUCT(LogicalNot, ops::LogicalNot, dml::LogicalNot(x))
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(
+        LogicalNot,
+        ops::LogicalNot,
+        dml::LogicalNot(x))
 
     K_LogicalNot::Register();
 }
 
 static void RegisterLogicalOr()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(LogicalOr, ops::LogicalOr,
-        dml::LogicalOr(x, y), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        LogicalOr,
+        ops::LogicalOr,
+        dml::LogicalOr(x, y),
+        8)
 
     K_LogicalOr::Register();
 }
@@ -1394,8 +1451,11 @@ static void RegisterLogSoftmax()
 
 static void RegisterMaximum()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Maximum, ops::Maximum,
-        dml::Max(x, y), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        Maximum,
+        ops::Maximum,
+        dml::Max(x, y),
+        8)
 
     RegisterWithTypes<
         K_Maximum,
@@ -1407,8 +1467,11 @@ static void RegisterMaximum()
 
 static void RegisterMinimum()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Minimum, ops::Minimum,
-        dml::Min(x, y), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        Minimum,
+        ops::Minimum,
+        dml::Min(x, y),
+        8)
 
     RegisterWithTypes<
         K_Minimum,
@@ -1420,8 +1483,11 @@ static void RegisterMinimum()
 
 static void RegisterMod()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Mod, ops::Mod,
-        dml::ModulusTruncate(x, y), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        Mod,
+        ops::Mod,
+        dml::ModulusTruncate(x, y),
+        8)
 
     RegisterWithTypes<
         K_Mod,
@@ -1439,36 +1505,52 @@ static void RegisterMod()
 
 static void RegisterMul()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(MulUint8, ops::Mul,
-        dml::Cast(dml::Cast(x, DML_TENSOR_DATA_TYPE_UINT32) *
-                  dml::Cast(y, DML_TENSOR_DATA_TYPE_UINT32),
-              DML_TENSOR_DATA_TYPE_UINT8),
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        MulUint8,
+        ops::Mul,
+        dml::Cast(
+            dml::Cast(x, DML_TENSOR_DATA_TYPE_UINT32) *
+                dml::Cast(y, DML_TENSOR_DATA_TYPE_UINT32),
+            DML_TENSOR_DATA_TYPE_UINT8),
         8)
-    K_MulUint8::template WithTypeConstraint<ops::Mul::Attribute::T, TF_UINT8>::Register();
+    K_MulUint8::template WithTypeConstraint<ops::Mul::Attribute::T, TF_UINT8>::
+        Register();
 
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(MulInt8, ops::Mul,
-        dml::Cast(dml::Cast(x, DML_TENSOR_DATA_TYPE_INT32) *
-                  dml::Cast(y, DML_TENSOR_DATA_TYPE_INT32),
-              DML_TENSOR_DATA_TYPE_INT8),
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        MulInt8,
+        ops::Mul,
+        dml::Cast(
+            dml::Cast(x, DML_TENSOR_DATA_TYPE_INT32) *
+                dml::Cast(y, DML_TENSOR_DATA_TYPE_INT32),
+            DML_TENSOR_DATA_TYPE_INT8),
         8)
-    K_MulInt8::template WithTypeConstraint<ops::Mul::Attribute::T, TF_INT8>::Register();
+    K_MulInt8::template WithTypeConstraint<ops::Mul::Attribute::T, TF_INT8>::
+        Register();
 
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(MulUint16, ops::Mul,
-        dml::Cast(dml::Cast(x, DML_TENSOR_DATA_TYPE_UINT32) *
-                  dml::Cast(y, DML_TENSOR_DATA_TYPE_UINT32),
-              DML_TENSOR_DATA_TYPE_UINT16),
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        MulUint16,
+        ops::Mul,
+        dml::Cast(
+            dml::Cast(x, DML_TENSOR_DATA_TYPE_UINT32) *
+                dml::Cast(y, DML_TENSOR_DATA_TYPE_UINT32),
+            DML_TENSOR_DATA_TYPE_UINT16),
         8)
-    K_MulUint16::template WithTypeConstraint<ops::Mul::Attribute::T, TF_UINT16>::Register();
+    K_MulUint16::template WithTypeConstraint<
+        ops::Mul::Attribute::T,
+        TF_UINT16>::Register();
 
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(MulInt16, ops::Mul,
-        dml::Cast(dml::Cast(x, DML_TENSOR_DATA_TYPE_INT32) *
-                  dml::Cast(y, DML_TENSOR_DATA_TYPE_INT32),
-              DML_TENSOR_DATA_TYPE_INT16),
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        MulInt16,
+        ops::Mul,
+        dml::Cast(
+            dml::Cast(x, DML_TENSOR_DATA_TYPE_INT32) *
+                dml::Cast(y, DML_TENSOR_DATA_TYPE_INT32),
+            DML_TENSOR_DATA_TYPE_INT16),
         8)
-    K_MulInt16::template WithTypeConstraint<ops::Mul::Attribute::T, TF_INT16>::Register();
+    K_MulInt16::template WithTypeConstraint<ops::Mul::Attribute::T, TF_INT16>::
+        Register();
 
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Mul, ops::Mul,
-        (x * y), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Mul, ops::Mul, (x * y), 8)
     RegisterWithTypes<
         K_Mul,
         ops::Mul::Attribute::T,
@@ -1502,8 +1584,7 @@ static void RegisterNeg()
 
 static void RegisterNotEqual()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(NotEqual, ops::NotEqual,
-        x != y, 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(NotEqual, ops::NotEqual, x != y, 8)
 
     RegisterWithTypes<
         K_NotEqual,
@@ -1536,16 +1617,19 @@ static void RegisterPopulationCount()
 
 static void RegisterPow()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Pow, ops::Pow,
-        dml::Pow(x, y), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Pow, ops::Pow, dml::Pow(x, y), 8)
 
-    RegisterWithTypes<K_Pow, ops::Pow::Attribute::T, TF_FLOAT, TF_HALF, TF_INT64>();
+    RegisterWithTypes<
+        K_Pow,
+        ops::Pow::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT64>();
 }
 
 static void RegisterRealDiv()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(RealDiv, ops::RealDiv,
-        x / y, 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(RealDiv, ops::RealDiv, x / y, 8)
 
     RegisterWithTypes<
         K_RealDiv,
@@ -1556,19 +1640,35 @@ static void RegisterRealDiv()
 
 static void RegisterReciprocal()
 {
-    REGISTER_DML_COMPOSITE_UNARY_STRUCT(ReciprocalInt64, ops::Reciprocal, dml::Recip(dml::Cast(x, DML_TENSOR_DATA_TYPE_FLOAT32)))
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(
+        ReciprocalInt64,
+        ops::Reciprocal,
+        dml::Recip(dml::Cast(x, DML_TENSOR_DATA_TYPE_FLOAT32)))
 
-    RegisterWithTypes<K_ReciprocalInt64, ops::Reciprocal::Attribute::T, TF_INT64>();
+    RegisterWithTypes<
+        K_ReciprocalInt64,
+        ops::Reciprocal::Attribute::T,
+        TF_INT64>();
 
-    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Reciprocal, ops::Reciprocal, dml::Recip(x))
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(
+        Reciprocal,
+        ops::Reciprocal,
+        dml::Recip(x))
 
-    RegisterWithTypes<K_Reciprocal, ops::Reciprocal::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        K_Reciprocal,
+        ops::Reciprocal::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
 }
 
 static void RegisterReciprocalGrad()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(ReciprocalGrad, ops::ReciprocalGrad,
-        (-y * x * x), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        ReciprocalGrad,
+        ops::ReciprocalGrad,
+        (-y * x * x),
+        8)
 
     RegisterWithTypes<
         K_ReciprocalGrad,
@@ -1581,11 +1681,7 @@ static void RegisterRelu6()
 {
     REGISTER_DML_COMPOSITE_UNARY_STRUCT(Relu6, ops::Relu6, dml::Clip(x, 0, 6))
 
-    RegisterWithTypes<
-        K_Relu6,
-        ops::Relu6::Attribute::T,
-        TF_FLOAT,
-        TF_HALF>();
+    RegisterWithTypes<K_Relu6, ops::Relu6::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
 static void RegisterRightShift()
@@ -1617,11 +1713,19 @@ static void RegisterRound()
 {
     REGISTER_DML_COMPOSITE_UNARY_STRUCT(RoundFloat, ops::Round, dml::Round(x))
 
-    RegisterWithTypes<K_RoundFloat, ops::Round::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        K_RoundFloat,
+        ops::Round::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
 
     REGISTER_DML_COMPOSITE_UNARY_STRUCT(RoundInt, ops::Round, dml::Identity(x))
 
-    RegisterWithTypes<K_RoundInt, ops::Round::Attribute::T, TF_INT32, TF_INT64>();
+    RegisterWithTypes<
+        K_RoundInt,
+        ops::Round::Attribute::T,
+        TF_INT32,
+        TF_INT64>();
 }
 
 static void RegisterRsqrt()
@@ -1633,10 +1737,17 @@ static void RegisterRsqrt()
 
 static void RegisterRsqrtGrad()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(RsqrtGrad, ops::RsqrtGrad,
-        (y * (-0.5f * x) * (x * x)), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        RsqrtGrad,
+        ops::RsqrtGrad,
+        (y * (-0.5f * x) * (x * x)),
+        8)
 
-    RegisterWithTypes<K_RsqrtGrad, ops::RsqrtGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        K_RsqrtGrad,
+        ops::RsqrtGrad::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
 }
 
 static void RegisterSelu()
@@ -1650,17 +1761,31 @@ static void RegisterSelu()
 
 static void RegisterSigmoid()
 {
-    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Sigmoid, ops::Sigmoid, dml::ActivationSigmoid(x))
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(
+        Sigmoid,
+        ops::Sigmoid,
+        dml::ActivationSigmoid(x))
 
-    RegisterWithTypes<K_Sigmoid, ops::Sigmoid::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        K_Sigmoid,
+        ops::Sigmoid::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
 }
 
 static void RegisterSigmoidGrad()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(SigmoidGrad, ops::SigmoidGrad,
-        (y * x * (1 - x)), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        SigmoidGrad,
+        ops::SigmoidGrad,
+        (y * x * (1 - x)),
+        8)
 
-    RegisterWithTypes<K_SigmoidGrad, ops::SigmoidGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        K_SigmoidGrad,
+        ops::SigmoidGrad::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
 }
 
 static void RegisterSign()
@@ -1704,32 +1829,60 @@ static void RegisterSoftmax()
 
 static void RegisterSoftplus()
 {
-    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Softplus, ops::Softplus, dml::ActivationSoftplus(x))
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(
+        Softplus,
+        ops::Softplus,
+        dml::ActivationSoftplus(x))
 
-    RegisterWithTypes<K_Softplus, ops::Softplus::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        K_Softplus,
+        ops::Softplus::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
 }
 
 static void RegisterSoftplusGrad()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(SoftplusGrad, ops::SoftplusGrad,
-        x / (dml::Exp(-y) + 1), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        SoftplusGrad,
+        ops::SoftplusGrad,
+        x / (dml::Exp(-y) + 1),
+        8)
 
-    RegisterWithTypes<K_SoftplusGrad, ops::SoftplusGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        K_SoftplusGrad,
+        ops::SoftplusGrad::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
 }
 
 static void RegisterSoftsign()
 {
-    REGISTER_DML_COMPOSITE_UNARY_STRUCT(Softsign, ops::Softsign, dml::ActivationSoftsign(x))
+    REGISTER_DML_COMPOSITE_UNARY_STRUCT(
+        Softsign,
+        ops::Softsign,
+        dml::ActivationSoftsign(x))
 
-    RegisterWithTypes<K_Softsign, ops::Softsign::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        K_Softsign,
+        ops::Softsign::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
 }
 
 static void RegisterSoftsignGrad()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(SoftsignGrad, ops::SoftsignGrad,
-        x / dml::Pow(1 + dml::Abs(y), 2), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        SoftsignGrad,
+        ops::SoftsignGrad,
+        x / dml::Pow(1 + dml::Abs(y), 2),
+        8)
 
-    RegisterWithTypes<K_SoftsignGrad, ops::SoftsignGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        K_SoftsignGrad,
+        ops::SoftsignGrad::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
 }
 
 static void RegisterSqrt()
@@ -1741,23 +1894,38 @@ static void RegisterSqrt()
 
 static void RegisterSqrtGrad()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(SqrtGrad, ops::SqrtGrad,
-        (y * 0.5f / x), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        SqrtGrad,
+        ops::SqrtGrad,
+        (y * 0.5f / x),
+        8)
 
-    RegisterWithTypes<K_SqrtGrad, ops::SqrtGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        K_SqrtGrad,
+        ops::SqrtGrad::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
 }
 
 static void RegisterSquare()
 {
     REGISTER_DML_COMPOSITE_UNARY_STRUCT(Square, ops::Square, (x * x))
 
-    RegisterWithTypes<K_Square, ops::Square::Attribute::T, TF_FLOAT, TF_HALF, TF_INT64>();
+    RegisterWithTypes<
+        K_Square,
+        ops::Square::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT64>();
 }
 
 static void RegisterSquaredDifference()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(SquaredDifference, ops::SquaredDifference,
-        dml::DifferenceSquare(x, y), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        SquaredDifference,
+        ops::SquaredDifference,
+        dml::DifferenceSquare(x, y),
+        8)
 
     RegisterWithTypes<
         K_SquaredDifference,
@@ -1769,8 +1937,7 @@ static void RegisterSquaredDifference()
 
 static void RegisterSub()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Sub, ops::Sub,
-        x - y, 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(Sub, ops::Sub, x - y, 8)
 
     RegisterWithTypes<
         K_Sub,
@@ -1796,24 +1963,43 @@ static void RegisterTanh()
 
 static void RegisterTanhGrad()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(TanhGrad, ops::TanhGrad,
-        (y * (1 - x * x)), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        TanhGrad,
+        ops::TanhGrad,
+        (y * (1 - x * x)),
+        8)
 
-    RegisterWithTypes<K_TanhGrad, ops::TanhGrad::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        K_TanhGrad,
+        ops::TanhGrad::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
 }
 
 static void RegisterTruncateDiv()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(TruncateDiv, ops::TruncateDiv,
-        x / y, 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        TruncateDiv,
+        ops::TruncateDiv,
+        x / y,
+        8)
 
-    RegisterWithTypes<K_TruncateDiv, ops::TruncateDiv::Attribute::T, TF_UINT8, TF_UINT16, TF_INT16, TF_INT64>();
+    RegisterWithTypes<
+        K_TruncateDiv,
+        ops::TruncateDiv::Attribute::T,
+        TF_UINT8,
+        TF_UINT16,
+        TF_INT16,
+        TF_INT64>();
 }
 
 static void RegisterTruncateMod()
 {
-    REGISTER_DML_COMPOSITE_BINARY_STRUCT(TruncateMod, ops::TruncateMod,
-        dml::ModulusTruncate(x, y), 8)
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        TruncateMod,
+        ops::TruncateMod,
+        dml::ModulusTruncate(x, y),
+        8)
 
     RegisterWithTypes<
         K_TruncateMod,
