@@ -99,25 +99,19 @@ class DmlCheckNumericsKernel : public DmlKernel {
     // Copy the result to the CPU
     Tensor is_error_tensor;
     TF_RETURN_IF_ERROR(op_ctx->allocate_temp(
-        op_ctx->input(0).dtype(), TensorShape({}), &is_error_tensor, true));
+        op_ctx->input(0).dtype(), {}, &is_error_tensor, true));
 
-    auto device = static_cast<DmlDevice*>(op_ctx->device());
+    auto dml_device = static_cast<DmlDevice*>(op_ctx->device());
     Tensor output_tensor = ctx->GetOutputTensor(0);
 
-    // Copy the Inf and NaN bits from the GPU to the CPU
-    Notification note;
-    Status status;
-    op_ctx->op_device_context()->CopyDeviceTensorToCPU(
-        output_tensor, "", device, &is_error_tensor,
-        [&note, &status](const Status& copy_status) {
-          status = copy_status;
-          note.Notify();
-        });
+    OP_REQUIRES_OK(
+            op_ctx,
+            dml_device->GetDeviceContext()->CopyDeviceTensorToCPU(
+                dml_device,
+                &output_tensor,
+                &is_error_tensor));
 
-    note.WaitForNotification();
-    TF_RETURN_IF_ERROR(status);
-
-    uint8_t nan_inf_bits = is_error_tensor.scalar<uint8_t>()();
+    uint8_t nan_inf_bits = is_error_tensor.base<uint8_t>()[0];
 
     // The NaN bit is 2^1 and the Inf bit is 2^0
     if (nan_inf_bits) {
@@ -146,7 +140,7 @@ class DmlCheckNumericsKernel : public DmlKernel {
 
       ctx->GetDmlDeviceContext()->CopyBufferToBuffer(
           output_buffer,
-          input_buffer.Subregion(0, output_tensor->TotalBytes()));
+          input_buffer.Subregion(0, output_tensor.TotalBytes()));
     }
 
     return ctx->GetDmlDeviceContext()->GetCurrentCompletionEvent();
