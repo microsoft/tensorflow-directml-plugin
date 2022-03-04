@@ -32,27 +32,17 @@ class DmlEmptyKernel : public OpKernel {
         ctx, TensorShapeUtils::IsVector(shape.shape()),
         errors::InvalidArgument("shape must be a vector of int32, got shape ",
                                 shape.shape().DebugString()));
-    // auto dims = shape.base<int32_t>()[0];
     TensorShape out_shape;
-    // OP_REQUIRES_OK(ctx, TensorShapeUtils::MakeShape(
-    //                         reinterpret_cast<const int32_t*>(dims.data()),
-    //                         dims.size(), &out_shape));
     OP_REQUIRES_OK(ctx, TensorShapeUtils::MakeShape(shape, &out_shape));
 
-    // Tensor output_tensor = nullptr;
-    // OP_REQUIRES_OK(ctx, ctx->allocate_output(0, out_shape, &output_tensor));
     StatusOr<Tensor> status_or_output_tensor =
             ctx->allocate_output(0, out_shape);
     OP_REQUIRES_OK(ctx, status_or_output_tensor.status());
 
     if (init_ && out_shape.num_elements() > 0) {
-      // auto device_context =
-      //     static_cast<DMLDeviceContext*>(ctx->op_device_context());
       DmlDevice* device = static_cast<DmlDevice*>(ctx->device());
       auto* device_context = device->GetDeviceContext();
 
-      // D3D12BufferRegion output_buffer =
-      //     device_context->GetBufferForTensor(*output_tensor);
       D3D12BufferRegion output_buffer = device_context->GetBufferForTensor(
             status_or_output_tensor.ValueOrDie());
 
