@@ -48,7 +48,8 @@ class DmlCastKernel : public DmlKernel
 
         DmlTensorInfo input;
         input.kernel_index = 0;
-        input.desc = DmlTensorDesc::Create(input_dtype, tensor_shape, tensor_shape);
+        input.desc =
+            DmlTensorDesc::Create(input_dtype, tensor_shape, tensor_shape);
 
         DmlTensorInfo output;
         output.kernel_index = 0;
@@ -64,21 +65,24 @@ class DmlCastKernel : public DmlKernel
         auto input_tensor = dml::InputTensor(scope, 0, inputs[0]);
 
         // Bool is a special case since it doesn't behave the same as uint8. The
-        // uint8 version simply drops the decimals, but bool converts anything that
-        // is not 0.0 to True.
+        // uint8 version simply drops the decimals, but bool converts anything
+        // that is not 0.0 to True.
         if (output_dtype == TF_BOOL &&
-            (input_dtype == TF_HALF || input_dtype == TF_FLOAT)) {
+            (input_dtype == TF_HALF || input_dtype == TF_FLOAT))
+        {
             input_tensor = dml::Ceil(dml::Abs(input_tensor));
         }
 
         auto result = dml::Cast(input_tensor, dml_out_dtype);
 
-        if (output_dtype == TF_BOOL) {
+        if (output_dtype == TF_BOOL)
+        {
             result = dml::Clip(result, 0.0, 1.0);
         }
 
         // TFDML #24881131
-        if (Is64BitSignedIntegerType(output_dtype)) {
+        if (Is64BitSignedIntegerType(output_dtype))
+        {
             result = dml::ConvertInt32ToInt64(result);
         }
 
@@ -88,11 +92,13 @@ class DmlCastKernel : public DmlKernel
         Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 
-    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const {
+    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const
+    {
         Tensor output = ctx->GetOutputTensor(0);
 
         // TFDML #24881131
-        if (Is64BitUnsignedIntegerType(output.dtype())) {
+        if (Is64BitUnsignedIntegerType(output.dtype()))
+        {
             ctx->GetDmlDeviceContext()->ZeroBuffer(
                 ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
         }

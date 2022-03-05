@@ -66,13 +66,14 @@ absl::optional<SimplePad> SimplifyPad(
 
         // Coalesce subsequent non-padded dims into the current dim.
         int j = i + 1;
-        
-        // Constant padding can collapse adjacent non-padded and padded dimensions
-        // because there's a single value to be padded, but the padding values for
-        // reflect and symmetric depend on the shape.
-        if (constant_pad || (paddings(i, 0) == 0 && paddings(i, 1) == 0)) {
+
+        // Constant padding can collapse adjacent non-padded and padded
+        // dimensions because there's a single value to be padded, but the
+        // padding values for reflect and symmetric depend on the shape.
+        if (constant_pad || (paddings(i, 0) == 0 && paddings(i, 1) == 0))
+        {
             while (j < paddings.dimension(0) && paddings(j, 0) == 0 &&
-                paddings(j, 1) == 0)
+                   paddings(j, 1) == 0)
             {
                 auto other_dim_size =
                     static_cast<uint32_t>(input_shape.dim_size(j));
@@ -246,7 +247,8 @@ class PadInitHelper : public InitializationHelper
         }
 
         bool constant_pad = padding_mode_ == DML_PADDING_MODE_CONSTANT;
-        simple_pad_ = SimplifyPad<Tpadding>(input.shape(), paddings, constant_pad);
+        simple_pad_ =
+            SimplifyPad<Tpadding>(input.shape(), paddings, constant_pad);
         OP_REQUIRES(
             ctx,
             simple_pad_.has_value(),
@@ -379,19 +381,9 @@ void RegisterMirrorPad()
 
 void RegisterKernels_Pad()
 {
-    RegisterPad<
-        TF_HALF,
-        TF_FLOAT,
-        TF_UINT8,
-        TF_INT8>();
-    RegisterPadV2<
-        TF_HALF,
-        TF_FLOAT,
-        TF_UINT8,
-        TF_INT8>();
-    RegisterMirrorPad<
-        TF_HALF,
-        TF_FLOAT>();
+    RegisterPad<TF_HALF, TF_FLOAT, TF_UINT8, TF_INT8>();
+    RegisterPadV2<TF_HALF, TF_FLOAT, TF_UINT8, TF_INT8>();
+    RegisterMirrorPad<TF_HALF, TF_FLOAT>();
 }
 
 } // namespace tfdml
