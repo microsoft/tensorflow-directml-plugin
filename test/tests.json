@@ -84,6 +84,9 @@
                     "file": "ops/dynamic_stitch_op_test.py"
                 },
                 {
+                    "file": "ops/empty_op_test.py"
+                },
+                {
                     "file": "ops/extract_image_patches_grad_test.py"
                 },
                 {

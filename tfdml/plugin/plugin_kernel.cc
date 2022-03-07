@@ -36,6 +36,7 @@ void RegisterKernels_DeepCopy();
 void RegisterKernels_Diag();
 void RegisterKernels_DiagPart();
 void RegisterKernels_DynamicStitch();
+void RegisterKernels_Empty();
 void RegisterKernels_ExtractImagePatches();
 void RegisterKernels_ExtractVolumePatches();
 void RegisterKernels_Fill();
@@ -108,6 +109,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Diag();
     tfdml::RegisterKernels_DiagPart();
     tfdml::RegisterKernels_DynamicStitch();
+    tfdml::RegisterKernels_Empty();
     tfdml::RegisterKernels_ExtractImagePatches();
     tfdml::RegisterKernels_ExtractVolumePatches();
     tfdml::RegisterKernels_Fill();
