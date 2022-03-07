@@ -217,6 +217,7 @@ add_library(
     tfdml/kernels/dml_image_ops.cc
     tfdml/kernels/dml_l2loss_op.cc
     tfdml/kernels/dml_lrn_ops.cc
+    tfdml/kernels/dml_lstm_ops.cc
     tfdml/kernels/dml_matmul_op.cc
     tfdml/kernels/dml_matrix_band_part_ops.cc
     tfdml/kernels/dml_matrix_diag_helpers.cc
