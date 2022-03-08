@@ -43,6 +43,7 @@ void RegisterKernels_Fill();
 void RegisterKernels_Gather();
 void RegisterKernels_GatherNd();
 void RegisterKernels_Image();
+void RegisterKernels_Inplace();
 void RegisterKernels_L2Loss();
 void RegisterKernels_LRN();
 void RegisterKernels_MatMul();
@@ -116,6 +117,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_Gather();
     tfdml::RegisterKernels_GatherNd();
     tfdml::RegisterKernels_Image();
+    tfdml::RegisterKernels_Inplace();
     tfdml::RegisterKernels_L2Loss();
     tfdml::RegisterKernels_LRN();
     tfdml::RegisterKernels_MatMul();

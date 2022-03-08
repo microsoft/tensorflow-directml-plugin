@@ -217,6 +217,7 @@ add_library(
     tfdml/kernels/dml_gather_nd_op.cc
     tfdml/kernels/dml_gather_op.cc
     tfdml/kernels/dml_image_ops.cc
+    tfdml/kernels/dml_inplace_ops.cc
     tfdml/kernels/dml_l2loss_op.cc
     tfdml/kernels/dml_lrn_ops.cc
     tfdml/kernels/dml_matmul_op.cc
