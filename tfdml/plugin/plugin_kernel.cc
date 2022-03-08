@@ -20,6 +20,7 @@ void RegisterKernels_AssignVariableOps();
 void RegisterKernels_BatchNorm();
 void RegisterKernels_BatchToSpace();
 void RegisterKernels_BiasAdd();
+void RegisterKernels_Bitcast();
 void RegisterKernels_BroadcastTo();
 void RegisterKernels_Cast();
 void RegisterKernels_CheckNumerics();
@@ -93,6 +94,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_BatchNorm();
     tfdml::RegisterKernels_BatchToSpace();
     tfdml::RegisterKernels_BiasAdd();
+    tfdml::RegisterKernels_Bitcast();
     tfdml::RegisterKernels_BroadcastTo();
     tfdml::RegisterKernels_Cast();
     tfdml::RegisterKernels_CheckNumerics();

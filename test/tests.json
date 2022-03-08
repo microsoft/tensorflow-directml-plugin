@@ -24,6 +24,9 @@
                     "file": "ops/bias_op_test.py"
                 },
                 {
+                    "file": "ops/bitcast_op_test.py"
+                },
+                {
                     "file": "ops/cast_op_test.py"
                 },
                 {
