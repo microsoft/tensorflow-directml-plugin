@@ -48,12 +48,12 @@ parameters:
 - name: testTensorflowPackage
   displayName: TensorFlow Package Version
   type: string
-  default: tf-nightly-cpu==2.9.0.dev20220223
+  default: tf-nightly-cpu==2.9.0.dev20220308
 
 - name: testKerasPackage
   displayName: TensorFlow Package Version
   type: string
-  default: keras-nightly==2.9.0.dev2022010508
+  default: keras-nightly==2.9.0.dev20220308
 
 - name: enableTests
   displayName: Enable Tests
