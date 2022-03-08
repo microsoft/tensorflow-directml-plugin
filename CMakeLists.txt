@@ -193,6 +193,7 @@ add_library(
     tfdml/kernels/dml_batch_norm_ops.cc
     tfdml/kernels/dml_batch_to_space_op.cc
     tfdml/kernels/dml_bias_add_op.cc
+    tfdml/kernels/dml_bitcast_op.cc
     tfdml/kernels/dml_broadcast_to_op.cc
     tfdml/kernels/dml_cast_op.cc
     tfdml/kernels/dml_check_numerics_op.cc
