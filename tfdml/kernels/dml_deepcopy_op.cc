@@ -41,7 +41,8 @@ class DmlDeepCopyKernel : public OpKernel
         DmlDevice* device = static_cast<DmlDevice*>(ctx->device());
         auto* device_context = device->GetDeviceContext();
 
-        if (input.NumElements() == 0) {
+        if (input.NumElements() == 0)
+        {
             return;
         }
 
