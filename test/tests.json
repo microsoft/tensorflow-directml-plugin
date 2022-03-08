@@ -117,6 +117,9 @@
                     "file": "ops/image_ops_test.py"
                 },
                 {
+                    "file": "ops/inplace_ops_test.py"
+                },
+                {
                     "file": "ops/l2loss_test.py"
                 },
                 {

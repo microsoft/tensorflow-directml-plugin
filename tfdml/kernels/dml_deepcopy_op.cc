@@ -41,6 +41,10 @@ class DmlDeepCopyKernel : public OpKernel
         DmlDevice* device = static_cast<DmlDevice*>(ctx->device());
         auto* device_context = device->GetDeviceContext();
 
+        if (input.NumElements() == 0) {
+            return;
+        }
+
         D3D12BufferRegion input_buffer =
             device_context->GetBufferForTensor(input);
 
