@@ -16,7 +16,6 @@ import tensorflow as tf
 from tensorflow.python.framework import test_util
 from tensorflow.python.platform import test
 import dml_test_util
-import tensorflow as tf
 
 class OnesLikeTest(dml_test_util.TestCase):
 
