@@ -147,6 +147,9 @@
                     "file": "ops/one_hot_op_test.py"
                 },
                 {
+                    "file": "ops/ones_like_test.py"
+                },
+                {
                     "file": "ops/pad_op_test.py"
                 },
                 {
