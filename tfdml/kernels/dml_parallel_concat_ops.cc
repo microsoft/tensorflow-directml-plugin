@@ -19,18 +19,21 @@ limitations under the License.
 namespace tfdml
 {
 
-class DmlFailureKernel : public OpKernel {
- public:
-  explicit DmlFailureKernel(
+class DmlFailureKernel : public OpKernel
+{
+  public:
+    explicit DmlFailureKernel(
         OpKernelConstruction* ctx,
         std::shared_ptr<const NodeDef> node_def)
-        : OpKernel(std::move(node_def)) {
-    OP_REQUIRES_OK(ctx,
-                   errors::Internal("Found instance of parallel_stack which "
-                                    "could not be properly replaced."));
-  }
+        : OpKernel(std::move(node_def))
+    {
+        OP_REQUIRES_OK(
+            ctx,
+            errors::Internal("Found instance of parallel_stack which "
+                             "could not be properly replaced."));
+    }
 
-  void Compute(OpKernelContext*) {}
+    void Compute(OpKernelContext*) {}
 };
 
 class DmlParallelConcatStartKernel : public OpKernel
@@ -49,9 +52,6 @@ class DmlParallelConcatStartKernel : public OpKernel
         StatusOr<Tensor> status_or_output_tensor =
             ctx->allocate_output(0, shape_);
         OP_REQUIRES_OK(ctx, status_or_output_tensor.status());
-
-        DmlDevice* dml_device = static_cast<DmlDevice*>(ctx->device());
-        Status sync_status = dml_device->Sync();
     }
 
   private:
@@ -75,12 +75,18 @@ class DmlParallelConcatUpdateKernel : public OpKernel
 
         // Value should be at least rank 1. Also the 0th dimension should be
         // at least loc_.
-        OP_REQUIRES(ctx, value_tensor.dims() >= 1,
-                    errors::InvalidArgument("value should be at least rank 1."));
         OP_REQUIRES(
-            ctx, value_tensor.dim_size(0) > loc_,
-            errors::InvalidArgument("0th dimension of value = ", value_tensor.dim_size(0),
-                                    " is less than loc_=", loc_));
+            ctx,
+            value_tensor.dims() >= 1,
+            errors::InvalidArgument("value should be at least rank 1."));
+        OP_REQUIRES(
+            ctx,
+            value_tensor.dim_size(0) > loc_,
+            errors::InvalidArgument(
+                "0th dimension of value = ",
+                value_tensor.dim_size(0),
+                " is less than loc_=",
+                loc_));
 
         const Tensor& update_tensor = ctx->input(1);
 
@@ -143,9 +149,7 @@ class DmlParallelConcatUpdateKernel : public OpKernel
 
 static void RegisterParallelConcat()
 {
-    using K = KernelDefinition<
-        ops::ParallelConcat,
-        DmlFailureKernel>;
+    using K = KernelDefinition<ops::ParallelConcat, DmlFailureKernel>;
 
     RegisterWithTypes<
         K,
