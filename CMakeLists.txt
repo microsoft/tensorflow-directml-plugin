@@ -253,6 +253,7 @@ add_library(
     tfdml/kernels/dml_sparse_xent_op.cc
     tfdml/kernels/dml_split_op.cc
     tfdml/kernels/dml_strided_slice_op.cc
+    tfdml/kernels/dml_swapping_ops.cc
     tfdml/kernels/dml_tile_op.cc
     tfdml/kernels/dml_topk_op.cc
     tfdml/kernels/dml_training_ops.cc

@@ -59,6 +59,10 @@ class DmlDevice : public Device
         const Tensor* cpu_tensor,
         Tensor* device_tensor) final;
 
+    Status CopyDeviceTensorToCPU(
+        const Tensor* device_tensor,
+        Tensor* cpu_tensor) final;
+
   private:
     const DmlDeviceState* state_; // Weak; owned by the device factory
     std::unique_ptr<DMLDeviceContext> device_context_;

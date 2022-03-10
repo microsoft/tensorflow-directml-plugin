@@ -28,6 +28,10 @@ class Device
         const Tensor* cpu_tensor,
         Tensor* device_tensor) = 0;
 
+    virtual Status CopyDeviceTensorToCPU(
+        const Tensor* device_tensor,
+        Tensor* cpu_tensor) = 0;
+
     virtual void CopyTensorInSameDevice(
         const Tensor* input_tensor,
         Tensor* output_tensor) = 0;
