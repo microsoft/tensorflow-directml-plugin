@@ -32,13 +32,8 @@ class DmlCopyFromGpuToHost : public OpKernel
     void Compute(OpKernelContext* ctx)
     {
         const Tensor& input = ctx->input(0);
-        int candidate_input_indices[] = {0};
-
         StatusOr<Tensor> status_or_output =
-            ctx->forward_input_or_allocate_output(
-                candidate_input_indices,
-                0,
-                input.shape());
+            ctx->allocate_output(0, input.shape());
 
         OP_REQUIRES_OK(ctx, status_or_output.status());
         OP_REQUIRES_OK(
@@ -62,13 +57,8 @@ class DmlCopyFromHostToGpu : public OpKernel
     void Compute(OpKernelContext* ctx)
     {
         const Tensor& input = ctx->input(0);
-        int candidate_input_indices[] = {0};
-
         StatusOr<Tensor> status_or_output =
-            ctx->forward_input_or_allocate_output(
-                candidate_input_indices,
-                0,
-                input.shape());
+            ctx->allocate_output(0, input.shape());
 
         OP_REQUIRES_OK(ctx, status_or_output.status());
         OP_REQUIRES_OK(
