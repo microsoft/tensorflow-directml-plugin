@@ -16,41 +16,54 @@ limitations under the License.
 
 #include "tfdml/kernels/pch.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
-class DmlDeepCopyKernel : public OpKernel {
- public:
-  explicit DmlDeepCopyKernel(OpKernelConstruction* ctx, std::shared_ptr<const NodeDef> node_def) : OpKernel(std::move(node_def)) {}
+class DmlDeepCopyKernel : public OpKernel
+{
+  public:
+    explicit DmlDeepCopyKernel(
+        OpKernelConstruction* ctx,
+        std::shared_ptr<const NodeDef> node_def)
+        : OpKernel(std::move(node_def))
+    {
+    }
 
-  void Compute(OpKernelContext* ctx) {
-    const Tensor& input = ctx->input(0);
-    const TensorShape& input_shape = input.shape();
-    
-    StatusOr<Tensor> status_or_output_tensor =
-        ctx->allocate_output(0, input_shape);
-    OP_REQUIRES_OK(ctx, status_or_output_tensor.status());
+    void Compute(OpKernelContext* ctx)
+    {
+        const Tensor& input = ctx->input(0);
+        const TensorShape& input_shape = input.shape();
 
-    DmlDevice* device = static_cast<DmlDevice*>(ctx->device());
-    auto* device_context = device->GetDeviceContext();
+        StatusOr<Tensor> status_or_output_tensor =
+            ctx->allocate_output(0, input_shape);
+        OP_REQUIRES_OK(ctx, status_or_output_tensor.status());
 
-    D3D12BufferRegion input_buffer = device_context->GetBufferForTensor(input);
+        DmlDevice* device = static_cast<DmlDevice*>(ctx->device());
+        auto* device_context = device->GetDeviceContext();
 
-    D3D12BufferRegion output_buffer =
-        device_context->GetBufferForTensor(status_or_output_tensor.ValueOrDie());
+        if (input.NumElements() == 0)
+        {
+            return;
+        }
 
-    uint64_t copy_size =
-        std::min(output_buffer.SizeInBytes(), input_buffer.SizeInBytes());
+        D3D12BufferRegion input_buffer =
+            device_context->GetBufferForTensor(input);
 
-    device_context->CopyBufferToBuffer(output_buffer,
-                                       input_buffer.Subregion(0, copy_size));
-  }
+        D3D12BufferRegion output_buffer = device_context->GetBufferForTensor(
+            status_or_output_tensor.ValueOrDie());
+
+        uint64_t copy_size =
+            std::min(output_buffer.SizeInBytes(), input_buffer.SizeInBytes());
+
+        device_context->CopyBufferToBuffer(
+            output_buffer,
+            input_buffer.Subregion(0, copy_size));
+    }
 };
 
 void RegisterKernels_DeepCopy()
 {
-    using K = KernelDefinition<
-        ops::DeepCopy,
-        DmlDeepCopyKernel>;
+    using K = KernelDefinition<ops::DeepCopy, DmlDeepCopyKernel>;
 
     RegisterWithTypes<
         K,
@@ -60,4 +73,4 @@ void RegisterKernels_DeepCopy()
         TF_INT64>();
 }
 
-}  // namespace tfdml
+} // namespace tfdml

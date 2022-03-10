@@ -193,8 +193,10 @@ add_library(
     tfdml/kernels/dml_batch_norm_ops.cc
     tfdml/kernels/dml_batch_to_space_op.cc
     tfdml/kernels/dml_bias_add_op.cc
+    tfdml/kernels/dml_bitcast_op.cc
     tfdml/kernels/dml_broadcast_to_op.cc
     tfdml/kernels/dml_cast_op.cc
+    tfdml/kernels/dml_check_numerics_op.cc
     tfdml/kernels/dml_concat_op.cc
     tfdml/kernels/dml_conv_ops.cc
     tfdml/kernels/dml_crop_and_resize_grad_boxes_op.cc
@@ -208,6 +210,7 @@ add_library(
     tfdml/kernels/dml_diag_op.cc
     tfdml/kernels/dml_diag_part_op.cc
     tfdml/kernels/dml_dynamic_stitch_op.cc
+    tfdml/kernels/dml_empty_op.cc
     tfdml/kernels/dml_extract_image_patches_op.cc
     tfdml/kernels/dml_extract_patches_helpers.cc
     tfdml/kernels/dml_extract_volume_patches_op.cc
@@ -215,6 +218,7 @@ add_library(
     tfdml/kernels/dml_gather_nd_op.cc
     tfdml/kernels/dml_gather_op.cc
     tfdml/kernels/dml_image_ops.cc
+    tfdml/kernels/dml_inplace_ops.cc
     tfdml/kernels/dml_l2loss_op.cc
     tfdml/kernels/dml_lrn_ops.cc
     tfdml/kernels/dml_lstm_ops.cc
@@ -226,6 +230,7 @@ add_library(
     tfdml/kernels/dml_matrix_set_diag_ops.cc
     tfdml/kernels/dml_mirror_pad_grad_op.cc
     tfdml/kernels/dml_one_hot_op.cc
+    tfdml/kernels/dml_ones_like_op.cc
     tfdml/kernels/dml_pack_op.cc
     tfdml/kernels/dml_pad_op.cc
     tfdml/kernels/dml_pooling_ops.cc
