@@ -27,9 +27,7 @@ class DmlParallelConcatStartKernel : public OpKernel
         std::shared_ptr<const NodeDef> node_def)
         : OpKernel(std::move(node_def))
     {
-        std::vector<int64_t> shape;
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("shape", &shape));
-        shape_ = TensorShape(absl::Span<const int64_t>(shape));
+        OP_REQUIRES_OK(ctx, ctx->GetAttr("shape", &shape_));
     }
 
     void Compute(OpKernelContext* ctx)
@@ -85,8 +83,6 @@ class DmlParallelConcatUpdateKernel : public OpKernel
                 "update shape doesn't match: ",
                 update_tensor.shape().DebugString()));
 
-        // auto* device_context =
-        //     static_cast<DMLDeviceContext*>(ctx->op_device_context());
         DmlDevice* dml_device = static_cast<DmlDevice*>(ctx->device());
         auto device_context = dml_device->GetDeviceContext();
 

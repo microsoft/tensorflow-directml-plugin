@@ -20,6 +20,7 @@ limitations under the License.
 #include "tfdml/runtime_adapter/padding.h"
 #include "tfdml/runtime_adapter/status.h"
 #include "tfdml/runtime_adapter/tensor.h"
+#include "tensorflow/c/kernels_experimental.h"
 
 struct TF_OpKernelConstruction;
 
@@ -51,6 +52,36 @@ class OpKernelConstruction
             attr_name,
             value,
             status.raw());
+        return status;
+    }
+
+    template <>
+    Status GetAttr<TensorShape>(const char* attr_name, TensorShape* value) const
+    {
+        CHECK(value != nullptr);
+        Status attr_size_status;
+        int32_t list_size;
+        int32_t size_in_bytes;
+        TF_OpKernelConstruction_GetAttrSize(
+            context_,
+            attr_name,
+            &list_size,
+            &size_in_bytes,
+            attr_size_status.raw());
+
+        if (!attr_size_status.ok())
+        {
+            return attr_size_status;
+        }
+
+        Status status;
+        TF_OpKernelConstruction_GetAttrTensorShape(
+            context_,
+            attr_name,
+            value->data(),
+            static_cast<size_t>(size_in_bytes),
+            status.raw());
+
         return status;
     }
 
