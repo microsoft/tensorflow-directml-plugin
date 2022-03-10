@@ -57,6 +57,7 @@ void RegisterKernels_OneHot();
 void RegisterKernels_OnesLike();
 void RegisterKernels_Pack();
 void RegisterKernels_Pad();
+void RegisterKernels_ParallelConcat();
 void RegisterKernels_Pooling();
 void RegisterKernels_Random();
 void RegisterKernels_Range();
@@ -134,6 +135,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_OnesLike();
     tfdml::RegisterKernels_Pack();
     tfdml::RegisterKernels_Pad();
+    tfdml::RegisterKernels_ParallelConcat();
     tfdml::RegisterKernels_Pooling();
     tfdml::RegisterKernels_Random();
     tfdml::RegisterKernels_Range();

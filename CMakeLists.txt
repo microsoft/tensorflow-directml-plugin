@@ -232,6 +232,7 @@ add_library(
     tfdml/kernels/dml_ones_like_op.cc
     tfdml/kernels/dml_pack_op.cc
     tfdml/kernels/dml_pad_op.cc
+    tfdml/kernels/dml_parallel_concat_ops.cc
     tfdml/kernels/dml_pooling_ops.cc
     tfdml/kernels/dml_random_ops.cc
     tfdml/kernels/dml_range_op.cc

@@ -16,6 +16,7 @@ limitations under the License.
 #include "attribute.h"
 #include "op_defs.h"
 #include "tensorflow/c/kernels.h"
+#include "tensorflow/c/kernels_experimental.h"
 #include "tfdml/runtime_adapter/mirror_pad_mode.h"
 #include "tfdml/runtime_adapter/padding.h"
 #include "tfdml/runtime_adapter/status.h"
@@ -51,6 +52,38 @@ class OpKernelConstruction
             attr_name,
             value,
             status.raw());
+        return status;
+    }
+
+    template <>
+    Status GetAttr<TensorShape>(const char* attr_name, TensorShape* value) const
+    {
+        CHECK(value != nullptr);
+        Status attr_size_status;
+        int32_t list_size;
+        int32_t num_dims;
+        TF_OpKernelConstruction_GetAttrSize(
+            context_,
+            attr_name,
+            &list_size,
+            &num_dims,
+            attr_size_status.raw());
+
+        if (!attr_size_status.ok())
+        {
+            return attr_size_status;
+        }
+
+        *value = TensorShape(absl::InlinedVector<int64_t, 5>(num_dims));
+
+        Status status;
+        TF_OpKernelConstruction_GetAttrTensorShape(
+            context_,
+            attr_name,
+            value->data(),
+            static_cast<size_t>(num_dims),
+            status.raw());
+
         return status;
     }
 
