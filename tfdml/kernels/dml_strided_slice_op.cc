@@ -1313,7 +1313,8 @@ class DmlStridedSliceAssignKernel : public DmlKernel
 
     StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
     {
-        if (ctx->GetOutputCount() == 1) {
+        if (ctx->GetOutputCount() == 1)
+        {
             return DmlKernel::Compute(ctx);
         }
 
