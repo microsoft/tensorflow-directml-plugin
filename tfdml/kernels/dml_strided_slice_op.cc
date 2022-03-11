@@ -1257,12 +1257,6 @@ class DmlStridedSliceAssignKernel : public DmlKernel
 
         tensors.outputs = {output};
 
-        if (input.dtype() != TF_RESOURCE)
-        {
-            // The input ref and the output ref must refer to the same memory
-            tensors.output_refs_forwarding = {0};
-        }
-
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto inputs = GetDmlTensorDescs(tensors.inputs);
         auto updates_tensor = dml::InputTensor(scope, 0, inputs[0]);
@@ -1319,6 +1313,10 @@ class DmlStridedSliceAssignKernel : public DmlKernel
 
     StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
     {
+        if (ctx->GetOutputCount() == 1) {
+            return DmlKernel::Compute(ctx);
+        }
+
         auto init_helper = ctx->GetInitializationHelper<InitHelper>();
         absl::Cleanup lock_cleanup = [init_helper] { init_helper->Unlock(); };
 
@@ -1454,10 +1452,35 @@ void RegisterResourceStridedSliceAssign()
         TF_INT64>();
 }
 
+void RegisterTensorStridedSliceUpdate()
+{
+    using K = KernelDefinition<
+        ops::TensorStridedSliceUpdate,
+        DmlKernelWrapper<
+            DmlStridedSliceAssignKernel,
+            GetOutputShapeAsInputShapeHelper>>::
+        WithHostMemoryArguments<
+            ops::TensorStridedSliceUpdate::Argument::begin,
+            ops::TensorStridedSliceUpdate::Argument::end,
+            ops::TensorStridedSliceUpdate::Argument::strides>;
+
+    RegisterWithTypes<
+        K,
+        ops::TensorStridedSliceUpdate::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_BOOL,
+        TF_INT8,
+        TF_UINT8,
+        TF_UINT32,
+        TF_INT64>();
+}
+
 void RegisterKernels_StridedSlice()
 {
     RegisterStridedSlice();
     RegisterStridedSliceGrad();
     RegisterResourceStridedSliceAssign();
+    RegisterTensorStridedSliceUpdate();
 }
 } // namespace tfdml
