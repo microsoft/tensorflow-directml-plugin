@@ -32,7 +32,7 @@ import dml_test_util
 
 @keras_parameterized.run_with_all_model_types
 @keras_parameterized.run_all_keras_modes
-class ValidationDatasetNoLimitTest(keras_parameterized.TestCase):
+class ValidationDatasetNoLimitTest(dml_test_util.KerasParameterizedTestCase):
 
   def create_dataset(self, num_samples, batch_size):
     input_data = np.random.rand(num_samples, 1)
@@ -60,7 +60,7 @@ class ValidationDatasetNoLimitTest(keras_parameterized.TestCase):
                            evaluation[-1], places=5)
 
 
-class PrintTrainingInfoTest(keras_parameterized.TestCase,
+class PrintTrainingInfoTest(dml_test_util.KerasParameterizedTestCase,
                             parameterized.TestCase):
 
   @test_util.run_v1_only("Only relevant in graph mode.")

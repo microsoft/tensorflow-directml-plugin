@@ -18,6 +18,7 @@ from tensorflow.python.client import device_lib
 from tensorflow.python.framework import test_util
 from tensorflow.python.eager import context
 from tensorflow.python.util import compat
+from tensorflow.python.keras import keras_parameterized
 
 @contextlib.contextmanager
 def device(use_gpu):
@@ -110,3 +111,6 @@ class TestCase(test_util.TensorFlowTestCase):
                 else:
                     with sess.graph.device("/device:CPU:0"):
                         yield sess
+
+class KerasParameterizedTestCase(TestCase, keras_parameterized.TestCase):
+    pass
