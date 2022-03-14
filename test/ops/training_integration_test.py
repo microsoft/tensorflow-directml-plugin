@@ -110,7 +110,7 @@ def _gather_test_cases():
 OUTPUT_TEST_CASES = _gather_test_cases()
 
 
-class CoreLayerIntegrationTest(keras_parameterized.TestCase):
+class CoreLayerIntegrationTest(dml_test_util.KerasParameterizedTestCase):
   """Test that layers and models produce the correct tensor types."""
 
   # In v1 graph there are only symbolic tensors.

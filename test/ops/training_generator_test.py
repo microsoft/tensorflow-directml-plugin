@@ -89,7 +89,7 @@ def custom_generator_changing_batch_size(mode=2):
 custom_generator_threads = data_utils.threadsafe_generator(custom_generator)
 
 
-class TestGeneratorMethods(keras_parameterized.TestCase):
+class TestGeneratorMethods(dml_test_util.KerasParameterizedTestCase):
 
   @keras_parameterized.run_with_all_model_types
   @keras_parameterized.run_all_keras_modes
@@ -380,7 +380,7 @@ class TestGeneratorMethods(keras_parameterized.TestCase):
     model.fit(data_gen(), epochs=1, steps_per_epoch=5)
 
 
-class TestGeneratorMethodsWithSequences(keras_parameterized.TestCase):
+class TestGeneratorMethodsWithSequences(dml_test_util.KerasParameterizedTestCase):
 
   @keras_parameterized.run_with_all_model_types
   @keras_parameterized.run_all_keras_modes
