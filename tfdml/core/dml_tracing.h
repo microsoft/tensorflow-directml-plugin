@@ -135,6 +135,8 @@ class DmlTracing
         ID3D12GraphicsCommandList* command_list);
     void LogExecuteOperatorEnd(ID3D12GraphicsCommandList* command_list);
 
+    void LogKernelComputeTelemetry(const char* kernel_name);
+
     // Lazily converts internal events into a profiler XSpace. Repeated calls
     // to this function will return the same XSpace.
     const tensorflow::profiler::XSpace& GetXSpace();
