@@ -273,8 +273,8 @@ class BatchNormalizationTest(dml_test_util.TestCase):
         err_offset = self._compute_gradient_error_float16(
             offset, offset, scale_shape, y, y32, x_shape)
 
-    x_err_tolerance = 2e-3 if x_dtype == np.float16 else 1e-3
-    scale_err_tolerance = 1e-3
+    x_err_tolerance = 5e-3 if x_dtype == np.float16 else 1e-3
+    scale_err_tolerance = 4e-3
     self.assertLess(err_x, x_err_tolerance)
     self.assertLess(err_scale, scale_err_tolerance)
     self.assertLess(err_offset, scale_err_tolerance)
