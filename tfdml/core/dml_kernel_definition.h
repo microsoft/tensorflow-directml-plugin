@@ -199,8 +199,11 @@ class KernelDefinition<
     {
         Kernel* concrete_kernel = static_cast<Kernel*>(kernel);
         OpKernelContext ctx(raw_ctx, concrete_kernel);
-        DmlTracing::Instance().LogKernelComputeTelemetry(Op::name);
         concrete_kernel->Compute(&ctx);
+
+#ifdef DIRECTML_ENABLE_TELEMETRY
+        DmlTracing::Instance().LogKernelComputeTelemetry(Op::name);
+#endif
     }
 
     static void DeleteKernel(void* kernel)

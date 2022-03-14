@@ -25,6 +25,7 @@ limitations under the License.
 #include <d3d12.h>
 
 #include "WinPixEventRuntime/pix3.h"
+#include "tfdml/core/dml_adapter.h"
 #include "tfdml/core/dml_device_cache.h"
 #include "tfdml/core/dml_dso_loader.h"
 #include "tfdml/runtime_adapter/env.h"
@@ -479,6 +480,31 @@ void DmlTracing::LogKernelComputeTelemetry(const char* kernel_name)
         g_providerHandle,
         "KernelCompute",
         TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
-        TraceLoggingString(kernel_name, "kernelName"));
+        TraceLoggingString(kernel_name, "KernelName"));
+#endif
+}
+
+void DmlTracing::LogDeviceCreationTelemetry(
+    const char* adapterName,
+    uint32_t vendor_id,
+    uint32_t device_id,
+    const tfdml::DriverVersion& driver_version,
+    bool compute_only,
+    uint32_t priority)
+{
+#ifdef DIRECTML_ENABLE_TELEMETRY
+    TraceLoggingWrite(
+        g_providerHandle,
+        "DeviceCreation",
+        TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
+        TraceLoggingString(adapterName, "AdapterName"),
+        TraceLoggingHexUInt32(vendor_id, "VendorID"),
+        TraceLoggingHexUInt32(device_id, "DeviceID"),
+        TraceLoggingUInt16(driver_version.parts.a, "DriverVersionA"),
+        TraceLoggingUInt16(driver_version.parts.b, "DriverVersionB"),
+        TraceLoggingUInt16(driver_version.parts.c, "DriverVersionC"),
+        TraceLoggingUInt16(driver_version.parts.d, "DriverVersionD"),
+        TraceLoggingBool(compute_only, "IsComputeOnly"),
+        TraceLoggingUInt32(priority, "Priority"));
 #endif
 }

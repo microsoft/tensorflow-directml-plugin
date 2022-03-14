@@ -30,6 +30,7 @@ limitations under the License.
 #include "tfdml/core/dml_device.h"
 #include "tfdml/core/dml_device_cache.h"
 #include "tfdml/core/dml_device_context.h"
+#include "tfdml/core/dml_tracing.h"
 #include "tfdml/core/dml_util.h"
 #include "tfdml/runtime_adapter/stream.h"
 
@@ -61,6 +62,17 @@ void plugin_create_device(
 
     params->device->device_handle =
         new DmlDevice(device_state, params->ordinal);
+
+#ifdef DIRECTML_ENABLE_TELEMETRY
+    DmlTracing::Instance().LogDeviceCreationTelemetry(
+        device_state->adapter->Name().c_str(),
+        (uint32_t)device_state->adapter->VendorID(),
+        device_state->adapter->DeviceID(),
+        device_state->adapter->DriverVersion(),
+        device_state->adapter->IsComputeOnly(),
+        params->ordinal);
+#endif
+
     TF_SetStatus(status, TF_OK, "");
 }
 
