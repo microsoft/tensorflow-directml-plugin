@@ -25,14 +25,14 @@ set(protobuf_BUILD_TESTS OFF)
 if(WIN32)
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/65/93/f907884847354239646ca3f3e4befe6b62dc9171c8d022c38cc687aa4b36/tf_nightly_cpu-2.9.0.dev20220308-cp37-cp37m-win_amd64.whl
-        URL_HASH SHA256=eead81ddc3eb120afd00dd9cd51d6a4e60179ef2271a0ca26e1a94f2e84aecac
+        URL https://files.pythonhosted.org/packages/48/d7/728c3d2af9257efbb68c2e5c0a12ebe3b39b5be63da09ea3fa7da4861c4a/tf_nightly_cpu-2.9.0.dev20220316-cp37-cp37m-win_amd64.whl
+        URL_HASH SHA256=25ae091861babd5e4f4b846707522519eda56815596c8c9ba6a70ae046b384db
     )
 else()
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/f2/bb/1b9283af8dee564dc595c778176d1d5a84e08835ad34613bdfc63abbf448/tf_nightly_cpu-2.9.0.dev20220308-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl
-        URL_HASH SHA256=f841a80a9186bda99d30388fb93e3c01ff0d361b7523b9ff3454448867be508f
+        URL https://files.pythonhosted.org/packages/06/f9/7a3abdbe46489cf3bbb89707b06fea8e408c2b9c3c8daee0f87bfe6ebd60/tf_nightly_cpu-2.9.0.dev20220316-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl
+        URL_HASH SHA256=e697d75fc269cfbdb0c8557c24c79db17b59c913c73d8d5fb85bea142f99899d
     )
 endif()
 

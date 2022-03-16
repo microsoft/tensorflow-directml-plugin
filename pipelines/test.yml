@@ -16,7 +16,7 @@ parameters:
   default: test
 - name: tensorflowPackage
   type: string
-  default: tf-nightly-cpu==2.9.0.dev20220308
+  default: tf-nightly-cpu==2.9.0.dev20220316
 - name: kerasPackage
   type: string
   default: keras-nightly==2.9.0.dev2022010508

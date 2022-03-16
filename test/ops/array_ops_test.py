@@ -2273,9 +2273,6 @@ class RepeatBenchmark(test_lib.Benchmark):
 class TileVariantTest(dml_test_util.TestCase):
 
   def test_tile_tensor_list(self):
-    # TODO: Enable once tensor lists are enabled on Windows
-    # https://github.com/tensorflow/tensorflow/pull/54468
-    self.skipTest("Tensor Lists are not enabled on Windows yet")
     t = constant_op.constant(np.random.uniform(size=[2, 3, 4]))
     handle = list_ops.tensor_list_from_tensor(t, element_shape=None)
     with ops.device("CPU:0"):

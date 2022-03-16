@@ -1190,7 +1190,6 @@ class TrainingTest(dml_test_util.KerasParameterizedTestCase):
 
     model = testing_utils.get_model_from_layers(
         [VariableOutputLayer(), layers_module.Dense(1)], input_shape=(10,))
-    # TODO(omalleyt): Make this work with `run_eagerly=True`.
     model.compile('sgd', 'mse', run_eagerly=False)
     model.fit(np.ones((10, 10)), np.ones((10, 1)), batch_size=2, epochs=5)
 
@@ -1745,8 +1744,6 @@ class LossWeightingTest(dml_test_util.KerasParameterizedTestCase):
     ref_score = model.evaluate(x_test, y_test, verbose=0)  # pylint: disable=unused-variable
     score = model.evaluate(  # pylint: disable=unused-variable
         x_test[test_ids, :], y_test[test_ids, :], verbose=0)
-    # TODO(b/152990697): Fix the class weights test here.
-    # self.assertLess(score[0], ref_score[0])
 
   @keras_parameterized.run_all_keras_modes
   @keras_parameterized.run_with_all_model_types(exclude_models='sequential')
@@ -3107,7 +3104,6 @@ class TestTrainingWithMetrics(dml_test_util.KerasParameterizedTestCase):
 
   @keras_parameterized.run_all_keras_modes(always_skip_v1=True)
   def DISABLED_test_add_metric_invalid_aggregation(self):
-    # TODO(psv): Reenable test once it is fixed.
     x = layers_module.Input(shape=(1,))
     y = layers_module.Dense(1, kernel_initializer='ones')(x)
     model = training_module.Model(x, y)

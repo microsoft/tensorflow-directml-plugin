@@ -327,10 +327,6 @@ class TestGeneratorMethods(dml_test_util.KerasParameterizedTestCase):
   @keras_parameterized.run_all_keras_modes
   @data_utils.dont_use_multiprocessing_pool
   def test_generator_dynamic_shapes(self):
-    # TODO: Enable once tensor lists are enabled on Windows
-    # https://github.com/tensorflow/tensorflow/pull/54468
-    self.skipTest("Tensor Lists are not enabled on Windows yet")
-
     x = [
         'I think juice is great',
         'unknown is the best language since slicedbread',
