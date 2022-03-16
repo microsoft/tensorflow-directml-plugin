@@ -313,15 +313,11 @@ class DmlConcatKernel : public DmlKernel
     }
 };
 
-// TODO: Enable cache once input indices are converted to tensor indices
-// TF2 #36789375
 template <AxisArgumentName AxisArgName>
 using DmlConcatWrapper = DmlKernelWrapper<
     DmlConcatKernel<AxisArgName>,
-    ConcatShapeHelper<AxisArgName>,
-    DmlKernelCachePolicy::Never>;
+    ConcatShapeHelper<AxisArgName>>;
 
-// todo: remove axisargumentname it's redundant now...
 template <
     typename Op,
     AxisArgumentName AxisArgName,
@@ -331,14 +327,15 @@ void RegisterConcat()
     using K = typename KernelDefinition<Op, DmlConcatWrapper<AxisArgName>>::
         template WithHostMemoryArguments<AxisArg>;
 
-    // TODO: add uint64 support
-    // TF2 #36692608
-    constexpr auto T = Op::Attribute::T;
-    K::template WithTypeConstraint<T, TF_FLOAT>::Register();
-    K::template WithTypeConstraint<T, TF_HALF>::Register();
-    K::template WithTypeConstraint<T, TF_UINT8>::Register();
-    K::template WithTypeConstraint<T, TF_INT64>::Register();
-    K::template WithTypeConstraint<T, TF_BOOL>::Register();
+    // TODO: add uint64 support (TF2 #36692608)
+    RegisterWithTypes<
+        K,
+        Op::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_BOOL,
+        TF_UINT8,
+        TF_INT64>();
 }
 
 void RegisterKernels_Concat()
