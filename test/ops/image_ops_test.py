@@ -3526,7 +3526,7 @@ class ResizeImagesTest(dml_test_util.TestCase,
           resized = self.evaluate(y)
           expected = np.array(expected_data[method]).reshape(
               [1, target_height, target_width, 1])
-          self.assertAllClose(resized, expected, atol=1e-05)
+          self.assertAllClose(resized, expected, atol=1e-05, rtol=1e-03)
 
   def testResizeUpBicubic(self):
     img_shape = [1, 6, 6, 1]
