@@ -2095,7 +2095,7 @@ class DmlBlockLstmGradOp : public DmlKernel
 };
 
 template <typename Op, typename DataType>
-using lstm_block = typename KernelDefinition<
+using lstm_block = KernelDefinition<
     Op,
     DmlKernelWrapper<DmlLstmBlockCellOp<DataType, ICFO>, LstmShapeHelper>>;
 
