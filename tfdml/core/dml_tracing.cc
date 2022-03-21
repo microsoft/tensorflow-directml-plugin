@@ -143,7 +143,8 @@ TRACELOGGING_DEFINE_PROVIDER(
      0x91,
      0x61,
      0x48,
-     0x77));
+     0x77),
+    TraceLoggingOptionMicrosoftTelemetry());
 
 // {D113B493-BBA2-4993-8608-D706A73B91CE}
 static constexpr GUID PIX_EVAL_CAPTURABLE_WORK_GUID = {
@@ -480,7 +481,8 @@ void DmlTracing::LogKernelComputeTelemetry(const char* kernel_name)
         g_providerHandle,
         "KernelCompute",
         TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
-        TraceLoggingString(kernel_name, "KernelName"));
+        TraceLoggingString(kernel_name, "KernelName"),
+        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
 #endif
 }
 
@@ -505,6 +507,7 @@ void DmlTracing::LogDeviceCreationTelemetry(
         TraceLoggingUInt16(driver_version.parts.c, "DriverVersionC"),
         TraceLoggingUInt16(driver_version.parts.d, "DriverVersionD"),
         TraceLoggingBool(compute_only, "IsComputeOnly"),
-        TraceLoggingUInt32(priority, "Priority"));
+        TraceLoggingUInt32(priority, "Priority"),
+        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
 #endif
 }
