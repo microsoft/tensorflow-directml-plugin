@@ -195,6 +195,9 @@
                     "file": "ops/reverse_sequence_op_test.py"
                 },
                 {
+                    "file": "ops/rnn_grad_test.py"
+                },
+                {
                     "file": "ops/roll_op_test.py"
                 },
                 {
@@ -246,7 +249,7 @@
                     "file": "ops/training_integration_test.py"
                 },
                 {
-                    "file": "ops/training_ops_test.py"
+                    "file": "ops/training_test.py"
                 },
                 {
                     "file": "ops/training_util_test.py"

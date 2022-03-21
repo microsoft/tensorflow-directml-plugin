@@ -842,7 +842,7 @@ class PoolingTest(dml_test_util.TestCase, parameterized.TestCase):
                                             [1, 1, 1, 3], "evenly divide")
     if dml_test_util.is_gpu_available():
       with self.session():
-        t = variables.Variable(np.ones([1, 2, 2, 4]))
+        t = variables.Variable(np.ones([1, 2, 2, 4], dtype=np.float32))
         self.evaluate(variables.global_variables_initializer())
         with self.assertRaisesOpError("for CPU devices"):
           nn_ops.max_pool(
@@ -1733,8 +1733,8 @@ class PoolingTest(dml_test_util.TestCase, parameterized.TestCase):
   def _testMaxPoolGradDirectWithNans2_1(self):
     input_data = [float("nan")] * 16
     output_backprop = [11.0, 12.0, 13.0, 15.0, 16.0, 17.0, 19.0, 20.0, 21.0]
-    # Test the CPU implementation, which propagates diffs in case of NaN
-    expected_input_backprop_tf_cpu = [
+    # Test the DML implementation, which propagates diffs in case of NaN
+    expected_input_backprop_tf_dml = [
         11.0, 12.0, 13.0, 0.0, 15.0, 16.0, 17.0, 0.0, 19.0, 20.0, 21.0, 0.0,
         0.0, 0.0, 0.0, 0.0
     ]
@@ -1742,41 +1742,7 @@ class PoolingTest(dml_test_util.TestCase, parameterized.TestCase):
       self._testMaxPoolGradDirect(
           input_data,
           output_backprop,
-          expected_input_backprop_tf_cpu,
-          input_sizes=[1, 4, 4, 1],
-          output_sizes=[1, 3, 3, 1],
-          window_rows=2,
-          window_cols=2,
-          row_stride=1,
-          col_stride=1,
-          padding="VALID",
-          use_gpu=False,
-          v2=v2)
-
-    if not dml_test_util.is_gpu_available():
-      return
-
-    # The functionality associated with TF_ENABLE_NANPROP is currently
-    # not supported on the ROCm platform, so skip this part of the test
-    # NANs in input lead to non-deterministic results, and hence skipping
-    # the remaining tests altogether on the ROCm platform
-    if test.is_built_with_rocm():
-      return
-
-    # Test the GPU implementation that uses cudnn for now.
-    saved_nanprop = os.environ.get("TF_ENABLE_MAXPOOL_NANPROP")
-    # Do not propagate the diff in cases of NaNs
-    os.environ["TF_ENABLE_MAXPOOL_NANPROP"] = "0"
-    expected_input_backprop_cudnn = [
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0
-    ]
-
-    for v2 in [True, False]:
-      self._testMaxPoolGradDirect(
-          input_data,
-          output_backprop,
-          expected_input_backprop_cudnn,
+          expected_input_backprop_tf_dml,
           input_sizes=[1, 4, 4, 1],
           output_sizes=[1, 3, 3, 1],
           window_rows=2,
@@ -1786,30 +1752,6 @@ class PoolingTest(dml_test_util.TestCase, parameterized.TestCase):
           padding="VALID",
           use_gpu=True,
           v2=v2)
-
-    # Propagate the diff in cases of NaNs
-    os.environ["TF_ENABLE_MAXPOOL_NANPROP"] = "1"
-    expected_input_backprop_cudnn = expected_input_backprop_tf_cpu
-
-    for v2 in [True, False]:
-      self._testMaxPoolGradDirect(
-          input_data,
-          output_backprop,
-          expected_input_backprop_cudnn,
-          input_sizes=[1, 4, 4, 1],
-          output_sizes=[1, 3, 3, 1],
-          window_rows=2,
-          window_cols=2,
-          row_stride=1,
-          col_stride=1,
-          padding="VALID",
-          use_gpu=True,
-          v2=v2)
-
-    if saved_nanprop:
-      os.environ["TF_ENABLE_MAXPOOL_NANPROP"] = saved_nanprop
-    else:
-      del os.environ["TF_ENABLE_MAXPOOL_NANPROP"]
 
   @test_util.no_xla_auto_jit("b/123923733")  # NaNs handled differently
   def _testMaxPoolGradDirectWithNans2_2(self):
@@ -1819,8 +1761,8 @@ class PoolingTest(dml_test_util.TestCase, parameterized.TestCase):
         float("nan"), 17.0, 19.0, 20.0,
         float("nan")
     ]
-    # Test the CPU implementation, which propagates diffs in case of NaN
-    expected_input_backprop_tf_cpu = [
+    # Test the DML implementation, which propagates diffs in case of NaN
+    expected_input_backprop_tf_dml = [
         float("nan"), 12.0, 13.0, 0.0, 15.0,
         float("nan"), 17.0, 0.0, 19.0, 20.0,
         float("nan"), 0.0, 0.0, 0.0, 0.0, 0.0
@@ -1829,41 +1771,7 @@ class PoolingTest(dml_test_util.TestCase, parameterized.TestCase):
       self._testMaxPoolGradDirect(
           input_data,
           output_backprop,
-          expected_input_backprop_tf_cpu,
-          input_sizes=[1, 4, 4, 1],
-          output_sizes=[1, 3, 3, 1],
-          window_rows=2,
-          window_cols=2,
-          row_stride=1,
-          col_stride=1,
-          padding="VALID",
-          use_gpu=False,
-          v2=v2)
-
-    if not dml_test_util.is_gpu_available():
-      return
-
-    # The functionality associated with TF_ENABLE_NANPROP is currently
-    # not supported on the ROCm platform, so skip this part of the test
-    # NANs in input lead to non-deterministic results, and hence skipping
-    # the remaining tests altogether on the ROCm platform
-    if test.is_built_with_rocm():
-      return
-
-    # Test the GPU implementation that uses cudnn for now.
-    saved_nanprop = os.environ.get("TF_ENABLE_MAXPOOL_NANPROP")
-    # Do not propagate the diff in cases of NaNs
-    os.environ["TF_ENABLE_MAXPOOL_NANPROP"] = "0"
-    expected_input_backprop_cudnn = [
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0
-    ]
-
-    for v2 in [True, False]:
-      self._testMaxPoolGradDirect(
-          input_data,
-          output_backprop,
-          expected_input_backprop_cudnn,
+          expected_input_backprop_tf_dml,
           input_sizes=[1, 4, 4, 1],
           output_sizes=[1, 3, 3, 1],
           window_rows=2,
@@ -1873,30 +1781,6 @@ class PoolingTest(dml_test_util.TestCase, parameterized.TestCase):
           padding="VALID",
           use_gpu=True,
           v2=v2)
-
-    # Propagate the diff in cases of NaNs
-    os.environ["TF_ENABLE_MAXPOOL_NANPROP"] = "1"
-    expected_input_backprop_cudnn = expected_input_backprop_tf_cpu
-
-    for v2 in [True, False]:
-      self._testMaxPoolGradDirect(
-          input_data,
-          output_backprop,
-          expected_input_backprop_cudnn,
-          input_sizes=[1, 4, 4, 1],
-          output_sizes=[1, 3, 3, 1],
-          window_rows=2,
-          window_cols=2,
-          row_stride=1,
-          col_stride=1,
-          padding="VALID",
-          use_gpu=True,
-          v2=v2)
-
-    if saved_nanprop:
-      os.environ["TF_ENABLE_MAXPOOL_NANPROP"] = saved_nanprop
-    else:
-      del os.environ["TF_ENABLE_MAXPOOL_NANPROP"]
 
   @test_util.run_deprecated_v1
   def testMaxPoolGradDirect(self):

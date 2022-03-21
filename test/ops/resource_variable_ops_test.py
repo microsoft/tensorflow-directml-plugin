@@ -824,7 +824,7 @@ class ResourceVariableOpsTest(dml_test_util.TestCase,
     self.assertEqual(4.0, self.evaluate(v.value()))
 
   def testAssignRuntimeShapeCheck(self):
-    with forward_compat.forward_compatibility_horizon(2022, 2, 1):
+    with forward_compat.forward_compatibility_horizon(2022, 3, 30):
       v = resource_variable_ops.ResourceVariable([1.0, 1.0], name="var0")
 
       @def_function.function
@@ -1554,6 +1554,34 @@ class ResourceVariableOpsTest(dml_test_util.TestCase,
   @parameterized.parameters([
       dict(
           params_shape=[2, 3, 4, 5, 6, 7],
+          indices_shape=[2, 3, 8, 9, 10],
+          batch_dims=0,
+          output_shape=[2, 3, 8, 9, 10, 3, 4, 5, 6, 7]
+          # = indices.shape + params.shape[1:]
+      ),
+      dict(
+          params_shape=[2, 3, 4, 5, 6, 7],
+          indices_shape=[2, 3, 8, 9, 10],
+          batch_dims=1,
+          output_shape=[2, 3, 8, 9, 10, 4, 5, 6, 7]
+          # = params.shape[:1] + indices.shape[1:] + params.shape[2:]
+      ),
+      dict(
+          params_shape=[2, 3, 4, 5, 6, 7],
+          indices_shape=[2, 3, 8, 9, 10],
+          batch_dims=2,
+          output_shape=[2, 3, 8, 9, 10, 5, 6, 7]
+          # = params.shape[:2] + indices.shape[2:] + params.shape[3:]
+      ),
+      dict(
+          params_shape=[2, 3, 4, 5, 6, 7],
+          indices_shape=[2, 3, 4, 9, 10],
+          batch_dims=3,
+          output_shape=[2, 3, 4, 9, 10, 6, 7]
+          # = params.shape[:3] + indices.shape[3:] + params.shape[4:]
+      ),
+      dict(
+          params_shape=[2, 3, 4, 5, 6, 7],
           indices_shape=[2, 3, 4, 5, 10],
           batch_dims=4,
           output_shape=[2, 3, 4, 5, 10, 7]
@@ -1577,7 +1605,7 @@ class ResourceVariableOpsTest(dml_test_util.TestCase,
     var = resource_variable_ops.ResourceVariable(params, name="var0")
     with ops.control_dependencies([var.initializer]):
       expected = array_ops.gather(
-          params, indices, batch_dims=batch_dims)
+          var.read_value(), indices, batch_dims=batch_dims)
       result = resource_variable_ops.resource_gather(
           var.handle, indices, dtype=var.dtype, batch_dims=batch_dims)
 

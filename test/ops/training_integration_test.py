@@ -110,7 +110,7 @@ def _gather_test_cases():
 OUTPUT_TEST_CASES = _gather_test_cases()
 
 
-class CoreLayerIntegrationTest(keras_parameterized.TestCase):
+class CoreLayerIntegrationTest(dml_test_util.KerasParameterizedTestCase):
   """Test that layers and models produce the correct tensor types."""
 
   # In v1 graph there are only symbolic tensors.
@@ -179,9 +179,6 @@ class CoreLayerIntegrationTest(keras_parameterized.TestCase):
   @parameterized.named_parameters(*OUTPUT_TEST_CASES)
   def test_model_loops(self, layer_to_test, input_shape, fuzz_dims,
                        layer_kwargs):
-    # TODO: Enable once tensor lists are enabled on Windows
-    # https://github.com/tensorflow/tensorflow/pull/54468
-    self.skipTest("Tensor Lists are not enabled on Windows yet")
     self._run_fit_eval_predict(layer_to_test, input_shape,
                                input_shape, layer_kwargs)
 

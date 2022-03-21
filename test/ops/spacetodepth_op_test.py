@@ -249,7 +249,7 @@ class SpaceToDepthTest(dml_test_util.TestCase):
 
     # Construct the input tensor in data_type and NHWC.
     # force_cpu is needed because quantize_v2 runs on only CPU.
-    with dml_test_util.force_cpu():
+    with test_util.force_cpu():
       if data_type == dtypes.qint8:
         # Quantized ops are not supported on Windows	
         if os.name == "nt":	

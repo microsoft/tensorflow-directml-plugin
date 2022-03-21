@@ -30,7 +30,7 @@ from tensorflow.python.platform import test
 import dml_test_util
 
 
-class TrainingTest(keras_parameterized.TestCase):
+class TrainingTest(dml_test_util.KerasParameterizedTestCase):
 
   @keras_parameterized.run_all_keras_modes(always_skip_v1=True)
   def test_dynamic_model_has_trainable_weights(self):
@@ -221,7 +221,7 @@ class TrainingTest(keras_parameterized.TestCase):
     self.assertEqual(out.shape, (30, 4))
 
 
-class CorrectnessTest(keras_parameterized.TestCase):
+class CorrectnessTest(dml_test_util.KerasParameterizedTestCase):
 
   @keras_parameterized.run_with_all_model_types
   @keras_parameterized.run_all_keras_modes

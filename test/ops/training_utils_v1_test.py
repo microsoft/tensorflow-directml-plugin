@@ -163,7 +163,7 @@ class DatasetUtilsTest(dml_test_util.TestCase, parameterized.TestCase):
       self.assertTrue(training_utils_v1.verify_dataset_shuffled(dataset))
 
 
-class StandardizeWeightsTest(keras_parameterized.TestCase):
+class StandardizeWeightsTest(dml_test_util.KerasParameterizedTestCase):
 
   def test_sample_weights(self):
     y = np.array([0, 1, 0, 0, 2])
@@ -246,7 +246,7 @@ _TEST_DATA = np.array((
     (1, 0, 3, 3, 3, 2, 1, 2, 3, 1),))
 
 
-class AggregationTest(keras_parameterized.TestCase):
+class AggregationTest(dml_test_util.KerasParameterizedTestCase):
 
   def setUp(self):
     super(AggregationTest, self).setUp()
@@ -365,7 +365,7 @@ class AggregationTest(keras_parameterized.TestCase):
       self._run_without_steps()
 
 
-class CompositeTensorTestUtils(keras_parameterized.TestCase):
+class CompositeTensorTestUtils(dml_test_util.KerasParameterizedTestCase):
 
   def test_is_composite(self):
     # Validate that all composite tensor and value types return true.

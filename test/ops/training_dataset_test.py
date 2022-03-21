@@ -46,7 +46,7 @@ class BatchCounterCallback(callbacks.Callback):
     self.batch_end_count += 1
 
 
-class TestTrainingWithDataset(keras_parameterized.TestCase):
+class TestTrainingWithDataset(dml_test_util.KerasParameterizedTestCase):
 
   @keras_parameterized.run_with_all_model_types
   @keras_parameterized.run_all_keras_modes
@@ -532,7 +532,7 @@ class TestTrainingWithDataset(keras_parameterized.TestCase):
     self.assertEqual(batch_counter.batch_end_count, 100)
 
 
-class TestMetricsWithDatasets(keras_parameterized.TestCase):
+class TestMetricsWithDatasets(dml_test_util.KerasParameterizedTestCase):
 
   @keras_parameterized.run_with_all_model_types
   @keras_parameterized.run_all_keras_modes
