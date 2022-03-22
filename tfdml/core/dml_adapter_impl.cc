@@ -140,7 +140,7 @@ std::vector<DmlAdapterImpl> FilterAdapterListFromEnvVar(
     return filtered_adapters;
 }
 
-DmlAdapterImpl::DmlAdapterImpl(LUID adapter_luid)
+DmlAdapterImpl::DmlAdapterImpl(LUID adapter_luid) : adapter_luid_(adapter_luid)
 {
 #if _WIN32
     ComPtr<IDXGIFactory4> dxgi_factory = CreateDxgiFactory();

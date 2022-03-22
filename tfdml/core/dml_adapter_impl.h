@@ -24,7 +24,7 @@ namespace tfdml
 class DmlAdapterImpl
 {
   public:
-    /*implicit*/ DmlAdapterImpl(LUID adapterLuid);
+    /*implicit*/ DmlAdapterImpl(LUID adapter_luid);
 
 #if _WIN32
     /*implicit*/ DmlAdapterImpl(IDXGIAdapter* adapter);
@@ -39,6 +39,7 @@ class DmlAdapterImpl
     uint32_t DeviceID() const { return device_id_; }
     const std::string& Name() const { return description_; }
     bool IsComputeOnly() const { return is_compute_only_; }
+    const LUID& AdapterLuid() const { return adapter_luid_; }
 
     uint64_t GetTotalDedicatedMemory() const
     {
@@ -67,6 +68,7 @@ class DmlAdapterImpl
     bool is_compute_only_;
     uint64_t dedicated_memory_in_bytes_;
     uint64_t shared_memory_in_bytes_;
+    LUID adapter_luid_;
 };
 
 // Retrieves a list of DML-compatible hardware adapters on the system.

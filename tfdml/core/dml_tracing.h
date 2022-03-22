@@ -145,6 +145,7 @@ class DmlTracing
         const char* adapterName,
         uint32_t vendor_id,
         uint32_t device_id,
+        const LUID& adapter_luid,
         const tfdml::DriverVersion& driver_version,
         bool compute_only,
         uint32_t priority);

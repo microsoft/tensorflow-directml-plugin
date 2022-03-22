@@ -68,6 +68,7 @@ void plugin_create_device(
         device_state->adapter->Name().c_str(),
         (uint32_t)device_state->adapter->VendorID(),
         device_state->adapter->DeviceID(),
+        device_state->adapter->AdapterLuid(),
         device_state->adapter->DriverVersion(),
         device_state->adapter->IsComputeOnly(),
         params->ordinal);

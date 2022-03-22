@@ -480,9 +480,10 @@ void DmlTracing::LogKernelComputeTelemetry(const char* kernel_name)
     TraceLoggingWrite(
         g_providerHandle,
         "KernelCompute",
+        TraceLoggingBool(true, "UTCReplace_AppSessionGuid"),
         TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
-        TraceLoggingString(kernel_name, "KernelName"),
-        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
+        TraceLoggingString(kernel_name, "kernelName"));
 #endif
 }
 
@@ -490,6 +491,7 @@ void DmlTracing::LogDeviceCreationTelemetry(
     const char* adapterName,
     uint32_t vendor_id,
     uint32_t device_id,
+    const LUID& adapter_luid,
     const tfdml::DriverVersion& driver_version,
     bool compute_only,
     uint32_t priority)
@@ -498,16 +500,19 @@ void DmlTracing::LogDeviceCreationTelemetry(
     TraceLoggingWrite(
         g_providerHandle,
         "DeviceCreation",
+        TraceLoggingBool(true, "UTCReplace_AppSessionGuid"),
         TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
-        TraceLoggingString(adapterName, "AdapterName"),
-        TraceLoggingHexUInt32(vendor_id, "VendorID"),
-        TraceLoggingHexUInt32(device_id, "DeviceID"),
-        TraceLoggingUInt16(driver_version.parts.a, "DriverVersionA"),
-        TraceLoggingUInt16(driver_version.parts.b, "DriverVersionB"),
-        TraceLoggingUInt16(driver_version.parts.c, "DriverVersionC"),
-        TraceLoggingUInt16(driver_version.parts.d, "DriverVersionD"),
-        TraceLoggingBool(compute_only, "IsComputeOnly"),
-        TraceLoggingUInt32(priority, "Priority"),
-        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES));
+        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
+        TraceLoggingString(adapterName, "adapterName"),
+        TraceLoggingUInt32(vendor_id, "vendorId"),
+        TraceLoggingUInt32(device_id, "adapterDeviceId"),
+        TraceLoggingUInt32(adapter_luid.LowPart, "adapterLuidLowPart"),
+        TraceLoggingUInt32(adapter_luid.HighPart, "adapterLuidHighPart"),
+        TraceLoggingUInt16(driver_version.parts.a, "driverVersionA"),
+        TraceLoggingUInt16(driver_version.parts.b, "driverVersionB"),
+        TraceLoggingUInt16(driver_version.parts.c, "driverVersionC"),
+        TraceLoggingUInt16(driver_version.parts.d, "driverVersionD"),
+        TraceLoggingBool(compute_only, "isComputeOnly"),
+        TraceLoggingUInt32(priority, "priority"));
 #endif
 }
