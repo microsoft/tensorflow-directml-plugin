@@ -138,4 +138,15 @@ class DmlTracing
     // Lazily converts internal events into a profiler XSpace. Repeated calls
     // to this function will return the same XSpace.
     const tensorflow::profiler::XSpace& GetXSpace();
+
+    void LogKernelComputeTelemetry(const char* kernel_name);
+
+    void LogDeviceCreationTelemetry(
+        const char* adapterName,
+        uint32_t vendor_id,
+        uint32_t device_id,
+        const LUID& adapter_luid,
+        const tfdml::DriverVersion& driver_version,
+        bool compute_only,
+        uint32_t priority);
 };

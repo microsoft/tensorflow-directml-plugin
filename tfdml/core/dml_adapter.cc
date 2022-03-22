@@ -33,6 +33,7 @@ VendorID DmlAdapter::VendorID() const { return impl_->VendorID(); }
 uint32_t DmlAdapter::DeviceID() const { return impl_->DeviceID(); }
 const std::string& DmlAdapter::Name() const { return impl_->Name(); }
 bool DmlAdapter::IsComputeOnly() const { return impl_->IsComputeOnly(); }
+const LUID& DmlAdapter::AdapterLuid() const { return impl_->AdapterLuid(); }
 
 uint64_t DmlAdapter::GetTotalDedicatedMemory() const
 {
