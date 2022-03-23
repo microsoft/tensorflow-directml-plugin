@@ -11,7 +11,7 @@ parameters:
 - name: addToBlobStorage
   type: boolean
   default: false
--name: telemetryProviderGroupGuid
+- name: telemetryProviderGroupGuid
   type: string
 
 jobs:
