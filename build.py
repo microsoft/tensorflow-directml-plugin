@@ -55,6 +55,9 @@ def configure_required(args, source_dir):
 
   if f"TFDML_TELEMETRY:BOOL={'ON' if args.telemetry else 'OFF'}" not in cmake_cache_content:
     return True # Telemetry option has changed.
+
+  if f"DTFDML_TELEMETRY_PROVIDER_GROUP_GUID:STRING={args.telemetry_provider_group_guid}" not in cmake_cache_content:
+    return True # Telemetry Provider Group GUID has changed.
   
   if f"TFDML_WHEEL_VERSION_SUFFIX:STRING={args.wheel_version_suffix}" not in cmake_cache_content:
     return True # Package wheel version suffix has changed.
@@ -76,6 +79,7 @@ def configure(args, source_dir):
   cl.append(f"-G \"{args.generator}\"")
   cl.append("-DFETCHCONTENT_QUIET=OFF") # Print details when fetching dependencies
   cl.append(f"-DTFDML_TELEMETRY={'ON' if args.telemetry else 'OFF'}")
+  cl.append(f"-DTFDML_TELEMETRY_PROVIDER_GROUP_GUID={args.telemetry_provider_group_guid}")
   cl.append(f"-DTFDML_WHEEL_VERSION_SUFFIX=\"{args.wheel_version_suffix}\"")
   run_or_show("Configure", " ".join(cl), args.show)
 
@@ -188,6 +192,11 @@ def main():
     "--telemetry",
     action="store_true",
     help="Allow builds to emit telemetry associated with the DMLTF client hint.")
+
+  parser.add_argument(
+    "--telemetry_provider_group_guid",
+    default="",
+    help="The GUID of the telemetry provider group to use in the format '00000000-0000-0000-0000-000000000000'.")
 
   parser.add_argument(
       "--build_output",

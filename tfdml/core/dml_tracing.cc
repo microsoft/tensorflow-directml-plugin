@@ -129,6 +129,12 @@ extern "C" UINT64 WINAPI PIXEventsReplaceBlock(
 
 TRACELOGGING_DECLARE_PROVIDER(g_providerHandle);
 
+#ifdef DIRECTML_ENABLE_TELEMETRY
+#define TfdmlTraceLoggingOptionGroup(guid) TraceLoggingOptionGroup(guid)
+#else
+#define TfdmlTraceLoggingOptionGroup(guid)
+#endif
+
 // {2D181A67-62EC-40FD-8CEB-DA6891614877}
 TRACELOGGING_DEFINE_PROVIDER(
     g_providerHandle,
@@ -144,7 +150,7 @@ TRACELOGGING_DEFINE_PROVIDER(
      0x61,
      0x48,
      0x77),
-    TraceLoggingOptionMicrosoftTelemetry());
+    TfdmlTraceLoggingOptionGroup(DIRECTML_TELEMETRY_PROVIDER_GROUP_GUID));
 
 // {D113B493-BBA2-4993-8608-D706A73B91CE}
 static constexpr GUID PIX_EVAL_CAPTURABLE_WORK_GUID = {

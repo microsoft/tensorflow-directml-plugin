@@ -65,6 +65,11 @@ parameters:
   type: string
   default: $(emailTo) # the default is stored in the pipeline as a variable
 
+- name: telemetryProviderGroupGuid
+  displayName: Telemetry Provider Group GUID
+  type: string
+  default: $(telemetryProviderGroupGuid) # the default is stored in the pipeline as a variable
+
 # CAREFUL: remember that variables are always string to string mappings. Unlike boolean-typed 
 # parameters, they must be compared to 'True' or 'False' in expressions or they will be 
 # implicitly cast: empty string -> false, any other string -> true.
@@ -94,6 +99,7 @@ stages:
       parameters:
         artifact: ${{artifact}}
         releaseBuild: ${{parameters.releaseBuild}}
+        telemetryProviderGroupGuid: ${{parameters.telemetryProviderGroupGuid}}
         ${{if and(contains(artifact, 'x64-win-release'),eq(variables.blobStorageDropEnabled, 'True'))}}:
           addToBlobStorage: true
 
