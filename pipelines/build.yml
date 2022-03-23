@@ -11,6 +11,8 @@ parameters:
 - name: addToBlobStorage
   type: boolean
   default: false
+-name: telemetryProviderGroupGuid
+  type: string
 
 jobs:
 - job:
@@ -71,7 +73,7 @@ jobs:
     - script: |
         $(miniconda.activateCommand)
         export CXX=clang++
-        python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.releaseBuild}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
       displayName: Build
       # target: manylinux
     # Rename instead of using auditwheel repair since libd3d12.so will not register as manylinux compliant
@@ -85,7 +87,7 @@ jobs:
   - ${{if contains(parameters.artifact, '-win-') }}:
     - powershell: |
         Invoke-Expression '$(miniconda.activateCommand)'
-        python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.releaseBuild}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
       displayName: Build
   - powershell: |
       New-Item -Force -ItemType Directory "$(buildPubPath)"
