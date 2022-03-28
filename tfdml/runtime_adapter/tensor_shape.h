@@ -39,6 +39,7 @@ class TensorShape
     Status AddDimWithStatus(int64_t size);
     void InsertDim(int index, int64_t dim_size);
     void RemoveLastDims(int num_dims);
+    void RemoveDim(int index);
     void Clear();
     int64_t dim_size(int dim_index) const;
     int64_t dims() const;

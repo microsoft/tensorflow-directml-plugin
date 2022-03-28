@@ -128,6 +128,13 @@ Tensor::Tensor(const Tensor& other)
 {
 }
 
+Tensor::Tensor(Tensor&& other)
+    : tensor_(std::move(other.tensor_)),
+      shape_(std::move(other.shape_))
+{
+    other.tensor_ = nullptr;
+}
+
 Tensor& Tensor::operator=(const Tensor& other)
 {
     tensor_ = MakeTensor(shallow_copy(other));
