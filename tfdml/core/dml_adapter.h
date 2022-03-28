@@ -15,7 +15,12 @@ limitations under the License.
 
 #pragma once
 
+#ifndef _WIN32
+#include <wsl/winadapter.h>
+#endif
+
 #include <cstdint>
+#include <directx/d3d12.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -100,6 +105,7 @@ class DmlAdapter
     uint32_t DeviceID() const;
     const std::string& Name() const;
     bool IsComputeOnly() const;
+    const LUID& AdapterLuid() const;
     uint64_t GetTotalDedicatedMemory() const;
     uint64_t GetTotalSharedMemory() const;
     uint64_t QueryAvailableLocalMemory() const;

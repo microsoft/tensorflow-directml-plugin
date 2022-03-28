@@ -39,7 +39,7 @@ $ErrorActionPreference = "Stop"
 
 foreach ($Item in Get-ChildItem $PSScriptRoot)
 {
-    if ($Item.Name -ne "build")
+    if ($Item.Name -ne "build" -and $Item.Name -ne "third_party")
     {
         FormatFiles($Item.FullName)
     }
