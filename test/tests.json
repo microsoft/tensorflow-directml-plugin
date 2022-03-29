@@ -33,6 +33,9 @@
                     "file": "ops/concat_op_test.py"
                 },
                 {
+                    "file": "ops/constant_op_test.py"
+                },
+                {
                     "file": "ops/conv_ops_3d_test.py"
                 },
                 {
