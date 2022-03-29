@@ -64,7 +64,7 @@ jobs:
       }
 
       if ("${{parameters.enableTelemetry}}" -eq "True") {
-          $TelemetrySwitch = "--telemetry"
+          $TelemetrySwitch = "--telemetry --telemetry_provider_group_guid ${{parameters.telemetryProviderGroupGuid}}"
       } else {
           $TelemetrySwitch = ""
       }
@@ -83,7 +83,7 @@ jobs:
     - script: |
         $(miniconda.activateCommand)
         export CXX=clang++
-        python build.py --config $(vars.configuration) --build_output $(buildOutPath) "$(vars.telemetrySwitch)" --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        python build.py --config $(vars.configuration) --build_output $(buildOutPath) "$(vars.telemetrySwitch)" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
       displayName: Build
       # target: manylinux
     # Rename instead of using auditwheel repair since libd3d12.so will not register as manylinux compliant
@@ -97,7 +97,7 @@ jobs:
   - ${{if contains(parameters.artifact, '-win-') }}:
     - powershell: |
         Invoke-Expression '$(miniconda.activateCommand)'
-        python build.py --config $(vars.configuration) --build_output $(buildOutPath) "$(vars.telemetrySwitch)" --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        python build.py --config $(vars.configuration) --build_output $(buildOutPath) "$(vars.telemetrySwitch)" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
       displayName: Build
   - powershell: |
       New-Item -Force -ItemType Directory "$(buildPubPath)"
