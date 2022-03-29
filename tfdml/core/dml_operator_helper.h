@@ -139,6 +139,32 @@ class GetOutputShapeFromInputShapeHelper : public ShapeHelper
 
 using GetOutputShapeAsInputShapeHelper = GetOutputShapeFromInputShapeHelper<0>;
 
+template <int input_tensor_index>
+class GetOutputShapeFromRefInputShapeHelper : public ShapeHelper
+{
+  public:
+    std::vector<TensorShape> GetOutputShapes(
+        OpKernelContext* ctx,
+        const InitializationHelper* initialization_helper) const override
+    {
+        constexpr bool lock_held = false;
+        constexpr bool is_variant = false;
+        Tensor input_tensor;
+
+        Status status = ctx->GetInputTensorFromVariable(
+            input_tensor_index,
+            lock_held,
+            is_variant,
+            &input_tensor);
+        CHECK(status.ok());
+
+        return {input_tensor.shape()};
+    }
+};
+
+using GetOutputShapeAsRefInputShapeHelper =
+    GetOutputShapeFromRefInputShapeHelper<0>;
+
 class BroadcastedOutputShapeInitHelper : public InitializationHelper
 {
   public:
