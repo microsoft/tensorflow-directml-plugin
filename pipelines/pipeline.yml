@@ -35,6 +35,11 @@ parameters:
   - x64-linux-release-cp38
   - x64-linux-release-cp39
 
+- name: enableTelemetry
+  displayName: Enable Telemetry
+  type: boolean
+  default: false
+
 - name: testArtifacts
   displayName: Test Artifacts
   type: object
@@ -100,6 +105,7 @@ stages:
         artifact: ${{artifact}}
         releaseBuild: ${{parameters.releaseBuild}}
         telemetryProviderGroupGuid: ${{parameters.telemetryProviderGroupGuid}}
+        enableTelemetry: ${{parameters.enableTelemetry}}
         ${{if and(contains(artifact, 'x64-win-release'),eq(variables.blobStorageDropEnabled, 'True'))}}:
           addToBlobStorage: true
 
