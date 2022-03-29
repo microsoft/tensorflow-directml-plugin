@@ -261,6 +261,9 @@
                     "file": "ops/transpose_op_test.py"
                 },
                 {
+                    "file": "ops/unstack_op_test.py"
+                },
+                {
                     "file": "ops/where_op_test.py"
                 },
                 {

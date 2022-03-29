@@ -73,6 +73,14 @@ void TensorShape::RemoveLastDims(int num_dims)
     UpdateNumElements();
 }
 
+void TensorShape::RemoveDim(int index)
+{
+    assert(index >= 0);
+    assert(index <= dim_sizes_.size());
+    dim_sizes_.erase(dim_sizes_.begin() + index);
+    UpdateNumElements();
+}
+
 void TensorShape::Clear()
 {
     dim_sizes_.clear();
