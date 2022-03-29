@@ -6,6 +6,9 @@
             "timeout_seconds": 7200,
             "tests": [
                 {
+                    "file": "ops/aggregate_ops_test.py"
+                },
+                {
                     "file": "ops/argmax_op_test.py"
                 },
                 {
