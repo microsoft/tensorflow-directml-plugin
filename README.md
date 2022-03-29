@@ -24,7 +24,7 @@ The following resources provide additional background on DirectML and TensorFlow
 ### Windows 10
 
 * Windows 10 Version 1709, 64-bit (Build 16299 or higher)
-* Python x86-64 3.7, 3.8 or 3.9<sup>1</sup>
+* Python x86-64 3.7, 3.8, 3.9 or 3.10<sup>1</sup>
 * One of the following supported GPUs:
   * AMD Radeon R5/R7/R9 2xx series or newer
   * Intel HD Graphics 5xx or newer
@@ -33,7 +33,7 @@ The following resources provide additional background on DirectML and TensorFlow
 ### Windows Subsystem for Linux
 
 * Windows 10 Insider Preview, 64-bit (Build 20150 or higher)
-* Python x86-64 3.7, 3.8 or 3.9<sup>2</sup>
+* Python x86-64 3.7, 3.8, 3.9 or 3.10<sup>2</sup>
 * One of the following supported GPUs:
   * AMD Radeon R5/R7/R9 2xx series or newer, and [20.20.01.05 WSL driver](https://www.amd.com/en/support/kb/release-notes/rn-rad-win-wsl-support)
   * Intel HD Graphics 6xx or newer, and [28.20.100.8322 WSL driver](https://downloadcenter.intel.com/download/29526)
