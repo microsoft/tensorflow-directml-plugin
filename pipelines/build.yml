@@ -63,14 +63,7 @@ jobs:
           $WheelVersionSuffix = ".dev" + "$(Build.BuildNumber)" -replace '(\d{6}).*','$1'
       }
 
-      if ("${{parameters.enableTelemetry}}" -eq "True") {
-          $TelemetrySwitch = "--telemetry --telemetry_provider_group_guid ${{parameters.telemetryProviderGroupGuid}}"
-      } else {
-          $TelemetrySwitch = ""
-      }
-
       Write-Host "##vso[task.setVariable variable=wheelVersionSuffix;isOutput=true]$WheelVersionSuffix"
-      Write-Host "##vso[task.setVariable variable=telemetrySwitch;isOutput=true]$TelemetrySwitch"
 
     name: vars
     displayName: Initialize Variables
@@ -83,7 +76,11 @@ jobs:
     - script: |
         $(miniconda.activateCommand)
         export CXX=clang++
-        python build.py --config $(vars.configuration) --build_output $(buildOutPath) "$(vars.telemetrySwitch)" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        if ["${{parameters.enableTelemetry}}" = "True"]
+          python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        else
+          python build.py --config $(vars.configuration) --build_output $(buildOutPath) --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        fi
       displayName: Build
       # target: manylinux
     # Rename instead of using auditwheel repair since libd3d12.so will not register as manylinux compliant
@@ -97,7 +94,12 @@ jobs:
   - ${{if contains(parameters.artifact, '-win-') }}:
     - powershell: |
         Invoke-Expression '$(miniconda.activateCommand)'
-        python build.py --config $(vars.configuration) --build_output $(buildOutPath) "$(vars.telemetrySwitch)" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+
+        if ("${{parameters.enableTelemetry}}" -eq "True") {
+          python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        } else {
+          python build.py --config $(vars.configuration) --build_output $(buildOutPath) --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        }
       displayName: Build
   - powershell: |
       New-Item -Force -ItemType Directory "$(buildPubPath)"
