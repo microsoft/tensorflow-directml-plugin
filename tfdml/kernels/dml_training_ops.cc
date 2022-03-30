@@ -146,11 +146,11 @@ class VariableTensorAccessor
     VariableLock locks_;
 };
 
-// A helper overload of DmlKernel::GetTensorInfos that constructs a
+// A helper overload of DmlKernel::GetTrainingTensorInfos that constructs a
 // DmlKernelTensors which conforms to the pattern followed by all training
 // ops. (i.e. broadcasted inputs, uniform datatypes, and graph input/output
 // order conforming to kernel definition)
-static DmlKernelTensors GetTensorInfos(
+static DmlKernelTensors GetTrainingTensorInfos(
     DmlKernelConstruction* ctx,
     const absl::optional<TensorShape>& desired_shape,
     absl::Span<const TensorShape> input_shapes,
@@ -556,7 +556,7 @@ class DmlApplyAdamKernel : public DmlTrainingKernel<num_input_refs>
             epsilon_shape,
             grad_shape};
         auto output_shapes = {var_shape, m_shape, v_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             absl::nullopt,
             input_shapes,
@@ -855,7 +855,7 @@ class DmlApplyAdamWithAmsgradKernel : public DmlTrainingKernel<num_input_refs>
             epsilon_shape,
             grad_shape};
         auto output_shapes = {var_shape, m_shape, v_shape, vhat_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             absl::nullopt,
             input_shapes,
@@ -1004,7 +1004,7 @@ class DmlApplyAdaMaxKernel : public DmlTrainingKernel<num_input_refs>
             epsilon_shape,
             grad_shape};
         auto output_shapes = {var_shape, m_shape, v_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
@@ -1082,7 +1082,7 @@ class DmlApplyGradientDescentKernel : public DmlTrainingKernel<num_input_refs>
 
         auto input_shapes = {var_shape, alpha_shape, delta_shape};
         auto output_shapes = {var_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
@@ -1188,7 +1188,7 @@ class DmlApplyAdadeltaKernel : public DmlTrainingKernel<num_input_refs>
             epsilon_shape,
             grad_shape};
         auto output_shapes = {var_shape, accum_shape, accum_update_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
@@ -1333,7 +1333,7 @@ class DmlApplyAdagradKernel : public DmlTrainingKernel<num_input_refs>
 
         input_shapes.push_back(grad_shape);
         auto output_shapes = {var_shape, accum_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
@@ -1437,7 +1437,7 @@ class DmlApplyMomentumKernel : public DmlTrainingKernel<num_input_refs>
         auto input_shapes =
             {var_shape, accum_shape, lr_shape, grad_shape, momentum_shape};
         auto output_shapes = {var_shape, accum_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
@@ -1536,7 +1536,7 @@ class DmlApplyKerasMomentumKernel : public DmlTrainingKernel<num_input_refs>
         auto input_shapes =
             {var_shape, accum_shape, lr_shape, grad_shape, momentum_shape};
         auto output_shapes = {var_shape, accum_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
@@ -1668,7 +1668,7 @@ class DmlApplyRMSPropKernel : public DmlTrainingKernel<num_input_refs>
             epsilon_shape,
             grad_shape};
         auto output_shapes = {var_shape, ms_shape, mom_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
@@ -1807,7 +1807,7 @@ class DmlApplyCenteredRMSPropKernel : public DmlTrainingKernel<num_input_refs>
             epsilon_shape,
             grad_shape};
         auto output_shapes = {var_shape, mg_shape, ms_shape, mom_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
@@ -1925,7 +1925,7 @@ class DmlApplyAddSignKernel : public DmlTrainingKernel<num_input_refs>
             beta_shape,
             grad_shape};
         auto output_shapes = {var_shape, m_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
@@ -2039,7 +2039,7 @@ class DmlApplyPowerSignKernel : public DmlTrainingKernel<num_input_refs>
             beta_shape,
             grad_shape};
         auto output_shapes = {var_shape, m_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
