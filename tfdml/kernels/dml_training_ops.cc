@@ -34,14 +34,13 @@ namespace tfdml
 //     handling due to differences between resource tensors vs refs tensors.
 //
 
-class TrainingInitHelper : public GetBroadcastedOutputShapeHelper::InitHelper
+template <int num_input_refs>
+class TrainingInitHelper : public InitializationHelper
 {
   public:
     struct Attributes
-        : public GetBroadcastedOutputShapeHelper::InitHelper::Attributes
     {
         explicit Attributes(OpKernelConstruction* ctx)
-            : GetBroadcastedOutputShapeHelper::InitHelper::Attributes(ctx)
         {
             OP_REQUIRES_OK(ctx, ctx->GetAttr("use_locking", &use_locking));
             OP_REQUIRES_OK(ctx, ctx->GetAttr("T", &dtype));
@@ -54,8 +53,7 @@ class TrainingInitHelper : public GetBroadcastedOutputShapeHelper::InitHelper
     TrainingInitHelper(
         OpKernelContext* ctx,
         std::shared_ptr<const Attributes> attr)
-        : GetBroadcastedOutputShapeHelper::InitHelper(ctx, attr),
-          use_exclusive_lock_(attr->use_locking && ctx->num_outputs() == 0),
+        : use_exclusive_lock_(attr->use_locking && ctx->num_outputs() == 0),
           dtype_(attr->dtype)
     {
     }
@@ -63,15 +61,58 @@ class TrainingInitHelper : public GetBroadcastedOutputShapeHelper::InitHelper
     bool UseExclusiveLock() const { return use_exclusive_lock_; }
     TF_DataType GetDataType() const { return dtype_; }
 
+    bool IsNoOpKernel(
+        OpKernelContext* ctx,
+        absl::Span<const TensorShape> output_shapes) const override
+    {
+        constexpr bool lock_held = false;
+        constexpr bool is_variant = false;
+
+        for (int i = 0; i < num_input_refs; ++i)
+        {
+            Tensor input_ref_tensor;
+            Status status = ctx->GetInputTensorFromVariable(
+                i,
+                lock_held,
+                is_variant,
+                &input_ref_tensor);
+            CHECK(status.ok());
+
+            if (input_ref_tensor.NumElements() == 0)
+            {
+                return true;
+            }
+        }
+
+        for (int i = num_input_refs; i < ctx->num_inputs(); ++i)
+        {
+            if (ctx->input(i).NumElements() == 0)
+            {
+                return true;
+            }
+        }
+
+        for (const auto& output_shape : output_shapes)
+        {
+            if (output_shape.num_elements() == 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
   private:
     bool use_exclusive_lock_;
     TF_DataType dtype_;
 };
 
+template <int num_input_refs>
 class DmlTrainingKernel : public DmlKernel
 {
   public:
-    using InitHelper = TrainingInitHelper;
+    using InitHelper = TrainingInitHelper<num_input_refs>;
 
     explicit DmlTrainingKernel(
         DmlKernelConstruction* ctx,
@@ -355,13 +396,14 @@ class DmlTrainingKernel : public DmlKernel
     std::vector<bool> is_variable_input_;
 };
 
-class NesterovInitHelper : public TrainingInitHelper
+template <int num_input_refs>
+class NesterovInitHelper : public TrainingInitHelper<num_input_refs>
 {
   public:
-    struct Attributes : public TrainingInitHelper::Attributes
+    struct Attributes : public TrainingInitHelper<num_input_refs>::Attributes
     {
         explicit Attributes(OpKernelConstruction* ctx)
-            : TrainingInitHelper::Attributes(ctx)
+            : TrainingInitHelper<num_input_refs>::Attributes(ctx)
         {
             OP_REQUIRES_OK(ctx, ctx->GetAttr("use_nesterov", &use_nesterov));
         }
@@ -372,7 +414,7 @@ class NesterovInitHelper : public TrainingInitHelper
     NesterovInitHelper(
         OpKernelContext* ctx,
         std::shared_ptr<const Attributes> attr)
-        : TrainingInitHelper(ctx, attr),
+        : TrainingInitHelper<num_input_refs>(ctx, attr),
           use_nesterov_(attr->use_nesterov)
     {
     }
@@ -383,10 +425,11 @@ class NesterovInitHelper : public TrainingInitHelper
     bool use_nesterov_;
 };
 
-class DmlApplyAdamKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyAdamKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
-    using InitHelper = NesterovInitHelper;
+    using InitHelper = NesterovInitHelper<num_input_refs>;
 
     enum TensorIndices
     {
@@ -405,7 +448,7 @@ class DmlApplyAdamKernel : public DmlTrainingKernel
     explicit DmlApplyAdamKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(
+        : DmlTrainingKernel<num_input_refs>(
               ctx,
               init_helper->UseExclusiveLock(),
               true /* inplace_allowed */)
@@ -654,15 +697,17 @@ class DmlApplyAdamKernel : public DmlTrainingKernel
     float beta2_;
 };
 
-template <typename ShapeHelper>
+template <typename ShapeHelper, int num_input_refs>
 class DmlAdamKernelWrapper
-    : public DmlKernelWrapper<DmlApplyAdamKernel, ShapeHelper>
+    : public DmlKernelWrapper<DmlApplyAdamKernel<num_input_refs>, ShapeHelper>
 {
   public:
     explicit DmlAdamKernelWrapper(
         OpKernelConstruction* ctx,
         std::shared_ptr<const NodeDef> node_def)
-        : DmlKernelWrapper<DmlApplyAdamKernel, ShapeHelper>(ctx, node_def),
+        : DmlKernelWrapper<DmlApplyAdamKernel<num_input_refs>, ShapeHelper>(
+              ctx,
+              node_def),
           node_def_(std::move(node_def))
     {
     }
@@ -674,7 +719,7 @@ class DmlAdamKernelWrapper
         key.op_type_name = this->type_string();
         key.node_def = node_def_;
 
-        using TensorIndices = DmlApplyAdamKernel::TensorIndices;
+        using TensorIndices = DmlApplyAdamKernel<num_input_refs>::TensorIndices;
 
         // Add constant CPU input tensors. Note that this doesn't include
         // beta1_power/beta2_power, since those are handled dynamically by the
@@ -700,13 +745,16 @@ class DmlAdamKernelWrapper
     std::shared_ptr<const NodeDef> node_def_;
 };
 
-class DmlApplyAdamWithAmsgradKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyAdamWithAmsgradKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
     explicit DmlApplyAdamWithAmsgradKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
@@ -851,13 +899,16 @@ class DmlApplyAdamWithAmsgradKernel : public DmlTrainingKernel
     }
 };
 
-class DmlApplyAdaMaxKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyAdaMaxKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
     explicit DmlApplyAdaMaxKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
@@ -982,13 +1033,16 @@ class DmlApplyAdaMaxKernel : public DmlTrainingKernel
     }
 };
 
-class DmlApplyGradientDescentKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyGradientDescentKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
     DmlApplyGradientDescentKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
@@ -1049,13 +1103,16 @@ class DmlApplyGradientDescentKernel : public DmlTrainingKernel
     }
 };
 
-class DmlApplyAdadeltaKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyAdadeltaKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
     DmlApplyAdadeltaKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
@@ -1159,13 +1216,14 @@ class DmlApplyAdadeltaKernel : public DmlTrainingKernel
     }
 };
 
-class ApplyAdagradInitHelper : public TrainingInitHelper
+template <int num_input_refs>
+class ApplyAdagradInitHelper : public TrainingInitHelper<num_input_refs>
 {
   public:
-    struct Attributes : public TrainingInitHelper::Attributes
+    struct Attributes : public TrainingInitHelper<num_input_refs>::Attributes
     {
         explicit Attributes(OpKernelConstruction* ctx)
-            : TrainingInitHelper::Attributes(ctx)
+            : TrainingInitHelper<num_input_refs>::Attributes(ctx)
         {
             OP_REQUIRES_OK(ctx, ctx->GetAttr("update_slots", &update_slots));
         }
@@ -1176,7 +1234,7 @@ class ApplyAdagradInitHelper : public TrainingInitHelper
     ApplyAdagradInitHelper(
         OpKernelContext* ctx,
         std::shared_ptr<const Attributes> attr)
-        : TrainingInitHelper(ctx, attr),
+        : TrainingInitHelper<num_input_refs>(ctx, attr),
           update_slots_(attr->update_slots)
     {
     }
@@ -1187,15 +1245,18 @@ class ApplyAdagradInitHelper : public TrainingInitHelper
     bool update_slots_;
 };
 
-class DmlApplyAdagradKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyAdagradKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
-    using InitHelper = ApplyAdagradInitHelper;
+    using InitHelper = ApplyAdagradInitHelper<num_input_refs>;
 
     DmlApplyAdagradKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
@@ -1305,15 +1366,18 @@ class DmlApplyAdagradKernel : public DmlTrainingKernel
     }
 };
 
-class DmlApplyMomentumKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyMomentumKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
-    using InitHelper = NesterovInitHelper;
+    using InitHelper = NesterovInitHelper<num_input_refs>;
 
     explicit DmlApplyMomentumKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
@@ -1401,15 +1465,18 @@ class DmlApplyMomentumKernel : public DmlTrainingKernel
     }
 };
 
-class DmlApplyKerasMomentumKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyKerasMomentumKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
-    using InitHelper = NesterovInitHelper;
+    using InitHelper = NesterovInitHelper<num_input_refs>;
 
     explicit DmlApplyKerasMomentumKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
@@ -1497,13 +1564,16 @@ class DmlApplyKerasMomentumKernel : public DmlTrainingKernel
     }
 };
 
-class DmlApplyRMSPropKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyRMSPropKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
     explicit DmlApplyRMSPropKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
@@ -1620,13 +1690,16 @@ class DmlApplyRMSPropKernel : public DmlTrainingKernel
     }
 };
 
-class DmlApplyCenteredRMSPropKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyCenteredRMSPropKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
     explicit DmlApplyCenteredRMSPropKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
@@ -1757,13 +1830,16 @@ class DmlApplyCenteredRMSPropKernel : public DmlTrainingKernel
     }
 };
 
-class DmlApplyAddSignKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyAddSignKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
     explicit DmlApplyAddSignKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
@@ -1866,13 +1942,16 @@ class DmlApplyAddSignKernel : public DmlTrainingKernel
     }
 };
 
-class DmlApplyPowerSignKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyPowerSignKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
     explicit DmlApplyPowerSignKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
@@ -1976,11 +2055,27 @@ class DmlApplyPowerSignKernel : public DmlTrainingKernel
     }
 };
 
+void RegisterApplyAdam()
+{
+    using K = KernelDefinition<
+        ops::ApplyAdam,
+        DmlAdamKernelWrapper<GetOutputShapeAsRefInputShapeHelper, 3>>::
+        WithHostMemoryArguments<
+            ops::ApplyAdam::Argument::beta1_power,
+            ops::ApplyAdam::Argument::beta2_power,
+            ops::ApplyAdam::Argument::lr,
+            ops::ApplyAdam::Argument::beta1,
+            ops::ApplyAdam::Argument::beta2,
+            ops::ApplyAdam::Argument::epsilon>;
+
+    RegisterWithTypes<K, ops::ApplyAdam::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 void RegisterResourceApplyAdam()
 {
     using K = KernelDefinition<
         ops::ResourceApplyAdam,
-        DmlAdamKernelWrapper<NoOutputShapeHelper>>::
+        DmlAdamKernelWrapper<NoOutputShapeHelper, 0>>::
         WithHostMemoryArguments<
             ops::ResourceApplyAdam::Argument::var,
             ops::ResourceApplyAdam::Argument::m,
@@ -2003,7 +2098,9 @@ void RegisterResourceApplyAdamWithAmsgrad()
 {
     using K = KernelDefinition<
         ops::ResourceApplyAdamWithAmsgrad,
-        DmlKernelWrapper<DmlApplyAdamWithAmsgradKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<
+            DmlApplyAdamWithAmsgradKernel<0>,
+            NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyAdamWithAmsgrad::Argument::var,
             ops::ResourceApplyAdamWithAmsgrad::Argument::m,
@@ -2016,11 +2113,22 @@ void RegisterResourceApplyAdamWithAmsgrad()
         TF_HALF>();
 }
 
+void RegisterApplyAdaMax()
+{
+    using K = KernelDefinition<
+        ops::ApplyAdaMax,
+        DmlKernelWrapper<
+            DmlApplyAdaMaxKernel<3>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::ApplyAdaMax::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 void RegisterResourceApplyAdaMax()
 {
     using K = KernelDefinition<
         ops::ResourceApplyAdaMax,
-        DmlKernelWrapper<DmlApplyAdaMaxKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyAdaMaxKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyAdaMax::Argument::var,
             ops::ResourceApplyAdaMax::Argument::m,
@@ -2033,11 +2141,28 @@ void RegisterResourceApplyAdaMax()
         TF_HALF>();
 }
 
+void RegisterApplyGradientDescent()
+{
+    using K = KernelDefinition<
+        ops::ApplyGradientDescent,
+        DmlKernelWrapper<
+            DmlApplyGradientDescentKernel<1>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::ApplyGradientDescent::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
+
 void RegisterResourceApplyGradientDescent()
 {
     using K = KernelDefinition<
         ops::ResourceApplyGradientDescent,
-        DmlKernelWrapper<DmlApplyGradientDescentKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<
+            DmlApplyGradientDescentKernel<0>,
+            NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyGradientDescent::Argument::var>;
 
@@ -2048,11 +2173,22 @@ void RegisterResourceApplyGradientDescent()
         TF_HALF>();
 }
 
+void RegisterApplyAdadelta()
+{
+    using K = KernelDefinition<
+        ops::ApplyAdadelta,
+        DmlKernelWrapper<
+            DmlApplyAdadeltaKernel<3>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::ApplyAdadelta::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 void RegisterResourceApplyAdadelta()
 {
     using K = KernelDefinition<
         ops::ResourceApplyAdadelta,
-        DmlKernelWrapper<DmlApplyAdadeltaKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyAdadeltaKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyAdadelta::Argument::var,
             ops::ResourceApplyAdadelta::Argument::accum,
@@ -2065,11 +2201,37 @@ void RegisterResourceApplyAdadelta()
         TF_HALF>();
 }
 
+void RegisterApplyAdagrad()
+{
+    using K = KernelDefinition<
+        ops::ApplyAdagrad,
+        DmlKernelWrapper<
+            DmlApplyAdagradKernel<2>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::ApplyAdagrad::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+void RegisterApplyAdagradV2()
+{
+    using K = KernelDefinition<
+        ops::ApplyAdagradV2,
+        DmlKernelWrapper<
+            DmlApplyAdagradKernel<2>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::ApplyAdagradV2::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
+
 void RegisterResourceApplyAdagrad()
 {
     using K = KernelDefinition<
         ops::ResourceApplyAdagrad,
-        DmlKernelWrapper<DmlApplyAdagradKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyAdagradKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyAdagrad::Argument::var,
             ops::ResourceApplyAdagrad::Argument::accum>;
@@ -2085,7 +2247,7 @@ void RegisterResourceApplyAdagradV2()
 {
     using K = KernelDefinition<
         ops::ResourceApplyAdagradV2,
-        DmlKernelWrapper<DmlApplyAdagradKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyAdagradKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyAdagradV2::Argument::var,
             ops::ResourceApplyAdagradV2::Argument::accum>;
@@ -2097,11 +2259,22 @@ void RegisterResourceApplyAdagradV2()
         TF_HALF>();
 }
 
+void RegisterApplyMomentum()
+{
+    using K = KernelDefinition<
+        ops::ApplyMomentum,
+        DmlKernelWrapper<
+            DmlApplyMomentumKernel<2>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::ApplyMomentum::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 void RegisterResourceApplyMomentum()
 {
     using K = KernelDefinition<
         ops::ResourceApplyMomentum,
-        DmlKernelWrapper<DmlApplyMomentumKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyMomentumKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyMomentum::Argument::var,
             ops::ResourceApplyMomentum::Argument::accum>;
@@ -2117,7 +2290,7 @@ void RegisterResourceApplyKerasMomentum()
 {
     using K = KernelDefinition<
         ops::ResourceApplyKerasMomentum,
-        DmlKernelWrapper<DmlApplyKerasMomentumKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyKerasMomentumKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyKerasMomentum::Argument::var,
             ops::ResourceApplyKerasMomentum::Argument::accum>;
@@ -2129,11 +2302,22 @@ void RegisterResourceApplyKerasMomentum()
         TF_HALF>();
 }
 
+void RegisterApplyRMSProp()
+{
+    using K = KernelDefinition<
+        ops::ApplyRMSProp,
+        DmlKernelWrapper<
+            DmlApplyRMSPropKernel<3>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::ApplyRMSProp::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 void RegisterResourceApplyRMSProp()
 {
     using K = KernelDefinition<
         ops::ResourceApplyRMSProp,
-        DmlKernelWrapper<DmlApplyRMSPropKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyRMSPropKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyRMSProp::Argument::var,
             ops::ResourceApplyRMSProp::Argument::ms,
@@ -2146,11 +2330,28 @@ void RegisterResourceApplyRMSProp()
         TF_HALF>();
 }
 
+void RegisterApplyCenteredRMSProp()
+{
+    using K = KernelDefinition<
+        ops::ApplyCenteredRMSProp,
+        DmlKernelWrapper<
+            DmlApplyCenteredRMSPropKernel<4>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::ApplyCenteredRMSProp::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
+
 void RegisterResourceApplyCenteredRMSProp()
 {
     using K = KernelDefinition<
         ops::ResourceApplyCenteredRMSProp,
-        DmlKernelWrapper<DmlApplyCenteredRMSPropKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<
+            DmlApplyCenteredRMSPropKernel<0>,
+            NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyCenteredRMSProp::Argument::var,
             ops::ResourceApplyCenteredRMSProp::Argument::ms,
@@ -2163,11 +2364,22 @@ void RegisterResourceApplyCenteredRMSProp()
         TF_HALF>();
 }
 
+void RegisterApplyAddSign()
+{
+    using K = KernelDefinition<
+        ops::ApplyAddSign,
+        DmlKernelWrapper<
+            DmlApplyAddSignKernel<2>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::ApplyAddSign::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 void RegisterResourceApplyAddSign()
 {
     using K = KernelDefinition<
         ops::ResourceApplyAddSign,
-        DmlKernelWrapper<DmlApplyAddSignKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyAddSignKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyAddSign::Argument::var,
             ops::ResourceApplyAddSign::Argument::m>;
@@ -2179,11 +2391,26 @@ void RegisterResourceApplyAddSign()
         TF_HALF>();
 }
 
+void RegisterApplyPowerSign()
+{
+    using K = KernelDefinition<
+        ops::ApplyPowerSign,
+        DmlKernelWrapper<
+            DmlApplyPowerSignKernel<2>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::ApplyPowerSign::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
+
 void RegisterResourceApplyPowerSign()
 {
     using K = KernelDefinition<
         ops::ResourceApplyPowerSign,
-        DmlKernelWrapper<DmlApplyPowerSignKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyPowerSignKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyPowerSign::Argument::var,
             ops::ResourceApplyPowerSign::Argument::m>;
@@ -2197,18 +2424,29 @@ void RegisterResourceApplyPowerSign()
 
 void RegisterKernels_Training()
 {
+    RegisterApplyAdam();
     RegisterResourceApplyAdam();
     RegisterResourceApplyAdamWithAmsgrad();
+    RegisterApplyAdaMax();
     RegisterResourceApplyAdaMax();
+    RegisterApplyGradientDescent();
     RegisterResourceApplyGradientDescent();
+    RegisterApplyAdadelta();
     RegisterResourceApplyAdadelta();
+    RegisterApplyAdagrad();
+    RegisterApplyAdagradV2();
     RegisterResourceApplyAdagrad();
     RegisterResourceApplyAdagradV2();
+    RegisterApplyMomentum();
     RegisterResourceApplyMomentum();
     RegisterResourceApplyKerasMomentum();
+    RegisterApplyRMSProp();
     RegisterResourceApplyRMSProp();
+    RegisterApplyCenteredRMSProp();
     RegisterResourceApplyCenteredRMSProp();
+    RegisterApplyAddSign();
     RegisterResourceApplyAddSign();
+    RegisterApplyPowerSign();
     RegisterResourceApplyPowerSign();
 }
 
