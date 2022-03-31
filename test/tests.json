@@ -6,6 +6,9 @@
             "timeout_seconds": 7200,
             "tests": [
                 {
+                    "file": "ops/aggregate_ops_test.py"
+                },
+                {
                     "file": "ops/argmax_op_test.py"
                 },
                 {
@@ -31,6 +34,9 @@
                 },
                 {
                     "file": "ops/concat_op_test.py"
+                },
+                {
+                    "file": "ops/constant_op_test.py"
                 },
                 {
                     "file": "ops/conv_ops_3d_test.py"
@@ -259,6 +265,9 @@
                 },
                 {
                     "file": "ops/transpose_op_test.py"
+                },
+                {
+                    "file": "ops/unstack_op_test.py"
                 },
                 {
                     "file": "ops/where_op_test.py"

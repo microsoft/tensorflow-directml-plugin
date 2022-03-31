@@ -144,6 +144,16 @@ StatusOr<Tensor> OpKernelContext::forward_input_or_allocate_output(
     return Tensor(raw_tensor);
 }
 
+void OpKernelContext::forward_ref_input_to_ref_output(
+    int input_index,
+    int output_index)
+{
+    TF_OpKernelContext_ForwardRefInputToRefOutput(
+        context_,
+        input_index,
+        output_index);
+}
+
 TF_DataType OpKernelContext::input_dtype(int index)
 {
     TF_Tensor* raw_tensor = nullptr;

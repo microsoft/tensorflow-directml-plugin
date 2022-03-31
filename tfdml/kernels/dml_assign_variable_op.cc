@@ -85,6 +85,101 @@ class DmlAssignVariableOp : public OpKernel
     bool validate_shape_ = false;
 };
 
+class DmlAssign : public OpKernel
+{
+  public:
+    explicit DmlAssign(
+        OpKernelConstruction* context,
+        std::shared_ptr<const NodeDef> node_def)
+        : OpKernel(std::move(node_def))
+    {
+        OP_REQUIRES_OK(
+            context,
+            context->GetAttr("use_locking", &exclusive_lock_));
+        OP_REQUIRES_OK(
+            context,
+            context->GetAttr("validate_shape", &validate_shape_));
+    }
+
+    void Compute(OpKernelContext* ctx)
+    {
+        // TODO: Enable once the AssignRefVariable API is merged
+        // https://github.com/tensorflow/tensorflow/pull/55379
+        // constexpr int input_ref_index = 0;
+        // constexpr int output_ref_index = 0;
+        // constexpr int value_index = 1;
+        // ctx->AssignRefVariable(
+        //     input_ref_index,
+        //     output_ref_index,
+        //     value_index,
+        //     exclusive_lock_,
+        //     validate_shape_);
+    }
+
+  private:
+    bool exclusive_lock_;
+    bool validate_shape_;
+};
+
+template <typename Expression>
+class DmlAssignUpdate : public DmlKernel
+{
+  public:
+    using InitHelper = NoOpInitializationHelper;
+
+    explicit DmlAssignUpdate(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        // The Assign operators don't support broadcasting, so it's safe to
+        // collapse all dimensions into a single one before sending it to DML.
+        // This allows us to support tensors with more than 4 or 5 dimensions.
+        TensorShape tensor_shape = {
+            ctx->GetOutputTensorShape(1).num_elements()};
+
+        TF_DataType data_type = ctx->GetInputDataType(1);
+
+        DmlKernelTensors tensors;
+
+        for (uint32_t i = 0; i < ctx->GetInputCount(); ++i)
+        {
+            DmlTensorInfo input;
+            input.kernel_index = i;
+            input.desc =
+                DmlTensorDesc::Create(data_type, tensor_shape, tensor_shape);
+
+            tensors.inputs.push_back(std::move(input));
+        }
+
+        DmlTensorInfo output;
+        output.kernel_index = 0;
+        output.desc =
+            DmlTensorDesc::Create(data_type, tensor_shape, tensor_shape);
+
+        tensors.outputs = {output};
+
+        // The input ref and the output ref must refer to the same memory
+        tensors.output_refs_forwarding = {0};
+
+        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto scope = dml::Graph(ctx->GetDmlDevice());
+        auto a_tensor = dml::InputTensor(scope, 0, inputs[0]);
+        auto b_tensor = dml::InputTensor(scope, 1, inputs[1]);
+        auto result = Expression()(a_tensor, b_tensor);
+
+        // TFDML #24881131
+        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0)))
+        {
+            result = dml::ConvertInt32ToInt64(result);
+        }
+
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
+    }
+};
+
 class DummyInitializationHelper : public InitializationHelper
 {
 };
@@ -303,11 +398,64 @@ void RegisterAssignSubVariableOp()
     K::WithTypeConstraint<T, TF_INT64>::Register();
 }
 
+void RegisterAssign()
+{
+    using K = KernelDefinition<ops::Assign, DmlAssign>;
+
+    // We deliberately register the same types here that CUDA does.
+    constexpr auto T = ops::Assign::Attribute::T;
+    K::WithTypeConstraint<T, TF_INT64>::Register();
+    K::WithTypeConstraint<T, TF_UINT32>::Register();
+    K::WithTypeConstraint<T, TF_UINT8>::Register();
+    K::WithTypeConstraint<T, TF_BOOL>::Register();
+    K::WithTypeConstraint<T, TF_COMPLEX64>::Register();
+    K::WithTypeConstraint<T, TF_COMPLEX128>::Register();
+    K::WithTypeConstraint<T, TF_HALF>::Register();
+    K::WithTypeConstraint<T, TF_FLOAT>::Register();
+    K::WithTypeConstraint<T, TF_DOUBLE>::Register();
+}
+
+void RegisterAssignAdd()
+{
+    using K = KernelDefinition<
+        ops::AssignAdd,
+        DmlKernelWrapper<
+            DmlAssignUpdate<std::plus<dml::Expression>>,
+            GetOutputShapeAsInputShapeHelper>>;
+
+    // We deliberately register the same types here that CUDA does.
+    constexpr auto T = ops::AssignAdd::Attribute::T;
+    K::WithTypeConstraint<T, TF_INT64>::Register();
+    K::WithTypeConstraint<T, TF_HALF>::Register();
+    K::WithTypeConstraint<T, TF_FLOAT>::Register();
+}
+
+void RegisterAssignSub()
+{
+    using K = KernelDefinition<
+        ops::AssignSub,
+        DmlKernelWrapper<
+            DmlAssignUpdate<std::minus<dml::Expression>>,
+            GetOutputShapeAsInputShapeHelper>>;
+
+    // We deliberately register the same types here that CUDA does.
+    constexpr auto T = ops::AssignSub::Attribute::T;
+    K::WithTypeConstraint<T, TF_INT64>::Register();
+    K::WithTypeConstraint<T, TF_HALF>::Register();
+    K::WithTypeConstraint<T, TF_FLOAT>::Register();
+}
+
 void RegisterKernels_AssignVariableOps()
 {
     RegisterAssignVariableOp();
     RegisterAssignAddVariableOp();
     RegisterAssignSubVariableOp();
+    RegisterAssignAdd();
+    RegisterAssignSub();
+
+    // TODO: Enable once the AssignRefVariable API is merged
+    // https://github.com/tensorflow/tensorflow/pull/55379
+    // RegisterAssign();
 }
 
 } // namespace tfdml

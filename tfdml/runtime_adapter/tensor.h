@@ -37,6 +37,7 @@ class Tensor
     Tensor(TF_DataType data_type);
     Tensor(TF_Tensor* tensor);
     Tensor(const Tensor& other);
+    Tensor(Tensor&& other);
     Tensor& operator=(const Tensor& other);
     Tensor& operator=(Tensor&& other);
     int64_t AllocatedBytes() const;
