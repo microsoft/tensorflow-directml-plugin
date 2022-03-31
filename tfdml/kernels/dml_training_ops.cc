@@ -1576,7 +1576,7 @@ template <int num_input_refs>
 class DmlApplyRMSPropKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
-    using InitHelper = NesterovInitHelper<num_input_refs>;
+    using InitHelper = TrainingInitHelper<num_input_refs>;
 
     explicit DmlApplyRMSPropKernel(
         DmlKernelConstruction* ctx,
@@ -1846,7 +1846,7 @@ template <int num_input_refs>
 class DmlApplyAddSignKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
-    using InitHelper = NesterovInitHelper<num_input_refs>;
+    using InitHelper = TrainingInitHelper<num_input_refs>;
 
     explicit DmlApplyAddSignKernel(
         DmlKernelConstruction* ctx,
@@ -1960,7 +1960,7 @@ template <int num_input_refs>
 class DmlApplyPowerSignKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
-    using InitHelper = NesterovInitHelper<num_input_refs>;
+    using InitHelper = TrainingInitHelper<num_input_refs>;
 
     explicit DmlApplyPowerSignKernel(
         DmlKernelConstruction* ctx,
