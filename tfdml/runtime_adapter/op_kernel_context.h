@@ -36,21 +36,51 @@ class OpKernelContext
     int num_outputs() const;
     void CtxFailure(const char* file, int line, const Status& s);
     void CtxFailureWithWarning(const char* file, int line, const Status& s);
+    void forward_ref_input_to_ref_output(int input_index, int output_index);
     TF_DataType input_dtype(int index);
     TF_DataType expected_output_dtype(int index);
     StatusOr<Tensor> allocate_output(int index, const TensorShape& shape);
+    StatusOr<Tensor> forward_input_or_allocate_output(
+        absl::Span<int> candidate_input_indices,
+        int output_index,
+        const TensorShape& output_shape,
+        int* forwarded_input = nullptr);
     const Status& status() const;
     Device* device() const;
     Status allocate_temp(
         TF_DataType dtype,
         const TensorShape& shape,
         Tensor* tensor,
-        bool on_host = true);
+        bool on_host = false);
     MemoryType input_memory_type(int index) const;
     MemoryType output_memory_type(int index) const;
-    ResourceMgr* resource_manager() const;
     Status set_output(int index, const Tensor& tensor);
     const OpKernel& op_kernel() const;
+    Status AssignVariable(int var_index, int value_index);
+
+    // TODO: Enable once the AssignRefVariable API is merged
+    // https://github.com/tensorflow/tensorflow/pull/55379
+    // void AssignRefVariable(
+    //     int input_ref_index,
+    //     int output_ref_index,
+    //     int value_index,
+    //     bool use_locking,
+    //     bool validate_shape);
+
+    Status AssignUpdateVariable(
+        int var_index,
+        int value_index,
+        void (*updateFunc)(
+            TF_OpKernelContext* ctx,
+            TF_Tensor* tensor,
+            TF_Tensor* value,
+            int Op));
+    Status GetInputTensorFromVariable(
+        int index,
+        bool lock_held,
+        bool is_variant,
+        Tensor* tensor);
+    TF_OpKernelContext* raw() const;
 
   private:
     TF_OpKernelContext* const context_;

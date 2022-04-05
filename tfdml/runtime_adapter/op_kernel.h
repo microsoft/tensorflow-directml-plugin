@@ -18,7 +18,6 @@ limitations under the License.
 #include "absl/types/span.h"
 #include "attribute.h"
 #include "node_def.h"
-#include "tfdml/runtime_adapter/resource_mgr.h"
 #include "types.h"
 
 namespace tfdml

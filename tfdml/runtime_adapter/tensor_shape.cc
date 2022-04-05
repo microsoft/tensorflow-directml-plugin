@@ -19,10 +19,13 @@ limitations under the License.
 #include <numeric>
 
 #include "absl/strings/str_cat.h"
-#include "tensorflow/core/framework/tensor_shape.pb.h"
+#include "tfdml/runtime_adapter/status.h"
+#include "tfdml/runtime_adapter/tensor_shape_utils.h"
 
 namespace tfdml
 {
+TensorShape::TensorShape() : num_elements_(1) {}
+
 TensorShape::TensorShape(std::initializer_list<int64_t> dim_sizes)
     : TensorShape(absl::Span<const int64_t>(dim_sizes))
 {
@@ -38,17 +41,6 @@ TensorShape::TensorShape(absl::InlinedVector<int64_t, 5>&& dim_sizes)
     : dim_sizes_(std::move(dim_sizes))
 {
     UpdateNumElements();
-}
-
-TensorShape::TensorShape(const tensorflow::TensorShapeProto& proto)
-{
-    dim_sizes_.reserve(proto.dim_size());
-
-    for (const auto& d : proto.dim())
-    {
-        dim_sizes_.push_back(d.size());
-        num_elements_ *= d.size();
-    }
 }
 
 bool operator==(const TensorShape& a, const TensorShape& b)
@@ -78,6 +70,21 @@ void TensorShape::RemoveLastDims(int num_dims)
 {
     assert(num_dims <= dim_sizes_.size());
     dim_sizes_.resize(dim_sizes_.size() - num_dims);
+    UpdateNumElements();
+}
+
+void TensorShape::RemoveDim(int index)
+{
+    assert(index >= 0);
+    assert(index <= dim_sizes_.size());
+    dim_sizes_.erase(dim_sizes_.begin() + index);
+    UpdateNumElements();
+}
+
+void TensorShape::Clear()
+{
+    dim_sizes_.clear();
+    num_elements_ = 1;
 }
 
 int64_t TensorShape::dim_size(int dim_index) const
@@ -156,6 +163,46 @@ void TensorShape::UpdateNumElements()
         dim_sizes_.end(),
         1LL,
         std::multiplies<int64_t>());
+}
+
+bool TensorShape::IsSameSize(const TensorShape& other) const
+{
+    if (other.dims() != dims()) return false;
+    for (int d = 0; d < dims(); d++)
+    {
+        if (dim_size(d) != other.dim_size(d)) return false;
+    }
+    return true;
+}
+
+Status TensorShape::AddDimWithStatus(int64_t size)
+{
+    if (size < 0)
+    {
+        return errors::InvalidArgument(
+            "Expected a non-negative size, got ",
+            size);
+    }
+
+    if (dims() >= MaxDimensions())
+    {
+        return errors::InvalidArgument("Too many dimensions in tensor");
+    }
+
+    int64_t new_num_elements = MultiplyWithoutOverflow(num_elements(), size);
+    if (new_num_elements < 0)
+    {
+        return errors::InvalidArgument(
+            "Encountered overflow when multiplying ",
+            num_elements(),
+            " with ",
+            size,
+            ", result: ",
+            new_num_elements);
+    }
+
+    AddDim(size);
+    return Status::OK();
 }
 
 } // namespace tfdml

@@ -31,10 +31,7 @@ from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import random_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test as test_lib
-
-# TODO(yangzihao): Currently matmul autotuning is disabled by default. Use
-# os.environ["TF_MATMUL_AUTOTUNE_ENABLE"] = "1" to enable it.
-
+import dml_test_util
 
 class MatVecTest(test_lib.TestCase):
   """Simple test for matvec, which is sugar on top of matmul."""
@@ -84,7 +81,7 @@ def _GetMatMulTest(a_np_, b_np_, use_static_shape_, **kwargs_):
     # np.matrix(a_np_) * np.matrix(b_np_)
     effective_a_np = _GetTransposedMatrices(a_np_, "a", kwargs_)
     effective_b_np = _GetTransposedMatrices(b_np_, "b", kwargs_)
-    with self.cached_session() as sess, test_util.device(use_gpu):
+    with self.cached_session() as sess, dml_test_util.device(use_gpu):
       if use_static_shape_:
         a = constant_op.constant(effective_a_np)
         b = constant_op.constant(effective_b_np)
@@ -233,8 +230,6 @@ if __name__ == "__main__":
   for use_static_shape in set([True, tf2.enabled()]):
     for dtype in dtypes_to_test:
       if not use_static_shape and (dtype == np.int32 or dtype == np.int64):
-        # TODO(rmlarsen): Re-enable this test when we have fixed the underlying
-        # bug in Windows (b/35935459).
         continue
       for m in sizes:
         for n in sizes:

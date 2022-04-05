@@ -17,12 +17,12 @@
 import time
 
 import numpy as np
-import os
 
 from tensorflow.python.client import session
 from tensorflow.python.eager import context
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
+from tensorflow.python.framework import indexed_slices
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.framework import test_util
@@ -31,9 +31,10 @@ from tensorflow.python.ops import gradients_impl
 from tensorflow.python.ops import resource_variable_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
+import dml_test_util
 
 
-class GatherNdTest(test.TestCase):
+class GatherNdTest(dml_test_util.TestCase):
 
   def _testSimpleDtype(self, dtype):
     with self.cached_session():
@@ -190,7 +191,7 @@ class GatherNdTest(test.TestCase):
     self.assertEqual([10, 10, 20], gather_nd_t.get_shape())
 
   def assertIndexedSlices(self, t):
-    self.assertIsInstance(t, ops.IndexedSlices)
+    self.assertIsInstance(t, indexed_slices.IndexedSlices)
 
   @test_util.run_deprecated_v1
   def testUnknownIndices(self):
@@ -213,9 +214,7 @@ class GatherNdTest(test.TestCase):
         self.evaluate(gather_nd)
 
   def _disabledTestBadIndicesGPU(self):
-    # TODO disabled due to different behavior on GPU and CPU
-    # On GPU the bad indices do not raise error but fetch 0 values
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
     with self.session():
       params = [0, 1, 2]
@@ -237,9 +236,7 @@ class GatherNdTest(test.TestCase):
         self.evaluate(gather_nd)
 
   def _disabledTestBadIndicesWithSlicesGPU(self):
-    # TODO disabled due to different behavior on GPU and CPU
-    # On GPU the bad indices do not raise error but fetch 0 values
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
     with self.session():
       params = [[0, 1, 2]]

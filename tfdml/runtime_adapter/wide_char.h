@@ -45,8 +45,7 @@ inline std::wstring Utf8ToWideChar(const std::string& utf8str)
 
 inline std::string WideCharToUtf8(const std::wstring& wstr)
 {
-    if (wstr.empty())
-        return std::string();
+    if (wstr.empty()) return std::string();
     int size_required = WideCharToMultiByte(
         CP_UTF8,
         0,

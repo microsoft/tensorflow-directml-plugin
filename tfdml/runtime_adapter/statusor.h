@@ -22,7 +22,8 @@ limitations under the License.
 namespace tfdml
 {
 
-template <typename T> class StatusOr
+template <typename T>
+class StatusOr
 {
   public:
     // Constructs a new StatusOr with Status::UNKNOWN status.  This is marked

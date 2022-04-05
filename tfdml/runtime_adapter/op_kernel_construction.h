@@ -16,6 +16,9 @@ limitations under the License.
 #include "attribute.h"
 #include "op_defs.h"
 #include "tensorflow/c/kernels.h"
+#include "tensorflow/c/kernels_experimental.h"
+#include "tfdml/runtime_adapter/mirror_pad_mode.h"
+#include "tfdml/runtime_adapter/padding.h"
 #include "tfdml/runtime_adapter/status.h"
 #include "tfdml/runtime_adapter/tensor.h"
 
@@ -34,7 +37,10 @@ class OpKernelConstruction
         return {name.data, name.len};
     }
 
-    template <typename T> Status GetAttr(const char* attr_name, T* value) const;
+    bool HasAttr(const char* attr_name) const;
+
+    template <typename T>
+    Status GetAttr(const char* attr_name, T* value) const;
 
     template <>
     Status GetAttr<TF_DataType>(const char* attr_name, TF_DataType* value) const
@@ -46,6 +52,38 @@ class OpKernelConstruction
             attr_name,
             value,
             status.raw());
+        return status;
+    }
+
+    template <>
+    Status GetAttr<TensorShape>(const char* attr_name, TensorShape* value) const
+    {
+        CHECK(value != nullptr);
+        Status attr_size_status;
+        int32_t list_size;
+        int32_t num_dims;
+        TF_OpKernelConstruction_GetAttrSize(
+            context_,
+            attr_name,
+            &list_size,
+            &num_dims,
+            attr_size_status.raw());
+
+        if (!attr_size_status.ok())
+        {
+            return attr_size_status;
+        }
+
+        *value = TensorShape(absl::InlinedVector<int64_t, 5>(num_dims));
+
+        Status status;
+        TF_OpKernelConstruction_GetAttrTensorShape(
+            context_,
+            attr_name,
+            value->data(),
+            static_cast<size_t>(num_dims),
+            status.raw());
+
         return status;
     }
 
@@ -75,7 +113,8 @@ class OpKernelConstruction
         return status;
     }
 
-    template <> Status GetAttr<float>(const char* attr_name, float* value) const
+    template <>
+    Status GetAttr<float>(const char* attr_name, float* value) const
     {
         CHECK(value != nullptr);
         Status status;
@@ -87,7 +126,8 @@ class OpKernelConstruction
         return status;
     }
 
-    template <> Status GetAttr<bool>(const char* attr_name, bool* value) const
+    template <>
+    Status GetAttr<bool>(const char* attr_name, bool* value) const
     {
         CHECK(value != nullptr);
         TF_Bool tf_bool_value;
@@ -131,6 +171,39 @@ class OpKernelConstruction
             status.raw());
 
         return status;
+    }
+
+    template <>
+    Status GetAttr<Padding>(const char* attr_name, Padding* value) const
+    {
+        CHECK(value != nullptr);
+
+        std::string padding_string;
+        Status status = GetAttr(attr_name, &padding_string);
+
+        if (!status.ok())
+        {
+            return status;
+        }
+
+        return GetPaddingFromString(padding_string, value);
+    }
+
+    template <>
+    Status GetAttr<MirrorPadMode>(const char* attr_name, MirrorPadMode* value)
+        const
+    {
+        CHECK(value != nullptr);
+
+        std::string padding_string;
+        Status status = GetAttr(attr_name, &padding_string);
+
+        if (!status.ok())
+        {
+            return status;
+        }
+
+        return GetMirrorPaddingFromString(padding_string, value);
     }
 
     template <>
@@ -367,5 +440,9 @@ class OpKernelConstruction
   private:
     TF_OpKernelConstruction* const context_;
     Status status_;
+
+    static Status GetPaddingFromString(
+        absl::string_view str_value,
+        Padding* value);
 };
 } // namespace tfdml

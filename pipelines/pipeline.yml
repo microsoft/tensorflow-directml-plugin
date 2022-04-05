@@ -15,6 +15,13 @@ parameters:
   type: boolean
   default: false
 
+# Uploads artifacts to blob storage to be ushered to network share. Generally this should only be enabled for main
+# and release branches.
+- name: blobStorageDropEnabled
+  displayName: Submit artifacts to blob storage
+  type: boolean
+  default: false # NOTE: scheduled runs on main/release branches will implicitly set this to true
+
 - name: buildArtifacts
   displayName: Build Artifacts
   type: object
@@ -28,10 +35,59 @@ parameters:
   - x64-linux-release-cp38
   - x64-linux-release-cp39
 
+- name: enableTelemetry
+  displayName: Enable Telemetry
+  type: boolean
+  default: false
+
+- name: testArtifacts
+  displayName: Test Artifacts
+  type: object
+  default: [x64-win-release-cp37, x64-linux-release-cp37]
+
+- name: testGroups
+  displayName: Test Groups
+  type: object
+  default: [ops, plugin]
+
+- name: testTensorflowPackage
+  displayName: TensorFlow Package Version
+  type: string
+  default: tf-nightly-cpu==2.9.0.dev20220316
+
+- name: testKerasPackage
+  displayName: TensorFlow Package Version
+  type: string
+  default: keras-nightly==2.9.0.dev20220308
+
+- name: enableTests
+  displayName: Enable Tests
+  type: boolean
+  default: true
+
 - name: emailTo
   displayName: Email Results To
   type: string
   default: $(emailTo) # the default is stored in the pipeline as a variable
+
+- name: telemetryProviderGroupGuid
+  displayName: Telemetry Provider Group GUID
+  type: string
+  default: $(telemetryProviderGroupGuid) # the default is stored in the pipeline as a variable
+
+# CAREFUL: remember that variables are always string to string mappings. Unlike boolean-typed 
+# parameters, they must be compared to 'True' or 'False' in expressions or they will be 
+# implicitly cast: empty string -> false, any other string -> true.
+#
+# Variables with the same name as a parameter should always be preferred: this is to work around
+# the limitation that default parameter values cannot use expressions.
+variables:
+  isScheduledRun: ${{eq(variables['Build.Reason'], 'schedule')}}
+  isMainBranch: ${{eq(variables['Build.SourceBranch'], 'refs/heads/main')}}
+  isReleaseBranch: ${{startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')}}
+  isMainOrReleaseBranch: ${{or(eq(variables.isMainBranch, 'True'), eq(variables.isReleaseBranch, 'True'))}}
+  isScheduledRunOnMainOrReleaseBranch: ${{and(eq(variables.isScheduledRun, 'True'), eq(variables.isMainOrReleaseBranch, 'True'))}}
+  blobStorageDropEnabled: ${{or(parameters.blobStorageDropEnabled, eq(variables.isScheduledRunOnMainOrReleaseBranch, 'True'))}}
 
 # For building manylinux2010-compliant Linux wheels:
 # resources:
@@ -48,10 +104,29 @@ stages:
       parameters:
         artifact: ${{artifact}}
         releaseBuild: ${{parameters.releaseBuild}}
+        telemetryProviderGroupGuid: ${{parameters.telemetryProviderGroupGuid}}
+        enableTelemetry: ${{parameters.enableTelemetry}}
+        ${{if and(contains(artifact, 'x64-win-release'),eq(variables.blobStorageDropEnabled, 'True'))}}:
+          addToBlobStorage: true
+
+- ${{if parameters.enableTests}}:
+  - stage: testStage
+    displayName: Test
+    dependsOn: buildStage
+    jobs:
+    - template: test.yml
+      parameters:
+        testGroups: ${{parameters.testGroups}}
+        artifacts: ${{parameters.testArtifacts}}
+        tensorflowPackage: ${{parameters.testTensorflowPackage}}
+        kerasPackage: ${{parameters.testKerasPackage}}
 
 - stage: reportStage
   displayName: Report Results
-  dependsOn: [buildStage]
+  ${{if parameters.enableTests}}:
+    dependsOn: [buildStage, testStage]
+  ${{if not(parameters.enableTests)}}:
+    dependsOn: [buildStage]
   condition: succeededOrFailed()
   pool: DirectML_TF2_Windows_Pool
   jobs:

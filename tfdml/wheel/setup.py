@@ -24,14 +24,17 @@ DOCLINES = __doc__.split('\n')
 # For pip, we will remove all '-' characters from this string, and use the
 # result for pip.
 # Also update tfdml/tfdml.bzl
-_VERSION = '0.0.1'
+_VERSION = '0.0.0'
+with open('TFDML_WHEEL_VERSION', 'r') as f:
+  _VERSION = f.read()
+
 # this path can't be modified.
 _PLUGIN_LIB_PATH = 'tensorflow-plugins'
 _MY_PLUGIN_PATH = 'tensorflow-directml-plugin'
 
-# The plugin should be compatible with any version of TF >= 2.7; however, 
-# this cannot be expressed as a dependency since there are different package 
-# names: tensorflow, tensorflow-cpu, tf-nightly, etc.
+# The plugin should be compatible with any version of TF >= 2.9.0.dev20220316;
+# however, this cannot be expressed as a dependency since there are different
+# package names: tensorflow, tensorflow-cpu, tf-nightly, etc.
 REQUIRED_PACKAGES = []
 
 if sys.byteorder == 'little':
@@ -41,7 +44,9 @@ if sys.byteorder == 'little':
   REQUIRED_PACKAGES.append('grpcio >= 1.8.6')
 
 # The wheel package name, change it as your requirements
-project_name = 'tensorflow-directml-plugin'
+project_name = ''
+with open('TFDML_WHEEL_NAME', 'r') as f:
+  project_name = f.read()
 
 # python3 requires wheel 0.26
 if sys.version_info.major == 3:

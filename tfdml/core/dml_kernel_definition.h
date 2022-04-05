@@ -22,6 +22,7 @@ limitations under the License.
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/c/tf_datatype.h"
 #include "tfdml/core/dml_ops_common.h"
+#include "tfdml/core/dml_tracing.h"
 #include "tfdml/runtime_adapter/macros.h"
 #include "tfdml/runtime_adapter/node_def.h"
 #include "tfdml/runtime_adapter/op_defs.h"
@@ -36,7 +37,8 @@ namespace tfdml
 {
 
 // Type that contains zero or more op arguments.
-template <typename Op, typename Op::Argument...> struct OpArgumentList;
+template <typename Op, typename Op::Argument...>
+struct OpArgumentList;
 
 // Type that describes a data-type constraint imposed on an op attribute.
 template <typename Op, typename Op::Attribute Attribute, TF_DataType DataType>
@@ -75,7 +77,7 @@ struct OpTypeConstraintList;
 //
 // KernelDefinition<ops::AssignVariableOp, DmlAssignVariableOp>
 //    ::WithTypeConstraint<ops::AssignVariableOp::Attribute::dtype, TF_FLOAT>
-//    ::WithHostMemoryArgument<ops::AssignVariableOp::Argument::resource>
+//    ::WithHostMemoryArguments<ops::AssignVariableOp::Argument::resource>
 //    ::Register();
 template <
     typename Op,
@@ -124,15 +126,15 @@ class KernelDefinition<
             OpTypeConstraint<Op, A, Type>>,
         OpArgumentList<Op, HostArguments...>>;
 
-    // Extend the kernel registration type with an additional host-memory
-    // argument.
-    template <typename Op::Argument HostArg>
-    using WithHostMemoryArgument = KernelDefinition<
+    // Extend the kernel registration type with additional host-memory
+    // arguments.
+    template <typename Op::Argument... NewHostArgs>
+    using WithHostMemoryArguments = KernelDefinition<
         Op,
         Kernel,
         PriorityValue,
         OpTypeConstraintList<Op, TypeConstraints...>,
-        OpArgumentList<Op, HostArguments..., HostArg>>;
+        OpArgumentList<Op, HostArguments..., NewHostArgs...>>;
 
     static void Register()
     {
@@ -198,6 +200,10 @@ class KernelDefinition<
         Kernel* concrete_kernel = static_cast<Kernel*>(kernel);
         OpKernelContext ctx(raw_ctx, concrete_kernel);
         concrete_kernel->Compute(&ctx);
+
+#ifdef DIRECTML_ENABLE_TELEMETRY
+        DmlTracing::Instance().LogKernelComputeTelemetry(Op::name);
+#endif
     }
 
     static void DeleteKernel(void* kernel)

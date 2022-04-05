@@ -116,9 +116,32 @@ DmlKernelContext::DmlKernelContext(
     output_tensors_.reserve(output_shapes.size());
     for (int i = 0; i < static_cast<int>(output_shapes.size()); ++i)
     {
-        auto status_or_tensor = op_ctx_->allocate_output(i, output_shapes[i]);
-        OP_REQUIRES_OK(op_ctx_, status_or_tensor.status());
-        output_tensors_.push_back(status_or_tensor.ConsumeValueOrDie());
+        if (i < output_refs_forwarding.size() &&
+            output_refs_forwarding[i].has_value())
+        {
+            constexpr bool lock_held = true;
+            constexpr bool is_variant = false;
+            op_ctx->forward_ref_input_to_ref_output(
+                *output_refs_forwarding[i],
+                i);
+
+            Tensor output_tensor;
+            OP_REQUIRES_OK(
+                op_ctx_,
+                op_ctx->GetInputTensorFromVariable(
+                    i,
+                    lock_held,
+                    is_variant,
+                    &output_tensor));
+            output_tensors_.push_back(std::move(output_tensor));
+        }
+        else
+        {
+            auto status_or_tensor =
+                op_ctx_->allocate_output(i, output_shapes[i]);
+            OP_REQUIRES_OK(op_ctx_, status_or_tensor.status());
+            output_tensors_.push_back(status_or_tensor.ConsumeValueOrDie());
+        }
     }
 }
 

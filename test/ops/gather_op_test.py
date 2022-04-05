@@ -23,6 +23,7 @@ from tensorflow.python.eager import def_function
 from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import errors
+from tensorflow.python.framework import indexed_slices
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_spec
 from tensorflow.python.framework import test_util
@@ -33,11 +34,9 @@ from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import resource_variable_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
+import dml_test_util
 
-_TEST_TYPES = (dtypes.int64, dtypes.float32,
-               dtypes.complex64, dtypes.complex128)
-
-# TODO(virimia): Add a benchmark for gather_v2, with batch_dims and axis set.
+_TEST_TYPES = (dtypes.int64, dtypes.float32,)
 
 
 def _to_str_elements(values):
@@ -48,7 +47,7 @@ def _to_str_elements(values):
     return str(values).encode("utf-8")
 
 
-class GatherTest(test.TestCase, parameterized.TestCase):
+class GatherTest(dml_test_util.TestCase, parameterized.TestCase):
 
   def _buildParams(self, data, dtype):
     data = data.astype(dtype.as_numpy_dtype)
@@ -154,7 +153,8 @@ class GatherTest(test.TestCase, parameterized.TestCase):
               # For axis 0, we are able to create an efficient IndexedSlices for
               # the gradient.
               if axis == 0:
-                self.assertEqual(type(params_grad), ops.IndexedSlices)
+                self.assertEqual(
+                    type(params_grad), indexed_slices.IndexedSlices)
                 params_grad = ops.convert_to_tensor(params_grad)
               correct_params_grad = np.zeros(shape).astype(dtype.as_numpy_dtype)
               outer_dims = axis
@@ -223,7 +223,7 @@ class GatherTest(test.TestCase, parameterized.TestCase):
             # For axis 0, we are able to create an efficient IndexedSlices for
             # the gradient.
             if axis == 0:
-              self.assertEqual(type(params_grad), ops.IndexedSlices)
+              self.assertEqual(type(params_grad), indexed_slices.IndexedSlices)
               params_grad = ops.convert_to_tensor(params_grad)
             correct_params_grad = np.zeros(shape).astype(dtype.as_numpy_dtype)
             outer_dims = axis
@@ -284,7 +284,7 @@ class GatherTest(test.TestCase, parameterized.TestCase):
   def testBadIndicesType(self):
     with self.assertRaisesRegex(
         (TypeError, errors.InvalidArgumentError),
-        "float.* not in.* list of allowed values: int32, int64"):
+        "float.* not in.* list of allowed values: int16, int32, int64"):
       self.evaluate(array_ops.gather([0], 0.))
 
   @test_util.disable_xla(
@@ -300,9 +300,7 @@ class GatherTest(test.TestCase, parameterized.TestCase):
         self.evaluate(array_ops.gather(params, [[7]], axis=1))
 
   def _disabledTestBadIndicesGPU(self):
-    # TODO disabled due to different behavior on GPU and CPU
-    # On GPU the bad indices do not raise error but fetch 0 values
-    if not test.is_gpu_available():
+    if not dml_test_util.is_gpu_available():
       return
     with self.session():
       params = [[0, 1, 2], [3, 4, 5]]
@@ -326,20 +324,10 @@ class GatherTest(test.TestCase, parameterized.TestCase):
     def gather_shape_inf_disabled(x, indices, axis):
       return array_ops.gather(x, indices, axis=axis)
 
-    @def_function.function(
-        autograph=False,
-        jit_compile=True,
-        input_signature=[
-            tensor_spec.TensorSpec(shape=None, dtype=dtypes.int32)
-        ] * 3)
-    def xla_gather(x, indices, axis):
-      return array_ops.gather(x, indices, axis=axis)
-
     params = [0, 1, 2]
     indices = 0
     functions = [("array_ops.gather", array_ops.gather), ("gather", gather),
-                 ("gather_shape_inf_disabled", gather_shape_inf_disabled),
-                 ("xla_gather", xla_gather)]
+                 ("gather_shape_inf_disabled", gather_shape_inf_disabled)]
     for bad_axis in (1, 2, -2):
       for fn_name, fn in functions:
         # Shape inference can validate axis for known params rank.

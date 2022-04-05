@@ -41,8 +41,10 @@ class MatMulInitHelper : public InitializationHelper
         std::shared_ptr<const Attributes> attr)
         : attr_(attr)
     {
-        const TensorShape& a_shape = ctx->input(0).shape();
-        const TensorShape& b_shape = ctx->input(1).shape();
+        const Tensor a = ctx->input(0);
+        const Tensor b = ctx->input(1);
+        const TensorShape& a_shape = a.shape();
+        const TensorShape& b_shape = b.shape();
 
         OP_REQUIRES(
             ctx,
@@ -100,8 +102,10 @@ class BaseBatchMatMulInitHelper : public InitializationHelper
             ValidateInputTensors)
         : attr_(attr)
     {
-        const TensorShape& in0_shape = ctx->input(0).shape();
-        const TensorShape& in1_shape = ctx->input(1).shape();
+        const Tensor in0 = ctx->input(0);
+        const Tensor in1 = ctx->input(1);
+        const TensorShape& in0_shape = in0.shape();
+        const TensorShape& in1_shape = in1.shape();
         ValidateInputTensors(ctx, in0_shape, in1_shape);
 
         TensorShape in0_batches_shape;
@@ -142,10 +146,8 @@ class BaseBatchMatMulInitHelper : public InitializationHelper
         collapsed_in1_shape_.AddDim(in1_rows);
         collapsed_in1_shape_.AddDim(in1_cols);
 
-        if (attr->adj_x)
-            std::swap(in0_rows, in0_cols);
-        if (attr->adj_y)
-            std::swap(in1_rows, in1_cols);
+        if (attr->adj_x) std::swap(in0_rows, in0_cols);
+        if (attr->adj_y) std::swap(in1_rows, in1_cols);
 
         collapsed_output_shape_ = BCast::ToShape(batches_bcast.output_shape());
         collapsed_output_shape_.AddDim(in0_rows);
@@ -294,17 +296,15 @@ class MatMulShapeHelper : public ShapeHelper
         OpKernelContext* ctx,
         const InitializationHelper* initialization_helper) const override
     {
-        const TensorShape& a_shape = ctx->input(0).shape();
-        const TensorShape& b_shape = ctx->input(1).shape();
+        const Tensor a = ctx->input(0);
+        const Tensor b = ctx->input(1);
 
         auto init_helper =
             static_cast<const MatMulInitHelper*>(initialization_helper);
 
         TensorShape out_shape = {
-            !init_helper->TransposeA() ? a_shape.dim_size(0)
-                                       : a_shape.dim_size(1),
-            !init_helper->TransposeB() ? b_shape.dim_size(1)
-                                       : b_shape.dim_size(0)};
+            !init_helper->TransposeA() ? a.dim_size(0) : a.dim_size(1),
+            !init_helper->TransposeB() ? b.dim_size(1) : b.dim_size(0)};
 
         return {out_shape};
     }
@@ -321,8 +321,8 @@ class BatchMatMulShapeHelper : public ShapeHelper
         auto init_helper =
             static_cast<const TInitHelper*>(initialization_helper);
 
-        const Tensor& in0 = ctx->input(0);
-        const Tensor& in1 = ctx->input(1);
+        const Tensor in0 = ctx->input(0);
+        const Tensor in1 = ctx->input(1);
         auto in0_rows = in0.dim_size(in0.dims() - 2);
         auto in0_cols = in0.dim_size(in0.dims() - 1);
         auto in1_rows = in1.dim_size(in1.dims() - 2);
@@ -391,7 +391,8 @@ class DmlMatMulKernel : public DmlKernel
     }
 };
 
-template <typename TInitHelper> class DmlBatchMatMulKernel : public DmlKernel
+template <typename TInitHelper>
+class DmlBatchMatMulKernel : public DmlKernel
 {
   public:
     using InitHelper = TInitHelper;

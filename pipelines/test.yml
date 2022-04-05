@@ -1,0 +1,246 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+parameters:
+- name: agentPool
+  type: string
+  default: DirectML
+- name: artifacts
+  type: object
+  default: []
+- name: testGroups
+  type: object
+  default: []
+- name: resultsArtifactName
+  type: string
+  default: test
+- name: tensorflowPackage
+  type: string
+  default: tf-nightly-cpu==2.9.0.dev20220316
+- name: kerasPackage
+  type: string
+  default: keras-nightly==2.9.0.dev2022010508
+- name: pluginBuildPipeline
+  type: string
+  default: current
+
+jobs:
+#-------------------------------------------------------------------------------------------------------------------
+# Create Test Matrix
+#-------------------------------------------------------------------------------------------------------------------
+- job: createTestMatrix
+  displayName: Create Test Matrix
+  pool: ${{parameters.agentPool}}
+  steps:
+  - task: PowerShell@2
+    inputs:
+      targetType: filePath
+      filePath: pipelines/create_test_matrix.ps1
+      arguments: >
+        -AccessToken "$(accessToken)"
+        -AgentPoolNames ${{join(', ', parameters.agentPool)}}
+        -Artifacts ${{join(', ', parameters.artifacts)}}
+        -TestGroups ${{join(', ', parameters.testGroups)}}
+        -OutputFilePath "$(System.ArtifactsDirectory)/matrix.json"
+        -OutputVariableName "testMatrix"
+    name: matrix
+    displayName: Create Test Matrix
+
+  - task: PublishBuildArtifacts@1
+    displayName: Upload Test Matrix
+    inputs:
+      pathToPublish: "$(System.ArtifactsDirectory)/matrix.json"
+      artifactName: ${{parameters.resultsArtifactName}}
+
+#-------------------------------------------------------------------------------------------------------------------
+# Test
+#-------------------------------------------------------------------------------------------------------------------
+- job: test
+  dependsOn: createTestMatrix
+  displayName: Test
+  strategy:
+    matrix: $[dependencies.createTestMatrix.outputs['matrix.testMatrix']]
+  pool:
+    name: $(agentPool)
+    demands:
+    - agent.name -equals $(agentName)
+  timeoutInMinutes: 120
+  cancelTimeoutInMinutes: 1
+  continueOnError: true
+  variables:
+    ${{if eq(parameters.pluginBuildPipeline, 'current')}}:
+      buildArtifactsPathRoot: $(Pipeline.Workspace)
+    ${{if ne(parameters.pluginBuildPipeline, 'current')}}:
+      buildArtifactsPathRoot: $(Pipeline.Workspace)/pluginBuild
+  workspace:
+    clean: all
+  steps:
+  - task: PowerShell@2
+    name: vars
+    displayName: Initialize Variables
+    inputs:
+      targetType: inline
+      script: |
+        foreach ($Artifact in ("${{join(',',parameters.artifacts)}}" -split ','))
+        {
+            # Extracts test groups for each artifact from the full list of test configurations. Example:
+            # agentTestConfigs = 'x64-release:a, x64-release:b, x86-release:c, x86-release:d'
+            # 'vars.x64_release_testGroups' = 'a,b'
+            # 'vars.x86_release_testGroups' = 'c,d'
+            $VariableName = "$($Artifact -replace '-','_')_testGroups"
+            $TestGroups = ((("$(agentTestConfigs)" -split ',') -match "^${Artifact}") -replace "^${Artifact}:") -join ','
+            Write-Host "'$VariableName': '$TestGroups'"
+            Write-Host "##vso[task.setVariable variable=$VariableName;isOutput=true]$TestGroups"
+
+            $VariableName = "$($Artifact -replace '-','_')_runOnWsl"
+            $RunOnWsl = $Artifact -match 'linux'
+            Write-Host "'$VariableName': '`$$RunOnWsl'"
+            Write-Host "##vso[task.setVariable variable=$VariableName;isOutput=true]`$$RunOnWsl"
+        }
+
+  - task: PowerShell@2
+    displayName: Gather Agent Info
+    inputs:
+      targetType: inline
+      script: |
+        $OutputDir = "$(System.ArtifactsDirectory)/agent_info/$(agentName)"
+        New-Item -ItemType Directory -Path $OutputDir | Out-Null
+        Start-Process dxdiag -ArgumentList "/x $OutputDir/dxdiag.xml" -Wait
+        $EnvironmentVariables = @{}
+        Get-ChildItem "env:" | ForEach-Object { $EnvironmentVariables[$_.Name] = $_.Value }
+        $EnvironmentVariables | ConvertTo-Json | Out-File "$OutputDir\environment_vars.json" -Encoding utf8
+
+  - task: PublishBuildArtifacts@1
+    displayName: Upload Agent Info
+    inputs:
+      pathToPublish: $(System.ArtifactsDirectory)/agent_info
+      artifactName: ${{parameters.resultsArtifactName}}
+
+  - ${{each artifact in parameters.artifacts}}:
+    - download: ${{parameters.pluginBuildPipeline}}
+      artifact: ${{artifact}}
+      displayName: Download ${{artifact}}
+      condition: contains(variables.agentTestConfigs, '${{artifact}}')
+
+    - ${{if contains(artifact, '-linux-') }}:
+      - task: PowerShell@2
+        displayName: Setup ${{artifact}}
+        name: test_env_linux
+        condition: contains(variables.agentTestConfigs, '${{artifact}}')
+        inputs:
+          targetType: inline
+          script: |
+            $ScriptPath = "$(Build.SourcesDirectory)/pipelines/create_test_env.sh" -replace '\\','/'
+            $ScriptPathWsl = wsl wslpath -a $ScriptPath
+            $TestArtifactPath = "$(buildArtifactsPathRoot)/${{artifact}}" -replace '\\','/'
+            $TestArtifactPathWsl = wsl wslpath -a $TestArtifactPath
+            wsl bash $ScriptPathWsl $TestArtifactPathWsl ${{parameters.tensorflowPackage}} ${{parameters.kerasPackage}}
+
+      - task: PowerShell@2
+        displayName: Test ${{artifact}}
+        condition: contains(variables.agentTestConfigs, '${{artifact}}')
+        inputs:
+          targetType: inline
+          script: |
+            $ScriptPath = "$(Build.SourcesDirectory)/test/test.py" -replace '\\','/'
+            $ScriptPathWsl = wsl wslpath -a $ScriptPath
+
+            # Results are written to Linux filesystem ($ResultsDirLinux) and copied to Windows ($ResultsDirWin)
+            $ResultsDirLinux = "/tmp/tfdml_plugin_pipeline/results/$(agentName)/${{artifact}}"
+            $ResultsDirWin = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}" -replace '\\','/'
+            $ResultsDirWinWsl = wsl wslpath -a $ResultsDirWin
+            New-Item -ItemType Directory $ResultsDirWin -Force | Out-Null
+
+            cmd /c "wsl $(test_env_linux.activateCommand); python $ScriptPathWsl --run --summarize --redirect_output --results_dir $ResultsDirLinux --groups ${{join(' ', parameters.testGroups)}}"
+            wsl cp -r $ResultsDirLinux/* $ResultsDirWinWsl
+
+    - ${{if contains(artifact, '-win-') }}:
+      - task: PowerShell@2
+        displayName: Setup ${{artifact}}
+        name: test_env_win
+        condition: contains(variables.agentTestConfigs, '${{artifact}}')
+        inputs:
+          targetType: filePath
+          filePath: pipelines/create_test_env.ps1
+          arguments: >
+            -TestArtifactPath $(buildArtifactsPathRoot)/${{artifact}}
+            -TensorFlowPackage ${{parameters.tensorflowPackage}}
+            -KerasPackage ${{parameters.kerasPackage}}
+
+      - task: PowerShell@2
+        displayName: Test ${{artifact}}
+        condition: contains(variables.agentTestConfigs, '${{artifact}}')
+        inputs:
+          targetType: inline
+          script: |
+            Invoke-Expression '$(test_env_win.activateCommand)'
+            $ResultsDir = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}"
+            python $(Build.SourcesDirectory)/test/test.py --run --summarize --redirect_output --results_dir $ResultsDir --groups ${{join(' ', parameters.testGroups)}}
+
+    - task: PublishBuildArtifacts@1
+      displayName: Publish ${{artifact}}
+      condition: contains(variables.agentTestConfigs, '${{artifact}}')
+      inputs:
+        pathToPublish: $(System.ArtifactsDirectory)/results
+        artifactName: ${{parameters.resultsArtifactName}}
+
+#-------------------------------------------------------------------------------------------------------------------
+# Summarize Results
+#-------------------------------------------------------------------------------------------------------------------
+- job: summarize
+  displayName: Summarize Results
+  dependsOn: test
+  pool: ${{parameters.agentPool}}
+  timeoutInMinutes: 30
+  condition: succeededOrFailed()
+  continueOnError: true
+  variables:
+    testArtifactsPath: $(System.ArtifactsDirectory)/${{parameters.resultsArtifactName}}
+    testSummariesPath: $(System.ArtifactsDirectory)/summaries
+  workspace:
+    clean: all
+  steps:
+  - checkout: self
+    fetchDepth: 1
+
+  - task: DownloadBuildArtifacts@0
+    displayName: Download Test Results
+    inputs:
+      buildType: current
+      artifactName: ${{parameters.resultsArtifactName}}
+
+  - task: PowerShell@2
+    displayName: Create Test Summary (JSON)
+    inputs:
+      targetType: filePath
+      filePath: pipelines/create_test_summary_json.ps1
+      arguments: -TestArtifactsPath $(testArtifactsPath) -OutputPath $(testSummariesPath)/test_summary.json
+
+  - task: PowerShell@2
+    displayName: Create Test Summary (XML)
+    inputs:
+      targetType: filePath
+      filePath: pipelines/create_test_summary_xml.ps1
+      arguments: -TestArtifactsPath $(testArtifactsPath) -OutputPath $(testSummariesPath)/test_summary.xml
+
+  - task: PowerShell@2
+    displayName: Create Agent Summary
+    inputs:
+      targetType: filePath
+      filePath: pipelines/create_agent_summary.ps1
+      arguments: -TestArtifactsPath $(testArtifactsPath) -OutputPath $(testSummariesPath)/agent_summary.json
+
+  - task: PublishBuildArtifacts@1
+    displayName: Upload Summaries
+    inputs:
+      pathToPublish: $(testSummariesPath)
+      artifactName: ${{parameters.resultsArtifactName}}
+
+  - task: PublishTestResults@2
+    displayName: Publish Test Results
+    inputs:
+      testResultsFormat: XUnit
+      testResultsFiles: test_summary.xml
+      searchFolder: $(testSummariesPath)
+      mergeTestResults: true
+      testRunTitle: 'test.$(Build.BuildNumber)'

@@ -88,7 +88,8 @@ class DmlTensorDesc
         TF_DataType data_type,
         const TensorShape& shape,
         const TensorShape& non_broadcast_shape,
-        uint32_t guaranteed_base_offset_alignment = 0);
+        uint32_t guaranteed_base_offset_alignment = 0,
+        bool add_leading_dimensions = true);
 
     // Same as above, but takes shapes as a span of uint32_t instead of
     // TensorShape.
@@ -96,7 +97,8 @@ class DmlTensorDesc
         TF_DataType data_type,
         absl::Span<const uint32_t> dimensions,
         absl::Span<const uint32_t> non_broadcast_dimensions,
-        uint32_t guaranteed_base_offset_alignment = 0);
+        uint32_t guaranteed_base_offset_alignment = 0,
+        bool add_leading_dimensions = true);
 
     DML_TENSOR_DESC GetDmlDesc();
 

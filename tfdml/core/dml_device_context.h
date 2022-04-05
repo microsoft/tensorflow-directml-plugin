@@ -23,6 +23,8 @@ limitations under the License.
 #include "tfdml/runtime_adapter/tensor.h"
 
 struct SP_DeviceMemoryBase;
+struct TF_OpKernelContext;
+struct TF_Tensor;
 
 namespace tfdml
 {
@@ -127,11 +129,18 @@ class DMLDeviceContext
     // When the returned object is destructed, the memory is freed back to the
     // pool.
     DmlBuffer AllocateDefaultBuffer(
-        OpKernelContext* op_kernel_context,
+        TF_OpKernelContext* op_kernel_context,
         uint64_t num_bytes) const;
 
     // Retrives the D3D12 default heap buffer backing the specified tensor.
     D3D12BufferRegion GetBufferForTensor(const Tensor& tensor) const;
+    D3D12BufferRegion GetBufferForTensor(const TF_Tensor* tensor) const;
+
+    // Retrives the D3D12 default heap buffer backing the specified device
+    // memory.
+    D3D12BufferRegion GetBufferForDeviceMemory(
+        const SP_DeviceMemoryBase* data,
+        uint64_t size_in_bytes);
 
     // Allocates a range of D3D12 descriptors at least size_in_descriptors
     // large. When the returned object is destructed, the descriptors are freed

@@ -16,6 +16,7 @@ limitations under the License.
 
 #include "absl/cleanup/cleanup.h"
 #include "tfdml/kernels/pch.h"
+#include "tfdml/runtime_adapter/variable_lock.h"
 
 namespace tfdml
 {
@@ -29,21 +30,26 @@ class GatherNdInitHelper : public InitializationHelper
     explicit GatherNdInitHelper(
         OpKernelContext* ctx,
         std::shared_ptr<const Attributes> attr)
+        : var_lock_(ctx)
     {
         if (ctx->input(0).dtype() == TF_RESOURCE)
         {
+            constexpr int lock_indices[1] = {0};
+            var_lock_.LockShared(lock_indices);
+            constexpr bool exclusive_lock = false;
+            constexpr bool is_variant = false;
+            variable_tensor_.emplace();
             OP_REQUIRES_OK(
                 ctx,
-                LookupResource(
-                    ctx,
-                    HandleFromInput(ctx, 0),
-                    &params_resource_));
-            params_resource_->mu()->lock_shared();
-            locked_ = true;
+                ctx->GetInputTensorFromVariable(
+                    0,
+                    exclusive_lock,
+                    is_variant,
+                    &*variable_tensor_));
         }
 
         const Tensor params = GetParamsTensor(ctx);
-        const Tensor& indices = ctx->input(1);
+        const Tensor indices = ctx->input(1);
 
         OP_REQUIRES(
             ctx,
@@ -149,7 +155,7 @@ class GatherNdInitHelper : public InitializationHelper
         absl::Span<const TensorShape> output_shapes) const final
     {
         const Tensor params = GetParamsTensor(ctx);
-        const Tensor& indices = ctx->input(1);
+        const Tensor indices = ctx->input(1);
 
         int64_t indices_leading_dims = 1;
         for (int i = 0; i < indices.dims() - 1; ++i)
@@ -171,22 +177,14 @@ class GatherNdInitHelper : public InitializationHelper
 
     Tensor GetParamsTensor(OpKernelContext* ctx) const
     {
-        if (ctx->input(0).dtype() == TF_RESOURCE)
-        {
-            return *params_resource_->tensor();
-        }
-        else
-        {
-            return ctx->input(0);
-        }
+        return variable_tensor_ ? *variable_tensor_ : ctx->input(0);
     }
 
     void Unlock() const
     {
-        if (params_resource_ && locked_)
+        if (variable_tensor_)
         {
-            params_resource_->mu()->unlock_shared();
-            locked_ = false;
+            var_lock_.Unlock();
         }
     }
 
@@ -194,11 +192,12 @@ class GatherNdInitHelper : public InitializationHelper
 
   private:
     TensorShape output_shape_;
-    RefCountPtr<Var> params_resource_;
-    mutable bool locked_ = false;
+    absl::optional<Tensor> variable_tensor_;
+    mutable VariableLock var_lock_;
 };
 
-template <typename TIndex> class GatherNdShapeHelper : public ShapeHelper
+template <typename TIndex>
+class GatherNdShapeHelper : public ShapeHelper
 {
   public:
     std::vector<TensorShape> GetOutputShapes(
@@ -212,7 +211,8 @@ template <typename TIndex> class GatherNdShapeHelper : public ShapeHelper
     }
 };
 
-template <typename TIndex> class DmlGatherNdKernel : public DmlKernel
+template <typename TIndex>
+class DmlGatherNdKernel : public DmlKernel
 {
   public:
     using InitHelper = GatherNdInitHelper<TIndex>;
@@ -416,24 +416,24 @@ using K = typename KernelDefinition<Op, DmlKernelWrapper<DmlGatherNdKernel<TInde
     ::template WithTypeConstraint<Op::Attribute::Tindices, DataTypeToEnum<TIndex>()>;
 // clang-format on
 
-template <TF_DataType T, TF_DataType... Ts> void RegisterGatherNd()
+template <TF_DataType T, TF_DataType... Ts>
+void RegisterGatherNd()
 {
     using Op = ops::GatherNd;
     K<Op, Op::Attribute::Tparams, T, int32_t>::Register();
     K<Op, Op::Attribute::Tparams, T, int64_t>::Register();
-    if constexpr (sizeof...(Ts) > 0)
-        RegisterGatherNd<Ts...>();
+    if constexpr (sizeof...(Ts) > 0) RegisterGatherNd<Ts...>();
 }
 
-template <TF_DataType T, TF_DataType... Ts> void RegisterResourceGatherNd()
+template <TF_DataType T, TF_DataType... Ts>
+void RegisterResourceGatherNd()
 {
     using Op = ops::ResourceGatherNd;
-    K<Op, Op::Attribute::dtype, T, int32_t>::template WithHostMemoryArgument<
+    K<Op, Op::Attribute::dtype, T, int32_t>::template WithHostMemoryArguments<
         Op::Argument::resource>::Register();
-    K<Op, Op::Attribute::dtype, T, int64_t>::template WithHostMemoryArgument<
+    K<Op, Op::Attribute::dtype, T, int64_t>::template WithHostMemoryArguments<
         Op::Argument::resource>::Register();
-    if constexpr (sizeof...(Ts) > 0)
-        RegisterResourceGatherNd<Ts...>();
+    if constexpr (sizeof...(Ts) > 0) RegisterResourceGatherNd<Ts...>();
 }
 
 void RegisterKernels_GatherNd()

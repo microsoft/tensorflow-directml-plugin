@@ -15,9 +15,14 @@ limitations under the License.
 #include "tensorflow/c/experimental/grappler/grappler.h"
 #include "tensorflow/c/tf_status.h"
 #include "tfdml/optimizer/dml_graph_optimizer.h"
+#include <iostream>
+
+#pragma warning(push)
+#pragma warning(disable : 4273)
 
 void TF_InitGraph(TP_OptimizerRegistrationParams* params, TF_Status* status)
 {
+    printf("*************LALALALALA\n");
     params->struct_size = TP_OPTIMIZER_REGISTRATION_PARAMS_STRUCT_SIZE;
     params->device_type = "DML";
     params->optimizer_configs->struct_size = TP_OPTIMIZER_CONFIGS_STRUCT_SIZE;
@@ -27,3 +32,5 @@ void TF_InitGraph(TP_OptimizerRegistrationParams* params, TF_Status* status)
     params->optimizer->struct_size = TP_OPTIMIZER_STRUCT_SIZE;
     params->optimizer->optimize_func = tfdml::OptimizeGraph;
 }
+
+#pragma warning(pop)

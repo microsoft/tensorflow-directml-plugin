@@ -31,6 +31,7 @@ limitations under the License.
 #include "tfdml/core/dml_device.h"
 #include "tfdml/core/dml_device_cache.h"
 #include "tfdml/core/dml_device_context.h"
+#include "tfdml/core/dml_tracing.h"
 #include "tfdml/core/dml_util.h"
 #include "tfdml/runtime_adapter/stream.h"
 
@@ -62,6 +63,18 @@ void plugin_create_device(
 
     params->device->device_handle =
         new DmlDevice(device_state, params->ordinal);
+
+#ifdef DIRECTML_ENABLE_TELEMETRY
+    DmlTracing::Instance().LogDeviceCreationTelemetry(
+        device_state->adapter->Name().c_str(),
+        (uint32_t)device_state->adapter->VendorID(),
+        device_state->adapter->DeviceID(),
+        device_state->adapter->AdapterLuid(),
+        device_state->adapter->DriverVersion(),
+        device_state->adapter->IsComputeOnly(),
+        params->ordinal);
+#endif
+
     TF_SetStatus(status, TF_OK, "");
 }
 
@@ -115,7 +128,7 @@ void plugin_deallocate(const SP_Device* device, SP_DeviceMemoryBase* mem)
 void* plugin_host_memory_allocate(const SP_Device* device, uint64_t size)
 {
 #if _WIN32
-    void* ptr = _aligned_malloc(64, size);
+    void* ptr = _aligned_malloc(size, 64);
 #else
     void* ptr = aligned_alloc(64, size);
 #endif
@@ -124,7 +137,11 @@ void* plugin_host_memory_allocate(const SP_Device* device, uint64_t size)
 
 void plugin_host_memory_deallocate(const SP_Device* device, void* mem)
 {
+#if _WIN32
+    _aligned_free(mem);
+#else
     free(mem);
+#endif
 }
 
 TF_Bool plugin_get_allocator_stats(
@@ -485,7 +502,9 @@ void plugin_mem_zero(
     DmlDevice* dml_device = static_cast<DmlDevice*>(device->device_handle);
 
     D3D12BufferRegion dst =
-        dml_util::CreateBufferForDeviceMemory(dml_device, location, size);
+        dml_device->GetDeviceContext()->GetBufferForDeviceMemory(
+            location,
+            size);
 
     (void)dml_device->GetDeviceContext()->ZeroBuffer(dst);
 
@@ -515,7 +534,9 @@ void plugin_memset(
     DmlDevice* dml_device = static_cast<DmlDevice*>(device->device_handle);
 
     D3D12BufferRegion dst =
-        dml_util::CreateBufferForDeviceMemory(dml_device, location, size);
+        dml_device->GetDeviceContext()->GetBufferForDeviceMemory(
+            location,
+            size);
 
     auto pattern_bytes = absl::Span<const uint8_t>(
         reinterpret_cast<const uint8_t*>(&pattern),
@@ -634,9 +655,7 @@ extern "C"
         params->platform->name = "DML";
         params->platform->type = "DML";
         params->platform->supports_unified_memory = false;
-
-        // TODO: Set force_memory_growth to true once the PR is merged
-        // https://github.com/tensorflow/tensorflow/pull/51705
+        params->platform->force_memory_growth = true;
         params->platform->use_bfc_allocator = true;
         params->major_version = DML_MAJOR_VERSION;
         params->minor_version = DML_MINOR_VERSION;

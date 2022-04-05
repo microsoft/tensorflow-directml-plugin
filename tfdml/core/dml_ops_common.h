@@ -20,8 +20,6 @@ limitations under the License.
 #include "tfdml/runtime_adapter/op_kernel.h"
 #include "tfdml/runtime_adapter/op_kernel_construction.h"
 #include "tfdml/runtime_adapter/op_kernel_context.h"
-#include "tfdml/runtime_adapter/refcount.h"
-#include "tfdml/runtime_adapter/resource_var.h"
 #include "tfdml/runtime_adapter/types.h"
 
 #include "tfdml/core/dml_buffer.h"
@@ -31,6 +29,8 @@ limitations under the License.
 #include "tfdml/core/dml_operator_helper.h"
 #include "tfdml/core/dml_tensor_desc.h"
 #include "tfdml/core/dml_util.h"
+
+struct TF_OpKernelContext;
 
 namespace tfdml
 {
@@ -182,6 +182,15 @@ class DmlKernel
         DmlKernelTensors&& tensor_descs,
         IDMLCompiledOperator* compiled_op);
 
+    Status Initialize(
+        TF_OpKernelContext* ctx,
+        DmlKernelTensors&& tensor_descs,
+        IDMLCompiledOperator* compiled_op,
+        std::shared_ptr<const InitializationHelper> init_helper,
+        IDMLDevice* dml_device,
+        DMLDeviceContext* device_context,
+        const char* kernel_type);
+
     // For ops that skip the DML graph (e.g. BlockLSTM in seq_len_max==0 case)
     void InitializeAsNoOp(DmlKernelConstruction* ctx)
     {
@@ -204,6 +213,14 @@ class DmlKernel
     // bindings.
     StatusOr<DmlGpuEvent> Compute(
         DmlKernelContext* ctx,
+        absl::Span<const absl::optional<DML_BUFFER_BINDING>> input_bindings,
+        absl::Span<const absl::optional<DML_BUFFER_BINDING>> output_bindings)
+        const;
+
+    StatusOr<DmlGpuEvent> Compute(
+        TF_OpKernelContext* ctx,
+        IDMLDevice* dml_device,
+        DMLDeviceContext* device_context,
         absl::Span<const absl::optional<DML_BUFFER_BINDING>> input_bindings,
         absl::Span<const absl::optional<DML_BUFFER_BINDING>> output_bindings)
         const;
@@ -243,9 +260,11 @@ class DmlKernel
     absl::InlinedVector<absl::optional<uint32_t>, 8> output_refs_forwarding_;
 };
 
-template <typename T> struct TfTensorTypeTraits;
+template <typename T>
+struct TfTensorTypeTraits;
 
-template <> struct TfTensorTypeTraits<Eigen::half>
+template <>
+struct TfTensorTypeTraits<Eigen::half>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type =
         DML_TENSOR_DATA_TYPE_FLOAT16;
@@ -261,7 +280,8 @@ template <> struct TfTensorTypeTraits<Eigen::half>
     }
 };
 
-template <> struct TfTensorTypeTraits<float>
+template <>
+struct TfTensorTypeTraits<float>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type =
         DML_TENSOR_DATA_TYPE_FLOAT32;
@@ -274,7 +294,8 @@ template <> struct TfTensorTypeTraits<float>
     }
 };
 
-template <> struct TfTensorTypeTraits<uint8_t>
+template <>
+struct TfTensorTypeTraits<uint8_t>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type = DML_TENSOR_DATA_TYPE_UINT8;
     static DML_SCALAR_UNION ToDmlScalar(uint8_t val)
@@ -285,7 +306,8 @@ template <> struct TfTensorTypeTraits<uint8_t>
     }
 };
 
-template <> struct TfTensorTypeTraits<uint16_t>
+template <>
+struct TfTensorTypeTraits<uint16_t>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type =
         DML_TENSOR_DATA_TYPE_UINT16;
@@ -297,7 +319,8 @@ template <> struct TfTensorTypeTraits<uint16_t>
     }
 };
 
-template <> struct TfTensorTypeTraits<uint32_t>
+template <>
+struct TfTensorTypeTraits<uint32_t>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type =
         DML_TENSOR_DATA_TYPE_UINT32;
@@ -309,7 +332,8 @@ template <> struct TfTensorTypeTraits<uint32_t>
     }
 };
 
-template <> struct TfTensorTypeTraits<int32_t>
+template <>
+struct TfTensorTypeTraits<int32_t>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type = DML_TENSOR_DATA_TYPE_INT32;
     static DML_SCALAR_UNION ToDmlScalar(int32_t val)
@@ -320,7 +344,8 @@ template <> struct TfTensorTypeTraits<int32_t>
     }
 };
 
-template <> struct TfTensorTypeTraits<int64_t>
+template <>
+struct TfTensorTypeTraits<int64_t>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type = DML_TENSOR_DATA_TYPE_INT64;
     static DML_SCALAR_UNION ToDmlScalar(int64_t val)

@@ -24,10 +24,12 @@ limitations under the License.
 #define USE_PIX
 #include <d3d12.h>
 
-#include "pix3.h"
+#include "WinPixEventRuntime/pix3.h"
+#include "tfdml/core/dml_adapter.h"
 #include "tfdml/core/dml_device_cache.h"
 #include "tfdml/core/dml_dso_loader.h"
 #include "tfdml/runtime_adapter/env.h"
+#include "third_party/microsofttelemetry.h"
 
 #pragma comment(lib, "advapi32.lib")
 
@@ -127,21 +129,28 @@ extern "C" UINT64 WINAPI PIXEventsReplaceBlock(
 
 TRACELOGGING_DECLARE_PROVIDER(g_providerHandle);
 
-// {0E57B9AE-5CE1-4BEF-86BC-24152F6A9560}
+#ifdef DIRECTML_ENABLE_TELEMETRY
+#define TfdmlTraceLoggingOptionGroup(guid) TraceLoggingOptionGroup(guid)
+#else
+#define TfdmlTraceLoggingOptionGroup(guid)
+#endif
+
+// {2D181A67-62EC-40FD-8CEB-DA6891614877}
 TRACELOGGING_DEFINE_PROVIDER(
     g_providerHandle,
-    "Microsoft.Windows.AI.MachineLearning.Dml.TensorFlow",
-    (0xe57b9ae,
-     0x5ce1,
-     0x4bef,
-     0x86,
-     0xbc,
-     0x24,
-     0x15,
-     0x2f,
-     0x6a,
-     0x95,
-     0x60));
+    "Microsoft.Windows.AI.MachineLearning.Dml.TensorFlowDirectMLPlugin",
+    (0x2D181A67,
+     0x62EC,
+     0x40FD,
+     0x8C,
+     0xEB,
+     0xDA,
+     0x68,
+     0x91,
+     0x61,
+     0x48,
+     0x77),
+    TfdmlTraceLoggingOptionGroup(DIRECTML_TELEMETRY_PROVIDER_GROUP_GUID));
 
 // {D113B493-BBA2-4993-8608-D706A73B91CE}
 static constexpr GUID PIX_EVAL_CAPTURABLE_WORK_GUID = {
@@ -469,4 +478,47 @@ const tensorflow::profiler::XSpace& DmlTracing::GetXSpace()
 
     xspace_dirty_ = false;
     return xspace_;
+}
+
+void DmlTracing::LogKernelComputeTelemetry(const char* kernel_name)
+{
+#ifdef DIRECTML_ENABLE_TELEMETRY
+    TraceLoggingWrite(
+        g_providerHandle,
+        "KernelCompute",
+        TraceLoggingBool(true, "UTCReplace_AppSessionGuid"),
+        TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
+        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
+        TraceLoggingString(kernel_name, "kernelName"));
+#endif
+}
+
+void DmlTracing::LogDeviceCreationTelemetry(
+    const char* adapterName,
+    uint32_t vendor_id,
+    uint32_t device_id,
+    const LUID& adapter_luid,
+    const tfdml::DriverVersion& driver_version,
+    bool compute_only,
+    uint32_t priority)
+{
+#ifdef DIRECTML_ENABLE_TELEMETRY
+    TraceLoggingWrite(
+        g_providerHandle,
+        "DeviceCreation",
+        TraceLoggingBool(true, "UTCReplace_AppSessionGuid"),
+        TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
+        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
+        TraceLoggingString(adapterName, "adapterName"),
+        TraceLoggingUInt32(vendor_id, "vendorId"),
+        TraceLoggingUInt32(device_id, "adapterDeviceId"),
+        TraceLoggingUInt32(adapter_luid.LowPart, "adapterLuidLowPart"),
+        TraceLoggingUInt32(adapter_luid.HighPart, "adapterLuidHighPart"),
+        TraceLoggingUInt16(driver_version.parts.a, "driverVersionA"),
+        TraceLoggingUInt16(driver_version.parts.b, "driverVersionB"),
+        TraceLoggingUInt16(driver_version.parts.c, "driverVersionC"),
+        TraceLoggingUInt16(driver_version.parts.d, "driverVersionD"),
+        TraceLoggingBool(compute_only, "isComputeOnly"),
+        TraceLoggingUInt32(priority, "priority"));
+#endif
 }

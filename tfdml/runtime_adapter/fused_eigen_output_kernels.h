@@ -77,7 +77,8 @@ using ContractionOutputMapper =
 // Returns input expression without any transformations.
 struct Identity
 {
-    template <typename XprType> static auto apply(XprType expr) -> XprType
+    template <typename XprType>
+    static auto apply(XprType expr) -> XprType
     {
         return expr;
     };
@@ -88,7 +89,6 @@ struct Relu
 {
     template <typename XprType>
     static auto apply(XprType expr)
-        -> decltype(expr.cwiseMax(std::declval<typename XprType::Scalar>()))
     {
         return expr.cwiseMax(static_cast<typename XprType::Scalar>(0));
     };
@@ -99,8 +99,6 @@ struct Relu6
 {
     template <typename XprType>
     static auto apply(XprType expr)
-        -> decltype(expr.cwiseMax(std::declval<typename XprType::Scalar>())
-                        .cwiseMin(std::declval<typename XprType::Scalar>()))
     {
         return expr.cwiseMax(static_cast<typename XprType::Scalar>(0))
             .cwiseMin(static_cast<typename XprType::Scalar>(6));
@@ -112,12 +110,6 @@ struct Elu
 {
     template <typename XprType>
     static auto apply(XprType expr)
-        -> decltype((expr < std::declval<typename XprType::Scalar>())
-                        .select(
-                            expr.exp() -
-                                expr.constant(
-                                    std::declval<typename XprType::Scalar>()),
-                            expr))
     {
         return (expr < static_cast<typename XprType::Scalar>(0))
             .select(
@@ -132,12 +124,6 @@ struct LeakyRelu
 {
     template <typename XprType>
     static auto apply(XprType expr, const float leakyrelu_alpha)
-        -> decltype((expr < std::declval<typename XprType::Scalar>())
-                        .select(
-                            expr *
-                                expr.constant(
-                                    std::declval<typename XprType::Scalar>()),
-                            expr))
     {
         return (expr < static_cast<typename XprType::Scalar>(0))
             .select(
@@ -147,7 +133,8 @@ struct LeakyRelu
     };
 };
 
-template <typename T> struct BiasAddArgs
+template <typename T>
+struct BiasAddArgs
 {
     const T* bias_add_data = nullptr;
     float leakyrelu_alpha;
@@ -162,7 +149,8 @@ template <typename T> struct BiasAddArgs
     }
 };
 
-template <typename T> struct FusedBatchNormArgs
+template <typename T>
+struct FusedBatchNormArgs
 {
     const T* scale_data = nullptr;
     const T* offset_data = nullptr;

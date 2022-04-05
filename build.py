@@ -17,94 +17,106 @@ import os
 import sys
 import argparse
 import subprocess
+import shutil
 from pathlib import Path
-from distutils.sysconfig import get_python_lib
+
+def run_or_show(step_name, cl, show):
+  if show:
+    print(f"- {step_name}: {cl}")
+  else:
+    subprocess.run(cl, shell=True, check=True)
 
 
-def clean(args):
-  subprocess.run("{} --output_user_root={} clean {}".format(
-      args.bazel, args.build_output, "--expunge"),
-                 shell=True,
-                 check=True)
+def set_tool_environment(args, cl):
+  """Adds a build tool environment setup script to the command line, if necessary."""
+
+  # On Windows this script uses MSVC regardless of the generator. The VS generators
+  # know how to find the MSVC tools, but the Ninja generators assume the user
+  # is running within a VS developer command prompt (i.e. has executed vcvarsall.bat).
+  if os.name == "nt" and args.generator.startswith("Ninja"):
+    import vswhere
+    vs_path = vswhere.get_latest_path(products='*')
+    bat_path = Path(vs_path) / "Common7" / "Tools" / "VsDevCmd.bat"
+    cl.append(f"\"{bat_path}\" -arch=x64 -no_logo &&")
+
+
+def configure_required(args, source_dir):
+  """Checks if CMake configuration is required."""
+
+  cmake_cache_path = os.path.join(args.build_output, "CMakeCache.txt")
+  if not os.path.exists(cmake_cache_path):
+    return True # Project hasn't been configured yet.
+  
+  with open(cmake_cache_path, "r") as file:
+    cmake_cache_content = file.read()
+
+  if f"CMAKE_GENERATOR:INTERNAL={args.generator}" not in cmake_cache_content:
+    return True # Generator has changed.
+
+  if f"TFDML_TELEMETRY:BOOL={'ON' if args.telemetry else 'OFF'}" not in cmake_cache_content:
+    return True # Telemetry option has changed.
+
+  if f"DTFDML_TELEMETRY_PROVIDER_GROUP_GUID:STRING={args.telemetry_provider_group_guid}" not in cmake_cache_content:
+    return True # Telemetry Provider Group GUID has changed.
+  
+  if f"TFDML_WHEEL_VERSION_SUFFIX:STRING={args.wheel_version_suffix}" not in cmake_cache_content:
+    return True # Package wheel version suffix has changed.
+
+  return False
+
+
+def configure(args, source_dir):
+  """Configures the CMake project."""
+
+  if not configure_required(args, source_dir):
+    return
+
+  cl = []
+  set_tool_environment(args, cl)
+  cl.append(args.cmake)
+  cl.append(f"-S {source_dir}")
+  cl.append(f"-B {args.build_output}")
+  cl.append(f"-G \"{args.generator}\"")
+  cl.append("-DFETCHCONTENT_QUIET=OFF") # Print details when fetching dependencies
+  cl.append(f"-DTFDML_TELEMETRY={'ON' if args.telemetry else 'OFF'}")
+  cl.append(f"-DTFDML_TELEMETRY_PROVIDER_GROUP_GUID={args.telemetry_provider_group_guid}")
+  cl.append(f"-DTFDML_WHEEL_VERSION_SUFFIX=\"{args.wheel_version_suffix}\"")
+  run_or_show("Configure", " ".join(cl), args.show)
 
 
 def build(args):
-  """Runs bazel to build tfdml's build_pip_package target."""
+  """Builds the CMake project."""
 
-  python_bin_path = sys.executable
-  python_lib_path = get_python_lib()
-
-  if sys.platform == "win32":
-    python_bin_path = python_bin_path.replace('\\', '/')
-    python_lib_path = python_lib_path.replace('\\', '/')
-
-  cl = [args.bazel]
-  cl.append("--output_user_root={}".format(args.build_output))
-  cl.append("build")
-  if args.subcommands:
-    cl.append("--subcommands")
-  cl.append("--config={}".format(args.config))
-  if args.telemetry:
-    cl.append("--config=telemetry")
-  if sys.platform == "win32":
-    cl.append("--config=windows")
+  cl = []
+  set_tool_environment(args, cl)
+  cl.append(args.cmake)
+  cl.append(f"--build {args.build_output}")
+  cl.append(f"--config {args.config.title()}")
+  cl.append(f"--target {args.target}")
+  if args.clean:
+    cl.append("--clean-first")
+  
+  if args.no_parallel:
+    # By default, Ninja builds in parallel.
+    if args.generator.startswith("Ninja"):
+      cl.append(f"-j 1") 
   else:
-    cl.append("--config=linux")
-  cl.append("//tfdml/wheel:build_wheel")
-  cl.append("--action_env PYTHON_BIN_PATH={}".format(python_bin_path))
-  cl.append("--action_env PYTHON_LIB_PATH={}".format(python_lib_path))
+    # By default, MSBuild doesn't build in parallel.
+    if args.generator.startswith("Visual Studio"):
+      cl.append("-- /m")
 
-  if sys.platform == "win32":
-    # Sometimes, Bazel needs help finding the compiler when installing only the
-    # build tools without the visual studio IDE
-    vswhere_path = os.path.join(os.environ["ProgramFiles(x86)"],
-                                "Microsoft Visual Studio", "Installer",
-                                "vswhere.exe")
-
-    vswhere_params = [
-        vswhere_path, "-products", "*", "-requires",
-        "Microsoft.Component.MSBuild", "-property", "installationPath",
-        "-latest"
-    ]
-
-    build_tools_path = subprocess.run(
-        vswhere_params, check=True,
-        capture_output=True).stdout.decode().splitlines()[0]
-
-    vc_path = os.path.join(build_tools_path, "VC").replace("\\", "/")
-    cl.append('--action_env BAZEL_VC="{}"'.format(vc_path))
-
-  subprocess.run(" ".join(cl), shell=True, check=True)
+  run_or_show("Build", " ".join(cl), args.show)
 
 
-def create_package(args):
-  """
-  Creates an installable Python package from tfdml's build_pip_package target.
-  """
-
-  build_pip_package_path = os.path.join(
-      os.path.dirname(os.path.realpath(__file__)), "bazel-bin", "tfdml",
-      "wheel", "build_wheel")
-
-  if sys.platform == "win32":
-    build_pip_package_path += ".exe"
-
-  src_path = os.path.join(args.build_output, "python_package_src")
-  dst_path = os.path.join(args.build_output, "python_package")
-
-  cl = [build_pip_package_path, "--src", src_path, "--dst", dst_path]
-
-  subprocess.run(" ".join(cl), shell=True, check=True)
-
-
-def install_package(args):
-  """Installs the generated TensorFlow Python package."""
-
-  package_dir = os.path.join(args.build_output, "python_package")
+def install_wheel(args):
+  """Installs the built plugin wheel into the current Python environment."""
 
   # Find the most recently created package
-  package_path = sorted(Path(package_dir).iterdir(),
-                        key=os.path.getmtime)[-1].as_posix()
+  build_files = sorted(Path(args.build_output).iterdir(),
+                       key=os.path.getmtime,
+                       reverse=True)
+  wheel_files = filter(lambda f: f.parts[-1].endswith(".whl"), build_files)
+  package_path = next(wheel_files).as_posix()
 
   # Only force the reinstallation of tfdml
   subprocess.run(
@@ -116,40 +128,75 @@ def install_package(args):
 
 
 def main():
+  # Default to storing build output under <source_dir>/build/.
+  source_dir = os.path.dirname(os.path.realpath(__file__))
+  default_build_output = os.path.join(source_dir, "build")
+
   parser = argparse.ArgumentParser()
 
-  parser.add_argument("--config",
-                      "-c",
-                      choices=("debug", "release"),
-                      default="debug",
-                      help="Build configuration.")
+  parser.add_argument(
+    "--cmake",
+     default="cmake",
+     help="Path to cmake executable. Defaults to cmake on PATH. If cmake isn't found it will be downloaded to the build folder.")
 
-  parser.add_argument("--clean",
-                      "-x",
-                      action="store_true",
-                      help="Configure and build from scratch.")
-
-  parser.add_argument("--install",
-                      "-i",
-                      action="store_true",
-                      help="Install Python package using pip.")
+  # This script only supports a few of the CMake generators, but users can
+  # manually invoke CMake if they prefer another.
+  parser.add_argument(
+    "--generator",
+    "-g",
+    choices=(
+      "Visual Studio 17 2022", 
+      "Visual Studio 16 2019", 
+      "Visual Studio 15 2017", 
+      "Ninja Multi-Config"),
+    default="Ninja Multi-Config",
+    help="CMake generator.")
 
   parser.add_argument(
-      "--subcommands",
-      "-s",
-      action="store_true",
-      help="Display the subcommands executed during a build (e.g. compiler "
-      "command line invocations).")
+    "--config",
+    "-c",
+    choices=("debug", "release"),
+    default="debug",
+    help="Build configuration.")
 
   parser.add_argument(
-      "--telemetry",
-      action="store_true",
-      help=
-      "Allow builds to emit telemetry associated with the DMLTF client hint.")
+    "--target",
+    "-t",
+    default="tfdml_plugin_wheel",
+    help="CMake target to build.")
 
-  # Default to storing build output under <repo_root>/../tfdml_plugin_build/.
-  default_build_output = os.path.join(
-      os.path.dirname(os.path.realpath(__file__)), "..", "tfdml_plugin_build")
+  parser.add_argument(
+    "--show",
+    "-s",
+    action="store_true",
+    help="Show CMake commands, but don't execute them.")
+
+  parser.add_argument(
+    "--clean",
+    "-x",
+    action="store_true",
+    help="Builds the 'clean' target before .")
+
+  parser.add_argument(
+    "--configure-only",
+    action="store_true",
+    help="Configure and generate the CMake project, but don't build it.")
+
+  parser.add_argument(
+    "--install",
+    "-i",
+    action="store_true",
+    help="Install Python package using pip.")
+
+  parser.add_argument(
+    "--telemetry",
+    action="store_true",
+    help="Allow builds to emit telemetry associated with the DMLTF client hint.")
+
+  parser.add_argument(
+    "--telemetry_provider_group_guid",
+    default="",
+    help="The GUID of the telemetry provider group to use in the format '00000000-0000-0000-0000-000000000000'.")
 
   parser.add_argument(
       "--build_output",
@@ -158,26 +205,22 @@ def main():
       help="Build output path. Defaults to {}.".format(default_build_output))
 
   parser.add_argument(
-      "--bazel",
-      "-b",
-      default="bazel",
-      help="Path to the bazel executable. Defaults to the first 'bazel' found "
-      "in the path.")
+      "--no_parallel",
+      action="store_true",
+      help="Limits build parallelism.")
+
+  parser.add_argument(
+      "--wheel_version_suffix",
+      default="",
+      help="Append some text to the Python wheel version.")
 
   args = parser.parse_args()
 
-  # Clean
-  if args.clean:
-    clean(args)
-
-  # Build
-  build(args)
-
-  # Create Python package
-  create_package(args)
-  if args.install:
-    install_package(args)
-
+  configure(args, source_dir)
+  if not args.configure_only:
+    build(args)
+    if args.install:
+      install_wheel(args)
 
 if __name__ == "__main__":
   main()

@@ -22,7 +22,8 @@ namespace tfdml
 {
 
 // Constructs a std::set from a span of values.
-template <typename T> std::set<T> AsSet(absl::Span<const T> vals)
+template <typename T>
+std::set<T> AsSet(absl::Span<const T> vals)
 {
     return std::set<T>(vals.begin(), vals.end());
 }
@@ -86,7 +87,8 @@ DmlTensorDesc::DmlTensorDesc(
     TF_DataType data_type,
     const TensorShape& shape,
     const TensorShape& non_broadcast_shape,
-    uint32_t guaranteed_base_offset_alignment)
+    uint32_t guaranteed_base_offset_alignment,
+    bool add_leading_dimensions)
 {
     const auto& dimensions = NarrowTensorShape(shape);
     const auto& non_broadcast_dimensions =
@@ -96,7 +98,8 @@ DmlTensorDesc::DmlTensorDesc(
         data_type,
         dimensions,
         non_broadcast_dimensions,
-        guaranteed_base_offset_alignment);
+        guaranteed_base_offset_alignment,
+        add_leading_dimensions);
 }
 
 absl::InlinedVector<uint32_t, DML_TENSOR_DIMENSION_COUNT_MAX1> ComputeStrides(
@@ -195,7 +198,8 @@ static inline uint64_t ComputeEndPadding(TF_DataType data_type)
     TF_DataType data_type,
     absl::Span<const uint32_t> dimensions,
     absl::Span<const uint32_t> non_broadcast_dimensions,
-    uint32_t guaranteed_base_offset_alignment)
+    uint32_t guaranteed_base_offset_alignment,
+    bool add_leading_dimensions)
 {
     // Broadcasting can never remove dimensions, it can only add them
     CHECK(dimensions.size() >= non_broadcast_dimensions.size());
@@ -210,7 +214,7 @@ static inline uint64_t ComputeEndPadding(TF_DataType data_type)
     absl::InlinedVector<uint32_t, DML_TENSOR_DIMENSION_COUNT_MAX1> dml_sizes;
     absl::InlinedVector<uint32_t, DML_TENSOR_DIMENSION_COUNT_MAX1> dml_strides;
 
-    if (rank < kNchwDimensionCount)
+    if (add_leading_dimensions && rank < kNchwDimensionCount)
     {
         dml_sizes.resize(kNchwDimensionCount - rank, 1);
         dml_strides.resize(kNchwDimensionCount - rank, 0);

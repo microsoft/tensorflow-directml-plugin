@@ -16,8 +16,6 @@ limitations under the License.
 #include "tensorflow/c/tf_datatype.h"
 #include "tensorflow/c/tf_tensor.h"
 #include "tensorflow/c/tf_tstring.h"
-#include "tensorflow/core/framework/tensor.pb.h"
-#include "tensorflow/core/framework/types.pb.h"
 #include "tfdml/runtime_adapter/macros.h"
 #include "tfdml/runtime_adapter/status.h"
 
@@ -60,45 +58,20 @@ static TF_Tensor* init_empty_tensor()
 
 TF_Tensor* Tensor::shallow_copy(const Tensor& other)
 {
-    if (other.dtype() == TF_RESOURCE)
+    TF_Tensor* copy_tensor = init_empty_tensor();
+
+    Status status;
+    TF_TensorBitcastFrom(
+        other.tensor_.get(),
+        other.dtype(),
+        copy_tensor,
+        other.shape().data(),
+        other.shape().dims(),
+        status.raw());
+
+    if (!status.ok())
     {
-    }
-    TF_Tensor* copy_tensor = nullptr;
-
-    int num_dims = TF_NumDims(other.tensor_.get());
-
-    std::vector<int64_t> sizes(num_dims);
-
-    for (int i = 0; i < num_dims; ++i)
-    {
-        sizes[i] = TF_Dim(other.tensor_.get(), i);
-    }
-
-    if (other.dtype() == TF_RESOURCE)
-    {
-        copy_tensor = TF_AllocateTensor(
-            TF_RESOURCE,
-            sizes.data(),
-            num_dims,
-            other.TotalBytes());
-    }
-    else
-    {
-        copy_tensor = init_empty_tensor();
-
-        Status status;
-        TF_TensorBitcastFrom(
-            other.tensor_.get(),
-            other.dtype(),
-            copy_tensor,
-            other.shape().data(),
-            other.shape().dims(),
-            status.raw());
-
-        if (!status.ok())
-        {
-            LogFatal(status.error_message());
-        }
+        LogFatal(status.error_message());
     }
 
     return copy_tensor;
@@ -106,8 +79,7 @@ TF_Tensor* Tensor::shallow_copy(const Tensor& other)
 
 bool Tensor::CopyFrom(const Tensor& other, const TensorShape& shape)
 {
-    if (other.NumElements() != shape.num_elements())
-        return false;
+    if (other.NumElements() != shape.num_elements()) return false;
 
     auto new_tensor = MakeTensor(init_empty_tensor());
 
@@ -130,6 +102,11 @@ bool Tensor::CopyFrom(const Tensor& other, const TensorShape& shape)
     return true;
 }
 
+bool Tensor::SharesBufferWith(const Tensor& other) const
+{
+    return raw_data() == other.raw_data();
+}
+
 Tensor::Tensor() : Tensor(TF_FLOAT) {}
 
 Tensor::Tensor(TF_DataType data_type)
@@ -143,31 +120,25 @@ Tensor::Tensor(TF_Tensor* tensor)
     assert(tensor != nullptr);
     tensor_ = MakeTensor(tensor);
     shape_ = MakeShape(tensor);
-
-    if (dtype() == TF_RESOURCE)
-    {
-        auto serialized_view = tensor_data();
-        std::string serialized_data(
-            serialized_view.data(),
-            serialized_view.size());
-
-        resource_handle_ = std::make_shared<tensorflow::ResourceHandleProto>();
-        CHECK(resource_handle_->ParseFromString(serialized_data));
-    }
 }
 
 Tensor::Tensor(const Tensor& other)
     : tensor_(MakeTensor(shallow_copy(other))),
-      shape_(other.shape()),
-      resource_handle_(other.resource_handle_)
+      shape_(other.shape())
 {
+}
+
+Tensor::Tensor(Tensor&& other)
+    : tensor_(std::move(other.tensor_)),
+      shape_(std::move(other.shape_))
+{
+    other.tensor_ = nullptr;
 }
 
 Tensor& Tensor::operator=(const Tensor& other)
 {
     tensor_ = MakeTensor(shallow_copy(other));
     shape_ = other.shape();
-    resource_handle_ = other.resource_handle_;
     return *this;
 }
 
@@ -175,9 +146,7 @@ Tensor& Tensor::operator=(Tensor&& other)
 {
     tensor_ = std::move(other.tensor_);
     shape_ = std::move(other.shape_);
-    resource_handle_ = std::move(other.resource_handle_);
     other.tensor_ = nullptr;
-    other.resource_handle_ = nullptr;
     return *this;
 }
 
@@ -206,7 +175,7 @@ absl::string_view Tensor::tensor_data() const
     return absl::string_view(tensor_data, tensor_size);
 }
 
-const TensorShape& Tensor::shape() const { return shape_; }
+TensorShape Tensor::shape() const { return shape_; }
 
 int64_t Tensor::dims() const { return shape_.dims(); }
 
@@ -272,6 +241,11 @@ Tensor Tensor::DeepCopy() const
     return Tensor(tensor);
 }
 
-const TF_Tensor* Tensor::raw() const { return tensor_.get(); }
+TF_Tensor* Tensor::raw() const { return tensor_.get(); }
+
+bool Tensor::IsSameSize(const Tensor& other) const
+{
+    return shape_.IsSameSize(other.shape());
+}
 
 } // namespace tfdml

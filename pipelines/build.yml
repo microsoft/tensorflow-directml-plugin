@@ -8,11 +8,18 @@ parameters:
 - name: releaseBuild
   type: boolean
   default: false
+- name: addToBlobStorage
+  type: boolean
+  default: false
+- name: enableTelemetry
+  type: boolean
+- name: telemetryProviderGroupGuid
+  type: string
 
 jobs:
 - job:
   displayName: Build ${{parameters.artifact}}
-  timeoutInMinutes: 10
+  timeoutInMinutes: 20
   workspace:
     clean: all
   ${{if contains(parameters.artifact, '-linux-') }}:
@@ -46,6 +53,18 @@ jobs:
       {
           throw "Could not parse build artifact: '${{parameters.artifact}}'"
       }
+
+      # Appends ".dev<DATE>" to the Python wheel version. For example, if the pipeline version is 211007-2233.1.master, 
+      # and _VERSION is currently 0.0.1, then the updated version will be 0.0.1.dev211007. If the "Release Build" parameter 
+      # is set then the .dev suffix is removed entirely.
+      if ("${{parameters.releaseBuild}}" -eq "True") {
+          $WheelVersionSuffix = ''
+      } else {
+          $WheelVersionSuffix = ".dev" + "$(Build.BuildNumber)" -replace '(\d{6}).*','$1'
+      }
+
+      Write-Host "##vso[task.setVariable variable=wheelVersionSuffix;isOutput=true]$WheelVersionSuffix"
+
     name: vars
     displayName: Initialize Variables
   - ${{if contains(parameters.artifact, '-linux-') }}:
@@ -53,24 +72,15 @@ jobs:
   - ${{if contains(parameters.artifact, '-win-') }}:
     - template: setup_agent_windows.yml
 
-  # Appends ".dev<DATE>" to the _VERSION variable in setup.py. For example, if the pipeline version
-  # is 211007-2233.1.master, and _VERSION is currently 0.0.1, then the updated version will be
-  # 0.0.1.dev211007. If the "Release Build" parameter is set then the .dev suffix is removed entirely.
-  - powershell: |
-      $SetupPyPath = "$(Build.SourcesDirectory)/tfdml/wheel/setup.py"
-      if ("${{parameters.releaseBuild}}" -eq "True") {
-          $SubstituteVersion = "_VERSION = '`$1'"
-      } else {
-          $DevVersion = "$(Build.BuildNumber)" -replace '(\d{6}).*','$1'
-          $SubstituteVersion = "_VERSION = '`$1.dev$DevVersion'"
-      }
-      $SetupPy = (Get-Content $SetupPyPath -Raw) -replace "_VERSION = '(\d+\.\d+\.\d+).*'", $SubstituteVersion
-      Set-Content $SetupPyPath $SetupPy -Encoding ascii
-    displayName: Set Build Version
   - ${{if contains(parameters.artifact, '-linux-') }}:
     - script: |
         $(miniconda.activateCommand)
-        python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry
+        export CXX=clang++
+        if ["${{parameters.enableTelemetry}}" = "True"]; then
+          python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        else
+          python build.py --config $(vars.configuration) --build_output $(buildOutPath) --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        fi
       displayName: Build
       # target: manylinux
     # Rename instead of using auditwheel repair since libd3d12.so will not register as manylinux compliant
@@ -84,17 +94,43 @@ jobs:
   - ${{if contains(parameters.artifact, '-win-') }}:
     - powershell: |
         Invoke-Expression '$(miniconda.activateCommand)'
-        python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry
+
+        if ("${{parameters.enableTelemetry}}" -eq "True") {
+          python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        } else {
+          python build.py --config $(vars.configuration) --build_output $(buildOutPath) --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        }
       displayName: Build
   - powershell: |
       New-Item -Force -ItemType Directory "$(buildPubPath)"
-      Copy-Item -Recurse "$(buildOutPath)/python_package/*" "$(buildPubPath)"
+      Copy-Item -Recurse "$(buildOutPath)/*.whl" "$(buildPubPath)"
+      Copy-Item -Recurse "$(Build.SourcesDirectory)/test" "$(buildPubPath)"
     displayName: Stage Artifacts
   - task: PublishBuildArtifacts@1
     displayName: Publish Build Artifacts
     inputs:
       PathtoPublish: $(buildPubPath)
       ArtifactName: ${{parameters.artifact}}
+
+  - ${{if parameters.addToBlobStorage }}:
+    - powershell: |
+        $InstallPath = "$(buildPubPath)\*"
+        $ZipPath = "$(buildPubPath)\${{parameters.artifact}}.zip"
+        Compress-Archive -Path $InstallPath -DestinationPath $ZipPath -Verbose
+      displayName: Compress Build Archive
+      continueOnError: true
+
+    - task: PowerShell@1
+      displayName: Submit artifacts to blob storage
+      continueOnError: true
+      # regenerate azureBlobToken in the winaiblob storage account in CoreOS_Sigma_Graphics Azure subscription. Currently set to expire in Feb 2024
+      inputs:
+        scriptName: pipelines/SubmitFilesToBlobStorage.ps1
+        arguments: >
+          -AzureBlobLink "https://winaiblob.blob.core.windows.net/windowsai/"
+          -AzureBlobLinkToken "$(azureBlobToken)"
+          -SourcePath "$(buildPubPath)\${{parameters.artifact}}.zip"
+          -TargetPath tf2_directml_builds\$(Build.BuildNumber).$(Build.SourceVersion)\${{parameters.artifact}}.zip
 
   - powershell: |
       $Duration = ((Get-Date) - [datetime]$(vars.startTicks)).ToString("c")

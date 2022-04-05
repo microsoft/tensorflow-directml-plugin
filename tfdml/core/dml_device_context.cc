@@ -16,6 +16,8 @@ limitations under the License.
 #include "dml_bfc_allocator.h"
 #include "dml_util.h"
 #include "tensorflow/c/experimental/stream_executor/stream_executor.h"
+#include "tensorflow/c/kernels.h"
+#include "tensorflow/c/tf_tensor.h"
 #include "tfdml/core/dml_device.h"
 #include "tfdml/runtime_adapter/status.h"
 
@@ -105,7 +107,9 @@ Status DMLDeviceContext::CopyDeviceTensorToCPU(
         return status_or_event.status();
     }
 
-    return device->Sync();
+    TF_RETURN_IF_ERROR(device->Sync());
+    status_or_event.ConsumeValueOrDie().WaitForSignal();
+    return Status::OK();
 }
 
 Status DMLDeviceContext::CopyCPUMemoryToDevice(
@@ -119,10 +123,10 @@ Status DMLDeviceContext::CopyCPUMemoryToDevice(
         return Status::OK();
     }
 
-    D3D12BufferRegion dst = dml_util::CreateBufferForDeviceMemory(
-        device,
-        device_memory,
-        size_in_bytes);
+    D3D12BufferRegion dst =
+        device->GetDeviceContext()->GetBufferForDeviceMemory(
+            device_memory,
+            size_in_bytes);
 
     auto byte_span = absl::Span<const uint8_t>(
         static_cast<const uint8_t*>(cpu_memory),
@@ -150,10 +154,10 @@ StatusOr<DmlGpuEvent> DMLDeviceContext::CopyDeviceMemoryToCPU(
         return Status::OK();
     }
 
-    D3D12BufferRegion src = dml_util::CreateBufferForDeviceMemory(
-        device,
-        device_memory,
-        size_in_bytes);
+    D3D12BufferRegion src =
+        device->GetDeviceContext()->GetBufferForDeviceMemory(
+            device_memory,
+            size_in_bytes);
 
     // Performs a blocking call to synchronize and read back data from the GPU
     // into the destination buffer
@@ -177,15 +181,15 @@ void DMLDeviceContext::CopyMemoryInSameDevice(
         return;
     }
 
-    D3D12BufferRegion src = dml_util::CreateBufferForDeviceMemory(
-        device,
-        input_memory,
-        size_in_bytes);
+    D3D12BufferRegion src =
+        device->GetDeviceContext()->GetBufferForDeviceMemory(
+            input_memory,
+            size_in_bytes);
 
-    D3D12BufferRegion dst = dml_util::CreateBufferForDeviceMemory(
-        device,
-        output_memory,
-        size_in_bytes);
+    D3D12BufferRegion dst =
+        device->GetDeviceContext()->GetBufferForDeviceMemory(
+            output_memory,
+            size_in_bytes);
 
     (void)device->GetExecutionContext()->CopyBufferRegion(dst, src);
 
@@ -312,20 +316,20 @@ void DMLDeviceContext::EnqueueCallbackForGpuEvent(
 }
 
 DmlBuffer DMLDeviceContext::AllocateDefaultBuffer(
-    OpKernelContext* op_kernel_context,
+    TF_OpKernelContext* op_kernel_context,
     uint64_t num_bytes) const
 {
     return DmlBuffer(op_kernel_context, allocator_, num_bytes);
 }
 
-D3D12BufferRegion DMLDeviceContext::GetBufferForTensor(
-    const Tensor& tensor) const
+D3D12BufferRegion GetBufferForOpaqueData(
+    DmlAllocator* allocator,
+    const void* opaque_data,
+    uint64_t unaligned_size_in_bytes)
 {
-    const void* p = tensor.tensor_data().data();
-
     // DML always requires at least 4 byte alignment in all cases, so both the
     // offset and size must certainly be divisible by 4.
-    constexpr uint64_t dml_alignment = 4;
+    constexpr uint64_t DML_ALIGNMENT = 4;
 
     // The offset and size of the region must be aligned to DirectML's
     // requirement. Each tensor has two sizes:
@@ -345,17 +349,38 @@ D3D12BufferRegion DMLDeviceContext::GetBufferForTensor(
     // bytes up to an aligned value, which should always fit within the
     // allocated bytes.
     uint64_t size_in_bytes =
-        (1 + (tensor.TotalBytes() - 1) / dml_alignment) * dml_alignment;
-    CHECK(size_in_bytes <= tensor.AllocatedBytes());
+        (1 + (unaligned_size_in_bytes - 1) / DML_ALIGNMENT) * DML_ALIGNMENT;
 
-    auto region = allocator_->CreateBufferRegion(p, size_in_bytes);
+    auto region = allocator->CreateBufferRegion(opaque_data, size_in_bytes);
 
     // DML always requires at least 4 byte alignment in all cases, so both the
     // offset and size must certainly be divisible by 4
-    assert(region.Offset() % dml_alignment == 0);
-    assert(region.SizeInBytes() % dml_alignment == 0);
+    assert(region.Offset() % DML_ALIGNMENT == 0);
+    assert(region.SizeInBytes() % DML_ALIGNMENT == 0);
 
     return region;
+}
+
+D3D12BufferRegion DMLDeviceContext::GetBufferForTensor(
+    const Tensor& tensor) const
+{
+    const void* p = tensor.tensor_data().data();
+    return GetBufferForOpaqueData(allocator_, p, tensor.TotalBytes());
+}
+
+D3D12BufferRegion DMLDeviceContext::GetBufferForTensor(
+    const TF_Tensor* tensor) const
+{
+    const void* p = TF_TensorData(tensor);
+    size_t total_bytes = TF_TensorByteSize(tensor);
+    return GetBufferForOpaqueData(allocator_, p, total_bytes);
+}
+
+D3D12BufferRegion DMLDeviceContext::GetBufferForDeviceMemory(
+    const SP_DeviceMemoryBase* data,
+    uint64_t size_in_bytes)
+{
+    return GetBufferForOpaqueData(allocator_, data->opaque, size_in_bytes);
 }
 
 DescriptorAllocation DMLDeviceContext::AllocateDescriptors(

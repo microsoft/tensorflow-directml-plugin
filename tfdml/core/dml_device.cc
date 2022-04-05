@@ -75,6 +75,16 @@ Status DmlDevice::CopyCPUTensorToDevice(
         device_tensor);
 }
 
+Status DmlDevice::CopyDeviceTensorToCPU(
+    const Tensor* device_tensor,
+    Tensor* cpu_tensor)
+{
+    return device_context_->CopyDeviceTensorToCPU(
+        this,
+        device_tensor,
+        cpu_tensor);
+}
+
 void DmlDevice::CopyTensorInSameDevice(
     const Tensor* input_tensor,
     Tensor* output_tensor)

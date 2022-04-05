@@ -1,3 +1,17 @@
+#!/usr/bin/env python
+# Copyright (c) Microsoft Corporation. All Rights Reserved.
+#
+# Use of this source code is governed by an MIT-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
 import absl.testing.absltest as absltest
 import tensorflow as tf
 import tensorflow.core.profiler.protobuf.xplane_pb2 as xplane_pb2
@@ -126,17 +140,23 @@ class ProfilerTest(absltest.TestCase):
         records = database.without_idle.tf_stats_record
         self.assertEqual(len(records), 3)
 
-        self.assertEqual(records[0].host_or_device, "Device")
-        self.assertEqual(records[0].op_type, "AddN")
-        self.assertEqual(records[0].op_name, "MyAdd")
+        # Record ordering might change.
+        matched_records = 0
+        for record in records:
+            if record.op_type == "AddN":
+                self.assertEqual(record.host_or_device, "Device")
+                self.assertEqual(record.op_name, "MyAdd")
+                matched_records += 1
+            elif record.op_type == "MatMul":
+                self.assertEqual(record.host_or_device, "Device")
+                self.assertEqual(record.op_name, "MyMultiply")
+                matched_records += 1
+            elif record.op_type == "_Recv":
+                self.assertEqual(record.host_or_device, "Host")
+                self.assertEqual(record.op_name, "MyMultiply/_7")
+                matched_records += 1
 
-        self.assertEqual(records[1].host_or_device, "Device")
-        self.assertEqual(records[1].op_type, "MatMul")
-        self.assertEqual(records[1].op_name, "MyMultiply")
-
-        self.assertEqual(records[2].host_or_device, "Host")
-        self.assertEqual(records[2].op_type, "_Recv")
-        self.assertEqual(records[2].op_name, "MyMultiply/_7")
+        self.assertEqual(matched_records, 3)
 
 
 if __name__ == "__main__":

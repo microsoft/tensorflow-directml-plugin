@@ -175,13 +175,10 @@ dml::TensorPolicy GetDmlXTensorPolicy(TensorFormat format);
 // for int64 emulation.
 dml::TensorPolicy GetEmulatedInt64TensorPolicy();
 
+dml::TensorStrides ComputePackedStrides(const dml::Span<const uint32_t>& sizes);
+
 namespace dml_util
 {
-
-D3D12BufferRegion CreateBufferForDeviceMemory(
-    const DmlDevice* device,
-    const SP_DeviceMemoryBase* data,
-    uint64_t size_in_bytes);
 
 // Calls D3D12BufferRegion::GetBufferBinding on each of the buffers and returns
 // the result.

@@ -157,8 +157,7 @@ bool BFCAllocator::Extend(size_t alignment, size_t rounded_bytes)
         while (mem_addr == nullptr)
         {
             bytes = RoundedBytes(bytes * kBackpedalFactor);
-            if (bytes < rounded_bytes)
-                break;
+            if (bytes < rounded_bytes) break;
             mem_addr = sub_allocator_->Alloc(alignment, bytes);
         }
     }
@@ -777,8 +776,7 @@ BFCAllocator::ChunkHandle BFCAllocator::TryToCoalesce(
     bool ignore_freed_at)
 {
     Chunk* c = ChunkFromHandle(h);
-    if ((!ignore_freed_at) && c->freed_at_count > 0)
-        return h;
+    if ((!ignore_freed_at) && c->freed_at_count > 0) return h;
     ChunkHandle coalesced_chunk = h;
 
     // If the next chunk is free, merge it into c and delete it.
@@ -889,8 +887,7 @@ bool BFCAllocator::MergeTimestampedChunks(size_t required_bytes)
         // merged and deallocated in a prior iteration so refetch the handle and
         // retest.
         ChunkHandle h = region_manager_.get_handle(ptr);
-        if (h == kInvalidChunkHandle)
-            continue;
+        if (h == kInvalidChunkHandle) continue;
         if (required_bytes == 0 || !satisfied)
         {
             Chunk* c = ChunkFromHandle(h);

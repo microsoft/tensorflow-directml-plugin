@@ -53,11 +53,15 @@ class DmlDevice : public Device
 
     void CopyTensorInSameDevice(
         const Tensor* input_tensor,
-        Tensor* output_tensor);
+        Tensor* output_tensor) final;
 
     Status CopyCPUTensorToDevice(
         const Tensor* cpu_tensor,
         Tensor* device_tensor) final;
+
+    Status CopyDeviceTensorToCPU(
+        const Tensor* device_tensor,
+        Tensor* cpu_tensor) final;
 
   private:
     const DmlDeviceState* state_; // Weak; owned by the device factory

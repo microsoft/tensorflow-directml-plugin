@@ -28,166 +28,218 @@ enum MemoryType
     HOST_MEMORY = 1,
 };
 
-template <TF_DataType T> struct EnumToDataType
+template <TF_DataType T>
+struct EnumToDataType
 {
 };
 
-template <> struct EnumToDataType<TF_INT64>
+template <>
+struct EnumToDataType<TF_INT64>
 {
     using T = int64_t;
 };
-template <> struct EnumToDataType<TF_INT32>
+template <>
+struct EnumToDataType<TF_INT32>
 {
     using T = int32_t;
 };
-template <> struct EnumToDataType<TF_INT16>
+template <>
+struct EnumToDataType<TF_INT16>
 {
     using T = int16_t;
 };
-template <> struct EnumToDataType<TF_INT8>
+template <>
+struct EnumToDataType<TF_INT8>
 {
     using T = int8_t;
 };
-template <> struct EnumToDataType<TF_UINT64>
+template <>
+struct EnumToDataType<TF_UINT64>
 {
     using T = uint64_t;
 };
-template <> struct EnumToDataType<TF_UINT32>
+template <>
+struct EnumToDataType<TF_UINT32>
 {
     using T = uint32_t;
 };
-template <> struct EnumToDataType<TF_UINT16>
+template <>
+struct EnumToDataType<TF_UINT16>
 {
     using T = uint16_t;
 };
-template <> struct EnumToDataType<TF_UINT8>
+template <>
+struct EnumToDataType<TF_UINT8>
 {
     using T = uint8_t;
 };
-template <> struct EnumToDataType<TF_BOOL>
+template <>
+struct EnumToDataType<TF_BOOL>
 {
     using T = bool;
 };
-template <> struct EnumToDataType<TF_FLOAT>
+template <>
+struct EnumToDataType<TF_FLOAT>
 {
     using T = float;
 };
-template <> struct EnumToDataType<TF_DOUBLE>
+template <>
+struct EnumToDataType<TF_DOUBLE>
 {
     using T = double;
 };
-template <> struct EnumToDataType<TF_HALF>
+template <>
+struct EnumToDataType<TF_HALF>
 {
     using T = Eigen::half;
 };
-template <> struct EnumToDataType<TF_BFLOAT16>
+template <>
+struct EnumToDataType<TF_BFLOAT16>
 {
     using T = Eigen::bfloat16;
 };
-template <> struct EnumToDataType<TF_QINT8>
+template <>
+struct EnumToDataType<TF_QINT8>
 {
     using T = Eigen::QInt8;
 };
-template <> struct EnumToDataType<TF_QINT16>
+template <>
+struct EnumToDataType<TF_QINT16>
 {
     using T = Eigen::QInt16;
 };
-template <> struct EnumToDataType<TF_QUINT16>
+template <>
+struct EnumToDataType<TF_QUINT16>
 {
     using T = Eigen::QUInt16;
 };
-template <> struct EnumToDataType<TF_QINT32>
+template <>
+struct EnumToDataType<TF_QINT32>
 {
     using T = Eigen::QInt32;
 };
-template <> struct EnumToDataType<TF_COMPLEX64>
+template <>
+struct EnumToDataType<TF_QUINT8>
+{
+    using T = Eigen::QUInt8;
+};
+template <>
+struct EnumToDataType<TF_COMPLEX64>
 {
     using T = std::complex<float>;
 };
-template <> struct EnumToDataType<TF_COMPLEX128>
+template <>
+struct EnumToDataType<TF_COMPLEX128>
 {
     using T = std::complex<double>;
 };
 
-template <typename T> TF_DataType DataTypeToEnum();
+template <typename T>
+TF_DataType DataTypeToEnum();
 
-template <> constexpr inline TF_DataType DataTypeToEnum<int64_t>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<int64_t>()
 {
     return TF_INT64;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<int32_t>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<int32_t>()
 {
     return TF_INT32;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<int16_t>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<int16_t>()
 {
     return TF_INT16;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<int8_t>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<int8_t>()
 {
     return TF_INT8;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<uint64_t>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<uint64_t>()
 {
     return TF_UINT64;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<uint32_t>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<uint32_t>()
 {
     return TF_UINT32;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<uint16_t>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<uint16_t>()
 {
     return TF_UINT16;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<uint8_t>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<uint8_t>()
 {
     return TF_UINT8;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<bool>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<bool>()
 {
     return TF_BOOL;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<float>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<float>()
 {
     return TF_FLOAT;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<double>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<double>()
 {
     return TF_DOUBLE;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<Eigen::half>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<Eigen::half>()
 {
     return TF_HALF;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<Eigen::bfloat16>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<Eigen::bfloat16>()
 {
     return TF_BFLOAT16;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<Eigen::QInt8>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<Eigen::QInt8>()
 {
     return TF_QINT8;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<Eigen::QInt16>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<Eigen::QInt16>()
 {
     return TF_QINT16;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<Eigen::QUInt16>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<Eigen::QUInt16>()
 {
     return TF_QUINT16;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<Eigen::QInt32>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<Eigen::QInt32>()
 {
     return TF_QINT32;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<std::complex<float>>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<Eigen::QUInt8>()
+{
+    return TF_QUINT8;
+}
+template <>
+constexpr inline TF_DataType DataTypeToEnum<std::complex<float>>()
 {
     return TF_COMPLEX64;
 }
-template <> constexpr inline TF_DataType DataTypeToEnum<std::complex<double>>()
+template <>
+constexpr inline TF_DataType DataTypeToEnum<std::complex<double>>()
 {
     return TF_COMPLEX128;
 }
 
 std::string DataTypeString(TF_DataType dtype);
+int DataTypeSize(TF_DataType dtype);
+bool DataTypeIsInteger(TF_DataType dt);
 
 } // namespace tfdml
