@@ -348,7 +348,21 @@ target_precompile_headers(
 add_library(
     optimizer
     STATIC
+    tfdml/optimizer/device_name_utils.cc
     tfdml/optimizer/dml_graph_optimizer.cc
+    tfdml/optimizer/generic_layout_optimizer.cc
+    tfdml/optimizer/graph_optimizer.cc
+    tfdml/optimizer/graph_properties.cc
+    tfdml/optimizer/graph_view.cc
+    tfdml/optimizer/grappler_item.cc
+    tfdml/optimizer/hash.cc
+    tfdml/optimizer/op_registry.cc
+    tfdml/optimizer/op_types.cc
+    tfdml/optimizer/scoped_data_format_upgrader.cc
+    tfdml/optimizer/tensor_id.cc
+    tfdml/optimizer/transpose_context.cc
+    tfdml/optimizer/transposer.cc
+    tfdml/optimizer/transposer_factory.cc
 )
 target_link_libraries(
     optimizer

@@ -174,6 +174,7 @@ tf_proto_cpp(tensorflow/core/framework/node_def.proto)
 tf_proto_cpp(tensorflow/core/framework/full_type.proto)
 tf_proto_cpp(tensorflow/core/framework/op_def.proto)
 tf_proto_cpp(tensorflow/core/framework/versions.proto)
+tf_proto_cpp(tensorflow/core/framework/kernel_def.proto)
 tf_proto_cpp(tensorflow/core/grappler/costs/op_performance_data.proto)
 tf_proto_cpp(tensorflow/core/protobuf/device_properties.proto)
 
