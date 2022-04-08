@@ -430,20 +430,44 @@ Status Transposer::CreateDataFormatNode(
     tensorflow::NodeDef node;
     node.set_name(std::string(node_name));
 
-    // Set up parameters of node.
-    node.set_op(std::string(op));
     node.set_device(std::string(device));
     tensorflow::AttrValue attr_data_type;
     attr_data_type.set_type(data_type);
     node.mutable_attr()->insert({"T", attr_data_type});
 
+    std::string op_name;
+
     // The inputs of a DataFormat op could be in host memory for ops such as
     // Reshape. In such cases, run the kernel on the host too.
     if (is_fanin_on_host)
     {
-        tensorflow::AttrValue attr_kernel;
-        attr_kernel.set_s("host");
-        node.mutable_attr()->insert({"_kernel", attr_kernel});
+        // TODO: Remove once TensorFlow core implements host for DEVICE_DEFAULT
+        // https://github.com/tensorflow/tensorflow/pull/55558
+        if (op == kOpDataFormatVecPermute)
+        {
+            // Set up parameters of node.
+            node.set_op("DmlDataFormatVecPermuteHost");
+        }
+        else if (op == kOpDataFormatDimMap)
+        {
+            // Set up parameters of node.
+            node.set_op("DmlDataFormatDimMapHost");
+        }
+        else
+        {
+            return errors::InvalidArgument(
+                "Unsupported data format op '",
+                op,
+                "'");
+        }
+        // tensorflow::AttrValue attr_kernel;
+        // attr_kernel.set_s("host");
+        // node.mutable_attr()->insert({"_kernel", attr_kernel});
+    }
+    else
+    {
+        // Set up parameters of node.
+        node.set_op(std::string(op));
     }
 
     tensorflow::AttrValue src_format;
@@ -2882,10 +2906,11 @@ Status FusedBatchNormGradTransposer::TransposeNode(
         return Status::OK();
     }
     ScopedDataFormatUpgrader data_format_upgrader(context, rank);
-    if (!ShouldProcess(*context, *node) || !IsTraining(*node))
+    if (!ShouldProcess(*context, *node))
     {
         return Status::OK();
     }
+
     TF_VLog(
         3,
         "GenericLayoutOptimizer: transforming node '%s' with op '%s' from data "
