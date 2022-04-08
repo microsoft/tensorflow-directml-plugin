@@ -521,4 +521,31 @@ bool IsArg(const tensorflow::NodeDef& node)
     return node.op() == "_Arg" || node.op() == "_DeviceArg";
 }
 
+bool IsConstant(const tensorflow::NodeDef& node)
+{
+    return node.op() == "Const";
+}
+
+bool IsStridedSliceGrad(const tensorflow::NodeDef& node)
+{
+    return node.op() == "StridedSliceGrad";
+}
+
+bool IsConv3DBackpropFilterV2(const tensorflow::NodeDef& node)
+{
+    return node.op() == "Conv3DBackpropFilterV2";
+}
+
+bool IsConv3DBackpropInputV2(const tensorflow::NodeDef& node)
+{
+    return node.op() == "Conv3DBackpropInputV2";
+}
+
+bool IsConv3D(const tensorflow::NodeDef& node) { return node.op() == "Conv3D"; }
+
+bool IsBiasAddV2(const tensorflow::NodeDef& node)
+{
+    return node.op() == "BiasAdd";
+}
+
 } // namespace tfdml

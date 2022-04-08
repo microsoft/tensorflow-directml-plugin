@@ -13,8 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/optimizer/scoped_data_format_upgrader.h"
-#include "tfdml/optimizer/transpose_context.h"
+#include "tfdml/layout_optimizer/scoped_data_format_upgrader.h"
+#include "tfdml/layout_optimizer/transpose_context.h"
 
 namespace tfdml
 {

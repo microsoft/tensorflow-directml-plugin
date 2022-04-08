@@ -21,17 +21,9 @@ limitations under the License.
 
 namespace tfdml
 {
-Status OpRegistry::Initialize(TF_FunctionLibraryDefinition* function_lib_def)
+void OpRegistry::Initialize(TF_FunctionLibraryDefinition* function_lib_def)
 {
-    if (function_lib_def_ != nullptr)
-    {
-
-        return errors::InvalidArgument(
-            "OpRegistry::Initialize has already been called.");
-    }
-
     function_lib_def_ = function_lib_def;
-    return Status::OK();
 }
 
 Status OpRegistry::LookUpOpDef(const char* op_name, tensorflow::OpDef* op_def)

@@ -13,13 +13,13 @@ limitations under the License.
 
 #pragma once
 
+struct TF_Status;
 struct TF_Buffer;
 struct TF_GrapplerItem;
-struct TF_Status;
 
 namespace tfdml
 {
-void OptimizeGraph(
+void RunOptimizer(
     void* optimizer,
     const TF_Buffer* input_graph_buffer,
     const TF_GrapplerItem* grappler_item,

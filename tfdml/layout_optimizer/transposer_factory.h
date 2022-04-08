@@ -16,7 +16,7 @@ limitations under the License.
 #pragma once
 
 #include "absl/container/flat_hash_map.h"
-#include "tfdml/optimizer/transposer.h"
+#include "tfdml/layout_optimizer/transposer.h"
 #include <memory>
 
 namespace tensorflow

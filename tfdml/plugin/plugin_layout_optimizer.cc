@@ -13,9 +13,37 @@ limitations under the License.
 
 #include "plugin_version.h"
 #include "tensorflow/c/experimental/grappler/grappler.h"
+#include "tensorflow/c/kernels.h"
 #include "tensorflow/c/tf_status.h"
-#include "tfdml/optimizer/dml_graph_optimizer.h"
-#include <iostream>
+#include "tensorflow/core/framework/graph.pb.h"
+#include "tfdml/layout_optimizer/generic_layout_optimizer.h"
+#include "tfdml/optimizer/optimizer_runner.h"
+
+namespace tfdml
+{
+static void* CreateOptimizer() { return new GenericLayoutOptimizer(); }
+
+static void OptimizeGraph(
+    void* optimizer,
+    const TF_Buffer* input_graph_buffer,
+    const TF_GrapplerItem* grappler_item,
+    TF_Buffer* output_graph_buffer,
+    TF_Status* raw_status)
+{
+    RunOptimizer(
+        optimizer,
+        input_graph_buffer,
+        grappler_item,
+        output_graph_buffer,
+        raw_status);
+}
+
+void DeleteOptimizer(void* optimizer)
+{
+    delete static_cast<GenericLayoutOptimizer*>(optimizer);
+}
+
+} // namespace tfdml
 
 #pragma warning(push)
 #pragma warning(disable : 4273)
@@ -29,7 +57,11 @@ void TF_InitGraph(TP_OptimizerRegistrationParams* params, TF_Status* status)
     params->minor_version = DML_MINOR_VERSION;
     params->patch_version = DML_PATCH_VERSION;
     params->optimizer->struct_size = TP_OPTIMIZER_STRUCT_SIZE;
+    params->optimizer->create_func = tfdml::CreateOptimizer;
     params->optimizer->optimize_func = tfdml::OptimizeGraph;
+    params->optimizer->destroy_func = tfdml::DeleteOptimizer;
 }
 
 #pragma warning(pop)
+
+void TF_InitKernel() {}

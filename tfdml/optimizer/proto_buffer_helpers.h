@@ -16,10 +16,15 @@ limitations under the License.
 #include "tensorflow/c/c_api.h"
 #include "tfdml/runtime_adapter/status.h"
 
+namespace tensorflow
+{
+class GraphDef;
+}
+
 namespace tfdml
 {
 template <typename T>
-static Status ParseBuffer(const TF_Buffer* in, T* out)
+Status ParseBuffer(const TF_Buffer* in, T* out)
 {
     if (in == nullptr || !out->ParseFromArray(in->data, in->length))
     {
@@ -30,4 +35,7 @@ static Status ParseBuffer(const TF_Buffer* in, T* out)
     }
     return Status::OK();
 }
+
+Status GraphDefToBuffer(const tensorflow::GraphDef& in, TF_Buffer* out);
+
 } // namespace tfdml

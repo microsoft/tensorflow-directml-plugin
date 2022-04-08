@@ -10,7 +10,7 @@ from contextlib import contextmanager
 
 def parse_args():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--plugin_path', help='path to TFDML plugin library')
+  parser.add_argument('--plugin_paths', nargs='+', required=True, help='path to the TFDML plugin libraries')
   parser.add_argument('--build_dir', help='cmake build directory')
   return parser.parse_args()
 
@@ -63,14 +63,17 @@ def copy_dml_redist_files(dst, dml_redist_dir, pix_dir):
             f'{dst}/WinPixEventRuntime_ThirdPartyNotices.txt')
 
 
-def prepare_src(src_dir, tfdml_plugin_path, cmake_build_dir):
+def prepare_src(src_dir, tfdml_plugin_paths, cmake_build_dir):
   os.makedirs(src_dir)
   print(f'=== Preparing sources in dir {src_dir}')
 
   os.makedirs(f'{src_dir}/tensorflow-plugins')
   os.makedirs(f'{src_dir}/tensorflow-directml-plugin')
-  os.chmod(tfdml_plugin_path, 0o777)
-  shutil.copy(tfdml_plugin_path, f'{src_dir}/tensorflow-plugins')
+
+  for tfdml_plugin_path in tfdml_plugin_paths:
+    os.chmod(tfdml_plugin_path, 0o777)
+    shutil.copy(tfdml_plugin_path, f'{src_dir}/tensorflow-plugins')
+
   shutil.copy('tfdml/wheel/MANIFEST.in', src_dir)
   shutil.copy('tfdml/wheel/README', src_dir)
   shutil.copy('tfdml/wheel/setup.py', src_dir)
@@ -117,7 +120,7 @@ def main():
   args = parse_args()
   staging_dir = os.path.join(args.build_dir, 'build_wheel_staging')
   try:
-    prepare_src(staging_dir, args.plugin_path, args.build_dir)
+    prepare_src(staging_dir, args.plugin_paths, args.build_dir)
     build_wheel(staging_dir, args.build_dir)
   finally:
     try:

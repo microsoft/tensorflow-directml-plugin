@@ -32,7 +32,7 @@ class OpRegistry
         static OpRegistry instance;
         return instance;
     }
-    Status Initialize(TF_FunctionLibraryDefinition* function_lib_def);
+    void Initialize(TF_FunctionLibraryDefinition* function_lib_def);
     Status LookUpOpDef(const char* op_name, tensorflow::OpDef* op_def);
 
   private:

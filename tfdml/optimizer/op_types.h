@@ -33,6 +33,8 @@ constexpr char kAttrSrcFormat[] = "src_format";
 constexpr char kAttrDstFormat[] = "dst_format";
 constexpr char kOpConst[] = "Const";
 constexpr char kOptimizedSuffix[] = "LayoutOptimizer";
+constexpr char kReshape[] = "Reshape";
+constexpr char kReshapeConst[] = "ReshapeConst";
 
 bool IsDefaultLayoutSensitiveOp(const tensorflow::NodeDef& node);
 bool IsDefaultLayoutAgnosticOp(const tensorflow::NodeDef& node);
@@ -131,4 +133,10 @@ bool IsLayoutAgnosticOp(const tensorflow::NodeDef& node);
 bool IsDataFormatOp(const MutableNodeView& node);
 bool IsTranspose(const tensorflow::NodeDef& node);
 bool IsArg(const tensorflow::NodeDef& node);
+bool IsConstant(const tensorflow::NodeDef& node);
+bool IsStridedSliceGrad(const tensorflow::NodeDef& node);
+bool IsConv3DBackpropFilterV2(const tensorflow::NodeDef& node);
+bool IsConv3DBackpropInputV2(const tensorflow::NodeDef& node);
+bool IsConv3D(const tensorflow::NodeDef& node);
+bool IsBiasAddV2(const tensorflow::NodeDef& node);
 } // namespace tfdml

@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/optimizer/transpose_context.h"
+#include "tfdml/layout_optimizer/transpose_context.h"
 #include "absl/container/flat_hash_map.h"
 #include "tfdml/optimizer/graph_view.h"
 #include "tfdml/optimizer/grappler_item.h"

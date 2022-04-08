@@ -114,9 +114,9 @@ Status GraphProperties::InferStatically(
 
         std::vector<tensorflow::OpInfo::TensorProperties>& input_properties =
             input_properties_[node.name()];
-        input_properties.reserve(num_outputs);
+        input_properties.reserve(num_inputs);
 
-        for (int i = 0; i < num_outputs; ++i)
+        for (int i = 0; i < num_inputs; ++i)
         {
             tensorflow::OpInfo::TensorProperties tensor_props;
             TF_RETURN_IF_ERROR(
