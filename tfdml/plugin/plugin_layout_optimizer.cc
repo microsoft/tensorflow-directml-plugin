@@ -30,12 +30,13 @@ static void OptimizeGraph(
     TF_Buffer* output_graph_buffer,
     TF_Status* raw_status)
 {
-    RunOptimizer(
-        optimizer,
-        input_graph_buffer,
-        grappler_item,
-        output_graph_buffer,
-        raw_status);
+    // TODO: Uncomment after performance of this optimizer has been assessed
+    // RunOptimizer(
+    //     optimizer,
+    //     input_graph_buffer,
+    //     grappler_item,
+    //     output_graph_buffer,
+    //     raw_status);
 }
 
 void DeleteOptimizer(void* optimizer)
@@ -45,6 +46,8 @@ void DeleteOptimizer(void* optimizer)
 
 } // namespace tfdml
 
+// TODO: Re-enable the warning once the header has been fixed
+// https://github.com/tensorflow/tensorflow/pull/55579
 #pragma warning(push)
 #pragma warning(disable : 4273)
 

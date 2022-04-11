@@ -1113,7 +1113,6 @@ Status Transposer::UpdateEdge(
     auto* src_node_def = src_node->node();
     auto* dst_node_def = dst_node->node();
 
-    // TODO(lyandy): Minimize device parsing/fetching.
     const std::string device =
         (is_src_format_to_dst_format ? *dst_node_def : *src_node_def).device();
     tensorflow::DataType data_type =
@@ -1546,7 +1545,6 @@ Status BinaryOpTransposer::AddNodeShapeConst(
     {
         // This is to ensure the transpose node and the const node are in the
         // same frame.
-        // TODO(halehri): Add Test that exercises this condition.
         new_node.add_input(AsControlDependency(std::string(depended_node)));
     }
 

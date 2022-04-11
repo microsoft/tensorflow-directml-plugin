@@ -160,7 +160,6 @@ class MutableFaninView
         : NodeIndexAndPortIndex(graph_view, node_index, port_index),
           fanin_index_(fanin_index)
     {
-        // TODO(lyandy): Remove once constructor is not public.
         assert(port_index < 0 || port_index == fanin_index);
     }
 
