@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "absl/cleanup/cleanup.h"
 #include "tfdml/kernels/pch.h"
 #include "tfdml/runtime_adapter/stream.h"
 
