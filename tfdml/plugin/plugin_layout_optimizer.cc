@@ -30,13 +30,12 @@ static void OptimizeGraph(
     TF_Buffer* output_graph_buffer,
     TF_Status* raw_status)
 {
-    // TODO: Uncomment after performance of this optimizer has been assessed
-    // RunOptimizer(
-    //     optimizer,
-    //     input_graph_buffer,
-    //     grappler_item,
-    //     output_graph_buffer,
-    //     raw_status);
+    RunOptimizer(
+        optimizer,
+        input_graph_buffer,
+        grappler_item,
+        output_graph_buffer,
+        raw_status);
 }
 
 void DeleteOptimizer(void* optimizer)

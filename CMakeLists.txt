@@ -387,27 +387,26 @@ target_link_libraries(
     runtime_adapter
     protobuf::libprotobuf
 )
-
-add_library(
-    tfdml_plugin_layout_optimizer
-    SHARED
-    tfdml/layout_optimizer/generic_layout_optimizer.cc
-    tfdml/layout_optimizer/scoped_data_format_upgrader.cc
-    tfdml/layout_optimizer/transpose_context.cc
-    tfdml/layout_optimizer/transposer.cc
-    tfdml/layout_optimizer/transposer_factory.cc
-    tfdml/plugin/plugin_layout_optimizer.cc
-)
-
-target_link_libraries(
-    tfdml_plugin_layout_optimizer 
-    PRIVATE
-    optimizer
-    protobuf::libprotobuf
-)
-
 set_target_properties(tfdml_plugin PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
-set_target_properties(tfdml_plugin_layout_optimizer PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+
+# TODO: Uncomment after performance of this optimizer has been assessed
+# add_library(
+#     tfdml_plugin_layout_optimizer
+#     SHARED
+#     tfdml/layout_optimizer/generic_layout_optimizer.cc
+#     tfdml/layout_optimizer/scoped_data_format_upgrader.cc
+#     tfdml/layout_optimizer/transpose_context.cc
+#     tfdml/layout_optimizer/transposer.cc
+#     tfdml/layout_optimizer/transposer_factory.cc
+#     tfdml/plugin/plugin_layout_optimizer.cc
+# )
+# target_link_libraries(
+#     tfdml_plugin_layout_optimizer 
+#     PRIVATE
+#     optimizer
+#     protobuf::libprotobuf
+# )
+# set_target_properties(tfdml_plugin_layout_optimizer PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 
 # The CMake project name and version determines the python wheel version. Save these
 # values to files so the setup.py script can read them.
@@ -432,11 +431,11 @@ add_custom_command(
         ${CMAKE_SOURCE_DIR}/tfdml/wheel/build_wheel.py
         --plugin_paths
             $<TARGET_FILE:tfdml_plugin>
-            $<TARGET_FILE:tfdml_plugin_layout_optimizer>
+#             $<TARGET_FILE:tfdml_plugin_layout_optimizer>
         --build_dir ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS
         tfdml_plugin
-        tfdml_plugin_layout_optimizer
+#         tfdml_plugin_layout_optimizer
         tfdml/wheel/build_wheel.py
         tfdml/wheel/setup.py
         tfdml/wheel/README
