@@ -26,8 +26,6 @@ from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import string_ops
 from tensorflow.python.platform import test
 import dml_test_util
-import os
-input(os.getpid())
 
 
 class AddNTest(dml_test_util.TestCase):
@@ -96,7 +94,7 @@ class AddNTest(dml_test_util.TestCase):
                       metadata=np.array(value, dtype=np.int32).tobytes())
               ]))
 
-    with self.session(use_gpu=True):
+    with self.session(use_gpu=False):
       num_tests = 127
       values = list(range(100))
       variant_consts = [create_constant_variant(x) for x in values]

@@ -11,6 +11,10 @@ parameters:
 - name: addToBlobStorage
   type: boolean
   default: false
+- name: enableTelemetry
+  type: boolean
+- name: telemetryProviderGroupGuid
+  type: string
 
 jobs:
 - job:
@@ -30,7 +34,7 @@ jobs:
       $StartTicks = (Get-Date).Ticks
       Write-Host "Start Time = '$StartTicks' $([datetime]$StartTicks)"
       Write-Host "##vso[task.setVariable variable=startTicks;isOutput=true]$StartTicks"
-      if ('${{parameters.artifact}}' -match '(x64-win|x64-linux)-(release|debug)-(cp\d\d)')
+      if ('${{parameters.artifact}}' -match '(x64-win|x64-linux)-(release|debug)-(cp\d{2,3})')
       {
           $Architecture, $Configuration, $PyVersion = $Matches[1..3]
           Write-Host "Architecture = '$Architecture'"
@@ -41,7 +45,7 @@ jobs:
           Write-Host "PyVersion = '$PyVersion'"
           Write-Host "##vso[task.setVariable variable=pyVersion;isOutput=true]$PyVersion"
           
-          $PyVersionMajorDotMinor = $PyVersion[2] + '.' + $PyVersion[3]
+          $PyVersionMajorDotMinor = $PyVersion[2] + '.' + $PyVersion.SubString(3)
           Write-Host "PyVersionMajorDotMinor = '$PyVersionMajorDotMinor'"
           Write-Host "##vso[task.setVariable variable=pyVersionMajorDotMinor;isOutput=true]$PyVersionMajorDotMinor"
       }
@@ -58,6 +62,7 @@ jobs:
       } else {
           $WheelVersionSuffix = ".dev" + "$(Build.BuildNumber)" -replace '(\d{6}).*','$1'
       }
+
       Write-Host "##vso[task.setVariable variable=wheelVersionSuffix;isOutput=true]$WheelVersionSuffix"
 
     name: vars
@@ -71,7 +76,11 @@ jobs:
     - script: |
         $(miniconda.activateCommand)
         export CXX=clang++
-        python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        if ["${{parameters.enableTelemetry}}" = "True"]; then
+          python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        else
+          python build.py --config $(vars.configuration) --build_output $(buildOutPath) --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        fi
       displayName: Build
       # target: manylinux
     # Rename instead of using auditwheel repair since libd3d12.so will not register as manylinux compliant
@@ -85,7 +94,12 @@ jobs:
   - ${{if contains(parameters.artifact, '-win-') }}:
     - powershell: |
         Invoke-Expression '$(miniconda.activateCommand)'
-        python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+
+        if ("${{parameters.enableTelemetry}}" -eq "True") {
+          python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        } else {
+          python build.py --config $(vars.configuration) --build_output $(buildOutPath) --wheel_version_suffix "$(vars.wheelVersionSuffix)"
+        }
       displayName: Build
   - powershell: |
       New-Item -Force -ItemType Directory "$(buildPubPath)"

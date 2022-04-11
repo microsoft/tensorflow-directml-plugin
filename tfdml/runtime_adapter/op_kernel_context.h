@@ -36,6 +36,7 @@ class OpKernelContext
     int num_outputs() const;
     void CtxFailure(const char* file, int line, const Status& s);
     void CtxFailureWithWarning(const char* file, int line, const Status& s);
+    void forward_ref_input_to_ref_output(int input_index, int output_index);
     TF_DataType input_dtype(int index);
     TF_DataType expected_output_dtype(int index);
     StatusOr<Tensor> allocate_output(int index, const TensorShape& shape);
@@ -56,6 +57,16 @@ class OpKernelContext
     Status set_output(int index, const Tensor& tensor);
     const OpKernel& op_kernel() const;
     Status AssignVariable(int var_index, int value_index);
+
+    // TODO: Enable once the AssignRefVariable API is merged
+    // https://github.com/tensorflow/tensorflow/pull/55379
+    // void AssignRefVariable(
+    //     int input_ref_index,
+    //     int output_ref_index,
+    //     int value_index,
+    //     bool use_locking,
+    //     bool validate_shape);
+
     Status AssignUpdateVariable(
         int var_index,
         int value_index,
@@ -64,6 +75,13 @@ class OpKernelContext
             TF_Tensor* tensor,
             TF_Tensor* value,
             int Op));
+
+    Status AddNVariant(void (*binary_add_func)(
+        TF_OpKernelContext* ctx,
+        const TF_Tensor* a,
+        const TF_Tensor* b,
+        TF_Tensor* out));
+
     Status GetInputTensorFromVariable(
         int index,
         bool lock_held,

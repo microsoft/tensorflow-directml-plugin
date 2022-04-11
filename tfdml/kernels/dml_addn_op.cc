@@ -16,6 +16,7 @@ limitations under the License.
 
 #include "absl/cleanup/cleanup.h"
 #include "tfdml/kernels/pch.h"
+#include "tfdml/runtime_adapter/stream.h"
 
 namespace tfdml
 {
@@ -95,6 +96,167 @@ class DmlAddNKernel : public DmlKernel
     }
 };
 
+class DummyInitializationHelper : public InitializationHelper
+{
+};
+
+static inline bool IsSupportedAddType(TF_DataType dtype)
+{
+    switch (dtype)
+    {
+    case TF_FLOAT:
+    case TF_HALF:
+    case TF_INT64:
+    case TF_INT32:
+    case TF_UINT64:
+    case TF_UINT32: return true;
+    default: return false;
+    }
+}
+
+class DmlBinaryAddVariantHelper : public DmlKernel
+{
+  public:
+    using DmlKernel::Compute;
+
+    explicit DmlBinaryAddVariantHelper(
+        DmlDevice* dml_device,
+        TF_OpKernelContext* ctx,
+        TF_DataType dtype,
+        uint32_t num_elements)
+    {
+        uint32_t tensor_sizes[] = {1, 1, 1, num_elements};
+
+        auto tensor_desc =
+            DmlTensorDesc::Create(dtype, tensor_sizes, tensor_sizes);
+
+        DmlTensorInfo a_info = {};
+        a_info.kernel_index = 0;
+        a_info.desc = tensor_desc;
+
+        DmlTensorInfo b_info = {};
+        b_info.kernel_index = 1;
+        b_info.desc = tensor_desc;
+
+        DmlKernelTensors tensors = {};
+        tensors.inputs = {a_info, b_info};
+        tensors.outputs = {a_info};
+
+        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto scope = dml::Graph(dml_device->GetDmlDevice());
+        const auto a = dml::InputTensor(scope, 0, inputs[0]);
+        const auto b = dml::InputTensor(scope, 1, inputs[1]);
+        auto result = a + b;
+
+        // TFDML #24881131
+        if (Is64BitSignedIntegerType(dtype))
+        {
+            result = dml::ConvertInt32ToInt64(result);
+        }
+
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+
+        auto init_helper = std::make_shared<DummyInitializationHelper>();
+
+        status_ = Initialize(
+            ctx,
+            std::move(tensors),
+            compiled_op.Get(),
+            std::move(init_helper),
+            dml_device->GetDmlDevice(),
+            dml_device->GetDeviceContext(),
+            "AddN");
+    }
+
+    StatusOr<DmlGpuEvent> Compute(
+        DmlDevice* dml_device,
+        TF_OpKernelContext* ctx,
+        const TF_Tensor* a_tensor,
+        const TF_Tensor* b_tensor,
+        TF_Tensor* out_tensor) const
+    {
+        D3D12BufferRegion a_buffer =
+            dml_device->GetDeviceContext()->GetBufferForTensor(a_tensor);
+        D3D12BufferRegion b_buffer =
+            dml_device->GetDeviceContext()->GetBufferForTensor(b_tensor);
+        D3D12BufferRegion out_buffer =
+            dml_device->GetDeviceContext()->GetBufferForTensor(out_tensor);
+
+        absl::optional<DML_BUFFER_BINDING> input_bindings[] = {
+            a_buffer.GetBufferBinding(),
+            b_buffer.GetBufferBinding(),
+        };
+
+        // Bind the first input as the output, to take advantage of in-place
+        // execution
+        absl::optional<DML_BUFFER_BINDING> output_bindings[] = {
+            out_buffer.GetBufferBinding(),
+        };
+
+        return DmlKernel::Compute(
+            ctx,
+            dml_device->GetDmlDevice(),
+            dml_device->GetDeviceContext(),
+            input_bindings,
+            output_bindings);
+    }
+
+    const Status& GetStatus() const { return status_; }
+
+  private:
+    Status status_;
+};
+
+static void BinaryAddVariant(
+    TF_OpKernelContext* ctx,
+    const TF_Tensor* a_tensor,
+    const TF_Tensor* b_tensor,
+    TF_Tensor* out_tensor)
+{
+    Status status;
+    SP_Stream stream = TF_GetStream(ctx, status.raw());
+    CHECK(status.ok());
+
+    Device* device = static_cast<Device*>(stream->stream_handle);
+    DmlDevice* dml_device = static_cast<DmlDevice*>(device);
+
+    TF_DataType dtype = TF_TensorType(a_tensor);
+    int64_t num_elements = TF_TensorElementCount(a_tensor);
+
+    if (!IsSupportedAddType(dtype))
+    {
+        TF_OpKernelContext_Failure(
+            ctx,
+            errors::InvalidArgument(
+                DataTypeString(dtype),
+                " is not a supported type for Add.")
+                .raw());
+        return;
+    }
+
+    if (num_elements == 0)
+    {
+        return;
+    }
+
+    DmlBinaryAddVariantHelper dml_kernel(dml_device, ctx, dtype, num_elements);
+
+    if (!dml_kernel.GetStatus().ok())
+    {
+        TF_OpKernelContext_Failure(ctx, dml_kernel.GetStatus().raw());
+        return;
+    }
+
+    StatusOr<DmlGpuEvent> status_or_event =
+        dml_kernel.Compute(dml_device, ctx, a_tensor, b_tensor, out_tensor);
+
+    if (!status_or_event.ok())
+    {
+        TF_OpKernelContext_Failure(ctx, status_or_event.status().raw());
+    }
+}
+
 class DmlAddNVariantKernel : public OpKernel
 {
   public:
@@ -103,121 +265,12 @@ class DmlAddNVariantKernel : public OpKernel
         std::shared_ptr<const NodeDef> node_def)
         : OpKernel(std::move(node_def))
     {
-        TF_Graph* graph = TF_NewGraph();
-        absl::Cleanup graph_cleanup = [graph] { TF_DeleteGraph(graph); };
-
-        // Initialize the placeholders that takes the Variant inputs
-
-        int num_inputs;
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("N", &num_inputs));
-
-        TF_DataType dtype;
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("T", &dtype));
-
-        Status status;
-
-        for (int i = 0; i < num_inputs; ++i)
-        {
-            TF_OperationDescription* placeholder_desc = TF_NewOperation(
-                graph,
-                "Placeholder",
-                std::to_string(i).c_str());
-            TF_SetDevice(placeholder_desc, "/device:CPU");
-            TF_SetAttrType(placeholder_desc, "dtype", dtype);
-
-            placeholder_ops_.push_back(
-                TF_FinishOperation(placeholder_desc, status.raw()));
-            OP_REQUIRES_OK(ctx, status);
-        }
-
-        // Initialize the AddN op on the CPU
-        TF_OperationDescription* add_n_desc =
-            TF_NewOperation(graph, "AddN", "DmlVariantAddN");
-        TF_SetDevice(add_n_desc, "/device:CPU");
-
-        std::vector<TF_Output> placeholder_outputs;
-        placeholder_outputs.reserve(num_inputs);
-
-        for (int i = 0; i < num_inputs; ++i)
-        {
-            placeholder_outputs.push_back(TF_Output{placeholder_ops_[i], 0});
-        }
-
-        TF_AddInputList(
-            add_n_desc,
-            placeholder_outputs.data(),
-            placeholder_outputs.size());
-
-        TF_SetAttrType(add_n_desc, "T", dtype);
-
-        add_n_op_ = TF_FinishOperation(add_n_desc, status.raw());
-        OP_REQUIRES_OK(ctx, status);
-
-        // Create a new session that will be executed on the CPU
-        TF_SessionOptions* opts = TF_NewSessionOptions();
-        absl::Cleanup session_opts_cleanup = [opts]
-        { TF_DeleteSessionOptions(opts); };
-
-        sess_ = TF_NewSession(graph, opts, status.raw());
-        OP_REQUIRES_OK(ctx, status);
-    }
-
-    ~DmlAddNVariantKernel() override
-    {
-        if (sess_)
-        {
-            Status status;
-            TF_DeleteSession(sess_, status.raw());
-            TF_CHECK_OK(status);
-        }
     }
 
     void Compute(OpKernelContext* ctx)
     {
-        std::vector<TF_Output> feeds;
-        feeds.reserve(placeholder_ops_.size());
-
-        std::vector<TF_Tensor*> feedValues;
-        feedValues.reserve(placeholder_ops_.size());
-
-        std::vector<Tensor> inputs;
-        inputs.reserve(placeholder_ops_.size());
-
-        for (int i = 0; i < placeholder_ops_.size(); ++i)
-        {
-            Tensor input = ctx->input(i);
-            feeds.push_back(TF_Output{placeholder_ops_[i], 0});
-            feedValues.push_back(input.raw());
-            inputs.push_back(std::move(input));
-        }
-
-        TF_Output fetches[] = {TF_Output{add_n_op_, 0}};
-        TF_Tensor* fetchValues[] = {nullptr};
-
-        Status status;
-        TF_SessionRun(
-            sess_,
-            nullptr,
-            feeds.data(),
-            feedValues.data(),
-            placeholder_ops_.size(),
-            fetches,
-            fetchValues,
-            1,
-            nullptr,
-            0,
-            nullptr,
-            status.raw());
-        OP_REQUIRES_OK(ctx, status);
-
-        Tensor host_output(fetchValues[0]);
-        OP_REQUIRES_OK(ctx, ctx->set_output(0, host_output));
+        OP_REQUIRES_OK(ctx, ctx->AddNVariant(BinaryAddVariant));
     }
-
-  private:
-    std::vector<TF_Operation*> placeholder_ops_;
-    TF_Operation* add_n_op_ = nullptr;
-    TF_Session* sess_ = nullptr;
 };
 
 void RegisterKernels_AddN()
@@ -232,8 +285,7 @@ void RegisterKernels_AddN()
     K::WithTypeConstraint<T, TF_INT64>::Register();
     K::WithTypeConstraint<T, TF_UINT32>::Register();
 
-    using VariantK = KernelDefinition<ops::AddN, DmlAddNVariantKernel>::
-        WithHostMemoryArguments<ops::AddN::Argument::sum>;
+    using VariantK = KernelDefinition<ops::AddN, DmlAddNVariantKernel>;
     VariantK::WithTypeConstraint<T, TF_VARIANT>::Register();
 }
 

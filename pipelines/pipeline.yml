@@ -30,10 +30,17 @@ parameters:
   - x64-win-debug-cp37
   - x64-win-release-cp38
   - x64-win-release-cp39
+  - x64-win-release-cp310
   - x64-linux-release-cp37
   - x64-linux-debug-cp37
   - x64-linux-release-cp38
   - x64-linux-release-cp39
+  - x64-linux-release-cp310
+
+- name: enableTelemetry
+  displayName: Enable Telemetry
+  type: boolean
+  default: false
 
 - name: testArtifacts
   displayName: Test Artifacts
@@ -48,7 +55,7 @@ parameters:
 - name: testTensorflowPackage
   displayName: TensorFlow Package Version
   type: string
-  default: tf-nightly-cpu==2.9.0.dev20220316
+  default: tf-nightly-cpu==2.9.0.dev20220329
 
 - name: testKerasPackage
   displayName: TensorFlow Package Version
@@ -64,6 +71,11 @@ parameters:
   displayName: Email Results To
   type: string
   default: $(emailTo) # the default is stored in the pipeline as a variable
+
+- name: telemetryProviderGroupGuid
+  displayName: Telemetry Provider Group GUID
+  type: string
+  default: $(telemetryProviderGroupGuid) # the default is stored in the pipeline as a variable
 
 # CAREFUL: remember that variables are always string to string mappings. Unlike boolean-typed 
 # parameters, they must be compared to 'True' or 'False' in expressions or they will be 
@@ -94,6 +106,8 @@ stages:
       parameters:
         artifact: ${{artifact}}
         releaseBuild: ${{parameters.releaseBuild}}
+        telemetryProviderGroupGuid: ${{parameters.telemetryProviderGroupGuid}}
+        enableTelemetry: ${{parameters.enableTelemetry}}
         ${{if and(contains(artifact, 'x64-win-release'),eq(variables.blobStorageDropEnabled, 'True'))}}:
           addToBlobStorage: true
 

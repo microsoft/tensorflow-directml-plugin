@@ -34,14 +34,13 @@ namespace tfdml
 //     handling due to differences between resource tensors vs refs tensors.
 //
 
-class TrainingInitHelper : public GetBroadcastedOutputShapeHelper::InitHelper
+template <int num_input_refs>
+class TrainingInitHelper : public InitializationHelper
 {
   public:
     struct Attributes
-        : public GetBroadcastedOutputShapeHelper::InitHelper::Attributes
     {
         explicit Attributes(OpKernelConstruction* ctx)
-            : GetBroadcastedOutputShapeHelper::InitHelper::Attributes(ctx)
         {
             OP_REQUIRES_OK(ctx, ctx->GetAttr("use_locking", &use_locking));
             OP_REQUIRES_OK(ctx, ctx->GetAttr("T", &dtype));
@@ -54,8 +53,7 @@ class TrainingInitHelper : public GetBroadcastedOutputShapeHelper::InitHelper
     TrainingInitHelper(
         OpKernelContext* ctx,
         std::shared_ptr<const Attributes> attr)
-        : GetBroadcastedOutputShapeHelper::InitHelper(ctx, attr),
-          use_exclusive_lock_(attr->use_locking && ctx->num_outputs() == 0),
+        : use_exclusive_lock_(attr->use_locking && ctx->num_outputs() == 0),
           dtype_(attr->dtype)
     {
     }
@@ -63,15 +61,136 @@ class TrainingInitHelper : public GetBroadcastedOutputShapeHelper::InitHelper
     bool UseExclusiveLock() const { return use_exclusive_lock_; }
     TF_DataType GetDataType() const { return dtype_; }
 
+    bool IsNoOpKernel(
+        OpKernelContext* ctx,
+        absl::Span<const TensorShape> output_shapes) const override
+    {
+        constexpr bool lock_held = false;
+        constexpr bool is_variant = false;
+
+        for (int i = 0; i < num_input_refs; ++i)
+        {
+            Tensor input_ref_tensor;
+            Status status = ctx->GetInputTensorFromVariable(
+                i,
+                lock_held,
+                is_variant,
+                &input_ref_tensor);
+            CHECK(status.ok());
+
+            if (input_ref_tensor.NumElements() == 0)
+            {
+                return true;
+            }
+        }
+
+        for (int i = num_input_refs; i < ctx->num_inputs(); ++i)
+        {
+            if (ctx->input(i).NumElements() == 0)
+            {
+                return true;
+            }
+        }
+
+        for (const auto& output_shape : output_shapes)
+        {
+            if (output_shape.num_elements() == 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
   private:
     bool use_exclusive_lock_;
     TF_DataType dtype_;
 };
 
+// Helper class to ensure that variable tensors are only ever accessed under
+// the lock.
+class VariableTensorAccessor
+{
+  public:
+    VariableTensorAccessor(
+        OpKernelContext* op_ctx,
+        bool use_exclusive_lock,
+        VariableLock&& locks)
+        : op_ctx_(op_ctx),
+          use_exclusive_lock_(use_exclusive_lock),
+          locks_(std::move(locks))
+    {
+    }
+
+    Tensor Get(int index) const
+    {
+        constexpr bool is_variant = false;
+
+        Tensor tensor;
+        TF_CHECK_OK(op_ctx_->GetInputTensorFromVariable(
+            index,
+            use_exclusive_lock_,
+            is_variant,
+            &tensor));
+        CHECK(tensor.IsInitialized());
+
+        return tensor;
+    }
+
+    TensorShape GetShape(int index) const { return Get(index).shape(); }
+
+  private:
+    OpKernelContext* op_ctx_;
+    bool use_exclusive_lock_;
+    VariableLock locks_;
+};
+
+// A helper overload of DmlKernel::GetTrainingTensorInfos that constructs a
+// DmlKernelTensors which conforms to the pattern followed by all training
+// ops. (i.e. broadcasted inputs, uniform datatypes, and graph input/output
+// order conforming to kernel definition)
+static DmlKernelTensors GetTrainingTensorInfos(
+    DmlKernelConstruction* ctx,
+    const absl::optional<TensorShape>& desired_shape,
+    absl::Span<const TensorShape> input_shapes,
+    absl::Span<const TensorShape> output_shapes,
+    TF_DataType dtype)
+{
+    uint32_t input_count = static_cast<uint32_t>(input_shapes.size());
+    uint32_t output_count = static_cast<uint32_t>(output_shapes.size());
+    CHECK(input_count == ctx->GetInputCount());
+
+    DmlKernelTensors tensors;
+
+    for (uint32_t input_idx = 0; input_idx < input_count; ++input_idx)
+    {
+        const TensorShape& input_shape = input_shapes[input_idx];
+        auto desc = DmlTensorDesc::Create(
+            dtype,
+            desired_shape ? *desired_shape : input_shape,
+            input_shape);
+        tensors.inputs.push_back(DmlTensorInfo{std::move(desc), input_idx});
+    }
+
+    for (uint32_t output_idx = 0; output_idx < output_count; ++output_idx)
+    {
+        const TensorShape& output_shape = output_shapes[output_idx];
+        auto desc = DmlTensorDesc::Create(
+            dtype,
+            desired_shape ? *desired_shape : output_shape,
+            output_shape);
+        tensors.outputs.push_back(DmlTensorInfo{std::move(desc), output_idx});
+    }
+
+    return tensors;
+}
+
+template <int num_input_refs>
 class DmlTrainingKernel : public DmlKernel
 {
   public:
-    using InitHelper = TrainingInitHelper;
+    using InitHelper = TrainingInitHelper<num_input_refs>;
 
     explicit DmlTrainingKernel(
         DmlKernelConstruction* ctx,
@@ -101,44 +220,6 @@ class DmlTrainingKernel : public DmlKernel
 
         prepare_tensors_called_ = true;
     }
-
-    // Helper class to ensure that variable tensors are only ever accessed under
-    // the lock.
-    class VariableTensorAccessor
-    {
-      public:
-        VariableTensorAccessor(
-            OpKernelContext* op_ctx,
-            bool use_exclusive_lock,
-            VariableLock&& locks)
-            : op_ctx_(op_ctx),
-              use_exclusive_lock_(use_exclusive_lock),
-              locks_(std::move(locks))
-        {
-        }
-
-        Tensor Get(int index) const
-        {
-            constexpr bool is_variant = false;
-
-            Tensor tensor;
-            TF_CHECK_OK(op_ctx_->GetInputTensorFromVariable(
-                index,
-                use_exclusive_lock_,
-                is_variant,
-                &tensor));
-            CHECK(tensor.IsInitialized());
-
-            return tensor;
-        }
-
-        TensorShape GetShape(int index) const { return Get(index).shape(); }
-
-      private:
-        OpKernelContext* op_ctx_;
-        bool use_exclusive_lock_;
-        VariableLock locks_;
-    };
 
     VariableTensorAccessor LockVariableTensors(OpKernelContext* op_ctx) const
     {
@@ -185,47 +266,6 @@ class DmlTrainingKernel : public DmlKernel
         tensors.output_refs_forwarding[output] = input;
     }
 
-    // A helper overload of DmlKernel::GetTensorInfos that constructs a
-    // DmlKernelTensors which conforms to the pattern followed by all training
-    // ops. (i.e. broadcasted inputs, uniform datatypes, and graph input/output
-    // order conforming to kernel definition)
-    static DmlKernelTensors GetTensorInfos(
-        DmlKernelConstruction* ctx,
-        const absl::optional<TensorShape>& desired_shape,
-        absl::Span<const TensorShape> input_shapes,
-        absl::Span<const TensorShape> output_shapes,
-        TF_DataType dtype)
-    {
-        uint32_t input_count = static_cast<uint32_t>(input_shapes.size());
-        uint32_t output_count = static_cast<uint32_t>(output_shapes.size());
-        CHECK(input_count == ctx->GetInputCount());
-
-        DmlKernelTensors tensors;
-
-        for (uint32_t input_idx = 0; input_idx < input_count; ++input_idx)
-        {
-            const TensorShape& input_shape = input_shapes[input_idx];
-            auto desc = DmlTensorDesc::Create(
-                dtype,
-                desired_shape ? *desired_shape : input_shape,
-                input_shape);
-            tensors.inputs.push_back(DmlTensorInfo{std::move(desc), input_idx});
-        }
-
-        for (uint32_t output_idx = 0; output_idx < output_count; ++output_idx)
-        {
-            const TensorShape& output_shape = output_shapes[output_idx];
-            auto desc = DmlTensorDesc::Create(
-                dtype,
-                desired_shape ? *desired_shape : output_shape,
-                output_shape);
-            tensors.outputs.push_back(
-                DmlTensorInfo{std::move(desc), output_idx});
-        }
-
-        return tensors;
-    }
-
     // True if this kernel receives resource tensors, false if it receives ref
     // tensors.
     bool IsResourceOp() const { return is_resource_op_; }
@@ -235,7 +275,7 @@ class DmlTrainingKernel : public DmlKernel
         CHECK(prepare_tensors_called_);
 
         auto* op_ctx = ctx->GetOpKernelContext();
-        VariableTensorAccessor var_accessor = LockVariableTensors(op_ctx);
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
 
         // Retrieve the inputs to this kernel. Because some of our inputs might
         // be resource tensors, we need to hold a ref on them until the end of
@@ -355,13 +395,14 @@ class DmlTrainingKernel : public DmlKernel
     std::vector<bool> is_variable_input_;
 };
 
-class NesterovInitHelper : public TrainingInitHelper
+template <int num_input_refs>
+class NesterovInitHelper : public TrainingInitHelper<num_input_refs>
 {
   public:
-    struct Attributes : public TrainingInitHelper::Attributes
+    struct Attributes : public TrainingInitHelper<num_input_refs>::Attributes
     {
         explicit Attributes(OpKernelConstruction* ctx)
-            : TrainingInitHelper::Attributes(ctx)
+            : TrainingInitHelper<num_input_refs>::Attributes(ctx)
         {
             OP_REQUIRES_OK(ctx, ctx->GetAttr("use_nesterov", &use_nesterov));
         }
@@ -372,7 +413,7 @@ class NesterovInitHelper : public TrainingInitHelper
     NesterovInitHelper(
         OpKernelContext* ctx,
         std::shared_ptr<const Attributes> attr)
-        : TrainingInitHelper(ctx, attr),
+        : TrainingInitHelper<num_input_refs>(ctx, attr),
           use_nesterov_(attr->use_nesterov)
     {
     }
@@ -383,10 +424,11 @@ class NesterovInitHelper : public TrainingInitHelper
     bool use_nesterov_;
 };
 
-class DmlApplyAdamKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyAdamKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
-    using InitHelper = NesterovInitHelper;
+    using InitHelper = NesterovInitHelper<num_input_refs>;
 
     enum TensorIndices
     {
@@ -405,7 +447,7 @@ class DmlApplyAdamKernel : public DmlTrainingKernel
     explicit DmlApplyAdamKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(
+        : DmlTrainingKernel<num_input_refs>(
               ctx,
               init_helper->UseExclusiveLock(),
               true /* inplace_allowed */)
@@ -422,8 +464,8 @@ class DmlApplyAdamKernel : public DmlTrainingKernel
             errors::InvalidArgument("use_nesterov is not supported; use "
                                     "tf.keras.optimizers.Nadam instead."));
 
-        PrepareVariableTensors(op_ctx, {kVar, kM, kV});
-        VariableTensorAccessor var_accessor = LockVariableTensors(op_ctx);
+        this->PrepareVariableTensors(op_ctx, {kVar, kM, kV});
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
 
         const TensorShape& var_shape = var_accessor.GetShape(kVar);
         const TensorShape& m_shape = var_accessor.GetShape(kM);
@@ -514,17 +556,17 @@ class DmlApplyAdamKernel : public DmlTrainingKernel
             epsilon_shape,
             grad_shape};
         auto output_shapes = {var_shape, m_shape, v_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             absl::nullopt,
             input_shapes,
             output_shapes,
             init_helper->GetDataType());
 
-        MaybeForwardRefInputToRefOutput(tensors, 0, 0);
+        this->MaybeForwardRefInputToRefOutput(tensors, 0, 0);
 
-        auto inputs = GetDmlTensorDescs(tensors.inputs);
-        auto outputs = GetDmlTensorDescs(tensors.outputs);
+        auto inputs = this->GetDmlTensorDescs(tensors.inputs);
+        auto outputs = this->GetDmlTensorDescs(tensors.outputs);
 
         float lr = GetScalarFromTensor(ctx->GetConstantInputTensor(kLR));
         beta1_ = GetScalarFromTensor(ctx->GetConstantInputTensor(kBeta1));
@@ -553,7 +595,7 @@ class DmlApplyAdamKernel : public DmlTrainingKernel
         adam_desc.Epsilon = epsilon;
 
         DML_OPERATOR_DESC op_desc = {DML_OPERATOR_ADAM_OPTIMIZER, &adam_desc};
-        Initialize(ctx, std::move(tensors), op_desc);
+        this->Initialize(ctx, std::move(tensors), op_desc);
     }
 
     static float GetScalarFromTensor(const Tensor& t)
@@ -578,7 +620,7 @@ class DmlApplyAdamKernel : public DmlTrainingKernel
     StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
     {
         auto* op_ctx = ctx->GetOpKernelContext();
-        VariableTensorAccessor var_accessor = LockVariableTensors(op_ctx);
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
 
         // beta1_power and beta2_power are treated specially: they are host
         // memory tensors, but aren't treated as constant CPU input tensors
@@ -654,15 +696,17 @@ class DmlApplyAdamKernel : public DmlTrainingKernel
     float beta2_;
 };
 
-template <typename ShapeHelper>
+template <typename ShapeHelper, int num_input_refs>
 class DmlAdamKernelWrapper
-    : public DmlKernelWrapper<DmlApplyAdamKernel, ShapeHelper>
+    : public DmlKernelWrapper<DmlApplyAdamKernel<num_input_refs>, ShapeHelper>
 {
   public:
     explicit DmlAdamKernelWrapper(
         OpKernelConstruction* ctx,
         std::shared_ptr<const NodeDef> node_def)
-        : DmlKernelWrapper<DmlApplyAdamKernel, ShapeHelper>(ctx, node_def),
+        : DmlKernelWrapper<DmlApplyAdamKernel<num_input_refs>, ShapeHelper>(
+              ctx,
+              node_def),
           node_def_(std::move(node_def))
     {
     }
@@ -674,7 +718,8 @@ class DmlAdamKernelWrapper
         key.op_type_name = this->type_string();
         key.node_def = node_def_;
 
-        using TensorIndices = DmlApplyAdamKernel::TensorIndices;
+        using TensorIndices =
+            typename DmlApplyAdamKernel<num_input_refs>::TensorIndices;
 
         // Add constant CPU input tensors. Note that this doesn't include
         // beta1_power/beta2_power, since those are handled dynamically by the
@@ -700,21 +745,26 @@ class DmlAdamKernelWrapper
     std::shared_ptr<const NodeDef> node_def_;
 };
 
-class DmlApplyAdamWithAmsgradKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyAdamWithAmsgradKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
+    using InitHelper = typename DmlTrainingKernel<num_input_refs>::InitHelper;
+
     explicit DmlApplyAdamWithAmsgradKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
         CHECK(ctx->GetInputCount() == 11);
         CHECK(ctx->GetOutputCount() == 1 || ctx->GetOutputCount() == 0);
 
-        PrepareVariableTensors(op_ctx, {0, 1, 2, 3});
-        VariableTensorAccessor var_accessor = LockVariableTensors(op_ctx);
+        this->PrepareVariableTensors(op_ctx, {0, 1, 2, 3});
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
 
         const TensorShape& var_shape = var_accessor.GetShape(0);
         const TensorShape& m_shape = var_accessor.GetShape(1);
@@ -805,14 +855,14 @@ class DmlApplyAdamWithAmsgradKernel : public DmlTrainingKernel
             epsilon_shape,
             grad_shape};
         auto output_shapes = {var_shape, m_shape, v_shape, vhat_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             absl::nullopt,
             input_shapes,
             output_shapes,
             init_helper->GetDataType());
 
-        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto inputs = this->GetDmlTensorDescs(tensors.inputs);
 
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto var = dml::InputTensor(scope, 0, inputs[0]);
@@ -847,25 +897,30 @@ class DmlApplyAdamWithAmsgradKernel : public DmlTrainingKernel
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {var, m, v, vhat});
 
-        Initialize(ctx, std::move(tensors), compiled_op.Get());
+        this->Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
-class DmlApplyAdaMaxKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyAdaMaxKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
+    using InitHelper = typename DmlTrainingKernel<num_input_refs>::InitHelper;
+
     explicit DmlApplyAdaMaxKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
         CHECK(ctx->GetInputCount() == 9);
         CHECK(ctx->GetOutputCount() == 1 || ctx->GetOutputCount() == 0);
 
-        PrepareVariableTensors(op_ctx, {0, 1, 2});
-        VariableTensorAccessor var_accessor = LockVariableTensors(op_ctx);
+        this->PrepareVariableTensors(op_ctx, {0, 1, 2});
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
 
         const TensorShape& var_shape = var_accessor.GetShape(0);
         const TensorShape& m_shape = var_accessor.GetShape(1);
@@ -949,16 +1004,16 @@ class DmlApplyAdaMaxKernel : public DmlTrainingKernel
             epsilon_shape,
             grad_shape};
         auto output_shapes = {var_shape, m_shape, v_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
             output_shapes,
             init_helper->GetDataType());
 
-        MaybeForwardRefInputToRefOutput(tensors, 0, 0);
+        this->MaybeForwardRefInputToRefOutput(tensors, 0, 0);
 
-        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto inputs = this->GetDmlTensorDescs(tensors.inputs);
 
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto var = dml::InputTensor(scope, 0, inputs[0]);
@@ -978,25 +1033,30 @@ class DmlApplyAdaMaxKernel : public DmlTrainingKernel
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {var, m, v});
 
-        Initialize(ctx, std::move(tensors), compiled_op.Get());
+        this->Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
-class DmlApplyGradientDescentKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyGradientDescentKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
+    using InitHelper = typename DmlTrainingKernel<num_input_refs>::InitHelper;
+
     DmlApplyGradientDescentKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
         CHECK(ctx->GetInputCount() == 3);
         CHECK(ctx->GetOutputCount() == 1 || ctx->GetOutputCount() == 0);
 
-        PrepareVariableTensors(op_ctx, {0});
-        VariableTensorAccessor var_accessor = LockVariableTensors(op_ctx);
+        this->PrepareVariableTensors(op_ctx, {0});
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
 
         const TensorShape& var_shape = var_accessor.GetShape(0);
         const TensorShape& alpha_shape = ctx->GetInputTensorShape(1);
@@ -1022,16 +1082,16 @@ class DmlApplyGradientDescentKernel : public DmlTrainingKernel
 
         auto input_shapes = {var_shape, alpha_shape, delta_shape};
         auto output_shapes = {var_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
             output_shapes,
             init_helper->GetDataType());
 
-        MaybeForwardRefInputToRefOutput(tensors, 0, 0);
+        this->MaybeForwardRefInputToRefOutput(tensors, 0, 0);
 
-        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto inputs = this->GetDmlTensorDescs(tensors.inputs);
 
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto var = dml::InputTensor(scope, 0, inputs[0]);
@@ -1045,25 +1105,30 @@ class DmlApplyGradientDescentKernel : public DmlTrainingKernel
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {var});
 
-        Initialize(ctx, std::move(tensors), compiled_op.Get());
+        this->Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
-class DmlApplyAdadeltaKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyAdadeltaKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
+    using InitHelper = typename DmlTrainingKernel<num_input_refs>::InitHelper;
+
     DmlApplyAdadeltaKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
         CHECK(ctx->GetInputCount() == 7);
         CHECK(ctx->GetOutputCount() <= 1);
 
-        PrepareVariableTensors(op_ctx, {0, 1, 2});
-        VariableTensorAccessor var_accessor = LockVariableTensors(op_ctx);
+        this->PrepareVariableTensors(op_ctx, {0, 1, 2});
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
 
         const TensorShape& var_shape = var_accessor.GetShape(0);
         const TensorShape& accum_shape = var_accessor.GetShape(1);
@@ -1123,16 +1188,16 @@ class DmlApplyAdadeltaKernel : public DmlTrainingKernel
             epsilon_shape,
             grad_shape};
         auto output_shapes = {var_shape, accum_shape, accum_update_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
             output_shapes,
             init_helper->GetDataType());
 
-        MaybeForwardRefInputToRefOutput(tensors, 0, 0);
+        this->MaybeForwardRefInputToRefOutput(tensors, 0, 0);
 
-        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto inputs = this->GetDmlTensorDescs(tensors.inputs);
 
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto var = dml::InputTensor(scope, 0, inputs[0]);
@@ -1155,17 +1220,18 @@ class DmlApplyAdadeltaKernel : public DmlTrainingKernel
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {var, accum, accum_update});
 
-        Initialize(ctx, std::move(tensors), compiled_op.Get());
+        this->Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
-class ApplyAdagradInitHelper : public TrainingInitHelper
+template <int num_input_refs>
+class ApplyAdagradInitHelper : public TrainingInitHelper<num_input_refs>
 {
   public:
-    struct Attributes : public TrainingInitHelper::Attributes
+    struct Attributes : public TrainingInitHelper<num_input_refs>::Attributes
     {
         explicit Attributes(OpKernelConstruction* ctx)
-            : TrainingInitHelper::Attributes(ctx)
+            : TrainingInitHelper<num_input_refs>::Attributes(ctx)
         {
             OP_REQUIRES_OK(ctx, ctx->GetAttr("update_slots", &update_slots));
         }
@@ -1176,7 +1242,7 @@ class ApplyAdagradInitHelper : public TrainingInitHelper
     ApplyAdagradInitHelper(
         OpKernelContext* ctx,
         std::shared_ptr<const Attributes> attr)
-        : TrainingInitHelper(ctx, attr),
+        : TrainingInitHelper<num_input_refs>(ctx, attr),
           update_slots_(attr->update_slots)
     {
     }
@@ -1187,15 +1253,18 @@ class ApplyAdagradInitHelper : public TrainingInitHelper
     bool update_slots_;
 };
 
-class DmlApplyAdagradKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyAdagradKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
-    using InitHelper = ApplyAdagradInitHelper;
+    using InitHelper = ApplyAdagradInitHelper<num_input_refs>;
 
     DmlApplyAdagradKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
@@ -1203,8 +1272,8 @@ class DmlApplyAdagradKernel : public DmlTrainingKernel
         CHECK(ctx->GetInputCount() == 4 || ctx->GetInputCount() == 5);
         CHECK(ctx->GetOutputCount() <= 1);
 
-        PrepareVariableTensors(op_ctx, {0, 1});
-        VariableTensorAccessor var_accessor = LockVariableTensors(op_ctx);
+        this->PrepareVariableTensors(op_ctx, {0, 1});
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
 
         const bool has_epsilon = (ctx->GetInputCount() == 5);
 
@@ -1264,16 +1333,16 @@ class DmlApplyAdagradKernel : public DmlTrainingKernel
 
         input_shapes.push_back(grad_shape);
         auto output_shapes = {var_shape, accum_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
             output_shapes,
             init_helper->GetDataType());
 
-        MaybeForwardRefInputToRefOutput(tensors, 0, 0);
+        this->MaybeForwardRefInputToRefOutput(tensors, 0, 0);
 
-        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto inputs = this->GetDmlTensorDescs(tensors.inputs);
 
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto var = dml::InputTensor(scope, 0, inputs[0]);
@@ -1301,27 +1370,30 @@ class DmlApplyAdagradKernel : public DmlTrainingKernel
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {var, accum});
 
-        Initialize(ctx, std::move(tensors), compiled_op.Get());
+        this->Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
-class DmlApplyMomentumKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyMomentumKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
-    using InitHelper = NesterovInitHelper;
+    using InitHelper = NesterovInitHelper<num_input_refs>;
 
     explicit DmlApplyMomentumKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
         CHECK(ctx->GetInputCount() == 5);
         CHECK(ctx->GetOutputCount() == 1 || ctx->GetOutputCount() == 0);
 
-        PrepareVariableTensors(op_ctx, {0, 1});
-        VariableTensorAccessor var_accessor = LockVariableTensors(op_ctx);
+        this->PrepareVariableTensors(op_ctx, {0, 1});
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
 
         const TensorShape& var_shape = var_accessor.GetShape(0);
         const TensorShape& accum_shape = var_accessor.GetShape(1);
@@ -1365,16 +1437,16 @@ class DmlApplyMomentumKernel : public DmlTrainingKernel
         auto input_shapes =
             {var_shape, accum_shape, lr_shape, grad_shape, momentum_shape};
         auto output_shapes = {var_shape, accum_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
             output_shapes,
             init_helper->GetDataType());
 
-        MaybeForwardRefInputToRefOutput(tensors, 0, 0);
+        this->MaybeForwardRefInputToRefOutput(tensors, 0, 0);
 
-        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto inputs = this->GetDmlTensorDescs(tensors.inputs);
 
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto var = dml::InputTensor(scope, 0, inputs[0]);
@@ -1397,27 +1469,30 @@ class DmlApplyMomentumKernel : public DmlTrainingKernel
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {var, accum});
 
-        Initialize(ctx, std::move(tensors), compiled_op.Get());
+        this->Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
-class DmlApplyKerasMomentumKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyKerasMomentumKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
-    using InitHelper = NesterovInitHelper;
+    using InitHelper = NesterovInitHelper<num_input_refs>;
 
     explicit DmlApplyKerasMomentumKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
         CHECK(ctx->GetInputCount() == 5);
         CHECK(ctx->GetOutputCount() == 1 || ctx->GetOutputCount() == 0);
 
-        PrepareVariableTensors(op_ctx, {0, 1});
-        VariableTensorAccessor var_accessor = LockVariableTensors(op_ctx);
+        this->PrepareVariableTensors(op_ctx, {0, 1});
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
 
         const TensorShape& var_shape = var_accessor.GetShape(0);
         const TensorShape& accum_shape = var_accessor.GetShape(1);
@@ -1461,16 +1536,16 @@ class DmlApplyKerasMomentumKernel : public DmlTrainingKernel
         auto input_shapes =
             {var_shape, accum_shape, lr_shape, grad_shape, momentum_shape};
         auto output_shapes = {var_shape, accum_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
             output_shapes,
             init_helper->GetDataType());
 
-        MaybeForwardRefInputToRefOutput(tensors, 0, 0);
+        this->MaybeForwardRefInputToRefOutput(tensors, 0, 0);
 
-        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto inputs = this->GetDmlTensorDescs(tensors.inputs);
 
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto var = dml::InputTensor(scope, 0, inputs[0]);
@@ -1493,25 +1568,30 @@ class DmlApplyKerasMomentumKernel : public DmlTrainingKernel
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {var, accum});
 
-        Initialize(ctx, std::move(tensors), compiled_op.Get());
+        this->Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
-class DmlApplyRMSPropKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyRMSPropKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
+    using InitHelper = TrainingInitHelper<num_input_refs>;
+
     explicit DmlApplyRMSPropKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
         CHECK(ctx->GetInputCount() == 8);
         CHECK(ctx->GetOutputCount() == 1 || ctx->GetOutputCount() == 0);
 
-        PrepareVariableTensors(op_ctx, {0, 1, 2});
-        VariableTensorAccessor var_accessor = LockVariableTensors(op_ctx);
+        this->PrepareVariableTensors(op_ctx, {0, 1, 2});
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
 
         const TensorShape& var_shape = var_accessor.GetShape(0);
         const TensorShape& ms_shape = var_accessor.GetShape(1);
@@ -1588,16 +1668,16 @@ class DmlApplyRMSPropKernel : public DmlTrainingKernel
             epsilon_shape,
             grad_shape};
         auto output_shapes = {var_shape, ms_shape, mom_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
             output_shapes,
             init_helper->GetDataType());
 
-        MaybeForwardRefInputToRefOutput(tensors, 0, 0);
+        this->MaybeForwardRefInputToRefOutput(tensors, 0, 0);
 
-        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto inputs = this->GetDmlTensorDescs(tensors.inputs);
 
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto var = dml::InputTensor(scope, 0, inputs[0]);
@@ -1616,25 +1696,30 @@ class DmlApplyRMSPropKernel : public DmlTrainingKernel
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {var, ms, mom});
 
-        Initialize(ctx, std::move(tensors), compiled_op.Get());
+        this->Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
-class DmlApplyCenteredRMSPropKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyCenteredRMSPropKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
+    using InitHelper = NesterovInitHelper<num_input_refs>;
+
     explicit DmlApplyCenteredRMSPropKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
         CHECK(ctx->GetInputCount() == 9);
         CHECK(ctx->GetOutputCount() == 1 || ctx->GetOutputCount() == 0);
 
-        PrepareVariableTensors(op_ctx, {0, 1, 2, 3});
-        VariableTensorAccessor var_accessor = LockVariableTensors(op_ctx);
+        this->PrepareVariableTensors(op_ctx, {0, 1, 2, 3});
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
 
         const TensorShape& var_shape = var_accessor.GetShape(0);
         const TensorShape& mg_shape = var_accessor.GetShape(1);
@@ -1722,16 +1807,16 @@ class DmlApplyCenteredRMSPropKernel : public DmlTrainingKernel
             epsilon_shape,
             grad_shape};
         auto output_shapes = {var_shape, mg_shape, ms_shape, mom_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
             output_shapes,
             init_helper->GetDataType());
 
-        MaybeForwardRefInputToRefOutput(tensors, 0, 0);
+        this->MaybeForwardRefInputToRefOutput(tensors, 0, 0);
 
-        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto inputs = this->GetDmlTensorDescs(tensors.inputs);
 
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto var = dml::InputTensor(scope, 0, inputs[0]);
@@ -1753,25 +1838,30 @@ class DmlApplyCenteredRMSPropKernel : public DmlTrainingKernel
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {var, mg, ms, mom});
 
-        Initialize(ctx, std::move(tensors), compiled_op.Get());
+        this->Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
-class DmlApplyAddSignKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyAddSignKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
+    using InitHelper = TrainingInitHelper<num_input_refs>;
+
     explicit DmlApplyAddSignKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
         CHECK(ctx->GetInputCount() == 7);
         CHECK(ctx->GetOutputCount() == 1 || ctx->GetOutputCount() == 0);
 
-        PrepareVariableTensors(op_ctx, {0, 1});
-        VariableTensorAccessor var_accessor = LockVariableTensors(op_ctx);
+        this->PrepareVariableTensors(op_ctx, {0, 1});
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
 
         const TensorShape& var_shape = var_accessor.GetShape(0);
         const TensorShape& m_shape = var_accessor.GetShape(1);
@@ -1835,16 +1925,16 @@ class DmlApplyAddSignKernel : public DmlTrainingKernel
             beta_shape,
             grad_shape};
         auto output_shapes = {var_shape, m_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
             output_shapes,
             init_helper->GetDataType());
 
-        MaybeForwardRefInputToRefOutput(tensors, 0, 0);
+        this->MaybeForwardRefInputToRefOutput(tensors, 0, 0);
 
-        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto inputs = this->GetDmlTensorDescs(tensors.inputs);
 
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto var = dml::InputTensor(scope, 0, inputs[0]);
@@ -1862,25 +1952,30 @@ class DmlApplyAddSignKernel : public DmlTrainingKernel
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {var, m});
 
-        Initialize(ctx, std::move(tensors), compiled_op.Get());
+        this->Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
-class DmlApplyPowerSignKernel : public DmlTrainingKernel
+template <int num_input_refs>
+class DmlApplyPowerSignKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
+    using InitHelper = TrainingInitHelper<num_input_refs>;
+
     explicit DmlApplyPowerSignKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
-        : DmlTrainingKernel(ctx, init_helper->UseExclusiveLock())
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
     {
         auto* op_ctx = ctx->GetOpKernelContext();
 
         CHECK(ctx->GetInputCount() == 7);
         CHECK(ctx->GetOutputCount() == 1 || ctx->GetOutputCount() == 0);
 
-        PrepareVariableTensors(op_ctx, {0, 1});
-        VariableTensorAccessor var_accessor = LockVariableTensors(op_ctx);
+        this->PrepareVariableTensors(op_ctx, {0, 1});
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
 
         const TensorShape& var_shape = var_accessor.GetShape(0);
         const TensorShape& m_shape = var_accessor.GetShape(1);
@@ -1944,16 +2039,16 @@ class DmlApplyPowerSignKernel : public DmlTrainingKernel
             beta_shape,
             grad_shape};
         auto output_shapes = {var_shape, m_shape};
-        DmlKernelTensors tensors = GetTensorInfos(
+        DmlKernelTensors tensors = GetTrainingTensorInfos(
             ctx,
             desired_shape,
             input_shapes,
             output_shapes,
             init_helper->GetDataType());
 
-        MaybeForwardRefInputToRefOutput(tensors, 0, 0);
+        this->MaybeForwardRefInputToRefOutput(tensors, 0, 0);
 
-        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto inputs = this->GetDmlTensorDescs(tensors.inputs);
 
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto var = dml::InputTensor(scope, 0, inputs[0]);
@@ -1972,15 +2067,31 @@ class DmlApplyPowerSignKernel : public DmlTrainingKernel
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {var, m});
 
-        Initialize(ctx, std::move(tensors), compiled_op.Get());
+        this->Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
+
+void RegisterApplyAdam()
+{
+    using K = KernelDefinition<
+        ops::ApplyAdam,
+        DmlAdamKernelWrapper<GetOutputShapeAsRefInputShapeHelper, 3>>::
+        WithHostMemoryArguments<
+            ops::ApplyAdam::Argument::beta1_power,
+            ops::ApplyAdam::Argument::beta2_power,
+            ops::ApplyAdam::Argument::lr,
+            ops::ApplyAdam::Argument::beta1,
+            ops::ApplyAdam::Argument::beta2,
+            ops::ApplyAdam::Argument::epsilon>;
+
+    RegisterWithTypes<K, ops::ApplyAdam::Attribute::T, TF_FLOAT, TF_HALF>();
+}
 
 void RegisterResourceApplyAdam()
 {
     using K = KernelDefinition<
         ops::ResourceApplyAdam,
-        DmlAdamKernelWrapper<NoOutputShapeHelper>>::
+        DmlAdamKernelWrapper<NoOutputShapeHelper, 0>>::
         WithHostMemoryArguments<
             ops::ResourceApplyAdam::Argument::var,
             ops::ResourceApplyAdam::Argument::m,
@@ -2003,7 +2114,9 @@ void RegisterResourceApplyAdamWithAmsgrad()
 {
     using K = KernelDefinition<
         ops::ResourceApplyAdamWithAmsgrad,
-        DmlKernelWrapper<DmlApplyAdamWithAmsgradKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<
+            DmlApplyAdamWithAmsgradKernel<0>,
+            NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyAdamWithAmsgrad::Argument::var,
             ops::ResourceApplyAdamWithAmsgrad::Argument::m,
@@ -2016,11 +2129,22 @@ void RegisterResourceApplyAdamWithAmsgrad()
         TF_HALF>();
 }
 
+void RegisterApplyAdaMax()
+{
+    using K = KernelDefinition<
+        ops::ApplyAdaMax,
+        DmlKernelWrapper<
+            DmlApplyAdaMaxKernel<3>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::ApplyAdaMax::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 void RegisterResourceApplyAdaMax()
 {
     using K = KernelDefinition<
         ops::ResourceApplyAdaMax,
-        DmlKernelWrapper<DmlApplyAdaMaxKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyAdaMaxKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyAdaMax::Argument::var,
             ops::ResourceApplyAdaMax::Argument::m,
@@ -2033,11 +2157,28 @@ void RegisterResourceApplyAdaMax()
         TF_HALF>();
 }
 
+void RegisterApplyGradientDescent()
+{
+    using K = KernelDefinition<
+        ops::ApplyGradientDescent,
+        DmlKernelWrapper<
+            DmlApplyGradientDescentKernel<1>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::ApplyGradientDescent::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
+
 void RegisterResourceApplyGradientDescent()
 {
     using K = KernelDefinition<
         ops::ResourceApplyGradientDescent,
-        DmlKernelWrapper<DmlApplyGradientDescentKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<
+            DmlApplyGradientDescentKernel<0>,
+            NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyGradientDescent::Argument::var>;
 
@@ -2048,11 +2189,22 @@ void RegisterResourceApplyGradientDescent()
         TF_HALF>();
 }
 
+void RegisterApplyAdadelta()
+{
+    using K = KernelDefinition<
+        ops::ApplyAdadelta,
+        DmlKernelWrapper<
+            DmlApplyAdadeltaKernel<3>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::ApplyAdadelta::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 void RegisterResourceApplyAdadelta()
 {
     using K = KernelDefinition<
         ops::ResourceApplyAdadelta,
-        DmlKernelWrapper<DmlApplyAdadeltaKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyAdadeltaKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyAdadelta::Argument::var,
             ops::ResourceApplyAdadelta::Argument::accum,
@@ -2065,11 +2217,37 @@ void RegisterResourceApplyAdadelta()
         TF_HALF>();
 }
 
+void RegisterApplyAdagrad()
+{
+    using K = KernelDefinition<
+        ops::ApplyAdagrad,
+        DmlKernelWrapper<
+            DmlApplyAdagradKernel<2>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::ApplyAdagrad::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
+void RegisterApplyAdagradV2()
+{
+    using K = KernelDefinition<
+        ops::ApplyAdagradV2,
+        DmlKernelWrapper<
+            DmlApplyAdagradKernel<2>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::ApplyAdagradV2::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
+
 void RegisterResourceApplyAdagrad()
 {
     using K = KernelDefinition<
         ops::ResourceApplyAdagrad,
-        DmlKernelWrapper<DmlApplyAdagradKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyAdagradKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyAdagrad::Argument::var,
             ops::ResourceApplyAdagrad::Argument::accum>;
@@ -2085,7 +2263,7 @@ void RegisterResourceApplyAdagradV2()
 {
     using K = KernelDefinition<
         ops::ResourceApplyAdagradV2,
-        DmlKernelWrapper<DmlApplyAdagradKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyAdagradKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyAdagradV2::Argument::var,
             ops::ResourceApplyAdagradV2::Argument::accum>;
@@ -2097,11 +2275,22 @@ void RegisterResourceApplyAdagradV2()
         TF_HALF>();
 }
 
+void RegisterApplyMomentum()
+{
+    using K = KernelDefinition<
+        ops::ApplyMomentum,
+        DmlKernelWrapper<
+            DmlApplyMomentumKernel<2>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::ApplyMomentum::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 void RegisterResourceApplyMomentum()
 {
     using K = KernelDefinition<
         ops::ResourceApplyMomentum,
-        DmlKernelWrapper<DmlApplyMomentumKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyMomentumKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyMomentum::Argument::var,
             ops::ResourceApplyMomentum::Argument::accum>;
@@ -2117,7 +2306,7 @@ void RegisterResourceApplyKerasMomentum()
 {
     using K = KernelDefinition<
         ops::ResourceApplyKerasMomentum,
-        DmlKernelWrapper<DmlApplyKerasMomentumKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyKerasMomentumKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyKerasMomentum::Argument::var,
             ops::ResourceApplyKerasMomentum::Argument::accum>;
@@ -2129,11 +2318,22 @@ void RegisterResourceApplyKerasMomentum()
         TF_HALF>();
 }
 
+void RegisterApplyRMSProp()
+{
+    using K = KernelDefinition<
+        ops::ApplyRMSProp,
+        DmlKernelWrapper<
+            DmlApplyRMSPropKernel<3>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::ApplyRMSProp::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 void RegisterResourceApplyRMSProp()
 {
     using K = KernelDefinition<
         ops::ResourceApplyRMSProp,
-        DmlKernelWrapper<DmlApplyRMSPropKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyRMSPropKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyRMSProp::Argument::var,
             ops::ResourceApplyRMSProp::Argument::ms,
@@ -2146,11 +2346,28 @@ void RegisterResourceApplyRMSProp()
         TF_HALF>();
 }
 
+void RegisterApplyCenteredRMSProp()
+{
+    using K = KernelDefinition<
+        ops::ApplyCenteredRMSProp,
+        DmlKernelWrapper<
+            DmlApplyCenteredRMSPropKernel<4>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::ApplyCenteredRMSProp::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
+
 void RegisterResourceApplyCenteredRMSProp()
 {
     using K = KernelDefinition<
         ops::ResourceApplyCenteredRMSProp,
-        DmlKernelWrapper<DmlApplyCenteredRMSPropKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<
+            DmlApplyCenteredRMSPropKernel<0>,
+            NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyCenteredRMSProp::Argument::var,
             ops::ResourceApplyCenteredRMSProp::Argument::ms,
@@ -2163,11 +2380,22 @@ void RegisterResourceApplyCenteredRMSProp()
         TF_HALF>();
 }
 
+void RegisterApplyAddSign()
+{
+    using K = KernelDefinition<
+        ops::ApplyAddSign,
+        DmlKernelWrapper<
+            DmlApplyAddSignKernel<2>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<K, ops::ApplyAddSign::Attribute::T, TF_FLOAT, TF_HALF>();
+}
+
 void RegisterResourceApplyAddSign()
 {
     using K = KernelDefinition<
         ops::ResourceApplyAddSign,
-        DmlKernelWrapper<DmlApplyAddSignKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyAddSignKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyAddSign::Argument::var,
             ops::ResourceApplyAddSign::Argument::m>;
@@ -2179,11 +2407,26 @@ void RegisterResourceApplyAddSign()
         TF_HALF>();
 }
 
+void RegisterApplyPowerSign()
+{
+    using K = KernelDefinition<
+        ops::ApplyPowerSign,
+        DmlKernelWrapper<
+            DmlApplyPowerSignKernel<2>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::ApplyPowerSign::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
+
 void RegisterResourceApplyPowerSign()
 {
     using K = KernelDefinition<
         ops::ResourceApplyPowerSign,
-        DmlKernelWrapper<DmlApplyPowerSignKernel, NoOutputShapeHelper>>::
+        DmlKernelWrapper<DmlApplyPowerSignKernel<0>, NoOutputShapeHelper>>::
         WithHostMemoryArguments<
             ops::ResourceApplyPowerSign::Argument::var,
             ops::ResourceApplyPowerSign::Argument::m>;
@@ -2197,18 +2440,29 @@ void RegisterResourceApplyPowerSign()
 
 void RegisterKernels_Training()
 {
+    RegisterApplyAdam();
     RegisterResourceApplyAdam();
     RegisterResourceApplyAdamWithAmsgrad();
+    RegisterApplyAdaMax();
     RegisterResourceApplyAdaMax();
+    RegisterApplyGradientDescent();
     RegisterResourceApplyGradientDescent();
+    RegisterApplyAdadelta();
     RegisterResourceApplyAdadelta();
+    RegisterApplyAdagrad();
+    RegisterApplyAdagradV2();
     RegisterResourceApplyAdagrad();
     RegisterResourceApplyAdagradV2();
+    RegisterApplyMomentum();
     RegisterResourceApplyMomentum();
     RegisterResourceApplyKerasMomentum();
+    RegisterApplyRMSProp();
     RegisterResourceApplyRMSProp();
+    RegisterApplyCenteredRMSProp();
     RegisterResourceApplyCenteredRMSProp();
+    RegisterApplyAddSign();
     RegisterResourceApplyAddSign();
+    RegisterApplyPowerSign();
     RegisterResourceApplyPowerSign();
 }
 
