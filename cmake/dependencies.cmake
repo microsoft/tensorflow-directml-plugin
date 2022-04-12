@@ -163,6 +163,20 @@ endfunction()
 
 # Generate the necessary .proto files in the TF wheel (performed at build time).
 tf_proto_cpp(tensorflow/core/profiler/protobuf/xplane.proto)
+tf_proto_cpp(tensorflow/core/framework/graph.proto)
+tf_proto_cpp(tensorflow/core/framework/function.proto)
+tf_proto_cpp(tensorflow/core/framework/attr_value.proto)
+tf_proto_cpp(tensorflow/core/framework/tensor.proto)
+tf_proto_cpp(tensorflow/core/framework/resource_handle.proto)
+tf_proto_cpp(tensorflow/core/framework/tensor_shape.proto)
+tf_proto_cpp(tensorflow/core/framework/types.proto)
+tf_proto_cpp(tensorflow/core/framework/node_def.proto)
+tf_proto_cpp(tensorflow/core/framework/full_type.proto)
+tf_proto_cpp(tensorflow/core/framework/op_def.proto)
+tf_proto_cpp(tensorflow/core/framework/versions.proto)
+tf_proto_cpp(tensorflow/core/framework/kernel_def.proto)
+tf_proto_cpp(tensorflow/core/grappler/costs/op_performance_data.proto)
+tf_proto_cpp(tensorflow/core/protobuf/device_properties.proto)
 
 # A python interpreter is required to produce the plugin wheel. This python environment
 # must have the 'wheel' package installed.

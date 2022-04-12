@@ -23,6 +23,7 @@ limitations under the License.
 #include <iostream>
 #include <thread>
 
+#include "plugin_version.h"
 #include "tensorflow/c/experimental/stream_executor/stream_executor.h"
 #include "tensorflow/c/tf_status.h"
 #include "tfdml/core/dml_bfc_allocator.h"
@@ -656,9 +657,9 @@ extern "C"
         params->platform->supports_unified_memory = false;
         params->platform->force_memory_growth = true;
         params->platform->use_bfc_allocator = true;
-        params->major_version = 0;
-        params->minor_version = 0;
-        params->patch_version = 1;
+        params->major_version = DML_MAJOR_VERSION;
+        params->minor_version = DML_MINOR_VERSION;
+        params->patch_version = DML_PATCH_VERSION;
         params->platform_fns->get_device_count = plugin_get_device_count;
         params->platform_fns->create_device = plugin_create_device;
         params->platform_fns->destroy_device = plugin_destroy_device;
