@@ -51,7 +51,7 @@ static decltype(TF_AssignRefVariableDeclaration)* GetAssignRefVariableSymbol()
 
     if (!tf_handle)
     {
-        return false;
+        return nullptr;
     }
 
     Status status;
@@ -62,7 +62,7 @@ static decltype(TF_AssignRefVariableDeclaration)* GetAssignRefVariableSymbol()
 
     if (!status.ok())
     {
-        return false;
+        return nullptr;
     }
 
     return static_cast<decltype(TF_AssignRefVariableDeclaration)*>(symbol);
@@ -74,7 +74,7 @@ static decltype(TF_AddNVariantDeclaration)* GetAddNVariantSymbol()
 
     if (!tf_handle)
     {
-        return false;
+        return nullptr;
     }
 
     Status status;
@@ -83,7 +83,7 @@ static decltype(TF_AddNVariantDeclaration)* GetAddNVariantSymbol()
 
     if (!status.ok())
     {
-        return false;
+        return nullptr;
     }
 
     return static_cast<decltype(TF_AddNVariantDeclaration)*>(symbol);
@@ -95,7 +95,7 @@ static decltype(TF_ZerosLikeVariantDeclaration)* GetZerosLikeVariantSymbol()
 
     if (!tf_handle)
     {
-        return false;
+        return nullptr;
     }
 
     Status status;
@@ -104,7 +104,7 @@ static decltype(TF_ZerosLikeVariantDeclaration)* GetZerosLikeVariantSymbol()
 
     if (!status.ok())
     {
-        return false;
+        return nullptr;
     }
 
     return static_cast<decltype(TF_ZerosLikeVariantDeclaration)*>(symbol);
