@@ -25,6 +25,100 @@ limitations under the License.
 
 namespace tfdml
 {
+
+static void* GetTensorFlowHandle()
+{
+    Status status;
+#if _WIN32
+    void* tf_handle =
+        TF_LoadSharedLibrary("_pywrap_tensorflow_internal.pyd", status.raw());
+#else
+    void* tf_handle =
+        TF_LoadSharedLibrary("_pywrap_tensorflow_internal.so", status.raw());
+#endif
+
+    if (!status.ok())
+    {
+        return nullptr;
+    }
+
+    return tf_handle;
+}
+
+static decltype(TF_AssignRefVariableDeclaration)* GetAssignRefVariableSymbol()
+{
+    void* tf_handle = GetTensorFlowHandle();
+
+    if (!tf_handle)
+    {
+        return false;
+    }
+
+    Status status;
+    void* symbol = TF_GetSymbolFromLibrary(
+        tf_handle,
+        "TF_AssignRefVariable",
+        status.raw());
+
+    if (!status.ok())
+    {
+        return false;
+    }
+
+    return static_cast<decltype(TF_AssignRefVariableDeclaration)*>(symbol);
+}
+
+static decltype(TF_AddNVariantDeclaration)* GetAddNVariantSymbol()
+{
+    void* tf_handle = GetTensorFlowHandle();
+
+    if (!tf_handle)
+    {
+        return false;
+    }
+
+    Status status;
+    void* symbol =
+        TF_GetSymbolFromLibrary(tf_handle, "TF_AddNVariant", status.raw());
+
+    if (!status.ok())
+    {
+        return false;
+    }
+
+    return static_cast<decltype(TF_AddNVariantDeclaration)*>(symbol);
+}
+
+static decltype(TF_ZerosLikeVariantDeclaration)* GetZerosLikeVariantSymbol()
+{
+    void* tf_handle = GetTensorFlowHandle();
+
+    if (!tf_handle)
+    {
+        return false;
+    }
+
+    Status status;
+    void* symbol =
+        TF_GetSymbolFromLibrary(tf_handle, "TF_ZerosLikeVariant", status.raw());
+
+    if (!status.ok())
+    {
+        return false;
+    }
+
+    return static_cast<decltype(TF_ZerosLikeVariantDeclaration)*>(symbol);
+}
+
+decltype(TF_AssignRefVariableDeclaration)*
+    OpKernelContext::TF_AssignRefVariable = GetAssignRefVariableSymbol();
+
+decltype(TF_AddNVariantDeclaration)* OpKernelContext::TF_AddNVariant =
+    GetAddNVariantSymbol();
+
+decltype(TF_ZerosLikeVariantDeclaration)* OpKernelContext::TF_ZerosLikeVariant =
+    GetZerosLikeVariantSymbol();
+
 OpKernelContext::OpKernelContext(
     TF_OpKernelContext* context,
     OpKernel* op_kernel)
@@ -273,6 +367,26 @@ Status OpKernelContext::AssignUpdateVariable(
     return status;
 }
 
+Status OpKernelContext::AssignRefVariable(
+    int input_ref_index,
+    int output_ref_index,
+    int value_index,
+    bool use_locking,
+    bool validate_shape)
+{
+    Status status;
+    TF_AssignRefVariable(
+        context_,
+        input_ref_index,
+        output_ref_index,
+        value_index,
+        use_locking,
+        validate_shape,
+        CopyTensorInSameDevice,
+        status.raw());
+    return status;
+}
+
 Status OpKernelContext::AddNVariant(void (*binary_add_func)(
     TF_OpKernelContext* ctx,
     const TF_Tensor* a,
@@ -281,6 +395,16 @@ Status OpKernelContext::AddNVariant(void (*binary_add_func)(
 {
     Status status;
     TF_AddNVariant(context_, binary_add_func, status.raw());
+    return status;
+}
+
+Status OpKernelContext::ZerosLikeVariant(void (*zeros_like_func)(
+    TF_OpKernelContext* ctx,
+    const TF_Tensor* input,
+    TF_Tensor* out))
+{
+    Status status;
+    TF_ZerosLikeVariant(context_, zeros_like_func, status.raw());
     return status;
 }
 

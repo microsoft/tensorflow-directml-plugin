@@ -103,17 +103,25 @@ class DmlAssign : public OpKernel
 
     void Compute(OpKernelContext* ctx)
     {
-        // TODO: Enable once the AssignRefVariable API is merged
-        // https://github.com/tensorflow/tensorflow/pull/55379
-        // constexpr int input_ref_index = 0;
-        // constexpr int output_ref_index = 0;
-        // constexpr int value_index = 1;
-        // ctx->AssignRefVariable(
-        //     input_ref_index,
-        //     output_ref_index,
-        //     value_index,
-        //     exclusive_lock_,
-        //     validate_shape_);
+        OP_REQUIRES(
+            ctx,
+            ctx->AssignRefVariableSupported(),
+            errors::InvalidArgument(
+                "AssignRefVariable is not yet supported for pluggable devices "
+                "in this version of TensorFlow."));
+
+        constexpr int input_ref_index = 0;
+        constexpr int output_ref_index = 0;
+        constexpr int value_index = 1;
+
+        OP_REQUIRES_OK(
+            ctx,
+            ctx->AssignRefVariable(
+                input_ref_index,
+                output_ref_index,
+                value_index,
+                exclusive_lock_,
+                validate_shape_));
     }
 
   private:
@@ -452,10 +460,7 @@ void RegisterKernels_AssignVariableOps()
     RegisterAssignSubVariableOp();
     RegisterAssignAdd();
     RegisterAssignSub();
-
-    // TODO: Enable once the AssignRefVariable API is merged
-    // https://github.com/tensorflow/tensorflow/pull/55379
-    // RegisterAssign();
+    RegisterAssign();
 }
 
 } // namespace tfdml

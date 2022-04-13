@@ -21,6 +21,36 @@ limitations under the License.
 
 struct TF_OpKernelContext;
 
+// TODO: Remove the following declarations once we depend on an API header that
+// declares them
+void TF_AddNVariantDeclaration(
+    TF_OpKernelContext* ctx,
+    void (*binary_add_func)(
+        TF_OpKernelContext* ctx,
+        const TF_Tensor* a,
+        const TF_Tensor* b,
+        TF_Tensor* out),
+    TF_Status* status);
+
+void TF_ZerosLikeVariantDeclaration(
+    TF_OpKernelContext* ctx,
+    void (*zeros_like_func)(
+        TF_OpKernelContext* ctx,
+        const TF_Tensor* input,
+        TF_Tensor* out),
+    TF_Status* status);
+
+void TF_AssignRefVariableDeclaration(
+    TF_OpKernelContext* ctx,
+    int input_ref_index,
+    int output_ref_index,
+    int value_index,
+    bool use_locking,
+    bool validate_shape,
+    void (
+        *copyFunc)(TF_OpKernelContext* ctx, TF_Tensor* source, TF_Tensor* dest),
+    TF_Status* status);
+
 namespace tfdml
 {
 class Device;
@@ -58,15 +88,6 @@ class OpKernelContext
     const OpKernel& op_kernel() const;
     Status AssignVariable(int var_index, int value_index);
 
-    // TODO: Enable once the AssignRefVariable API is merged
-    // https://github.com/tensorflow/tensorflow/pull/55379
-    // void AssignRefVariable(
-    //     int input_ref_index,
-    //     int output_ref_index,
-    //     int value_index,
-    //     bool use_locking,
-    //     bool validate_shape);
-
     Status AssignUpdateVariable(
         int var_index,
         int value_index,
@@ -76,10 +97,22 @@ class OpKernelContext
             TF_Tensor* value,
             int Op));
 
+    Status AssignRefVariable(
+        int input_ref_index,
+        int output_ref_index,
+        int value_index,
+        bool use_locking,
+        bool validate_shape);
+
     Status AddNVariant(void (*binary_add_func)(
         TF_OpKernelContext* ctx,
         const TF_Tensor* a,
         const TF_Tensor* b,
+        TF_Tensor* out));
+
+    Status ZerosLikeVariant(void (*zeros_like_func)(
+        TF_OpKernelContext* ctx,
+        const TF_Tensor* input,
         TF_Tensor* out));
 
     Status GetInputTensorFromVariable(
@@ -89,10 +122,25 @@ class OpKernelContext
         Tensor* tensor);
     TF_OpKernelContext* raw() const;
 
+    bool AddNVariantSupported() const { return TF_AddNVariant != nullptr; }
+
+    bool AssignRefVariableSupported() const
+    {
+        return TF_AssignRefVariable != nullptr;
+    }
+
+    bool ZerosLikeVariantSupported() const
+    {
+        return TF_ZerosLikeVariant != nullptr;
+    }
+
   private:
     TF_OpKernelContext* const context_;
     Status status_;
     Device* device_;
     OpKernel* const op_kernel_;
+    static decltype(TF_AssignRefVariableDeclaration)* TF_AssignRefVariable;
+    static decltype(TF_AddNVariantDeclaration)* TF_AddNVariant;
+    static decltype(TF_ZerosLikeVariantDeclaration)* TF_ZerosLikeVariant;
 };
 } // namespace tfdml
