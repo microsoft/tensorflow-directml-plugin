@@ -122,7 +122,13 @@ class OpKernelContext
         Tensor* tensor);
     TF_OpKernelContext* raw() const;
 
-    bool AddNVariantSupported() const { return TF_AddNVariant != nullptr; }
+    bool AddNVariantSupported() const
+    {
+        // TODO: Uncomment if/when the API has been approved and once we have
+        // figured out the memory leak
+        // return TF_AddNVariant != nullptr;
+        return false;
+    }
 
     bool AssignRefVariableSupported() const
     {
@@ -131,7 +137,10 @@ class OpKernelContext
 
     bool ZerosLikeVariantSupported() const
     {
-        return TF_ZerosLikeVariant != nullptr;
+        // TODO: Uncomment if/when the API has been approved and once we have
+        // figured out the memory leak
+        // return TF_ZerosLikeVariant != nullptr;
+        return false;
     }
 
   private:
