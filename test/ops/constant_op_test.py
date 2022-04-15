@@ -554,7 +554,7 @@ class ZerosLikeTest(dml_test_util.TestCase):
 
   @test_util.run_deprecated_v1
   def testZerosLikeVariant(self):
-    with self.session(use_gpu=True):
+    with self.session(use_gpu=False):
       variant_tensor = tensor_pb2.TensorProto(
           dtype=dtypes_lib.variant.as_datatype_enum,
           tensor_shape=tensor_shape.TensorShape([]).as_proto(),

@@ -15,14 +15,24 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tfdml/kernels/pch.h"
+#include "tfdml/runtime_adapter/stream.h"
 
 namespace tfdml
 {
 
-static void SetTensorToZero(OpKernelContext* ctx, const Tensor& tensor)
+static void SetTensorToZero(DmlDevice* dml_device, const Tensor& tensor)
 {
-    auto device_context =
-        static_cast<DmlDevice*>(ctx->device())->GetDeviceContext();
+    auto device_context = dml_device->GetDeviceContext();
+
+    D3D12BufferRegion output_buffer =
+        device_context->GetBufferForTensor(tensor);
+
+    device_context->ZeroBuffer(output_buffer);
+}
+
+static void SetTensorToZero(DmlDevice* dml_device, const TF_Tensor* tensor)
+{
+    auto device_context = dml_device->GetDeviceContext();
 
     D3D12BufferRegion output_buffer =
         device_context->GetBufferForTensor(tensor);
@@ -53,8 +63,84 @@ class DmlZerosLikeKernel : public OpKernel
         OP_REQUIRES_OK(ctx, status_or_output.status());
         if (status_or_output.ValueOrDie().NumElements() > 0)
         {
-            SetTensorToZero(ctx, status_or_output.ValueOrDie());
+            auto dml_device = static_cast<DmlDevice*>(ctx->device());
+            SetTensorToZero(dml_device, status_or_output.ValueOrDie());
         }
+    }
+};
+
+class DummyInitializationHelper : public InitializationHelper
+{
+};
+
+static inline bool IsSupportedAddType(TF_DataType dtype)
+{
+    switch (dtype)
+    {
+    case TF_FLOAT:
+    case TF_HALF:
+    case TF_INT64:
+    case TF_INT32:
+    case TF_INT16:
+    case TF_INT8:
+    case TF_UINT64:
+    case TF_UINT32:
+    case TF_UINT16:
+    case TF_UINT8:
+    case TF_BOOL: return true;
+    default: return false;
+    }
+}
+
+static void ZerosLikeVariant(
+    TF_OpKernelContext* ctx,
+    const TF_Tensor* input_tensor,
+    TF_Tensor* out_tensor)
+{
+    Status status;
+    SP_Stream stream = TF_GetStream(ctx, status.raw());
+    CHECK(status.ok());
+
+    Device* device = static_cast<Device*>(stream->stream_handle);
+    DmlDevice* dml_device = static_cast<DmlDevice*>(device);
+
+    TF_DataType dtype = TF_TensorType(input_tensor);
+    int64_t num_elements = TF_TensorElementCount(input_tensor);
+
+    if (!IsSupportedAddType(dtype))
+    {
+        TF_OpKernelContext_Failure(
+            ctx,
+            errors::InvalidArgument(
+                DataTypeString(dtype),
+                " is not a supported type for ZerosLike.")
+                .raw());
+        return;
+    }
+
+    SetTensorToZero(dml_device, out_tensor);
+}
+
+class DmlZerosLikeVariantKernel : public OpKernel
+{
+  public:
+    explicit DmlZerosLikeVariantKernel(
+        OpKernelConstruction* ctx,
+        std::shared_ptr<const NodeDef> node_def)
+        : OpKernel(std::move(node_def))
+    {
+    }
+
+    void Compute(OpKernelContext* ctx)
+    {
+        OP_REQUIRES(
+            ctx,
+            ctx->ZerosLikeVariantSupported(),
+            errors::InvalidArgument("ZerosLike with the variant data type is "
+                                    "not yet supported for pluggable devices "
+                                    "in this version of TensorFlow."));
+
+        OP_REQUIRES_OK(ctx, ctx->ZerosLikeVariant(ZerosLikeVariant));
     }
 };
 
@@ -62,13 +148,12 @@ void RegisterKernels_ZerosLike()
 {
     using K = KernelDefinition<ops::ZerosLike, DmlZerosLikeKernel>;
 
-    RegisterWithTypes<
-        K,
-        ops::ZerosLike::Attribute::T,
-        TF_FLOAT,
-        TF_HALF,
-        TF_INT64,
-        TF_BOOL>();
+    constexpr auto T = ops::ZerosLike::Attribute::T;
+    RegisterWithTypes<K, T, TF_FLOAT, TF_HALF, TF_INT64, TF_BOOL>();
+
+    using VariantK =
+        KernelDefinition<ops::ZerosLike, DmlZerosLikeVariantKernel>;
+    VariantK::WithTypeConstraint<T, TF_VARIANT>::Register();
 }
 
 } // namespace tfdml
