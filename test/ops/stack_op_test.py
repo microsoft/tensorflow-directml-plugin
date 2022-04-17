@@ -28,7 +28,6 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gen_array_ops
 from tensorflow.python.ops import gradient_checker_v2
 from tensorflow.python.platform import test
-import dml_test_util
 
 def np_split_squeeze(array, axis):
   axis_len = array.shape[axis]
@@ -39,7 +38,7 @@ def np_split_squeeze(array, axis):
   ]
 
 
-class StackOpTest(dml_test_util.TestCase):
+class StackOpTest(test.TestCase):
 
   def randn(self, shape, dtype):
     data = np.random.randn(*shape)
@@ -65,7 +64,7 @@ class StackOpTest(dml_test_util.TestCase):
     # tf.parallel_stack is only supported in graph mode.
     with ops.Graph().as_default():
       np.random.seed(7)
-      with dml_test_util.device(use_gpu=False):
+      with test_util.device(use_gpu=False):
         for shape in (2,), (3,), (2, 3), (3, 2), (4, 3, 2), (100, 24, 24, 3):
           with self.subTest(shape=shape):
             data = self.randn(shape, np.float32)
@@ -89,7 +88,7 @@ class StackOpTest(dml_test_util.TestCase):
   def testSimpleParallelGPU(self):
     # tf.parallel_stack is only supported in graph mode.
     with ops.Graph().as_default():
-      with dml_test_util.device(use_gpu=True):
+      with test_util.device(use_gpu=True):
         for shape in (2,), (3,), (2, 3), (3, 2), (4, 3, 2), (100, 24, 24, 3):
           with self.subTest(shape=shape):
             data = self.randn(shape, np.float32)
@@ -99,7 +98,7 @@ class StackOpTest(dml_test_util.TestCase):
 
   def testConst(self):
     np.random.seed(7)
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       # Verify that shape induction works with shapes produced via const stack
       a = constant_op.constant([1, 2, 3, 4, 5, 6])
       b = array_ops.reshape(a, array_ops.stack([2, 3]))
@@ -129,7 +128,7 @@ class StackOpTest(dml_test_util.TestCase):
     # tf.parallel_stack is only supported in graph mode.
     with ops.Graph().as_default():
       np.random.seed(7)
-      with dml_test_util.device(use_gpu=False):
+      with test_util.device(use_gpu=False):
         for shape in (2,), (3,), (2, 3), (3, 2), (4, 3, 2), (8, 2, 10):
           with self.subTest(shape=shape):
             data = self.randn(shape, np.float32)
@@ -146,7 +145,7 @@ class StackOpTest(dml_test_util.TestCase):
     # tf.parallel_stack is only supported in graph mode.
     with ops.Graph().as_default():
       np.random.seed(7)
-      with dml_test_util.device(use_gpu=True):
+      with test_util.device(use_gpu=True):
         for shape in (2,), (3,), (2, 3), (3, 2), (4, 3, 2):
           with self.subTest(shape=shape):
             data = self.randn(shape, np.float32)
@@ -193,7 +192,7 @@ class StackOpTest(dml_test_util.TestCase):
     # tf.parallel_stack is only supported in graph mode.
     with ops.Graph().as_default():
       # Verify that stack doesn't crash for zero size inputs
-      with dml_test_util.device(use_gpu=False):
+      with test_util.device(use_gpu=False):
         for shape in (0,), (3, 0), (0, 3):
           with self.subTest(shape=shape):
             x = np.zeros((2,) + shape).astype(np.int32)
@@ -207,7 +206,7 @@ class StackOpTest(dml_test_util.TestCase):
     # tf.parallel_stack is only supported in graph mode.
     with ops.Graph().as_default():
       # Verify that stack doesn't crash for zero size inputs
-      with dml_test_util.device(use_gpu=True):
+      with test_util.device(use_gpu=True):
         for shape in (0,), (3, 0), (0, 3):
           with self.subTest(shape=shape):
             x = np.zeros((2,) + shape).astype(np.int32)
@@ -220,7 +219,7 @@ class StackOpTest(dml_test_util.TestCase):
   def testAxis0DefaultCPU(self):
     # tf.parallel_stack is only supported in graph mode.
     with ops.Graph().as_default():
-      with dml_test_util.device(use_gpu=False):
+      with test_util.device(use_gpu=False):
         t = [constant_op.constant([1, 2, 3]), constant_op.constant([4, 5, 6])]
         stacked = self.evaluate(array_ops.stack(t))
         parallel_stacked = self.evaluate(array_ops.parallel_stack(t))
@@ -232,7 +231,7 @@ class StackOpTest(dml_test_util.TestCase):
   def testAxis0DefaultGPU(self):
     # tf.parallel_stack is only supported in graph mode.
     with ops.Graph().as_default():
-      with dml_test_util.device(use_gpu=True):
+      with test_util.device(use_gpu=True):
         t = [constant_op.constant([1, 2, 3]), constant_op.constant([4, 5, 6])]
         stacked = self.evaluate(array_ops.stack(t))
         parallel_stacked = self.evaluate(array_ops.parallel_stack(t))
@@ -287,7 +286,7 @@ class StackOpTest(dml_test_util.TestCase):
             self.assertAllEqual(self.evaluate(c), data)
 
 
-class AutomaticStackingTest(dml_test_util.TestCase):
+class AutomaticStackingTest(test.TestCase):
 
   def testSimple(self):
     self.assertAllEqual([1, 0, 2],

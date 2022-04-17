@@ -30,7 +30,6 @@ from tensorflow.python.ops import nn_grad  # pylint: disable=unused-import
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging
-import dml_test_util
 
 _ADD = lambda x, y: x + y
 _SUB = lambda x, y: x - y
@@ -68,7 +67,7 @@ def _default_tolerance(dtype):
     return None  # Fail fast for unexpected types
 
 
-class BinaryOpTest(dml_test_util.TestCase):
+class BinaryOpTest(test.TestCase):
 
   def _compareCpu(self, x, y, np_func, tf_func, also_compare_variables=False):
     np_ans = np_func(x, y)
@@ -173,7 +172,7 @@ class BinaryOpTest(dml_test_util.TestCase):
 
   def _compareGpu(self, x, y, np_func, tf_func):
     np_ans = np_func(x, y)
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       inx = ops.convert_to_tensor(x)
       iny = ops.convert_to_tensor(y)
       out = tf_func(inx, iny)
@@ -853,7 +852,7 @@ class BinaryOpTest(dml_test_util.TestCase):
           self.evaluate(math_ops.pow(x, y))
 
   def testPowNegativeExponentGpu(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       self.skipTest("Requires GPU")
     # TFDML #24881131
     self.skipTest("DML doesn't support negative int64 numbers yet.")
@@ -865,10 +864,10 @@ class BinaryOpTest(dml_test_util.TestCase):
     self.assertAllEqual(self.evaluate(z), [0, 1, 1, 1, -1])
 
 
-class ComparisonOpTest(dml_test_util.TestCase):
+class ComparisonOpTest(test.TestCase):
 
   def _compareScalar(self, func, x, y, dtype):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       out = func(
           ops.convert_to_tensor(np.array([x]).astype(dtype)),
           ops.convert_to_tensor(np.array([y]).astype(dtype)))
@@ -901,7 +900,7 @@ class ComparisonOpTest(dml_test_util.TestCase):
 
   def _compare(self, x, y, np_func, tf_func):
     np_ans = np_func(x, y)
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       out = tf_func(ops.convert_to_tensor(x), ops.convert_to_tensor(y))
       tf_ans = self.evaluate(out)
     self.assertAllEqual(np_ans, tf_ans)

@@ -43,7 +43,6 @@ import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging
 from tensorflow.python.util.compat import collections_abc
-import dml_test_util
 
 def GetShrunkInceptionShapes(shrink=10):
   """Iterator for smaller versions of convolution shapes in 2015 Inception.
@@ -150,14 +149,14 @@ def GetTestConfigs():
     all the valid test configs as tuples of data_format and use_gpu.
   """
   test_configs = [("NHWC", False), ("NHWC", True)]
-  if dml_test_util.is_gpu_available(cuda_only=True):
+  if test_util.is_gpu_available(cuda_only=True):
     # "NCHW" format is only supported on CUDA.
     test_configs += [("NCHW", True)]
   return test_configs
 
 
 @test_util.run_all_without_tensor_float_32("Avoid TF32 conv on GPU")
-class Conv2DTest(dml_test_util.TestCase):
+class Conv2DTest(test.TestCase):
 
   def _DtypesToTest(self, use_gpu):
     if test_util.IsMklEnabled():
@@ -196,7 +195,7 @@ class Conv2DTest(dml_test_util.TestCase):
     x1 = self._CreateNumpyTensor(tensor_in_sizes)
     x2 = self._CreateNumpyTensor(filter_in_sizes)
 
-    with dml_test_util.device(use_gpu):
+    with test_util.device(use_gpu):
       t1 = constant_op.constant(x1, shape=tensor_in_sizes, dtype=dtype)
       t2 = constant_op.constant(x2, shape=filter_in_sizes, dtype=dtype)
       strides = [1] + strides + [1]
@@ -238,7 +237,7 @@ class Conv2DTest(dml_test_util.TestCase):
     x2 = np.random.rand(*filter_in_sizes).astype(np.float32)
 
     def _SetupVal(data_format, use_gpu):
-      with dml_test_util.device(use_gpu):
+      with test_util.device(use_gpu):
         t1 = constant_op.constant(x1, shape=tensor_in_sizes)
         t2 = constant_op.constant(x2, shape=filter_in_sizes)
         strides = [1] + conv_strides + [1]
@@ -263,7 +262,7 @@ class Conv2DTest(dml_test_util.TestCase):
                                    use_gpu):
     x1 = self._CreateNumpyTensor(tensor_in_sizes)
     x2 = self._CreateNumpyTensor(filter_in_sizes)
-    with dml_test_util.device(use_gpu):
+    with test_util.device(use_gpu):
       t1 = constant_op.constant(x1, shape=tensor_in_sizes)
       t2 = constant_op.constant(x2, shape=filter_in_sizes)
       if isinstance(stride, collections_abc.Iterable):
@@ -326,7 +325,7 @@ class Conv2DTest(dml_test_util.TestCase):
                     test_grappler_layout_optimizer=False,
                     tol=1e-5,
                     fp16_tol=1e-3):
-    if gpu_only and not dml_test_util.is_gpu_available(cuda_only=True):
+    if gpu_only and not test_util.is_gpu_available(cuda_only=True):
       return
     tensors = []
     dilations = list(dilations)
@@ -795,7 +794,7 @@ class Conv2DTest(dml_test_util.TestCase):
     num_groups = tensor_in_sizes[3] // filter_in_sizes[2]
     assert num_groups > 1 and \
         filter_in_sizes[2] * num_groups == tensor_in_sizes[3]
-    with dml_test_util.device(True):
+    with test_util.device(True):
       t1 = constant_op.constant(tensor_in, dtype=dtype)
       t2 = constant_op.constant(filter_in, dtype=dtype)
       strides = [1] + strides + [1]
@@ -830,7 +829,7 @@ class Conv2DTest(dml_test_util.TestCase):
 
   @test_util.run_in_graph_and_eager_modes
   def testConv2DGroupConvFwd(self):
-    if dml_test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
+    if test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
       data_formats = ["NHWC", "NCHW"]
     else:
       data_formats = ["NHWC"]
@@ -905,12 +904,12 @@ class Conv2DTest(dml_test_util.TestCase):
                                  use_gpu,
                                  err,
                                  dilations=(1, 1)):
-    if use_gpu and not dml_test_util.is_gpu_available(cuda_only=True):
+    if use_gpu and not test_util.is_gpu_available(cuda_only=True):
       return
     x1 = self._CreateNumpyTensor(filter_sizes)
     x2 = self._CreateNumpyTensor(output_sizes)
     dilations = list(dilations)
-    with dml_test_util.device(use_gpu):
+    with test_util.device(use_gpu):
       if len(input_sizes) == 4:
         if data_format == "NCHW":
           input_sizes = test_util.NHWCToNCHW(input_sizes)
@@ -950,7 +949,7 @@ class Conv2DTest(dml_test_util.TestCase):
     x2 = np.random.rand(*output_sizes).astype(np.float32)
 
     def _GetVal(data_format, use_gpu):
-      with dml_test_util.device(use_gpu):
+      with test_util.device(use_gpu):
         if data_format == "NCHW":
           new_input_sizes = test_util.NHWCToNCHW(input_sizes)
         else:
@@ -1125,7 +1124,7 @@ class Conv2DTest(dml_test_util.TestCase):
       if isinstance(padding, (list, tuple)):
         new_padding = test_util.NHWCToNCHW(new_padding)
     for dtype in self._DtypesToTest(use_gpu=use_gpu):
-      with dml_test_util.device(use_gpu):
+      with test_util.device(use_gpu):
         t0 = constant_op.constant(x0, shape=input_sizes, dtype=dtype)
         t1 = constant_op.constant(filter_sizes, shape=[len(filter_sizes)])
         t2 = constant_op.constant(x2, shape=output_sizes, dtype=dtype)
@@ -1152,7 +1151,7 @@ class Conv2DTest(dml_test_util.TestCase):
     x2 = np.random.rand(*output_sizes).astype(np.float32)
 
     def _GetVal(data_format, use_gpu):
-      with dml_test_util.device(use_gpu):
+      with test_util.device(use_gpu):
         t0 = constant_op.constant(x0, shape=input_sizes)
         t1 = constant_op.constant(filter_sizes, shape=[len(filter_sizes)])
         t2 = constant_op.constant(x2, shape=output_sizes)
@@ -1374,7 +1373,7 @@ class Conv2DTest(dml_test_util.TestCase):
 
   @test_util.deprecated_graph_mode_only
   def testConv2D2x2Depth3ValidBackpropFilterStride1x1Dilation2x1(self):
-    if dml_test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
+    if test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
       for (data_format, use_gpu) in GetTestConfigs():
         self._RunAndVerifyBackpropFilterDilation(
             input_sizes=[1, 3, 6, 1],
@@ -1389,7 +1388,7 @@ class Conv2DTest(dml_test_util.TestCase):
 
   @test_util.deprecated_graph_mode_only
   def testConv2D2x2Depth1ValidBackpropFilterDilation1x2(self):
-    if dml_test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
+    if test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
       for (data_format, use_gpu) in GetTestConfigs():
         self._RunAndVerifyBackpropFilterDilation(
             input_sizes=[1, 2, 3, 1],
@@ -1404,7 +1403,7 @@ class Conv2DTest(dml_test_util.TestCase):
 
   @test_util.deprecated_graph_mode_only
   def testConv2DEmptyBackpropFilterDilation1x2(self):
-    if dml_test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
+    if test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
       for (data_format, use_gpu) in GetTestConfigs():
         self._RunAndVerifyBackpropFilterDilation(
             input_sizes=[1, 2, 3, 1],
@@ -1419,7 +1418,7 @@ class Conv2DTest(dml_test_util.TestCase):
 
   @test_util.deprecated_graph_mode_only
   def testConv2D2x2Depth3ValidBackpropFilterDilation2x2(self):
-    if dml_test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
+    if test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
       for (data_format, use_gpu) in GetTestConfigs():
         self._RunAndVerifyBackpropFilterDilation(
             input_sizes=[1, 3, 4, 3],
@@ -1434,7 +1433,7 @@ class Conv2DTest(dml_test_util.TestCase):
 
   @test_util.deprecated_graph_mode_only
   def testConv2DKernelSizeMatchesInputSizeBackpropFilterDilation2x2(self):
-    if dml_test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
+    if test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
       for (data_format, use_gpu) in GetTestConfigs():
         self._RunAndVerifyBackpropFilterDilation(
             input_sizes=[1, 3, 3, 1],
@@ -1449,7 +1448,7 @@ class Conv2DTest(dml_test_util.TestCase):
 
   @test_util.deprecated_graph_mode_only
   def testConv2D2x2Depth3ValidBackpropInputStride1x1Dilation2x1(self):
-    if dml_test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
+    if test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
       for (data_format, use_gpu) in GetTestConfigs():
         self._RunAndVerifyBackpropInputDilation(
             input_sizes=[1, 3, 6, 1],
@@ -1464,7 +1463,7 @@ class Conv2DTest(dml_test_util.TestCase):
 
   @test_util.deprecated_graph_mode_only
   def testConv2D2x2Depth1ValidBackpropInputDilation1x2(self):
-    if dml_test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
+    if test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
       for (data_format, use_gpu) in GetTestConfigs():
         self._RunAndVerifyBackpropInputDilation(
             input_sizes=[1, 2, 3, 1],
@@ -1479,7 +1478,7 @@ class Conv2DTest(dml_test_util.TestCase):
 
   @test_util.deprecated_graph_mode_only
   def testConv2DEmptyBackpropInputDilation1x2(self):
-    if dml_test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
+    if test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
       for (data_format, use_gpu) in GetTestConfigs():
         self._RunAndVerifyBackpropInputDilation(
             input_sizes=[0, 2, 3, 1],
@@ -1494,7 +1493,7 @@ class Conv2DTest(dml_test_util.TestCase):
 
   @test_util.deprecated_graph_mode_only
   def testConv2D2x2Depth3ValidBackpropInputDilation2x1(self):
-    if dml_test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
+    if test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
       for (data_format, use_gpu) in GetTestConfigs():
         # The GPU version of this test is not very stable. So adjusting the
         # error threshold to 1e-4.
@@ -1511,7 +1510,7 @@ class Conv2DTest(dml_test_util.TestCase):
 
   @test_util.deprecated_graph_mode_only
   def testConv2DKernelSizeMatchesInputSizeBackpropInputDilation2x2(self):
-    if dml_test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
+    if test_util.is_gpu_available(cuda_only=True) or test_util.IsMklEnabled():
       for (data_format, use_gpu) in GetTestConfigs():
         self._RunAndVerifyBackpropInputDilation(
             input_sizes=[1, 3, 3, 1],
@@ -1534,7 +1533,7 @@ class Conv2DTest(dml_test_util.TestCase):
                                                 use_gpu,
                                                 dilations=(1, 1),
                                                 err=2e-5):
-    if use_gpu and not dml_test_util.is_gpu_available(cuda_only=True):
+    if use_gpu and not test_util.is_gpu_available(cuda_only=True):
       return
     if not use_gpu and dilations != (1, 1):
       return  # Non-default dilations is currently not supported on the CPU.
@@ -1696,7 +1695,7 @@ class Conv2DTest(dml_test_util.TestCase):
                                                  use_gpu,
                                                  dilations=(1, 1),
                                                  err=1e-5):
-    if use_gpu and not dml_test_util.is_gpu_available(cuda_only=True):
+    if use_gpu and not test_util.is_gpu_available(cuda_only=True):
       return
     if not use_gpu and dilations != (1, 1):
       return  # Non-default dilations is currently not supported on the CPU.
@@ -2598,7 +2597,7 @@ class Conv2DTest(dml_test_util.TestCase):
 
 
 @test_util.run_all_without_tensor_float_32("Avoid TF32 conv on GPU")
-class DepthwiseConv2DTest(dml_test_util.TestCase):
+class DepthwiseConv2DTest(test.TestCase):
 
   def _VerifyValues(self, tensor_in_sizes, filter_in_sizes, stride, padding,
                     expected):
@@ -2693,7 +2692,7 @@ class DepthwiseConv2DTest(dml_test_util.TestCase):
 
 
 @test_util.run_all_without_tensor_float_32("Avoid TF32 conv on GPU")
-class SeparableConv2DTest(dml_test_util.TestCase):
+class SeparableConv2DTest(test.TestCase):
 
   def _InitValues(self, sizes):
     """Initializes values for input tensors.
@@ -2794,7 +2793,7 @@ class SeparableConv2DTest(dml_test_util.TestCase):
     self._testSeparableConv2D("NHWC")
 
   def disabledtestSeparableConv2DNCHW(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       return
     self._testSeparableConv2D("NCHW")
 
@@ -2832,7 +2831,7 @@ class SeparableConv2DTest(dml_test_util.TestCase):
     self._testSeparableConv2DEqualInputOutputDepth("NHWC")
 
   def testSeparableConv2DEqualInputOutputDepthNCHW(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       return
     self._testSeparableConv2DEqualInputOutputDepth("NCHW")
 
@@ -2871,13 +2870,13 @@ class SeparableConv2DTest(dml_test_util.TestCase):
     self._testSeparableConv2dExplicitPadding("NHWC")
 
   def testSeparableConv2dExplicitPaddingNCHW(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       return
     self._testSeparableConv2dExplicitPadding("NCHW")
 
 
 @test_util.run_all_without_tensor_float_32("Avoid TF32 conv on GPU")
-class DeepConv2DTest(dml_test_util.TestCase):
+class DeepConv2DTest(test.TestCase):
 
   def _CompareFwdConv2D(self, tensor_in_sizes, filter_in_sizes, conv_strides,
                         padding):
@@ -2929,7 +2928,7 @@ class Conv2DBenchmark(test.Benchmark):
   def benchmarkGPUConvStackFirst(self):
     # Benchmark the first iteration of a conv-net with many identical conv
     # operations.
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       return
 
     with ops.Graph().as_default(), session_lib.Session() as session:
@@ -2972,7 +2971,7 @@ class Conv2DBenchmark(test.Benchmark):
     A Conv2D op with EXPLICIT padding is benchmarked, and a tf.pad with the same
     padding followed by an equivalent Conv2D op is benchmarked.
     """
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       return
 
     with ops.Graph().as_default():
@@ -3024,7 +3023,7 @@ class Conv2DBenchmark(test.Benchmark):
     the SAME case. The purpose is to ensure EXPLICIT padding is just as
     efficient as the SAME case
     """
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       return
 
     with ops.Graph().as_default():
@@ -3074,7 +3073,7 @@ class Conv2DBenchmark(test.Benchmark):
     fact the Python padding list must be checked and processed before the Conv2D
     op can run.
     """
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       return
 
     with context.eager_mode():
@@ -3148,7 +3147,7 @@ def GetInceptionFwdTest(input_size, filter_size, stride, padding,
                         gpu_only=False):
 
   def Test(self):
-    if gpu_only and not dml_test_util.is_gpu_available():
+    if gpu_only and not test_util.is_gpu_available():
       tf_logging.info("Skipping InceptionFwd %s", (input_size, filter_size,
                                                    stride, padding))
       return
@@ -3181,7 +3180,7 @@ def GetInceptionBackInputTest(input_size, filter_size, output_size, stride,
                               gpu_only=False):
 
   def Test(self):
-    if gpu_only and not dml_test_util.is_gpu_available():
+    if gpu_only and not test_util.is_gpu_available():
       tf_logging.info("Skipping InceptionBackInput %s",
                       (input_size, filter_size, output_size, stride, padding))
       return
@@ -3197,7 +3196,7 @@ def GetInceptionBackFilterTest(input_size, filter_size, output_size, strides,
                                padding, gpu_only=False):
 
   def Test(self):
-    if gpu_only and not dml_test_util.is_gpu_available():
+    if gpu_only and not test_util.is_gpu_available():
       tf_logging.info("Skipping InceptionBackFilter %s",
                       (input_size, filter_size, output_size, strides, padding))
       return
@@ -3210,7 +3209,7 @@ def GetInceptionBackFilterTest(input_size, filter_size, output_size, strides,
 
 
 @test_util.run_all_without_tensor_float_32("Avoid TF32 conv on GPU")
-class FusedConv2DTest(dml_test_util.TestCase):
+class FusedConv2DTest(test.TestCase):
 
   def _CreateNumpyTensor(self, shape):
     total_size = np.prod(shape)

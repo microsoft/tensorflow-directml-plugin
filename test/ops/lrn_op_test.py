@@ -27,10 +27,9 @@ from tensorflow.python.ops import gradients_impl
 from tensorflow.python.ops import nn
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class LRNOpTest(dml_test_util.TestCase):
+class LRNOpTest(test.TestCase):
 
   def _LRN(self, input_image, lrn_depth_radius=5, bias=1.0, alpha=1.0,
            beta=0.5):
@@ -95,7 +94,7 @@ class LRNOpTest(dml_test_util.TestCase):
     for _ in range(2):
       self._RunAndVerify(dtypes.float32)
       # Enable when LRN supports tf.float16 on GPU.
-      if not dml_test_util.is_gpu_available():
+      if not test_util.is_gpu_available():
         self._RunAndVerify(dtypes.float16)
 
   @test_util.run_deprecated_v1
@@ -152,7 +151,7 @@ class LRNOpTest(dml_test_util.TestCase):
     for _ in range(2):
       self._RunAndVerifyGradients(dtypes.float32)
       # Enable when LRN supports tf.float16 on GPU.
-      if not dml_test_util.is_gpu_available():
+      if not test_util.is_gpu_available():
         self._RunAndVerifyGradients(dtypes.float16)
 
 

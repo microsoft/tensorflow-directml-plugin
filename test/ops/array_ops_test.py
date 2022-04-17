@@ -49,10 +49,9 @@ from tensorflow.python.ops import variable_scope
 from tensorflow.python.ops import variables
 from tensorflow.python.ops.ragged.ragged_tensor import RaggedTensor
 from tensorflow.python.platform import test as test_lib
-import dml_test_util
 
 @test_util.run_all_in_graph_and_eager_modes
-class BatchMatrixTransposeTest(dml_test_util.TestCase):
+class BatchMatrixTransposeTest(test.TestCase):
 
   def testNonBatchMatrix(self):
     matrix = [[1, 2, 3], [4, 5, 6]]  # Shape (2, 3)
@@ -140,7 +139,7 @@ class BatchMatrixTransposeTest(dml_test_util.TestCase):
           self.assertAllEqual(expected_transposed, transposed)
 
 
-class BooleanMaskTest(dml_test_util.TestCase):
+class BooleanMaskTest(test.TestCase):
 
   def setUp(self):
     self.rng = np.random.RandomState(42)
@@ -320,7 +319,7 @@ class BooleanMaskTest(dml_test_util.TestCase):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class OperatorShapeTest(dml_test_util.TestCase):
+class OperatorShapeTest(test.TestCase):
 
   def testExpandScalar(self):
     scalar = "hello"
@@ -353,7 +352,7 @@ class OperatorShapeTest(dml_test_util.TestCase):
 
 
 @test_util.with_eager_op_as_function
-class ReverseV2Test(dml_test_util.TestCase):
+class ReverseV2Test(test.TestCase):
 
   def testReverse0DimAuto(self):
     x_np = 4
@@ -509,7 +508,7 @@ class ReverseV2Test(dml_test_util.TestCase):
     self.assertAllEqual(self.evaluate(v), v)
 
 
-class MeshgridTest(dml_test_util.TestCase):
+class MeshgridTest(test.TestCase):
 
   def _compareDiff(self, x, y, use_gpu):
     for index in ("ij", "xy"):
@@ -528,7 +527,7 @@ class MeshgridTest(dml_test_util.TestCase):
           x += 1j
         inputs.append(x)
       numpy_out = np.meshgrid(*inputs, indexing=index)
-      with dml_test_util.device(use_gpu=use_gpu):
+      with test_util.device(use_gpu=use_gpu):
         tf_out = array_ops.meshgrid(*inputs, indexing=index)
         for x_np, x_tf in zip(numpy_out, tf_out):
           self.assertAllEqual(x_np, x_tf)
@@ -619,7 +618,7 @@ STRIDED_SLICE_TYPES = [
 ]
 
 
-class StridedSliceTest(dml_test_util.TestCase):
+class StridedSliceTest(test.TestCase):
   """Test the strided slice operation with variants of slices."""
 
   def test_basic_slice(self):
@@ -650,10 +649,10 @@ class StridedSliceTest(dml_test_util.TestCase):
         _ = checker2[tuple()]
 
   def testInt64GPU(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       self.skipTest("No GPU available")
 
-    with dml_test_util.force_gpu():
+    with test_util.force_gpu():
       x = constant_op.constant([1., 2., 3.])
       begin = constant_op.constant([2], dtype=dtypes.int64)
       end = constant_op.constant([3], dtype=dtypes.int64)
@@ -678,7 +677,7 @@ class StridedSliceTest(dml_test_util.TestCase):
       v[0]  # pylint: disable=pointless-statement
 
   def testDegenerateSlices(self):
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       checker = StridedSliceChecker(self, StridedSliceChecker.REF_TENSOR)
       # degenerate by offering a forward interval with a negative stride
       _ = checker[0:-1:-1, :, :]
@@ -697,7 +696,7 @@ class StridedSliceTest(dml_test_util.TestCase):
     self.assertAllEqual(t[d:d:d], t)
 
   def testEllipsis(self):
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       raw = [[[[[1, 2], [3, 4], [5, 6]]], [[[7, 8], [9, 10], [11, 12]]]]]
       checker = StridedSliceChecker(self, raw)
 
@@ -718,7 +717,7 @@ class StridedSliceTest(dml_test_util.TestCase):
         _ = checker[..., :, ...].eval()
 
   def testShrink(self):
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       raw = [[[[[1, 2, 4, 5], [5, 6, 7, 8], [9, 10, 11, 12]]],
               [[[13, 14, 15, 16], [17, 18, 19, 20], [21, 22, 23, 24]]]]]
       checker = StridedSliceChecker(self, raw)
@@ -728,7 +727,7 @@ class StridedSliceTest(dml_test_util.TestCase):
       _ = checker[:, :, 0]
 
   def testBothNewAxisAndShrink(self):
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
 
       @def_function.function
       def func(inp):
@@ -742,7 +741,7 @@ class StridedSliceTest(dml_test_util.TestCase):
       self.assertAllEqual([[1, 1]], self.evaluate(f(ones)))
 
   def testTensorIndexing(self):
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       raw = [[[[[1, 2, 4, 5], [5, 6, 7, 8], [9, 10, 11, 12]]],
               [[[13, 14, 15, 16], [17, 18, 19, 20], [21, 22, 23, 24]]]]]
       checker = StridedSliceChecker(self, raw, check_type_infer=False)
@@ -771,7 +770,7 @@ class StridedSliceTest(dml_test_util.TestCase):
         _ = checker[[2.1, -0.7, 1.5]]
 
   def testExpand(self):
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       raw = [[[[[1, 2, 4, 5], [5, 6, 7, 8], [9, 10, 11, 12]]],
               [[[13, 14, 15, 16], [17, 18, 19, 20], [21, 22, 23, 24]]]]]
       checker = StridedSliceChecker(self, raw)
@@ -788,7 +787,7 @@ class StridedSliceTest(dml_test_util.TestCase):
       _ = checker[np.newaxis, ..., np.newaxis]
 
   def testExpandVariable(self):
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       x = variables.Variable(7, dtype=dtypes.int32)
       self.evaluate(x.initializer)
       y = self.evaluate(x[None])
@@ -796,7 +795,7 @@ class StridedSliceTest(dml_test_util.TestCase):
       self.assertAllEqual(y, (7,))
 
   def testOptimizedCases(self):
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       checker = StridedSliceChecker(self,
                                     StridedSliceChecker.REF_TENSOR_ALIGNED)
       # Identity
@@ -811,7 +810,7 @@ class StridedSliceTest(dml_test_util.TestCase):
       _ = checker[np.newaxis, 1:]
 
   def testMasks(self):
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       scalar = np.array(0)
       # Test tensor type mask
       checker = StridedSliceChecker(self, StridedSliceChecker.REF_TENSOR)
@@ -836,11 +835,11 @@ class StridedSliceTest(dml_test_util.TestCase):
       _ = checker2[ops.convert_to_tensor(mask)]
 
 
-class StridedSliceShapeTest(dml_test_util.TestCase):
+class StridedSliceShapeTest(test.TestCase):
   """Test the shape inference of StridedSliceShapes."""
 
   def testUnknown(self):
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
 
       @def_function.function
       def f(x):
@@ -854,7 +853,7 @@ class StridedSliceShapeTest(dml_test_util.TestCase):
     self.assertEqual(x.as_list(), y.as_list())
 
   def testTensorShapeUncertain(self):
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
 
       @def_function.function
       def f1(x):
@@ -1030,7 +1029,7 @@ class GradSliceChecker(object):
     self.test.assertAllEqual(slice_val_grad_evaled, np_sliceval_grad)
 
 
-class StridedSliceGradTest(dml_test_util.TestCase,
+class StridedSliceGradTest(test.TestCase,
                            parameterized.TestCase):
   """Test that strided slice's custom gradient produces correct gradients."""
 
@@ -1039,7 +1038,7 @@ class StridedSliceGradTest(dml_test_util.TestCase,
       "b/210077724: Auto-clustering with where op isn't supported. Has loose "
       "output shape bounds")
   def testGradient(self, use_tape):
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       var = variables.Variable(
           array_ops.reshape(
               math_ops.range(1, 97, 1, dtype=dtypes.float32), shape=(6, 4, 4)))
@@ -1067,7 +1066,7 @@ class StridedSliceGradTest(dml_test_util.TestCase,
 
   @parameterized.parameters(set((True, context.executing_eagerly())))
   def testGradientZero(self, use_tape):
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       var = variables.Variable(8.)
       self.evaluate(var.initializer)
       grad = GradSliceChecker(self, var, np.array(8), use_tape)
@@ -1084,7 +1083,7 @@ class StridedSliceGradTest(dml_test_util.TestCase,
     self.assertAllEqual(self.evaluate(grad), [0., 2., 0.])
 
 
-class StridedSliceGradTypeTest(dml_test_util.TestCase):
+class StridedSliceGradTypeTest(test.TestCase):
   """Test varied index types and host located memory."""
 
   def testHostVsDevice(self):
@@ -1197,7 +1196,7 @@ class StridedSliceAssignChecker(object):
     if self.tensor_type.is_complex:
       value -= 1j * value
 
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       if self._use_resource:
         var = resource_variable_ops.ResourceVariable(self.x)
       else:
@@ -1213,7 +1212,7 @@ class StridedSliceAssignChecker(object):
       self.test.assertAllEqual(val_copy, valnp)
 
 
-class SliceAssignTest(dml_test_util.TestCase, parameterized.TestCase):
+class SliceAssignTest(test.TestCase, parameterized.TestCase):
 
   def testInvalidSlice(self):
     foo = constant_op.constant([1, 2, 3])
@@ -1333,7 +1332,7 @@ class SliceAssignTest(dml_test_util.TestCase, parameterized.TestCase):
       self.assertAllClose(theoretical, numerical)
 
 
-class ShapeSizeRankTest(dml_test_util.TestCase):
+class ShapeSizeRankTest(test.TestCase):
 
   @test_util.run_in_graph_and_eager_modes
   def testDenseShape(self):
@@ -1369,7 +1368,7 @@ class ShapeSizeRankTest(dml_test_util.TestCase):
         self.evaluate(array_ops.size(tensor, out_type=dtypes.int64)).dtype)
 
 
-class SequenceMaskTest(dml_test_util.TestCase):
+class SequenceMaskTest(test.TestCase):
 
   def testExceptions(self):
     with self.cached_session():
@@ -1462,7 +1461,7 @@ class SequenceMaskTest(dml_test_util.TestCase):
     check_output_dtype(np.float64)
 
 
-class ConcatSliceResourceTest(dml_test_util.TestCase):
+class ConcatSliceResourceTest(test.TestCase):
 
   @test_util.run_in_graph_and_eager_modes
   def testConcatSlice(self):
@@ -1475,7 +1474,7 @@ class ConcatSliceResourceTest(dml_test_util.TestCase):
       self.evaluate(test_ops.resource_create_op(r2))
 
 
-class IdentityTest(dml_test_util.TestCase):
+class IdentityTest(test.TestCase):
 
   @test_util.run_gpu_only
   def testEagerIdentity(self):
@@ -1485,9 +1484,9 @@ class IdentityTest(dml_test_util.TestCase):
         self.assertAllEqual(x.numpy(), y.numpy())
         self.assertTrue(device in y.device.lower())
 
-      with dml_test_util.force_gpu():
+      with test_util.force_gpu():
         a = constant_op.constant([[2], [3]], dtype=dtypes.float32)
-      with dml_test_util.force_gpu():
+      with test_util.force_gpu():
         b = array_ops.identity(a)
         _test(a, b, "gpu")
       with test_util.force_cpu():
@@ -1496,12 +1495,12 @@ class IdentityTest(dml_test_util.TestCase):
       with test_util.force_cpu():
         d = array_ops.identity(c)
         _test(c, d, "cpu")
-      with dml_test_util.force_gpu():
+      with test_util.force_gpu():
         e = array_ops.identity(d)
         _test(d, e, "gpu")
 
 
-class PadTest(dml_test_util.TestCase):
+class PadTest(test.TestCase):
 
   def testEager(self):
     with context.eager_mode():
@@ -1541,7 +1540,7 @@ class PadTest(dml_test_util.TestCase):
     self.assertAllEqual(result, expected)
 
 
-class InvertPermutationTest(dml_test_util.TestCase):
+class InvertPermutationTest(test.TestCase):
 
   def testInvertPermutation(self):
     for dtype in [dtypes.int32, dtypes.int64]:
@@ -1552,7 +1551,7 @@ class InvertPermutationTest(dml_test_util.TestCase):
         self.assertAllEqual(y, [2, 4, 3, 0, 1])
 
 
-class UnravelIndexTest(dml_test_util.TestCase):
+class UnravelIndexTest(test.TestCase):
 
   @unittest.skip("Test does not pass internally.")
   def testUnravelIndex(self):
@@ -1599,7 +1598,7 @@ class UnravelIndexTest(dml_test_util.TestCase):
           self.evaluate(array_ops.unravel_index(indices=indices, dims=dims))
 
 
-class GuaranteeConstOpTest(dml_test_util.TestCase):
+class GuaranteeConstOpTest(test.TestCase):
 
   def testSimple(self):
     a = array_ops.constant(10)
@@ -1630,7 +1629,7 @@ class GuaranteeConstOpTest(dml_test_util.TestCase):
       self.evaluate(guarantee_a)
 
 
-class SnapshotOpTest(dml_test_util.TestCase):
+class SnapshotOpTest(test.TestCase):
 
   def testInvertPermutation(self):
     for dtype in [dtypes.int32, dtypes.int64, dtypes.float32, dtypes.float64]:
@@ -1642,7 +1641,7 @@ class SnapshotOpTest(dml_test_util.TestCase):
 
 @test_util.with_eager_op_as_function
 @test_util.run_all_in_graph_and_eager_modes
-class QuantizeAndDequantizeTest(dml_test_util.TestCase):
+class QuantizeAndDequantizeTest(test.TestCase):
 
   # Generates a tensor of the specified `shape` using values from `values`
   # scaled by (slice_idx + 1) along `axis` dimension.
@@ -1738,7 +1737,7 @@ class QuantizeAndDequantizeTest(dml_test_util.TestCase):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class SortedSearchTest(dml_test_util.TestCase):
+class SortedSearchTest(test.TestCase):
 
   def testUpperBoundFloatHandCoded(self):
     cdf = np.array([0, .2, .5, .6, .8, 1.], dtype=np.float32)
@@ -1977,7 +1976,7 @@ class SortedSearchTest(dml_test_util.TestCase):
     _ = g.get_concrete_function()
 
 
-class BatchGatherNdTest(dml_test_util.TestCase):
+class BatchGatherNdTest(test.TestCase):
 
   def testShapesMatch(self):
     """Tests for various different shape combinations."""
@@ -2180,7 +2179,7 @@ class BatchGatherNdTest(dml_test_util.TestCase):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class RepeatTest(dml_test_util.TestCase, parameterized.TestCase):
+class RepeatTest(test.TestCase, parameterized.TestCase):
 
   @parameterized.parameters(
       (3, 4, None),
@@ -2270,7 +2269,7 @@ class RepeatBenchmark(test_lib.Benchmark):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class TileVariantTest(dml_test_util.TestCase):
+class TileVariantTest(test.TestCase):
 
   def test_tile_tensor_list(self):
     t = constant_op.constant(np.random.uniform(size=[2, 3, 4]))
@@ -2296,7 +2295,7 @@ class TileVariantTest(dml_test_util.TestCase):
     self.assertAllEqual(t, tiled_tensor_1)
 
 
-class StopGradientTest(dml_test_util.TestCase):
+class StopGradientTest(test.TestCase):
 
   def testStopGradient(self):
     x = array_ops.zeros(3)

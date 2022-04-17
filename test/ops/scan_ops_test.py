@@ -24,7 +24,6 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
-import dml_test_util
 
 
 def numpy_reverse(x, axis):
@@ -67,7 +66,7 @@ def handle_options(func, x, axis, exclusive, reverse):
   return x
 
 
-class CumsumTest(dml_test_util.TestCase):
+class CumsumTest(test.TestCase):
 
   valid_dtypes = [
       np.int32, np.int64, np.float16, np.float32, np.float64, np.complex64,
@@ -200,7 +199,7 @@ class CumsumTest(dml_test_util.TestCase):
           self._compareGradient([5, 10], axis, exclusive, reverse)
 
 
-class CumprodTest(dml_test_util.TestCase):
+class CumprodTest(test.TestCase):
 
   valid_dtypes = [
       np.int32, np.int64, np.float16, np.float32, np.float64, np.complex64,

@@ -35,7 +35,6 @@ from tensorflow.python.keras.optimizer_v2 import rmsprop
 from tensorflow.python.keras.utils import data_utils
 from tensorflow.python.platform import test
 from tensorflow.python.util import nest
-import dml_test_util
 
 
 def custom_generator(mode=2):
@@ -89,7 +88,7 @@ def custom_generator_changing_batch_size(mode=2):
 custom_generator_threads = data_utils.threadsafe_generator(custom_generator)
 
 
-class TestGeneratorMethods(dml_test_util.KerasParameterizedTestCase):
+class TestGeneratorMethods(keras_parameterized.TestCase):
 
   @keras_parameterized.run_with_all_model_types
   @keras_parameterized.run_all_keras_modes
@@ -376,7 +375,7 @@ class TestGeneratorMethods(dml_test_util.KerasParameterizedTestCase):
     model.fit(data_gen(), epochs=1, steps_per_epoch=5)
 
 
-class TestGeneratorMethodsWithSequences(dml_test_util.KerasParameterizedTestCase):
+class TestGeneratorMethodsWithSequences(keras_parameterized.TestCase):
 
   @keras_parameterized.run_with_all_model_types
   @keras_parameterized.run_all_keras_modes
@@ -482,7 +481,7 @@ class TestGeneratorMethodsWithSequences(dml_test_util.KerasParameterizedTestCase
 
 
 @combinations.generate(combinations.combine(mode=['graph', 'eager']))
-class TestConvertToGeneratorLike(dml_test_util.TestCase, parameterized.TestCase):
+class TestConvertToGeneratorLike(test.TestCase, parameterized.TestCase):
   simple_inputs = (np.ones((10, 10)), np.ones((10, 1)))
   nested_inputs = ((np.ones((10, 10)), np.ones((10, 20))), (np.ones((10, 1)),
                                                             np.ones((10, 3))))

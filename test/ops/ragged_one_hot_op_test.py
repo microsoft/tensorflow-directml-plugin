@@ -27,12 +27,11 @@ from tensorflow.python.ops.ragged import ragged_array_ops
 from tensorflow.python.ops.ragged import ragged_factory_ops
 from tensorflow.python.ops.ragged import ragged_tensor
 from tensorflow.python.platform import googletest
-import dml_test_util
 
 
 @test_util.with_eager_op_as_function
 @test_util.run_all_in_graph_and_eager_modes
-class RaggedOneHotTest(dml_test_util.TestCase, parameterized.TestCase):
+class RaggedOneHotTest(test.TestCase, parameterized.TestCase):
 
   @parameterized.parameters([
       # 2D Indices (ragged_rank=1)

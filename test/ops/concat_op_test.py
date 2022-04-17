@@ -29,10 +29,9 @@ from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class ConcatOpTest(dml_test_util.TestCase):
+class ConcatOpTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testHStack(self):
@@ -83,7 +82,7 @@ class ConcatOpTest(dml_test_util.TestCase):
     self.assertAllEqual(result[:, :, 1:, :], params[p2])
 
   def testInt32GPU(self):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       p1 = np.random.rand(2, 3).astype("i")
       p2 = np.random.rand(2, 3).astype("i")
       x1 = constant_op.constant(p1)
@@ -94,7 +93,7 @@ class ConcatOpTest(dml_test_util.TestCase):
     self.assertAllEqual(result[2:, :], p2)
 
   def testRefType(self):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       p1 = np.random.rand(4, 4).astype("f")
       p2 = np.random.rand(4, 4).astype("f")
       v1 = variables.Variable(p1)
@@ -192,7 +191,7 @@ class ConcatOpTest(dml_test_util.TestCase):
     # Test both positive and negative concat axis.
     # -2 and 1 correspond to the same axis for 3-dimensional tensors.
     for axis in [-2, 1]:
-      with dml_test_util.use_gpu():
+      with test_util.use_gpu():
         inp = []
         inp_tensors = []
         for x in [1, 2, 6]:
@@ -225,7 +224,7 @@ class ConcatOpTest(dml_test_util.TestCase):
 
   @test_util.run_deprecated_v1
   def testGradientsFirstDim(self):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       inp = []
       inp_tensors = []
       for x in [1, 2, 6]:
@@ -253,7 +252,7 @@ class ConcatOpTest(dml_test_util.TestCase):
     # Test both positive and negative concat axis.
     # -1 and 2 correspond to the same axis for 3-dimensional tensors.
     for axis in [-1, 2]:
-      with dml_test_util.use_gpu():
+      with test_util.use_gpu():
         inp = []
         inp_tensors = []
         for x in [1, 2, 6]:
@@ -284,7 +283,7 @@ class ConcatOpTest(dml_test_util.TestCase):
     # Random dim to concat on
     concat_dim = np.random.randint(5)
     concat_dim_sizes = np.random.randint(1, 5, size=num_tensors)
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       inp = []
       inp_tensors = []
       for x in concat_dim_sizes:
@@ -386,7 +385,7 @@ class ConcatOpTest(dml_test_util.TestCase):
   def testZeroSize(self):
     # Verify that concat doesn't crash and burn for zero size inputs
     np.random.seed(7)
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       for shape0 in (), (2,):
         axis = len(shape0)
         for shape1 in (), (3,):
@@ -534,7 +533,7 @@ class ConcatOpTest(dml_test_util.TestCase):
         params = {}
         p = []
         shape = np.array([7, 13])
-        if dml_test_util.is_gpu_available():
+        if test_util.is_gpu_available():
           num_tensors = 5000
         else:
           num_tensors = 500
@@ -563,7 +562,7 @@ class ConcatOpTest(dml_test_util.TestCase):
           self.assertAllEqual(result[index], params[p[i]])
 
   def testConcatEmpty(self):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       t1 = []
       t2 = []
       output = gen_array_ops.concat_v2([t1, t2], 0)
@@ -572,7 +571,7 @@ class ConcatOpTest(dml_test_util.TestCase):
   @test_util.run_deprecated_v1
   def testConcatInvalidAxis(self):
     with self.assertRaises(ValueError):
-      with dml_test_util.use_gpu():
+      with test_util.use_gpu():
         t1 = [1]
         t2 = [2]
         gen_array_ops.concat_v2([t1, t2], 1).eval()
@@ -589,7 +588,7 @@ class ConcatOpTest(dml_test_util.TestCase):
       concat_wrapper()
 
   def testConcatNegativeAxis(self):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       t1 = [[1, 2, 3], [4, 5, 6]]
       t2 = [[7, 8, 9], [10, 11, 12]]
 
@@ -661,7 +660,7 @@ class ConcatOpTest(dml_test_util.TestCase):
 
   def testConcatDtype(self):
     for dtype in [dtypes.int32, dtypes.int64, dtypes.uint32, dtypes.uint64]:
-      with dml_test_util.use_gpu():
+      with test_util.use_gpu():
         t1 = constant_op.constant([[1, 2, 3], [4, 5, 6]], dtype=dtype)
         t2 = constant_op.constant([[7, 8, 9], [10, 11, 12]], dtype=dtype)
 
@@ -672,7 +671,7 @@ class ConcatOpTest(dml_test_util.TestCase):
 
   def testConcatAxisType(self):
     for dtype in [dtypes.int32, dtypes.int64]:
-      with dml_test_util.use_gpu():
+      with test_util.use_gpu():
         t1 = [[1, 2, 3], [4, 5, 6]]
         t2 = [[7, 8, 9], [10, 11, 12]]
 
@@ -683,10 +682,10 @@ class ConcatOpTest(dml_test_util.TestCase):
         self.assertAllEqual([[1, 2, 3, 7, 8, 9], [4, 5, 6, 10, 11, 12]], output)
 
 
-class ConcatOffsetTest(dml_test_util.TestCase):
+class ConcatOffsetTest(test.TestCase):
 
   def testBasic(self):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       cdim = constant_op.constant(1, dtypes.int32)
       s0 = constant_op.constant([2, 3, 5], dtypes.int32)
       s1 = constant_op.constant([2, 7, 5], dtypes.int32)
@@ -738,7 +737,7 @@ class ConcatOffsetTest(dml_test_util.TestCase):
       self.evaluate(off)
 
   def testNegativeDim(self):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       cdim = constant_op.constant(-2, dtypes.int32)
       s0 = constant_op.constant([2, 3, 5], dtypes.int32)
       s1 = constant_op.constant([2, 7, 5], dtypes.int32)

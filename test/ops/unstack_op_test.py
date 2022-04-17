@@ -22,7 +22,6 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradient_checker_v2
 from tensorflow.python.platform import test
-import dml_test_util
 
 
 def np_split_squeeze(array, axis):
@@ -34,7 +33,7 @@ def np_split_squeeze(array, axis):
   ]
 
 
-class UnstackOpTest(dml_test_util.TestCase):
+class UnstackOpTest(test.TestCase):
 
   def randn(self, shape, dtype):
     data = np.random.randn(*shape)
@@ -81,11 +80,11 @@ class UnstackOpTest(dml_test_util.TestCase):
               self.assertAllEqual(ref[k], self.evaluate(c))
 
   def testSimpleGpu(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       self.skipTest('No GPU available')
 
     np.random.seed(7)
-    with dml_test_util.force_gpu():
+    with test_util.force_gpu():
       for shape in (2,), (3,), (2, 3), (3, 2), (4, 3, 2):
         rank = len(shape)
         for axis in range(-rank, rank):
@@ -202,11 +201,11 @@ class UnstackOpTest(dml_test_util.TestCase):
     self.assertEqual(y.shape, (0, 2))
 
   def testComplexGpu(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       self.skipTest('No GPU available')
 
     np.random.seed(7)
-    with dml_test_util.force_gpu():
+    with test_util.force_gpu():
       for shape in (2,), (3,), (2, 3), (3, 2), (4, 3, 2):
         for dtype in [np.complex64, np.complex128]:
           data = np.random.randn(*shape).astype(dtype)

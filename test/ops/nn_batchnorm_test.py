@@ -28,10 +28,9 @@ from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn_impl
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class BatchNormalizationTest(dml_test_util.TestCase):
+class BatchNormalizationTest(test.TestCase):
 
   def _npBatchNorm(self, x, m, v, beta, gamma, epsilon,
                    scale_after_normalization, shift_after_normalization):
@@ -345,7 +344,7 @@ class BatchNormalizationTest(dml_test_util.TestCase):
                                        param_dtype=dtypes.float32, atol=0.002)
 
 
-class SufficientStatisticsTest(dml_test_util.TestCase):
+class SufficientStatisticsTest(test.TestCase):
 
   def _npSuffStats(self, x, axes, shift, keep_dims):
     axis = tuple(axes)
@@ -405,7 +404,7 @@ class SufficientStatisticsTest(dml_test_util.TestCase):
           self._testSuffStats([1, 2, 3], [0, 2], shift, keep_dims, has_shape)
 
 
-class NormalizeMomentsTest(dml_test_util.TestCase):
+class NormalizeMomentsTest(test.TestCase):
 
   def _npNormalizeMoments(self, counts, mean_ss, variance_ss, shift):
     mean = mean_ss / counts
@@ -448,7 +447,7 @@ class NormalizeMomentsTest(dml_test_util.TestCase):
       self._testNormalizeMoments([2, 3], shift)
 
 
-class MomentsTest(dml_test_util.TestCase):
+class MomentsTest(test.TestCase):
 
   def _unweighted_moments(self, x, axes, keep_dims=False, extra_out_grads=None):
     # Method to compute moments of `x` wrt `axes`.
