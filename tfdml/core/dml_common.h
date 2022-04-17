@@ -171,7 +171,7 @@ static constexpr uint32_t kBinaryCwiseOpMaxDimCount = 8;
 // The batch and channel dimensions of NCW, NCHW, NCDHW....
 static constexpr uint32_t kNonspatialDimensionCount = 2;
 
-static const char* const DEVICE_DML = "DML";
+static const char* const DEVICE_DML = "GPU";
 
 namespace WRL
 {

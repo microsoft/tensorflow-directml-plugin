@@ -70,7 +70,7 @@ void TF_InitProfiler(TF_ProfilerRegistrationParams* params, TF_Status* status)
     params->profiler->struct_size = TP_PROFILER_STRUCT_SIZE;
     params->profiler_fns->struct_size = TP_PROFILER_FNS_STRUCT_SIZE;
 
-    params->profiler->device_type = "DML";
+    params->profiler->device_type = "GPU";
 
     params->profiler_fns->start = profiler_start;
     params->profiler_fns->stop = profiler_stop;
