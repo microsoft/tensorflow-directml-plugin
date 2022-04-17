@@ -2258,9 +2258,8 @@ class PoolingTest(test.TestCase, parameterized.TestCase):
             padding="VALID")
 
   def testMaxPoolGradWithArgmaxEagerShapeErrors(self):
-    if context.run_eager_op_as_function_enabled():
-      # TODO #37915658: Enable once MaxPoolGradGrad is implemented
-      self.skipTest("MaxPoolGradGrad is not implemented yet on DML")
+    # TODO #37915658: Enable once MaxPoolGradGrad is implemented
+    self.skipTest("MaxPoolGradGrad is not implemented yet on DML")
 
     with context.eager_mode():
       inp = array_ops.ones((1, 1, 1, 1))
