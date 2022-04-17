@@ -26,7 +26,6 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import gradients_impl
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging
-import dml_test_util
 
 
 default_v2_alignment = "LEFT_LEFT"
@@ -321,7 +320,7 @@ def all_tests(align=None):
   return [square_cases(align), tall_cases(align), fat_cases(align)]
 
 
-class MatrixDiagTest(dml_test_util.TestCase):
+class MatrixDiagTest(test.TestCase):
 
   def _moreCases(self, align=None):
     # Diagonal bands.
@@ -573,7 +572,7 @@ class MatrixDiagTest(dml_test_util.TestCase):
           self.assertLess(error, 1e-4)
 
 
-class MatrixSetDiagTest(dml_test_util.TestCase):
+class MatrixSetDiagTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testSquare(self):
@@ -767,7 +766,7 @@ class MatrixSetDiagTest(dml_test_util.TestCase):
                           grad_vals[0])
 
 
-class MatrixDiagPartTest(dml_test_util.TestCase):
+class MatrixDiagPartTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testSquare(self):
@@ -922,7 +921,7 @@ class MatrixDiagPartTest(dml_test_util.TestCase):
           self.assertLess(error, 1e-4)
 
 
-class DiagTest(dml_test_util.TestCase):
+class DiagTest(test.TestCase):
 
   def _diagOp(self, diag, dtype, expected_ans, use_gpu):
     with self.cached_session(use_gpu=use_gpu):
@@ -1067,7 +1066,7 @@ class DiagTest(dml_test_util.TestCase):
       array_ops.diag(0.0)
 
 
-class DiagPartOpTest(dml_test_util.TestCase):
+class DiagPartOpTest(test.TestCase):
 
   def setUp(self):
     np.random.seed(0)
@@ -1148,7 +1147,7 @@ class DiagPartOpTest(dml_test_util.TestCase):
     self.assertRaises(ValueError, self.diagPartOp, x, np.float32, 0)
 
 
-class DiagGradOpTest(dml_test_util.TestCase):
+class DiagGradOpTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testDiagGrad(self):
@@ -1169,7 +1168,7 @@ class DiagGradOpTest(dml_test_util.TestCase):
           self.assertLess(error, 1e-4)
 
 
-class DiagGradPartOpTest(dml_test_util.TestCase):
+class DiagGradPartOpTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testDiagPartGrad(self):

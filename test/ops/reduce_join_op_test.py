@@ -24,7 +24,6 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import string_ops
 from tensorflow.python.platform import test
-import dml_test_util
 
 
 def _input_array(num_dims):
@@ -62,7 +61,7 @@ def _joined_array(num_dims, reduce_dim):
   return result
 
 
-class UnicodeTestCase(dml_test_util.TestCase):
+class UnicodeTestCase(test.TestCase):
   """Test case with Python3-compatible string comparator."""
 
   def assertAllEqualUnicode(self, truth, actual):

@@ -27,10 +27,9 @@ from tensorflow.python.keras import testing_utils
 from tensorflow.python.keras.optimizer_v2 import rmsprop
 from tensorflow.python.ops import array_ops
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class TrainingTest(dml_test_util.KerasParameterizedTestCase):
+class TrainingTest(keras_parameterized.TestCase):
 
   @keras_parameterized.run_all_keras_modes(always_skip_v1=True)
   def test_dynamic_model_has_trainable_weights(self):
@@ -221,7 +220,7 @@ class TrainingTest(dml_test_util.KerasParameterizedTestCase):
     self.assertEqual(out.shape, (30, 4))
 
 
-class CorrectnessTest(dml_test_util.KerasParameterizedTestCase):
+class CorrectnessTest(keras_parameterized.TestCase):
 
   @keras_parameterized.run_with_all_model_types
   @keras_parameterized.run_all_keras_modes

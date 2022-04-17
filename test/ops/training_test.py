@@ -55,7 +55,6 @@ from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging as logging
 from tensorflow.python.training.rmsprop import RMSPropOptimizer
 import tensorflow as tf
-import dml_test_util
 
 
 try:
@@ -64,7 +63,7 @@ except ImportError:
   scipy_sparse = None
 
 
-class TrainingTest(dml_test_util.KerasParameterizedTestCase):
+class TrainingTest(keras_parameterized.TestCase):
 
   @keras_parameterized.run_all_keras_modes
   @keras_parameterized.run_with_all_model_types
@@ -1621,7 +1620,7 @@ class TrainingTest(dml_test_util.KerasParameterizedTestCase):
                        [results_dict['mean'], results_dict['sum']])
 
 
-class TestExceptionsAndWarnings(dml_test_util.KerasParameterizedTestCase):
+class TestExceptionsAndWarnings(keras_parameterized.TestCase):
 
   @keras_parameterized.run_all_keras_modes
   def test_compile_warning_for_loss_missing_output(self):
@@ -1677,7 +1676,7 @@ class TestExceptionsAndWarnings(dml_test_util.KerasParameterizedTestCase):
       model.predict_on_batch([np.ones((10, 5)), np.ones((11, 5))])
 
 
-class LossWeightingTest(dml_test_util.KerasParameterizedTestCase):
+class LossWeightingTest(keras_parameterized.TestCase):
 
   @keras_parameterized.run_all_keras_modes
   def test_class_weights(self):
@@ -1801,7 +1800,7 @@ class LossWeightingTest(dml_test_util.KerasParameterizedTestCase):
 
 
 @keras_parameterized.run_all_keras_modes
-class MaskingTest(dml_test_util.KerasParameterizedTestCase):
+class MaskingTest(keras_parameterized.TestCase):
 
   def test_mask_argument_in_layer(self):
     # Test that the mask argument gets correctly passed to a layer in the
@@ -1835,7 +1834,7 @@ class MaskingTest(dml_test_util.KerasParameterizedTestCase):
 
 
 @keras_parameterized.run_all_keras_modes
-class TestDynamicTrainability(dml_test_util.KerasParameterizedTestCase):
+class TestDynamicTrainability(keras_parameterized.TestCase):
 
   def test_trainable_warning(self):
     x = np.random.random((5, 3))
@@ -2008,7 +2007,7 @@ class TestDynamicTrainability(dml_test_util.KerasParameterizedTestCase):
     self.assertAllClose([kernel[0, 0], bias[0]], [1.1176, 1.1176])
 
 
-class TestTrainingWithDataTensors(dml_test_util.KerasParameterizedTestCase):
+class TestTrainingWithDataTensors(keras_parameterized.TestCase):
 
   def test_training_and_eval_methods_on_symbolic_tensors_single_io(self):
     with ops.Graph().as_default():
@@ -2528,7 +2527,7 @@ class TestTrainingWithDataTensors(dml_test_util.KerasParameterizedTestCase):
                            [output_a_np, output_b_np])
 
 
-class TestTrainingWithMetrics(dml_test_util.KerasParameterizedTestCase):
+class TestTrainingWithMetrics(keras_parameterized.TestCase):
   """Training tests related to metrics."""
 
   @keras_parameterized.run_all_keras_modes
@@ -3323,7 +3322,7 @@ class SubgraphUpdateLayer(layers_module.Layer):
 
 
 @keras_parameterized.run_all_keras_modes(always_skip_v1=True)
-class TestAutoUpdates(dml_test_util.KerasParameterizedTestCase):
+class TestAutoUpdates(keras_parameterized.TestCase):
 
   @keras_parameterized.run_with_all_model_types
   @parameterized.named_parameters(
@@ -3398,7 +3397,7 @@ class TestAutoUpdates(dml_test_util.KerasParameterizedTestCase):
     self.assertEqual(self.evaluate(layer.counter), 1)
 
 
-class TestFunctionTracing(dml_test_util.KerasParameterizedTestCase):
+class TestFunctionTracing(keras_parameterized.TestCase):
 
   def _seq_model_and_data(self):
     model = sequential.Sequential([layers_module.Dense(4, activation='relu')])
@@ -3433,7 +3432,7 @@ class TestFunctionTracing(dml_test_util.KerasParameterizedTestCase):
     self.assertEqual(sum(new_func_graph in log for log in eval_logs.output), 20)
 
 
-class TestBuildCustomModel(dml_test_util.KerasParameterizedTestCase):
+class TestBuildCustomModel(keras_parameterized.TestCase):
 
   @keras_parameterized.run_all_keras_modes
   def test_build_list_of_inputs(self):

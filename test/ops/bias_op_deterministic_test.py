@@ -29,7 +29,6 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradients_impl
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.platform import test
-import dml_test_util
 
 
 class BiasAddDeterministicTest(bias_op_base.BiasAddTestBase,

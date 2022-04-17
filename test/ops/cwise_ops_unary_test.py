@@ -32,7 +32,6 @@ from tensorflow.python.ops import nn_grad  # pylint: disable=unused-import
 from tensorflow.python.ops import special_math_ops
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging
-import dml_test_util
 
 _NEG = lambda x: -x
 _ABS = abs
@@ -68,7 +67,7 @@ def _default_tolerance(dtype):
     return None  # Fail fast for unexpected types
 
 
-class UnaryOpTest(dml_test_util.TestCase):
+class UnaryOpTest(test.TestCase):
 
   def _compareCpu(self, x, np_func, tf_func, grad_rtol=None, grad_atol=None):
     if grad_rtol is None:
@@ -131,7 +130,7 @@ class UnaryOpTest(dml_test_util.TestCase):
 
   def _compareGpu(self, x, np_func, tf_func):
     np_ans = np_func(x)
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       result = tf_func(ops.convert_to_tensor(x))
       tf_gpu = self.evaluate(result)
       self.assertAllCloseAccordingToType(np_ans, tf_gpu, atol=1e-4)
@@ -139,7 +138,7 @@ class UnaryOpTest(dml_test_util.TestCase):
   def _compareSparseGpu(self, x, np_func, tf_func, tol):
     x_sp, x_sp_vals = _sparsify(x)
     res_np = np_func(x_sp_vals)
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       self._check(tf_func(x_sp), res_np, x_sp, tol)
 
   def _compareBoth(self, x, np_func, tf_func, grad_tol=None):

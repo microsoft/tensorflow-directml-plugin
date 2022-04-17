@@ -28,10 +28,9 @@ from tensorflow.python.ops import gradients_impl
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class SliceTest(dml_test_util.TestCase):
+class SliceTest(test.TestCase):
 
   def testEmpty(self):
     inp = np.random.rand(4, 4).astype("f")
@@ -52,7 +51,7 @@ class SliceTest(dml_test_util.TestCase):
       self.assertAllEqual(slice_val, inp[2, k:k])
 
   def testSlicingWithInt64Index(self):
-    with self.cached_session(force_gpu=dml_test_util.is_gpu_available()):
+    with self.cached_session(force_gpu=test_util.is_gpu_available()):
       a = constant_op.constant([0, 1, 2], dtype=dtypes.int32)
 
       # Slice using int64 Tensor.
@@ -88,7 +87,7 @@ class SliceTest(dml_test_util.TestCase):
       self.assertAllEqual([1, 2], slice_val)
 
   def testSlicingInt64Tensor(self):
-    with self.cached_session(force_gpu=dml_test_util.is_gpu_available()):
+    with self.cached_session(force_gpu=test_util.is_gpu_available()):
       a = constant_op.constant([0, 1, 2], dtype=dtypes.int64)
 
       # Slice using int32 Tensor.
@@ -235,7 +234,7 @@ class SliceTest(dml_test_util.TestCase):
       self.assertAllEqual(slice_val, inp[x, 0:y])
 
   def testSimple(self):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       for dtype in [
           np.uint8,
           np.int8,

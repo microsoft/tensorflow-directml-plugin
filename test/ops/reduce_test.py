@@ -33,7 +33,6 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
-import dml_test_util
 
 
 class ReduceTest(test_base.DatasetTestBase, parameterized.TestCase):
@@ -220,13 +219,13 @@ class ReduceTest(test_base.DatasetTestBase, parameterized.TestCase):
 
   @combinations.generate(test_base.default_test_combinations())
   def testStateOnGPU(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       self.skipTest("No GPUs available.")
 
     state = constant_op.constant(0, dtype=dtypes.int64)
 
     def reduce_fn(state, value):
-      with ops.device("/dml:0"):
+      with ops.device("/gpu:0"):
         return state + value
 
     for i in range(10):

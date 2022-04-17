@@ -28,10 +28,9 @@ from tensorflow.python.ops import gen_random_ops
 from tensorflow.python.ops import random_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class RandomOpTestCommon(dml_test_util.TestCase):
+class RandomOpTestCommon(test.TestCase):
 
   # Checks that executing the same rng_func multiple times rarely produces the
   # same result.
@@ -157,7 +156,7 @@ class RandomNormalTest(RandomOpTestCommon):
 
 
 @test_util.with_eager_op_as_function
-class TruncatedNormalTest(dml_test_util.TestCase):
+class TruncatedNormalTest(test.TestCase):
 
   def _Sampler(self, num, mu, sigma, dtype, use_gpu, seed=None):
 
@@ -177,7 +176,7 @@ class TruncatedNormalTest(dml_test_util.TestCase):
   # implementations which uses the same random number seed.
   def testDistinct(self):
     # NOTE: TruncatedNormal on GPU is not supported.
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       for dt in dtypes.float16, dtypes.float32, dtypes.float64:
         sampler = self._Sampler(1000, 0.0, 1.0, dt, use_gpu=False)
         x = sampler()
@@ -195,7 +194,7 @@ class TruncatedNormalTest(dml_test_util.TestCase):
   @test_util.run_deprecated_v1
   def testCPUGPUMatch(self):
     # Skip the test if there is no GPU.
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       return
 
     for dt in dtypes.float16, dtypes.float32, dtypes.float64:
@@ -427,7 +426,7 @@ class RandomUniformTest(RandomOpTestCommon):
             graph_seed=965)
 
 
-class RandomShapeTest(dml_test_util.TestCase):
+class RandomShapeTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testTruncatedNormal(self):
@@ -469,7 +468,7 @@ class RandomShapeTest(dml_test_util.TestCase):
     self.assertIs(None, rnd3.get_shape().ndims)
 
 
-class DeterministicOpsTest(dml_test_util.TestCase):
+class DeterministicOpsTest(test.TestCase):
 
   def setUp(self):
     super().setUp()

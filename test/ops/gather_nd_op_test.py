@@ -31,10 +31,9 @@ from tensorflow.python.ops import gradients_impl
 from tensorflow.python.ops import resource_variable_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class GatherNdTest(dml_test_util.TestCase):
+class GatherNdTest(test.TestCase):
 
   def _testSimpleDtype(self, dtype):
     with self.cached_session():
@@ -214,7 +213,7 @@ class GatherNdTest(dml_test_util.TestCase):
         self.evaluate(gather_nd)
 
   def _disabledTestBadIndicesGPU(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       return
     with self.session():
       params = [0, 1, 2]
@@ -236,7 +235,7 @@ class GatherNdTest(dml_test_util.TestCase):
         self.evaluate(gather_nd)
 
   def _disabledTestBadIndicesWithSlicesGPU(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       return
     with self.session():
       params = [[0, 1, 2]]

@@ -27,9 +27,8 @@ from tensorflow.python.ops import gradients
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import rnn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
-import dml_test_util
 
-class RNNGradTest(dml_test_util.TestCase):
+class RNNGradTest(test.TestCase):
 
   @test_util.deprecated_graph_mode_only
   def testBlockLSTMV1V2Consistency(self):

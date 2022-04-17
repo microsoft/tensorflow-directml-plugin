@@ -25,13 +25,12 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradients_impl
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
-import dml_test_util
 
 _TEST_DTYPES = (dtypes.float32, dtypes.float64, dtypes.complex64,
                 dtypes.complex128)
 
 
-class SplitOpTest(dml_test_util.TestCase):
+class SplitOpTest(test.TestCase):
 
   def _makeData(self, shape, dtype):
     data = np.random.rand(*shape).astype(dtype.as_numpy_dtype)
@@ -116,7 +115,7 @@ class SplitOpTest(dml_test_util.TestCase):
 
     value = np.random.rand(11, 11)
 
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       result = self.evaluate(array_ops.split(value, [a, b]))
 
     self.assertAllEqual(result[0], value[0:5, :])
@@ -133,7 +132,7 @@ class SplitOpTest(dml_test_util.TestCase):
     size_splits = np.random.randint(2, 8, num_split, dtype=np.int32)
     shape[split_dim] = np.sum(size_splits)
     inp = self._makeData(shape, dtype)
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       result = self.evaluate(array_ops.split(inp, size_splits, split_dim))
     slices = [slice(0, x) for x in shape]
     offset = 0
@@ -145,7 +144,7 @@ class SplitOpTest(dml_test_util.TestCase):
   def _testSpecialCasesVariable(self):
     inp = np.random.rand(4, 4).astype("f")
 
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       result = self.evaluate(array_ops.split(inp, [4], 0))
       self.assertAllEqual(result[0], inp)
 
@@ -159,7 +158,7 @@ class SplitOpTest(dml_test_util.TestCase):
     shape = [3, np.sum(size_splits)]
     split_dim = 1
     inp = self._makeData(shape, dtype)
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       result = self.evaluate(array_ops.split(inp, size_splits, split_dim))
     slices = [slice(0, x) for x in shape]
     offset = 0
@@ -177,7 +176,7 @@ class SplitOpTest(dml_test_util.TestCase):
   @test_util.run_in_graph_and_eager_modes
   def testDegenerateVariable(self):
     inp = np.random.rand(4, 4).astype("f")
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       result = self.evaluate(array_ops.split(inp, [-1, 4], 0))
       self.assertAllEqual(result[0], inp[0:0, :])
       self.assertAllEqual(result[1], inp[0:4, :])
@@ -196,7 +195,7 @@ class SplitOpTest(dml_test_util.TestCase):
 
   def _testGradientsSimpleVariable(self, dtype):
     inp = self._makeData((4, 4), dtype)
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       inp_tensor = ops.convert_to_tensor(inp)
       s = array_ops.split(inp_tensor, [1, 3], 1)
       inp_grads = [
@@ -221,7 +220,7 @@ class SplitOpTest(dml_test_util.TestCase):
 
   def _compare(self, x, dim, num):
     np_ans = np.split(x, num, dim)
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       tf_ans = array_ops.split(value=x, num_or_size_splits=num, axis=dim)
       out = self.evaluate(tf_ans)
     self.assertEqual(num, len(np_ans))
@@ -244,7 +243,7 @@ class SplitOpTest(dml_test_util.TestCase):
       self._compare(inp, 1, 4)
 
   def _testEmpty(self, x, dim, num, expected_shape):
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       tf_ans = array_ops.split(value=x, num_or_size_splits=num, axis=dim)
       out = self.evaluate(tf_ans)
     self.assertEqual(x.size, 0)
@@ -290,7 +289,7 @@ class SplitOpTest(dml_test_util.TestCase):
       num_split = np.random.randint(2, 8)
     shape[split_dim] = np.random.randint(2, 5) * num_split
     inp = self._makeData(shape, dtype)
-    with dml_test_util.device(use_gpu=True):
+    with test_util.device(use_gpu=True):
       result = self.evaluate(
           array_ops.split(
               value=inp, num_or_size_splits=num_split, axis=split_dim))

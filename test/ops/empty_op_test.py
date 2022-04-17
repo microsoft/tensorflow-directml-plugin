@@ -20,9 +20,8 @@ from tensorflow.python.ops import gen_array_ops
 from tensorflow.python.ops import array_ops
 from tensorflow.python.platform import test
 from tensorflow.python.framework import dtypes
-import dml_test_util
 
-class EmptyTest(dml_test_util.TestCase):
+class EmptyTest(test.TestCase):
 
     @test_util.run_in_graph_and_eager_modes
     def testEmpty(self):
