@@ -53,7 +53,7 @@ void DeleteOptimizer(void* optimizer)
 void TF_InitGraph(TP_OptimizerRegistrationParams* params, TF_Status* status)
 {
     params->struct_size = TP_OPTIMIZER_REGISTRATION_PARAMS_STRUCT_SIZE;
-    params->device_type = "DML";
+    params->device_type = "GPU";
     params->optimizer_configs->struct_size = TP_OPTIMIZER_CONFIGS_STRUCT_SIZE;
     params->major_version = DML_MAJOR_VERSION;
     params->minor_version = DML_MINOR_VERSION;

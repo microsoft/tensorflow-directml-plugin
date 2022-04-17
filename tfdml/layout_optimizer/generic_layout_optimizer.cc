@@ -422,7 +422,7 @@ Status GenericLayoutOptimizer::Optimize(
         item,
         &context));
 
-    context.AssignDeviceAndDataFormats("DML", "NHWC", "NCHW");
+    context.AssignDeviceAndDataFormats("GPU", "NHWC", "NCHW");
 
     TransposerFactory transposer_factory;
     TF_RETURN_IF_ERROR(ExpandLayoutSensitiveOp(&context, &transposer_factory));
