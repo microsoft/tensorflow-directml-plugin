@@ -18,12 +18,13 @@ import numpy as np
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import errors
 from tensorflow.python.framework import ops
+from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import inplace_ops
 from tensorflow.python.platform import test as test_lib
 
 
-class InplaceOpsTest(test.TestCase):
+class InplaceOpsTest(test_lib.TestCase):
 
   def testBasicUpdate(self):
     for dtype in [dtypes.float32, dtypes.int32, dtypes.int64]:

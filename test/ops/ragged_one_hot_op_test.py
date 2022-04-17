@@ -31,7 +31,7 @@ from tensorflow.python.platform import googletest
 
 @test_util.with_eager_op_as_function
 @test_util.run_all_in_graph_and_eager_modes
-class RaggedOneHotTest(test.TestCase, parameterized.TestCase):
+class RaggedOneHotTest(test_util.TensorFlowTestCase, parameterized.TestCase):
 
   @parameterized.parameters([
       # 2D Indices (ragged_rank=1)

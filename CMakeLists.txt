@@ -349,11 +349,13 @@ add_library(
     optimizer
     STATIC
     tfdml/optimizer/device_name_utils.cc
+    tfdml/optimizer/device_type.cc
     tfdml/optimizer/graph_optimizer.cc
     tfdml/optimizer/graph_properties.cc
     tfdml/optimizer/graph_view.cc
     tfdml/optimizer/grappler_item.cc
     tfdml/optimizer/hash.cc
+    tfdml/optimizer/node_utils.cc
     tfdml/optimizer/op_registry.cc
     tfdml/optimizer/op_types.cc
     tfdml/optimizer/optimizer_runner.cc
@@ -408,6 +410,22 @@ set_target_properties(tfdml_plugin PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 # )
 # set_target_properties(tfdml_plugin_layout_optimizer PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 
+# TODO: Remove when the data format ops get their DEVICE_DEFAULT registration
+# https://github.com/tensorflow/tensorflow/pull/55558
+add_library(
+    tfdml_plugin_data_format_ops_converter
+    SHARED
+    tfdml/data_format_ops_converter/data_format_ops_converter.cc
+    tfdml/plugin/plugin_data_format_ops_converter.cc
+)
+target_link_libraries(
+    tfdml_plugin_data_format_ops_converter 
+    PRIVATE
+    optimizer
+    protobuf::libprotobuf
+)
+set_target_properties(tfdml_plugin_data_format_ops_converter PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+
 # The CMake project name and version determines the python wheel version. Save these
 # values to files so the setup.py script can read them.
 set(pkg_py "cp${Python_VERSION_MAJOR}${Python_VERSION_MINOR}")
@@ -431,10 +449,12 @@ add_custom_command(
         ${CMAKE_SOURCE_DIR}/tfdml/wheel/build_wheel.py
         --plugin_paths
             $<TARGET_FILE:tfdml_plugin>
+            $<TARGET_FILE:tfdml_plugin_data_format_ops_converter>
 #             $<TARGET_FILE:tfdml_plugin_layout_optimizer>
         --build_dir ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS
         tfdml_plugin
+        tfdml_plugin_data_format_ops_converter
 #         tfdml_plugin_layout_optimizer
         tfdml/wheel/build_wheel.py
         tfdml/wheel/setup.py

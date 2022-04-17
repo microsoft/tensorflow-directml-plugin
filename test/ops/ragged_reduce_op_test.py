@@ -44,7 +44,7 @@ def std(*values):
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class RaggedReduceOpsTest(test.TestCase, parameterized.TestCase):
+class RaggedReduceOpsTest(test_util.TensorFlowTestCase, parameterized.TestCase):
 
   @parameterized.parameters(
       #=========================================================================

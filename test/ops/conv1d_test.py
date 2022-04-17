@@ -38,7 +38,7 @@ class Conv1DTest(test.TestCase):
       filters = array_ops.expand_dims(filters, 2)  # out_channels
       # Filters is 2x1x1
       for stride in [1, 2]:
-        with self.cached_session(use_gpu=test_util.is_gpu_available()):
+        with self.cached_session(use_gpu=test.is_gpu_available()):
           c = nn_ops.conv1d(x, filters, stride, padding="VALID")
           reduced = array_ops.squeeze(c)
           output = self.evaluate(reduced)
@@ -63,7 +63,7 @@ class Conv1DTest(test.TestCase):
     filters = array_ops.expand_dims(filters, 2)  # out_channels
     # Filters is 2x1x1
     for stride in [1, 2]:
-      with self.cached_session(use_gpu=test_util.is_gpu_available()):
+      with self.cached_session(use_gpu=test.is_gpu_available()):
         c = nn_ops.conv1d(x, filters, stride, padding="VALID")
         reduced = array_ops.squeeze(c)  # Sequeeze out dims 1 and 3.
         output = self.evaluate(reduced)

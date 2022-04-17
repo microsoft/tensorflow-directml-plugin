@@ -22,7 +22,7 @@ from tensorflow.python.platform import googletest
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class StringsReduceJoinOpTest(test.TestCase,
+class StringsReduceJoinOpTest(test_util.TensorFlowTestCase,
                               parameterized.TestCase):
 
   def test_rank_one(self):
