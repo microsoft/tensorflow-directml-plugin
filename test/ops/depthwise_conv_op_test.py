@@ -1117,15 +1117,7 @@ class DepthwiseConv2DDeterministicTest(test.TestCase):
         return tape.gradient(gradient_injector_output,
                              [input_data, filter_data])
 
-      if using_gpu and not use_cudnn:
-        # This tests depends on other tests, tests which do not enable
-        # op-determinism, to ensure that determinism-unimplemented exceptions
-        # are not erroneously thrown when op-determinism is not enabled.
-        ctx_mgr = self.assertRaisesRegex(
-            errors.UnimplementedError, "A deterministic GPU implementation of" +
-            " DepthwiseConvBackpropFilter is not currently available.")
-      else:
-        ctx_mgr = contextlib.suppress()
+      ctx_mgr = contextlib.suppress()
 
       with ctx_mgr:
         # Test only two seeds, since testing takes a long time
@@ -1140,10 +1132,9 @@ class DepthwiseConv2DDeterministicTest(test.TestCase):
   @test_util.run_gpu_only
   def testBackwardGPU(self):
     using_gpu = True
-    for use_cudnn in [False, True]:
-      for data_format in ["NHWC", "NCHW"]:
-        for dtype in [dtypes.float16, dtypes.float32, dtypes.float64]:
-          self._testBackwardCase(using_gpu, use_cudnn, data_format, dtype)
+    for data_format in ["NHWC", "NCHW"]:
+      for dtype in [dtypes.float16, dtypes.float32]:
+        self._testBackwardCase(using_gpu, False, data_format, dtype)
 
   def testBackwardCPU(self):
     if tf_config.list_physical_devices("GPU"):

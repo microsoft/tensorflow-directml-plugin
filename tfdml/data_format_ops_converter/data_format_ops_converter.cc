@@ -18,6 +18,7 @@ limitations under the License.
 #include "tfdml/optimizer/device_name_utils.h"
 #include "tfdml/optimizer/graph_properties.h"
 #include "tfdml/optimizer/graph_view.h"
+#include "tfdml/optimizer/grappler_item.h"
 #include "tfdml/optimizer/node_utils.h"
 #include "tfdml/optimizer/op_types.h"
 #include "tfdml/runtime_adapter/macros.h"
@@ -33,12 +34,7 @@ Status DataFormatOpsConverter::Optimize(
     const GrapplerItem& item,
     tensorflow::GraphDef* output)
 {
-    const bool is_aggressive = true;
-
-    auto graph_properties = absl::make_unique<GraphProperties>(item);
-
-    TF_RETURN_IF_ERROR(graph_properties->InferStatically(is_aggressive));
-    TF_RETURN_IF_ERROR(graph_properties->AnnotateOutputShapes(output));
+    *output = item.graph;
     Status status;
     auto graph_view = absl::make_unique<MutableGraphView>(output, &status);
     TF_RETURN_IF_ERROR(status);
