@@ -1087,7 +1087,7 @@ class DepthwiseConv2DDeterministicTest(test.TestCase):
   def testForwardGPU(self):
     for use_cudnn in [False, True]:
       for data_format in ["NHWC", "NCHW"]:
-        for dtype in [dtypes.float16, dtypes.float32, dtypes.float64]:
+        for dtype in [dtypes.float16, dtypes.float32]:
           self._testForwardCase(use_cudnn, data_format, dtype=dtype)
 
   def testForwardCPU(self):

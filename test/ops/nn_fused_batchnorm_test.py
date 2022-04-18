@@ -31,7 +31,10 @@ from tensorflow.python.ops import nn_impl
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.platform import test
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> c34becf55e5250f207583757e20fb41f19fbdace
 class BatchNormalizationTest(test.TestCase):
 
   def _batch_norm(self, x, mean, var, offset, scale, epsilon):
