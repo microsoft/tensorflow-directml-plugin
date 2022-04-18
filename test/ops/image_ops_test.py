@@ -5643,6 +5643,9 @@ class MultiscaleSSIMTest(dml_test_util.TestCase):
     self.assertAllClose(expected, np.squeeze(scores), atol=1e-4)
 
   def testUnweightedIsDifferentiable(self):
+    # TODO: Enable once DML supports ZerosLike Variant
+    self.skipTest("DML doesn't support ZerosLike with the Variant datatype yet")
+
     img = self._LoadTestImages()
 
     @def_function.function
