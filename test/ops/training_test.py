@@ -960,6 +960,9 @@ class TrainingTest(keras_parameterized.TestCase):
 
   @combinations.generate(combinations.combine(mode=['graph', 'eager']))
   def test_training_with_loss_instance(self):
+    # TODO: Enable once DML supports ZerosLike Variant
+    self.skipTest("DML doesn't support ZerosLike with the Variant datatype yet")
+
     a = layers_module.Input(shape=(3,), name='input_a')
     b = layers_module.Input(shape=(3,), name='input_b')
 
@@ -2141,6 +2144,10 @@ class TestTrainingWithDataTensors(keras_parameterized.TestCase):
     by only passing them data for the placeholder inputs
     in the model.
     """
+
+    # TODO: Enable once DML supports ZerosLike Variant
+    self.skipTest("DML doesn't support ZerosLike with the Variant datatype yet")
+
     with ops.Graph().as_default(), self.cached_session():
       input_a_np = np.random.random((10, 3))
       input_b_np = np.random.random((10, 3))
@@ -2313,6 +2320,9 @@ class TestTrainingWithDataTensors(keras_parameterized.TestCase):
       _ = model.evaluate(input_a_np, output_a_np)
 
   def test_model_with_external_loss(self):
+    # TODO: Enable once DML supports ZerosLike Variant
+    self.skipTest("DML doesn't support ZerosLike with the Variant datatype yet")
+
     tf.compat.v1.experimental.output_all_intermediates(True)
 
     with ops.Graph().as_default(), self.cached_session():
