@@ -16,31 +16,80 @@ limitations under the License.
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/c/tf_status.h"
 #include "tensorflow/core/framework/graph.pb.h"
-#include "tfdml/data_format_ops_converter/data_format_ops_converter.h"
+#include "tfdml/optimizer/data_format_ops_converter.h"
 #include "tfdml/optimizer/optimizer_runner.h"
+#include "tfdml/optimizer/proto_buffer_helpers.h"
+#include "tfdml/optimizer/transpose_remover.h"
 
 namespace tfdml
 {
-static void* CreateOptimizer() { return new DataFormatOpsConverter(); }
+static void* CreateOptimizer()
+{
+    return new std::vector<GraphOptimizer*>{
+        // TODO: Remove DataFormatOpsConverter when the data format ops get
+        // their DEVICE_DEFAULT registration
+        // https://github.com/tensorflow/tensorflow/pull/55558
+        new DataFormatOpsConverter(),
+        new TransposeRemover(),
+    };
+}
 
 static void OptimizeGraph(
-    void* optimizer,
+    void* optimizers,
     const TF_Buffer* input_graph_buffer,
     const TF_GrapplerItem* grappler_item,
     TF_Buffer* output_graph_buffer,
     TF_Status* raw_status)
 {
-    RunOptimizer(
-        optimizer,
-        input_graph_buffer,
-        grappler_item,
-        output_graph_buffer,
-        raw_status);
+    tensorflow::GraphDef output_graph_def;
+    Status status = ParseBuffer(input_graph_buffer, &output_graph_def);
+
+    if (!status.ok())
+    {
+        TF_SetStatus(raw_status, status.code(), status.error_message());
+        return;
+    }
+
+    auto cast_optimizers =
+        static_cast<std::vector<GraphOptimizer*>*>(optimizers);
+
+    for (GraphOptimizer* optimizer : *cast_optimizers)
+    {
+        tensorflow::GraphDef input_graph_def = std::move(output_graph_def);
+
+        Status status = RunOptimizer(
+            optimizer,
+            input_graph_def,
+            grappler_item,
+            output_graph_def);
+
+        if (!status.ok())
+        {
+            TF_SetStatus(raw_status, status.code(), status.error_message());
+            return;
+        }
+    }
+
+    status = GraphDefToBuffer(output_graph_def, output_graph_buffer);
+
+    if (!status.ok())
+    {
+        TF_SetStatus(raw_status, status.code(), status.error_message());
+        return;
+    }
+
+    TF_SetStatus(raw_status, TF_OK, "");
 }
 
-void DeleteOptimizer(void* optimizer)
+void DeleteOptimizer(void* optimizers)
 {
-    delete static_cast<DataFormatOpsConverter*>(optimizer);
+    auto cast_optimizers =
+        static_cast<std::vector<GraphOptimizer*>*>(optimizers);
+
+    for (GraphOptimizer* optimizer : *cast_optimizers)
+    {
+        delete optimizer;
+    }
 }
 
 } // namespace tfdml
@@ -65,5 +114,3 @@ void TF_InitGraph(TP_OptimizerRegistrationParams* params, TF_Status* status)
 }
 
 #pragma warning(pop)
-
-void TF_InitKernel() {}

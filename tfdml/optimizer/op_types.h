@@ -44,6 +44,7 @@ bool IsConv2DBackpropFilter(const tensorflow::NodeDef& node);
 bool IsConv2DBackpropInput(const tensorflow::NodeDef& node);
 bool IsDepthwiseConv2dNativeBackpropFilter(const tensorflow::NodeDef& node);
 bool IsDepthwiseConv2dNativeBackpropInput(const tensorflow::NodeDef& node);
+bool IsFusedBatchNorm(const tensorflow::NodeDef& node);
 bool IsFusedBatchNormEx(const tensorflow::NodeDef& node);
 bool IsFusedBatchNormGrad(const tensorflow::NodeDef& node);
 bool IsMaxPoolV2(const tensorflow::NodeDef& node);

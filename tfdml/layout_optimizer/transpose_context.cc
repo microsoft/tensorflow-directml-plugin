@@ -17,44 +17,12 @@ limitations under the License.
 #include "absl/container/flat_hash_map.h"
 #include "tfdml/optimizer/graph_view.h"
 #include "tfdml/optimizer/grappler_item.h"
+#include "tfdml/optimizer/perm_utils.h"
 #include "tfdml/runtime_adapter/macros.h"
 #include "tfdml/runtime_adapter/status.h"
 
 namespace tfdml
 {
-
-static absl::flat_hash_map<char, int> GetDimensionIndices(
-    absl::string_view data_format)
-{
-    const int size = data_format.size();
-    absl::flat_hash_map<char, int> index;
-    index.reserve(size);
-    for (int i = 0; i < size; i++)
-    {
-        index[data_format[i]] = i;
-    }
-    return index;
-}
-
-static std::vector<int> GetPermutation(
-    const absl::flat_hash_map<char, int>& src_dim_indices,
-    absl::string_view dst_format)
-{
-    // Generate permutation for transformation between src and dst format.
-    // Example:
-    // src = NWHC, dst = NCWH
-    // index = { N:0 W:1 H:2 C:3 }
-    // permutation = [0, 3, 1, 2]
-    assert(src_dim_indices.size() == dst_format.size());
-    std::vector<int> permutation;
-    const int size = dst_format.size();
-    permutation.reserve(size);
-    for (int i = 0; i < size; i++)
-    {
-        permutation.push_back(src_dim_indices.at(dst_format[i]));
-    }
-    return permutation;
-}
 
 Status TransposeContext::InitializeTransposeContext(
     bool assume_valid_feeds,

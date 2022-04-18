@@ -13,20 +13,15 @@ limitations under the License.
 
 #pragma once
 
-#include "tfdml/runtime_adapter/status.h"
-
-struct TF_GrapplerItem;
-
-namespace tensorflow
-{
-class GraphDef;
-}
+#include "absl/container/flat_hash_map.h"
+#include <vector>
 
 namespace tfdml
 {
-Status RunOptimizer(
-    void* optimizer,
-    const tensorflow::GraphDef& input_graph_def,
-    const TF_GrapplerItem* grappler_item,
-    tensorflow::GraphDef& output_graph_def);
+absl::flat_hash_map<char, int> GetDimensionIndices(
+    absl::string_view data_format);
+
+std::vector<int> GetPermutation(
+    const absl::flat_hash_map<char, int>& src_dim_indices,
+    absl::string_view dst_format);
 } // namespace tfdml
