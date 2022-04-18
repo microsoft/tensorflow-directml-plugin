@@ -29,7 +29,6 @@ from tensorflow.python.ops import variables
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
 from tensorflow.python.training import gradient_descent
-import dml_test_util
 
 
 def _elu_grad_grad(activation):
@@ -38,7 +37,7 @@ def _elu_grad_grad(activation):
   return 0
 
 
-class ReluTest(dml_test_util.TestCase):
+class ReluTest(test.TestCase):
 
   def _npRelu(self, np_features):
     return np.maximum(np_features, np.zeros(np_features.shape))
@@ -64,7 +63,7 @@ class ReluTest(dml_test_util.TestCase):
             np.array([[-9, 7, -5, 3, -1], [1, -3, 5, -7, 9]]).astype(t))
 
   def testNumbersGPU(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       self.skipTest("No GPU available")
     for t in [np.float16, np.float32, np.float64]:
       self._testRelu(
@@ -74,7 +73,7 @@ class ReluTest(dml_test_util.TestCase):
     # TODO: Enable when/if our kernels support quantized data type
     # TFDML 38256707
     self.skipTest("DML doesn't support quantized ops yet.")
-    if not dml_test_util.is_gpu_available(cuda_only=True):
+    if not test_util.is_gpu_available(cuda_only=True):
       self.skipTest("No GPU available")
     inputs = np.array([[-50, 7, 23, 0], [-1, -5, 6, 11]])
     np_relu = self._npRelu(inputs)
@@ -87,7 +86,7 @@ class ReluTest(dml_test_util.TestCase):
     # TODO: Enable when/if our kernels support quantized data type
     # TFDML 38256707
     self.skipTest("DML doesn't support quantized ops yet.")
-    if not dml_test_util.is_gpu_available(cuda_only=True):
+    if not test_util.is_gpu_available(cuda_only=True):
       self.skipTest("No GPU available")
     inputs = constant_op.constant(
         np.array([[-50, 7, 23], [0, 1, -5], [6, -2, 11]]), dtypes.qint8)
@@ -204,7 +203,7 @@ class ReluTest(dml_test_util.TestCase):
       self.assertAllEqual(z, np.reshape(x, (0, 0)))
 
 
-class Relu6Test(dml_test_util.TestCase):
+class Relu6Test(test.TestCase):
 
   def _npRelu6(self, np_features):
     sixes = np.copy(np_features)
@@ -233,7 +232,7 @@ class Relu6Test(dml_test_util.TestCase):
             np.array([[-9, 7, -5, 3, -1], [1, -3, 5, -7, 9]]).astype(t))
 
   def testNumbersGPU(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       self.skipTest("No GPU available")
     for t in [np.float16, np.float64, np.double]:
       self._testRelu6(
@@ -263,7 +262,7 @@ class Relu6Test(dml_test_util.TestCase):
     self.assertLess(err, 1e-10)
 
 
-class LeakyReluTest(dml_test_util.TestCase):
+class LeakyReluTest(test.TestCase):
 
   def _npLeakyRelu(self, np_features, alpha=0.1):
     return np.maximum(np_features, alpha * np_features)
@@ -292,7 +291,7 @@ class LeakyReluTest(dml_test_util.TestCase):
             alpha=0.2)
 
   def testNumbersGPU(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       self.skipTest("No GPU available")
     for t in [np.float16, np.float32, np.float64]:
       self._testLeakyRelu(
@@ -391,7 +390,7 @@ class LeakyReluTest(dml_test_util.TestCase):
             alpha=-10))
 
 
-class EluTest(dml_test_util.TestCase):
+class EluTest(test.TestCase):
 
   def _npElu(self, np_features):
     return np.where(np_features < 0, np.exp(np_features) - 1, np_features)
@@ -418,7 +417,7 @@ class EluTest(dml_test_util.TestCase):
             np.array([[-9, 7, -5, 3, -1], [1, -3, 5, -7, 9]]).astype(t))
 
   def testNumbersGPU(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       self.skipTest("No GPU available")
     for t in [np.float16, np.float32, np.float64]:
       self._testElu(np.array([[-9, 7, -5, 3, -1], [1, -3, 5, -7, 9]]).astype(t))
@@ -496,7 +495,7 @@ class EluTest(dml_test_util.TestCase):
     self.assertLess(err, 1e-6)
 
 
-class SeluTest(dml_test_util.TestCase):
+class SeluTest(test.TestCase):
 
   def _npSelu(self, np_features):
     scale = 1.0507009873554804934193349852946
@@ -580,7 +579,7 @@ class SeluTest(dml_test_util.TestCase):
     self.assertLess(err, 1e-6)
 
 
-class CreluTest(dml_test_util.TestCase):
+class CreluTest(test.TestCase):
 
   def testCreluShape(self):
     f = random_ops.random_normal([50, 5, 7, 10])
@@ -606,7 +605,7 @@ class CreluTest(dml_test_util.TestCase):
             np.array([[-9, 7, -5, 3, -1], [1, -3, 5, -7, 9]]).astype(t))
 
   def testNumbersGPU(self):
-    if not dml_test_util.is_gpu_available():
+    if not test_util.is_gpu_available():
       self.skipTest("No GPU available")
     for t in [np.float16, np.float32, np.float64]:
       self._testCrelu(

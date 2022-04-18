@@ -25,10 +25,9 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import string_ops
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class AddNTest(dml_test_util.TestCase):
+class AddNTest(test_util.TensorFlowTestCase):
   # AddN special-cases adding the first M inputs to make (N - M) divisible by 8,
   # after which it adds the remaining (N - M) tensors 8 at a time in a loop.
   # Test N in [1, 10] so we check each special-case from 1 to 9 and one
@@ -36,7 +35,7 @@ class AddNTest(dml_test_util.TestCase):
   _MAX_N = 10
 
   def _supported_types(self):
-    if dml_test_util.is_gpu_available():
+    if test_util.is_gpu_available():
       return [
           dtypes.float16, dtypes.float32, dtypes.float64, dtypes.complex64,
           dtypes.complex128, dtypes.int64

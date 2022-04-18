@@ -27,7 +27,6 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
-import dml_test_util
 
 _ADD = lambda x, y: x + y
 _SUB = lambda x, y: x - y
@@ -76,10 +75,10 @@ def _default_tolerance(dtype):
     return None  # Fail fast for unexpected types
 
 
-class ComparisonOpTest(dml_test_util.TestCase):
+class ComparisonOpTest(test.TestCase):
 
   def _compareScalar(self, func, x, y, dtype):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       out = func(
           ops.convert_to_tensor(np.array([x]).astype(dtype)),
           ops.convert_to_tensor(np.array([y]).astype(dtype)))
@@ -116,7 +115,7 @@ class ComparisonOpTest(dml_test_util.TestCase):
 
   def _compare(self, x, y, np_func, tf_func):
     np_ans = np_func(x, y)
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       out = tf_func(ops.convert_to_tensor(x), ops.convert_to_tensor(y))
       tf_ans = self.evaluate(out)
     self.assertAllEqual(np_ans, tf_ans)
@@ -217,11 +216,11 @@ class ComparisonOpTest(dml_test_util.TestCase):
             f(x.astype(t), y.astype(t))
 
 
-class LogicalOpTest(dml_test_util.TestCase):
+class LogicalOpTest(test.TestCase):
 
   def _compareBinary(self, x, y, np_func, tf_func, use_gpu=False):
     np_ans = np_func(x, y)
-    with dml_test_util.device(use_gpu=use_gpu):
+    with test_util.device(use_gpu=use_gpu):
       inx = ops.convert_to_tensor(x)
       iny = ops.convert_to_tensor(y)
       out = tf_func(inx, iny)
@@ -232,7 +231,7 @@ class LogicalOpTest(dml_test_util.TestCase):
 
   def _not(self, x, use_gpu=False):
     np_ans = np.logical_not(x)
-    with dml_test_util.device(use_gpu=use_gpu):
+    with test_util.device(use_gpu=use_gpu):
       out = math_ops.logical_not(ops.convert_to_tensor(x))
       tf_val = self.evaluate(out)
     self.assertEqual(out.dtype, dtypes_lib.bool)
@@ -323,11 +322,11 @@ class LogicalOpTest(dml_test_util.TestCase):
       _ = x < y < z
 
 
-class SelectOpTest(dml_test_util.TestCase):
+class SelectOpTest(test.TestCase):
 
   def _compare(self, fn, c, x, y, use_gpu):
     np_ans = np.where(c, x, y)
-    with dml_test_util.device(use_gpu=use_gpu):
+    with test_util.device(use_gpu=use_gpu):
       out = fn(c, x, y)
       tf_ans = self.evaluate(out)
     self.assertAllEqual(np_ans, tf_ans)
@@ -627,14 +626,14 @@ class SelectOpTest(dml_test_util.TestCase):
     self._testNan(array_ops.where_v2)
 
 
-class BatchSelectOpTest(dml_test_util.TestCase):
+class BatchSelectOpTest(test.TestCase):
   """Test broadcasting of Select when 'c' is a vec and 't' &'e' are rank2+."""
 
   def _compare(self, c, x, y, use_gpu):
     np_ans = np.dstack(
         [x_i if c_i else y_i for c_i, x_i, y_i in zip(c, x, y)]).transpose(
             [2, 0, 1])
-    with dml_test_util.device(use_gpu=use_gpu):
+    with test_util.device(use_gpu=use_gpu):
       out = array_ops.where(c, x, y)
       tf_ans = self.evaluate(out)
     self.assertAllEqual(np_ans, tf_ans)
@@ -741,11 +740,11 @@ class BatchSelectOpTest(dml_test_util.TestCase):
 
 
 @test_util.with_eager_op_as_function
-class MinMaxOpTest(dml_test_util.TestCase):
+class MinMaxOpTest(test.TestCase):
 
   def _compare(self, x, y, use_gpu):
     np_min, np_max = np.minimum(x, y), np.maximum(x, y)
-    with dml_test_util.device(use_gpu=use_gpu):
+    with test_util.device(use_gpu=use_gpu):
       inx = ops.convert_to_tensor(x)
       iny = ops.convert_to_tensor(y)
       omin, omax = math_ops.minimum(inx, iny), math_ops.maximum(inx, iny)
@@ -829,7 +828,7 @@ class MinMaxOpTest(dml_test_util.TestCase):
     self._compareGradientY(math_ops.minimum, x, y)
 
 
-class MathOpsOverloadTest(dml_test_util.TestCase):
+class MathOpsOverloadTest(test.TestCase):
 
   def _computeTensorAndLiteral(self, x, y, dtype, func):
     with test_util.force_cpu():
@@ -942,10 +941,10 @@ class MathOpsOverloadTest(dml_test_util.TestCase):
     self._compareUnary([True, False], dtypes_lib.bool, np.logical_not, _INV)
 
 
-class IsFiniteInfNanTest(dml_test_util.TestCase):
+class IsFiniteInfNanTest(test.TestCase):
 
   def _compare(self, x, use_gpu):
-    with dml_test_util.device(use_gpu=use_gpu):
+    with test_util.device(use_gpu=use_gpu):
       inx = ops.convert_to_tensor(x)
       ofinite, oinf, onan = math_ops.is_finite(inx), math_ops.is_inf(
           inx), math_ops.is_nan(inx)
@@ -1002,7 +1001,7 @@ class IsFiniteInfNanTest(dml_test_util.TestCase):
             x = np.full((size,), value, dtype=dtype)
             np_y = np.sqrt(x)
             np_nan = np.isnan(np_y)
-            with dml_test_util.use_gpu():
+            with test_util.use_gpu():
               tf_y = math_ops.sqrt(x)
               tf_nan = math_ops.is_nan(tf_y)
               if value < 0:
@@ -1011,7 +1010,7 @@ class IsFiniteInfNanTest(dml_test_util.TestCase):
                 self.assertAllCloseAccordingToType(np_y, self.evaluate(tf_y))
 
 
-class RoundingTest(dml_test_util.TestCase):
+class RoundingTest(test.TestCase):
 
   def _compare_values(self, x, y=None):
     y = np.rint(x) if y is None else np.asarray(y)
@@ -1056,12 +1055,12 @@ class RoundingTest(dml_test_util.TestCase):
         self._testDtype(dtype)
 
 
-class ComplexMakeRealImagTest(dml_test_util.TestCase):
+class ComplexMakeRealImagTest(test.TestCase):
 
   def _compareMake(self, real, imag, use_gpu):
     np_ans = real + (1j) * imag
 
-    with dml_test_util.device(use_gpu=use_gpu):
+    with test_util.device(use_gpu=use_gpu):
       real = ops.convert_to_tensor(real)
       imag = ops.convert_to_tensor(imag)
       tf_ans = math_ops.complex(real, imag)
@@ -1084,7 +1083,7 @@ class ComplexMakeRealImagTest(dml_test_util.TestCase):
       for value in [1., 1j, 1. + 1j]:
         with self.subTest(use_gpu=use_gpu, value=value):
           np_real, np_imag = np.real(value), np.imag(value)
-          with dml_test_util.device(use_gpu=use_gpu):
+          with test_util.device(use_gpu=use_gpu):
             tf_real = math_ops.real(value)
             tf_imag = math_ops.imag(value)
             self.assertAllEqual(np_real, self.evaluate(tf_real))
@@ -1094,7 +1093,7 @@ class ComplexMakeRealImagTest(dml_test_util.TestCase):
     np_real, np_imag = np.real(cplx), np.imag(cplx)
     np_zeros = np_real * 0
 
-    with dml_test_util.device(use_gpu=use_gpu):
+    with test_util.device(use_gpu=use_gpu):
       inx = ops.convert_to_tensor(cplx)
       tf_real = math_ops.real(inx)
       tf_imag = math_ops.imag(inx)
@@ -1122,7 +1121,7 @@ class ComplexMakeRealImagTest(dml_test_util.TestCase):
   def _compareAngle(self, cplx, use_gpu):
     np_angle = np.angle(cplx)
 
-    with dml_test_util.device(use_gpu=use_gpu):
+    with test_util.device(use_gpu=use_gpu):
       inx = ops.convert_to_tensor(cplx)
       tf_angle = math_ops.angle(inx)
       tf_angle_val = self.evaluate(tf_angle)
@@ -1163,7 +1162,7 @@ class ComplexMakeRealImagTest(dml_test_util.TestCase):
 
   def _compareConj(self, cplx, use_gpu):
     np_ans = np.conj(cplx)
-    with dml_test_util.device(use_gpu=use_gpu):
+    with test_util.device(use_gpu=use_gpu):
       inx = ops.convert_to_tensor(cplx)
       tf_conj = math_ops.conj(inx)
       tf_ans = self.evaluate(tf_conj)
@@ -1273,7 +1272,7 @@ class ComplexMakeRealImagTest(dml_test_util.TestCase):
     self._compareMulGradient(data)
 
 
-class PolyvalTest(dml_test_util.TestCase):
+class PolyvalTest(test.TestCase):
 
   def _runtest(self, dtype, degree):
     x = np.random.rand(2, 2).astype(dtype)

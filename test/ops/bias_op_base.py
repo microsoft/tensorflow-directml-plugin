@@ -29,11 +29,10 @@ from tensorflow.python.ops import gradients_impl
 from tensorflow.python.ops import nn_ops
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
-import dml_test_util
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class BiasAddTestBase(dml_test_util.TestCase):
+class BiasAddTestBase(test.TestCase):
 
   def _npBias(self, inputs, bias):
     assert len(bias.shape) == 1

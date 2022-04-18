@@ -19,10 +19,9 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class CrossOpTest(dml_test_util.TestCase):
+class CrossOpTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testGradientRandomValues(self):

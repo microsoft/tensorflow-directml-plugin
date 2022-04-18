@@ -13,14 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// Simple hash functions used for internal data structures
-
 #pragma once
 
-#include <stddef.h>
-#include <stdint.h>
+namespace tensorflow
+{
+class NodeDef;
+}
 
 namespace tfdml
 {
-uint32_t Hash32(const char* data, size_t n, uint32_t seed);
+bool IsHostMemory(const tensorflow::NodeDef& node, int output_port);
 } // namespace tfdml

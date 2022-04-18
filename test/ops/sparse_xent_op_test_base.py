@@ -29,10 +29,9 @@ from tensorflow.python.ops import gradient_checker_v2
 from tensorflow.python.ops import nn_ops
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class SparseXentOpTestBase(dml_test_util.TestCase):
+class SparseXentOpTestBase(test.TestCase):
 
   def _opFwdBwd(self, labels, logits):
     """Runs the op-under-test both forwards and backwards"""
@@ -71,27 +70,6 @@ class SparseXentOpTestBase(dml_test_util.TestCase):
           logits=np.array([[1.], [-1.], [0.]]).astype(np.float32))
       self.assertAllClose([0.0, 0.0, 0.0], tf_loss)
       self.assertAllClose([[0.0], [0.0], [0.0]], tf_gradient)
-
-  @test_util.run_gpu_only()
-  def _testInvalidLabelGPU(self, invalid_label_gradient=np.nan):
-    labels = [4, 3, 0, -1]
-    logits = [[1., 1., 1., 1.], [1., 1., 1., 1.], [1., 2., 3., 4.],
-              [1., 2., 3., 4.]]
-    loss, gradient = self._opFwdBwd(labels=labels, logits=logits)
-    self.assertAllClose([np.nan, 1.3862, 3.4420, np.nan],
-                        loss,
-                        rtol=1e-3,
-                        atol=1e-3)
-    self.assertAllClose(
-        [[invalid_label_gradient] * 4, [0.25, 0.25, 0.25, -0.75],
-         [-0.968, 0.087, 0.237, 0.6439], [invalid_label_gradient] * 4],
-        gradient,
-        rtol=1e-3,
-        atol=1e-3)
-
-  def testInvalidLabelGPU(self):
-    """This method is structured to be easily overridden by a child class."""
-    self._testInvalidLabelGPU()
 
   @test_util.run_in_graph_and_eager_modes(use_gpu=False)
   @test_util.disable_xla("XLA cannot assert inside of a kernel.")

@@ -28,10 +28,9 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import gradient_checker_v2
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class ExtractImagePatchesGradTest(dml_test_util.TestCase, parameterized.TestCase):
+class ExtractImagePatchesGradTest(test.TestCase, parameterized.TestCase):
   """Gradient-checking for ExtractImagePatches op."""
 
   _TEST_CASES = [

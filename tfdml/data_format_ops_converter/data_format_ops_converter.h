@@ -1,4 +1,4 @@
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,14 +13,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// Simple hash functions used for internal data structures
-
 #pragma once
 
-#include <stddef.h>
-#include <stdint.h>
+#include "tfdml/optimizer/graph_optimizer.h"
+#include "tfdml/runtime_adapter/status.h"
+
+namespace tensorflow
+{
+class GraphDef;
+}
 
 namespace tfdml
 {
-uint32_t Hash32(const char* data, size_t n, uint32_t seed);
+class DataFormatOpsConverter : public GraphOptimizer
+{
+  public:
+    ~DataFormatOpsConverter() override = default;
+    Status Optimize(const GrapplerItem& item, tensorflow::GraphDef* output)
+        override;
+};
 } // namespace tfdml

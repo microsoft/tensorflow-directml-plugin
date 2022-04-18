@@ -38,10 +38,9 @@ from tensorflow.python.ops.ragged import ragged_tensor
 from tensorflow.python.ops.ragged import ragged_tensor_value
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging as logging
-import dml_test_util
 
 
-class ModelInputsTest(dml_test_util.TestCase):
+class ModelInputsTest(test.TestCase):
 
   def test_single_thing(self):
     a = np.ones(10)
@@ -104,7 +103,7 @@ class ModelInputsTest(dml_test_util.TestCase):
     self.assertIsInstance(vals['b'], keras_tensor.KerasTensor)
 
 
-class DatasetUtilsTest(dml_test_util.TestCase, parameterized.TestCase):
+class DatasetUtilsTest(test.TestCase, parameterized.TestCase):
 
   @parameterized.named_parameters(
       # pylint: disable=g-long-lambda
@@ -163,7 +162,7 @@ class DatasetUtilsTest(dml_test_util.TestCase, parameterized.TestCase):
       self.assertTrue(training_utils_v1.verify_dataset_shuffled(dataset))
 
 
-class StandardizeWeightsTest(dml_test_util.KerasParameterizedTestCase):
+class StandardizeWeightsTest(keras_parameterized.TestCase):
 
   def test_sample_weights(self):
     y = np.array([0, 1, 0, 0, 2])
@@ -246,7 +245,7 @@ _TEST_DATA = np.array((
     (1, 0, 3, 3, 3, 2, 1, 2, 3, 1),))
 
 
-class AggregationTest(dml_test_util.KerasParameterizedTestCase):
+class AggregationTest(keras_parameterized.TestCase):
 
   def setUp(self):
     super(AggregationTest, self).setUp()
@@ -365,7 +364,7 @@ class AggregationTest(dml_test_util.KerasParameterizedTestCase):
       self._run_without_steps()
 
 
-class CompositeTensorTestUtils(dml_test_util.KerasParameterizedTestCase):
+class CompositeTensorTestUtils(keras_parameterized.TestCase):
 
   def test_is_composite(self):
     # Validate that all composite tensor and value types return true.

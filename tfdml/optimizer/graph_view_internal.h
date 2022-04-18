@@ -797,7 +797,8 @@ inline void Reset(NodeViewDiff<GraphViewT>* diff)
     diff->num_regular_inputs_to_remove = 0;
     absl::flat_hash_set<std::string>().swap(diff->controlling_inputs_to_add);
     std::set<int>().swap(diff->controlling_inputs_to_remove);
-    absl::flat_hash_map<std::string, AttrValue>().swap(diff->attrs_to_add);
+    absl::flat_hash_map<std::string, tensorflow::AttrValue>().swap(
+        diff->attrs_to_add);
     absl::flat_hash_set<std::string>().swap(diff->attrs_to_remove);
 }
 

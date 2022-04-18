@@ -653,7 +653,7 @@ extern "C"
     {
         params->platform->struct_size = SP_PLATFORM_STRUCT_SIZE;
         params->platform->name = "DML";
-        params->platform->type = "DML";
+        params->platform->type = "GPU";
         params->platform->supports_unified_memory = false;
         params->platform->force_memory_growth = true;
         params->platform->use_bfc_allocator = true;

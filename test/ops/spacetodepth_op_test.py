@@ -28,10 +28,9 @@ from tensorflow.python.ops import gradient_checker_v2
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
 from tensorflow.python.platform import tf_logging
-import dml_test_util
 
 
-class SpaceToDepthTest(dml_test_util.TestCase):
+class SpaceToDepthTest(test.TestCase):
 
   def _testOne(self, inputs, block_size, outputs, dtype=dtypes.float32):
     input_nhwc = math_ops.cast(inputs, dtype)
@@ -39,8 +38,8 @@ class SpaceToDepthTest(dml_test_util.TestCase):
     x_tf = array_ops.space_to_depth(input_nhwc, block_size)
     self.assertAllEqual(self.evaluate(x_tf), outputs)
 
-    if dml_test_util.is_gpu_available():
-      with dml_test_util.force_gpu():
+    if test_util.is_gpu_available():
+      with test_util.force_gpu():
         # test NCHW on GPU
         input_nchw = test_util.NHWCToNCHW(input_nhwc)
         output_nchw = array_ops.space_to_depth(
@@ -266,7 +265,7 @@ class SpaceToDepthTest(dml_test_util.TestCase):
         shape = nchw_input_shape if data_format == "NCHW" else nhwc_input_shape
         t = constant_op.constant(x, shape=shape, dtype=dtypes.float32)
 
-    with dml_test_util.device(use_gpu):
+    with test_util.device(use_gpu):
         # DML doesn't support NCHW_VECT_C
         if data_format != "NCHW_VECT_C":
             # Initialize the input tensor with ascending whole numbers as floats.
@@ -303,12 +302,12 @@ class SpaceToDepthTest(dml_test_util.TestCase):
     # self.compareToTranspose(5, 7, 11, 12, 2, "NCHW_VECT_C", dtypes.qint8, True)
 
 
-class SpaceToDepthGradientTest(dml_test_util.TestCase):
+class SpaceToDepthGradientTest(test.TestCase):
 
   # Check the gradients.
   def _checkGrad(self, x, block_size, data_format):
     # NCHW is implemented for only GPU.
-    if data_format == "NCHW" and not dml_test_util.is_gpu_available():
+    if data_format == "NCHW" and not test_util.is_gpu_available():
       return
 
     assert 4 == x.ndim
@@ -316,7 +315,7 @@ class SpaceToDepthGradientTest(dml_test_util.TestCase):
     def func(x):
       return array_ops.space_to_depth(x, block_size, data_format=data_format)
 
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       with self.cached_session():
         theoretical, numerical = gradient_checker_v2.compute_gradient(
             func, [ops.convert_to_tensor(x)])

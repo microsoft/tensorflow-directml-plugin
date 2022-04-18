@@ -19,9 +19,8 @@ import numpy as np
 from tensorflow.python.framework import constant_op
 from tensorflow.python.ops import array_ops
 from tensorflow.python.platform import test
-import dml_test_util
 
-class ExtractVolumePatches(dml_test_util.TestCase):
+class ExtractVolumePatches(test.TestCase):
   """Functional tests for ExtractVolumePatches op."""
 
   def _VerifyValues(self, image, ksizes, strides, padding, patches):

@@ -30,10 +30,9 @@ from tensorflow.python.ops import nn_ops
 # The following import is required to register the gradient function.
 from tensorflow.python.ops.nn_grad import _SoftmaxCrossEntropyWithLogitsGrad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class XentOpTestBase(dml_test_util.TestCase):
+class XentOpTestBase(test.TestCase):
 
   def _opFwdBwd(self, labels, logits, axis=-1):
     """ Runs the op-under-test both forwards and backwards."""

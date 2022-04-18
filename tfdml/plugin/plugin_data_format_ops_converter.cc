@@ -16,12 +16,12 @@ limitations under the License.
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/c/tf_status.h"
 #include "tensorflow/core/framework/graph.pb.h"
-#include "tfdml/layout_optimizer/generic_layout_optimizer.h"
+#include "tfdml/data_format_ops_converter/data_format_ops_converter.h"
 #include "tfdml/optimizer/optimizer_runner.h"
 
 namespace tfdml
 {
-static void* CreateOptimizer() { return new GenericLayoutOptimizer(); }
+static void* CreateOptimizer() { return new DataFormatOpsConverter(); }
 
 static void OptimizeGraph(
     void* optimizer,
@@ -40,7 +40,7 @@ static void OptimizeGraph(
 
 void DeleteOptimizer(void* optimizer)
 {
-    delete static_cast<GenericLayoutOptimizer*>(optimizer);
+    delete static_cast<DataFormatOpsConverter*>(optimizer);
 }
 
 } // namespace tfdml

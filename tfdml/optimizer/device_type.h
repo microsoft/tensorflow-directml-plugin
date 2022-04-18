@@ -13,14 +13,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// Simple hash functions used for internal data structures
-
 #pragma once
 
-#include <stddef.h>
-#include <stdint.h>
+#include "absl/strings/string_view.h"
+#include <string>
 
-namespace tfdml
+// A DeviceType is just a string, but we wrap it up in a class to give
+// some type checking as we're passing these around
+class DeviceType
 {
-uint32_t Hash32(const char* data, size_t n, uint32_t seed);
-} // namespace tfdml
+  public:
+    DeviceType(const char* type);
+    explicit DeviceType(absl::string_view type);
+    const char* type() const;
+    const std::string& type_string() const;
+    bool operator<(const DeviceType& other) const;
+    bool operator==(const DeviceType& other) const;
+    bool operator!=(const DeviceType& other) const;
+
+  private:
+    std::string type_;
+};

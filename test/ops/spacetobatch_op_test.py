@@ -25,7 +25,6 @@ from tensorflow.python.ops import gen_array_ops
 from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
-import dml_test_util
 
 
 def space_to_batch_direct(input_array, block_shape, paddings):
@@ -91,7 +90,7 @@ class CppOpImpl(object):
     return gen_array_ops.batch_to_space(*args, **kwargs)
 
 
-class SpaceToBatchTest(dml_test_util.TestCase, PythonOpImpl):
+class SpaceToBatchTest(test.TestCase, PythonOpImpl):
   """Tests input-output pairs for the SpaceToBatch and BatchToSpace ops.
 
   This uses the Python compatibility wrapper that forwards to space_to_batch_nd.
@@ -191,7 +190,7 @@ class SpaceToBatchCppTest(SpaceToBatchTest, CppOpImpl):
   pass
 
 
-class SpaceToBatchNDTest(dml_test_util.TestCase):
+class SpaceToBatchNDTest(test.TestCase):
   """Tests input-output pairs for the SpaceToBatchND and BatchToSpaceND ops."""
 
   def _testPad(self, inputs, block_shape, paddings, outputs):
@@ -312,7 +311,7 @@ class SpaceToBatchNDTest(dml_test_util.TestCase):
     #     paddings=[[0, 0], [0, 0], [1, 2], [0, 0], [3, 0], [0, 0], [0, 0]])
 
 
-class SpaceToBatchSpaceToDepth(dml_test_util.TestCase, PythonOpImpl):
+class SpaceToBatchSpaceToDepth(test.TestCase, PythonOpImpl):
 
   # Verifies that: space_to_batch(x) = transpose(space_to_depth(transpose(x)))
   @test_util.run_deprecated_v1
@@ -333,7 +332,7 @@ class SpaceToBatchSpaceToDepthCpp(SpaceToBatchSpaceToDepth, CppOpImpl):
   pass
 
 
-class SpaceToBatchErrorHandlingTest(dml_test_util.TestCase, PythonOpImpl):
+class SpaceToBatchErrorHandlingTest(test.TestCase, PythonOpImpl):
 
   @test_util.run_deprecated_v1
   def testInputWrongDimMissingBatch(self):
@@ -415,7 +414,7 @@ class SpaceToBatchErrorHandlingCppTest(SpaceToBatchErrorHandlingTest,
   pass
 
 
-class SpaceToBatchNDErrorHandlingTest(dml_test_util.TestCase):
+class SpaceToBatchNDErrorHandlingTest(test.TestCase):
 
   def _testStaticShape(self, input_shape, block_shape, paddings, error):
     block_shape = np.array(block_shape)
@@ -519,7 +518,7 @@ class SpaceToBatchNDErrorHandlingTest(dml_test_util.TestCase):
     self.assertEqual([3 * 2 * 3, 2, 1, 2], t.get_shape().as_list())
 
 
-class SpaceToBatchGradientTest(dml_test_util.TestCase, PythonOpImpl):
+class SpaceToBatchGradientTest(test.TestCase, PythonOpImpl):
 
   # Check the gradients.
   def _checkGrad(self, x, paddings, block_size):
@@ -578,7 +577,7 @@ class SpaceToBatchGradientCppTest(SpaceToBatchGradientTest, CppOpImpl):
   pass
 
 
-class SpaceToBatchNDGradientTest(dml_test_util.TestCase):
+class SpaceToBatchNDGradientTest(test.TestCase):
 
   # Check the gradients.
   def _checkGrad(self, x, block_shape, paddings):
@@ -622,7 +621,7 @@ class SpaceToBatchNDGradientTest(dml_test_util.TestCase):
     self._compare([2, 2, 4, 3, 2], [2, 2, 2], [[1, 1], [1, 1], [1, 0]])
 
 
-class RequiredSpaceToBatchPaddingsTest(dml_test_util.TestCase):
+class RequiredSpaceToBatchPaddingsTest(test.TestCase):
 
   def _checkProperties(self, input_shape, block_shape, base_paddings, paddings,
                        crops):

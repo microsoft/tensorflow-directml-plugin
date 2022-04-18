@@ -13,14 +13,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// Simple hash functions used for internal data structures
+#include "tfdml/optimizer/device_type.h"
 
-#pragma once
-
-#include <stddef.h>
-#include <stdint.h>
-
-namespace tfdml
+DeviceType::DeviceType(const char* type) // NOLINT(runtime/explicit)
+    : type_(type)
 {
-uint32_t Hash32(const char* data, size_t n, uint32_t seed);
-} // namespace tfdml
+}
+
+DeviceType::DeviceType(absl::string_view type) : type_(type.data(), type.size())
+{
+}
+
+const char* DeviceType::type() const { return type_.c_str(); }
+const std::string& DeviceType::type_string() const { return type_; }
+
+bool DeviceType::operator<(const DeviceType& other) const
+{
+    return type_ < other.type_;
+}
+bool DeviceType::operator==(const DeviceType& other) const
+{
+    return type_ == other.type_;
+};
+bool DeviceType::operator!=(const DeviceType& other) const
+{
+    return !(*this == other);
+}
