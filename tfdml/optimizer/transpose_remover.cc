@@ -137,6 +137,8 @@ Status TransposeRemover::Optimize(
 
     Mutation* mutation = graph_view->GetMutationBuilder();
 
+    const auto& nodes_to_preserve = item.NodesToPreserve();
+
     auto src_dim_indices = GetDimensionIndices("NHWC");
     auto src_to_dst = GetPermutation(src_dim_indices, "NCHW");
 
@@ -164,7 +166,7 @@ Status TransposeRemover::Optimize(
             continue;
         }
 
-        if (fused_batch_norm_grad_node->GetRegularFanouts().size() < 2)
+        if (fused_batch_norm_grad_node->GetRegularFanins().size() < 2)
         {
             continue;
         }
@@ -207,39 +209,22 @@ Status TransposeRemover::Optimize(
             continue;
         }
 
-        // Remove the first transpose node and connect its input to
-        // FusedBatchNormGrad
-        TensorId fanin_0_tensor_id(
-            transpose_node_0->GetRegularFanin(0).node_view()->GetName(),
-            transpose_node_0->GetRegularFanin(0).index());
-
-        mutation->AddOrUpdateRegularFanin(
-            fused_batch_norm_grad_node,
-            0,
-            fanin_0_tensor_id);
-
-        // mutation->RemoveNode(transpose_node_0);
-
-        // Remove the second transpose node and connect its input to
-        // FusedBatchNormGrad
-        TensorId fanin_1_tensor_id(
-            transpose_node_1->GetRegularFanin(0).node_view()->GetName(),
-            transpose_node_1->GetRegularFanin(0).index());
-
-        mutation->AddOrUpdateRegularFanin(
-            fused_batch_norm_grad_node,
-            1,
-            fanin_1_tensor_id);
-
-        // mutation->RemoveNode(transpose_node_1);
+        bool should_preserve_output = false;
 
         // Remove the fanout transposes and connect their outputs to
         // FusedBatchNormGrad
         for (auto& fanout : fanouts)
         {
             auto* output_transpose_node = fanout.node_view();
-            auto& tenspose_fanouts = output_transpose_node->GetRegularFanout(0);
 
+            if (nodes_to_preserve.find(output_transpose_node->GetName()) !=
+                nodes_to_preserve.end())
+            {
+                should_preserve_output = true;
+                break;
+            }
+
+            auto& tenspose_fanouts = output_transpose_node->GetRegularFanout(0);
             for (auto& transpose_fanout : tenspose_fanouts)
             {
                 TensorId fanout_tensor_id(
@@ -251,9 +236,35 @@ Status TransposeRemover::Optimize(
                     transpose_fanout.index(),
                     fanout_tensor_id);
             }
-
-            // mutation->RemoveNode(output_transpose_node);
         }
+
+        // If one of the outputs cannot be removed, we do nothing
+        if (should_preserve_output)
+        {
+            continue;
+        }
+
+        // Remove the first transpose node and connect its input to
+        // FusedBatchNormGrad
+        TensorId fanin_0_tensor_id(
+            transpose_node_0->GetRegularFanin(0).node_view()->GetName(),
+            transpose_node_0->GetRegularFanin(0).index());
+
+        mutation->AddOrUpdateRegularFanin(
+            fused_batch_norm_grad_node,
+            0,
+            fanin_0_tensor_id);
+
+        // Remove the second transpose node and connect its input to
+        // FusedBatchNormGrad
+        TensorId fanin_1_tensor_id(
+            transpose_node_1->GetRegularFanin(0).node_view()->GetName(),
+            transpose_node_1->GetRegularFanin(0).index());
+
+        mutation->AddOrUpdateRegularFanin(
+            fused_batch_norm_grad_node,
+            1,
+            fanin_1_tensor_id);
 
         // Finally, change the format of FusedBatchNormGrad
         tensorflow::AttrValue nchw_data_format;
