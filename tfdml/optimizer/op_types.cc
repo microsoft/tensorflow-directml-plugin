@@ -30,6 +30,9 @@ bool IsDefaultLayoutSensitiveOp(const tensorflow::NodeDef& node)
         "Conv2D",
         "DepthwiseConv2dNative",
         "DepthToSpace",
+        "FusedBatchNorm",
+        "FusedBatchNormV2",
+        "FusedBatchNormV3",
         "FusedConv2DBiasActivation",
         "_FusedConv2D",
         "MaxPool",
@@ -139,12 +142,6 @@ bool IsDepthwiseConv2dNativeBackpropFilter(const tensorflow::NodeDef& node)
 bool IsDepthwiseConv2dNativeBackpropInput(const tensorflow::NodeDef& node)
 {
     return node.op() == "DepthwiseConv2dNativeBackpropInput";
-}
-
-bool IsFusedBatchNorm(const tensorflow::NodeDef& node)
-{
-    return node.op() == "FusedBatchNorm" || node.op() == "FusedBatchNormV2" ||
-           node.op() == "FusedBatchNormV3";
 }
 
 bool IsFusedBatchNormEx(const tensorflow::NodeDef& node)
