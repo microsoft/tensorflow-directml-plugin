@@ -151,7 +151,9 @@ bool IsFusedBatchNormEx(const tensorflow::NodeDef& node)
 
 bool IsFusedBatchNormGrad(const tensorflow::NodeDef& node)
 {
-    return node.op() == "FusedBatchNormGrad";
+    return node.op() == "FusedBatchNormGrad" ||
+           node.op() == "FusedBatchNormGradV2" ||
+           node.op() == "FusedBatchNormGradV3";
 }
 
 bool IsMaxPoolV2(const tensorflow::NodeDef& node)

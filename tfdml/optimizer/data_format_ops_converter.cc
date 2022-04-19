@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/data_format_ops_converter/data_format_ops_converter.h"
+#include "tfdml/optimizer/data_format_ops_converter.h"
 #include "tensorflow/core/framework/graph.pb.h"
 #include "tfdml/optimizer/device_name_utils.h"
 #include "tfdml/optimizer/graph_properties.h"
