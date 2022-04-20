@@ -328,10 +328,15 @@ static void CopyTensorInSameDevice(
     device->CopyTensorInSameDevice(&input_tensor, &output_tensor);
 }
 
-Status OpKernelContext::AssignVariable(int var_index, int value_index)
+Status OpKernelContext::AssignVariable(
+    int var_index,
+    int value_index,
+    bool validate_shape)
 {
     Status status;
 
+    // TODO: Use validate_shape when TF_AssignVariable supports it
+    // https://github.com/tensorflow/tensorflow/pull/55678
     TF_AssignVariable(
         context_,
         var_index,
@@ -417,7 +422,7 @@ Status OpKernelContext::GetInputTensorFromVariable(
     assert(var_index < num_inputs());
     constexpr bool sparse = false;
     static constexpr int64_t empty_sizes[1] = {0};
-    TF_Tensor* raw_tensor = TF_AllocateTensor(TF_FLOAT, empty_sizes, 1, 0);
+    TF_Tensor* raw_tensor = nullptr;
 
     Status status;
     TF_GetInputTensorFromVariable(
