@@ -92,6 +92,13 @@ class BroadcastToInitHelper : public InitializationHelper
         return collapsed_output_shape_;
     }
 
+    bool IsNoOpKernel(
+        OpKernelContext* ctx,
+        absl::Span<const TensorShape> output_shapes) const override
+    {
+        return output_shapes[0].num_elements() == 0;
+    }
+
   private:
     TensorShape collapsed_input_shape_;
     TensorShape collapsed_output_shape_;
