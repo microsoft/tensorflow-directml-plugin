@@ -86,7 +86,7 @@ class OpKernelContext
     MemoryType output_memory_type(int index) const;
     Status set_output(int index, const Tensor& tensor);
     const OpKernel& op_kernel() const;
-    Status AssignVariable(int var_index, int value_index);
+    Status AssignVariable(int var_index, int value_index, bool validate_shape);
 
     Status AssignUpdateVariable(
         int var_index,
