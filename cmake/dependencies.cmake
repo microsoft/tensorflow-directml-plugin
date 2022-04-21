@@ -46,8 +46,8 @@ FetchContent_Declare(
 # DirectML Redistributable NuGet package
 FetchContent_Declare(
     directml_redist
-    URL https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.7.0
-    URL_HASH SHA256=77bd5de862c36f084c138ff3341936dca01bd21e58bfc57cb45118b116b1f9f4
+    URL https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.8.1
+    URL_HASH SHA256=4a815dc0b1781b76eec1956014ccb26d36b749dc73b293fbe513b4a8e14f209f
 )
 
 # DirectMLX helper library
