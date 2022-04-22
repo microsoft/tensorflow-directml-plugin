@@ -27,8 +27,8 @@ void TF_AddNVariantDeclaration(
     TF_OpKernelContext* ctx,
     void (*binary_add_func)(
         TF_OpKernelContext* ctx,
-        const TF_Tensor* a,
-        const TF_Tensor* b,
+        TF_Tensor* a,
+        TF_Tensor* b,
         TF_Tensor* out),
     TF_Status* status);
 
@@ -36,7 +36,7 @@ void TF_ZerosLikeVariantDeclaration(
     TF_OpKernelContext* ctx,
     void (*zeros_like_func)(
         TF_OpKernelContext* ctx,
-        const TF_Tensor* input,
+        TF_Tensor* input,
         TF_Tensor* out),
     TF_Status* status);
 
@@ -106,13 +106,13 @@ class OpKernelContext
 
     Status AddNVariant(void (*binary_add_func)(
         TF_OpKernelContext* ctx,
-        const TF_Tensor* a,
-        const TF_Tensor* b,
+        TF_Tensor* a,
+        TF_Tensor* b,
         TF_Tensor* out));
 
     Status ZerosLikeVariant(void (*zeros_like_func)(
         TF_OpKernelContext* ctx,
-        const TF_Tensor* input,
+        TF_Tensor* input,
         TF_Tensor* out));
 
     Status GetInputTensorFromVariable(

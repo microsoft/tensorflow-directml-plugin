@@ -30,16 +30,6 @@ static void SetTensorToZero(DmlDevice* dml_device, const Tensor& tensor)
     device_context->ZeroBuffer(output_buffer);
 }
 
-static void SetTensorToZero(DmlDevice* dml_device, const TF_Tensor* tensor)
-{
-    auto device_context = dml_device->GetDeviceContext();
-
-    D3D12BufferRegion output_buffer =
-        device_context->GetBufferForTensor(tensor);
-
-    device_context->ZeroBuffer(output_buffer);
-}
-
 class DmlZerosLikeKernel : public OpKernel
 {
   public:
@@ -94,9 +84,12 @@ static inline bool IsSupportedAddType(TF_DataType dtype)
 
 static void ZerosLikeVariant(
     TF_OpKernelContext* ctx,
-    const TF_Tensor* input_tensor,
-    TF_Tensor* out_tensor)
+    TF_Tensor* raw_input_tensor,
+    TF_Tensor* raw_out_tensor)
 {
+    Tensor input_tensor(raw_input_tensor);
+    Tensor output_tensor(raw_out_tensor);
+
     Status status;
     SP_Stream stream = TF_GetStream(ctx, status.raw());
     CHECK(status.ok());
@@ -104,21 +97,18 @@ static void ZerosLikeVariant(
     Device* device = static_cast<Device*>(stream->stream_handle);
     DmlDevice* dml_device = static_cast<DmlDevice*>(device);
 
-    TF_DataType dtype = TF_TensorType(input_tensor);
-    int64_t num_elements = TF_TensorElementCount(input_tensor);
-
-    if (!IsSupportedAddType(dtype))
+    if (!IsSupportedAddType(input_tensor.dtype()))
     {
         TF_OpKernelContext_Failure(
             ctx,
             errors::InvalidArgument(
-                DataTypeString(dtype),
+                DataTypeString(input_tensor.dtype()),
                 " is not a supported type for ZerosLike.")
                 .raw());
         return;
     }
 
-    SetTensorToZero(dml_device, out_tensor);
+    SetTensorToZero(dml_device, output_tensor);
 }
 
 class DmlZerosLikeVariantKernel : public OpKernel
