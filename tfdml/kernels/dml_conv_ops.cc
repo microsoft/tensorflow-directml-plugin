@@ -1750,6 +1750,14 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
         uint32_t group_count =
             static_cast<uint32_t>(conv_dims.in_depth / conv_dims.patch_depth);
 
+        // TODO: Support grouped Conv2DBackpropFilter
+        // TFDML #39216059
+        OP_REQUIRES(
+            ctx->GetOpKernelContext(),
+            group_count == 1,
+            errors::InvalidArgument(
+                "DML doesn't support grouped Conv2DBackpropFilter yet"));
+
         DmlKernelParams params;
         params.kernel_input_indices = {
             0,
@@ -2825,6 +2833,14 @@ class Conv3DGradInitHelper : public InitializationHelper
         end_padding_[0] = pad_d / 2 + pad_d % 2;
         end_padding_[1] = pad_h / 2 + pad_h % 2;
         end_padding_[2] = pad_w / 2 + pad_w % 2;
+
+        // TODO: Support grouped Conv3DBackpropFilter
+        // TFDML #39216059
+        OP_REQUIRES(
+            context,
+            GetGroupCount() == 1,
+            errors::InvalidArgument(
+                "DML doesn't support grouped Conv3DBackpropFilter yet"));
     }
 
     TensorFormat GetDataFormat() const { return attr_->data_format; }
