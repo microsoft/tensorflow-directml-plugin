@@ -29,10 +29,10 @@ from tensorflow.python.framework import random_seed
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradients_impl
-from tensorflow.python.ops import image_grad_test_base as test_base
 from tensorflow.python.ops import image_ops
 from tensorflow.python.ops import random_ops
 from tensorflow.python.platform import test
+import image_grad_test_base as test_base
 
 
 class ResizeBilinearOpDeterministicTest(test_base.ResizeBilinearOpTestBase):
