@@ -394,8 +394,8 @@ Status OpKernelContext::AssignRefVariable(
 
 Status OpKernelContext::AddNVariant(void (*binary_add_func)(
     TF_OpKernelContext* ctx,
-    const TF_Tensor* a,
-    const TF_Tensor* b,
+    TF_Tensor* a,
+    TF_Tensor* b,
     TF_Tensor* out))
 {
     Status status;
@@ -405,7 +405,7 @@ Status OpKernelContext::AddNVariant(void (*binary_add_func)(
 
 Status OpKernelContext::ZerosLikeVariant(void (*zeros_like_func)(
     TF_OpKernelContext* ctx,
-    const TF_Tensor* input,
+    TF_Tensor* input,
     TF_Tensor* out))
 {
     Status status;
