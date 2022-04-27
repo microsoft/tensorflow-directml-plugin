@@ -348,6 +348,7 @@ target_precompile_headers(
 add_library(
     optimizer
     STATIC
+    tfdml/optimizer/attr_value_util.cc
     tfdml/optimizer/data_format_ops_converter.cc
     tfdml/optimizer/device_name_utils.cc
     tfdml/optimizer/device_type.cc
@@ -362,8 +363,10 @@ add_library(
     tfdml/optimizer/optimizer_runner.cc
     tfdml/optimizer/perm_utils.cc
     tfdml/optimizer/proto_buffer_helpers.cc
+    tfdml/optimizer/remapper.cc
     tfdml/optimizer/tensor_id.cc
     tfdml/optimizer/transpose_remover.cc
+    tfdml/optimizer/utils.cc
 )
 target_link_libraries(
     optimizer

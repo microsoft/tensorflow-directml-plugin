@@ -235,9 +235,17 @@ bool IsComplex(const tensorflow::NodeDef& node)
 
 bool IsDiv(const tensorflow::NodeDef& node) { return node.op() == "Div"; }
 
+bool IsElu(const tensorflow::NodeDef& node) { return node.op() == "Elu"; }
+
 bool IsFloorDiv(const tensorflow::NodeDef& node)
 {
     return node.op() == "FloorDiv";
+}
+
+bool IsFusedBatchNorm(const tensorflow::NodeDef& node) {
+  const auto& op = node.op();
+  return op == "FusedBatchNorm" || op == "FusedBatchNormV2" ||
+         op == "FusedBatchNormV3";
 }
 
 bool IsIgamma(const tensorflow::NodeDef& node) { return node.op() == "Igamma"; }
@@ -246,6 +254,8 @@ bool IsIgammac(const tensorflow::NodeDef& node)
 {
     return node.op() == "Igammac";
 }
+
+bool IsLeakyRelu(const tensorflow::NodeDef& node) { return node.op() == "LeakyRelu"; }
 
 bool IsLogicalAnd(const tensorflow::NodeDef& node)
 {
@@ -256,6 +266,8 @@ bool IsLogicalOr(const tensorflow::NodeDef& node)
 {
     return node.op() == "LogicalOr";
 }
+
+bool IsMatMul(const tensorflow::NodeDef& node) { return node.op() == "MatMul"; }
 
 bool IsMaximum(const tensorflow::NodeDef& node)
 {
@@ -271,6 +283,13 @@ bool IsMod(const tensorflow::NodeDef& node) { return node.op() == "Mod"; }
 
 bool IsMul(const tensorflow::NodeDef& node) { return node.op() == "Mul"; }
 
+bool IsPlaceholder(const tensorflow::NodeDef& node) 
+{
+  const auto& op = node.op();
+  return op == "Placeholder" || op == "PlaceholderV2" ||
+         op == "PlaceholderWithDefault";
+}
+
 bool IsPolygamma(const tensorflow::NodeDef& node)
 {
     return node.op() == "Polygamma";
@@ -278,10 +297,16 @@ bool IsPolygamma(const tensorflow::NodeDef& node)
 
 bool IsPow(const tensorflow::NodeDef& node) { return node.op() == "Pow"; }
 
+bool IsRank(const tensorflow::NodeDef& node) { return node.op() == "Rank"; }
+
 bool IsRealDiv(const tensorflow::NodeDef& node)
 {
     return node.op() == "RealDiv";
 }
+
+bool IsRelu(const tensorflow::NodeDef& node) { return node.op() == "Relu"; }
+
+bool IsRelu6(const tensorflow::NodeDef& node) { return node.op() == "Relu6"; }
 
 bool IsSquaredDifference(const tensorflow::NodeDef& node)
 {
@@ -448,6 +473,10 @@ bool IsNonFloatingConv2D(const MutableNodeView& node)
 }
 
 bool IsAtan2(const tensorflow::NodeDef& node) { return node.op() == "Atan2"; }
+
+bool IsBiasAdd(const tensorflow::NodeDef& node) {
+  return node.op() == "BiasAdd" || node.op() == "BiasAddV1";
+}
 
 bool IsComparisonOp(const tensorflow::NodeDef& node)
 {
