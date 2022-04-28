@@ -40,7 +40,7 @@ parameters:
 - name: enableTelemetry
   displayName: Enable Telemetry
   type: boolean
-  default: false
+  default: true
 
 - name: testArtifacts
   displayName: Test Artifacts
