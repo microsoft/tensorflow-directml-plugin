@@ -16,6 +16,7 @@ limitations under the License.
 #pragma once
 
 #include "tensorflow/core/framework/tensor.pb.h"
+#include "third_party/eigen3/unsupported/Eigen/CXX11/FixedPoint"
 
 namespace tfdml
 {
