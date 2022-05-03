@@ -14,7 +14,6 @@ limitations under the License.
 #include "absl/container/flat_hash_set.h"
 
 #include "tfdml/optimizer/remapper.h"
-#include "tfdml/optimizer/attr_value_util.h"
 #include "tfdml/optimizer/graph_properties.h"
 #include "tfdml/optimizer/graph_view.h"
 #include "tfdml/optimizer/grappler_item.h"
