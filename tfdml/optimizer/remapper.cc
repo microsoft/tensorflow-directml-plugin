@@ -11,6 +11,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include "absl/container/flat_hash_set.h"
+
 #include "tfdml/optimizer/remapper.h"
 #include "tfdml/optimizer/attr_value_util.h"
 #include "tfdml/optimizer/graph_properties.h"
@@ -18,70 +20,53 @@ limitations under the License.
 #include "tfdml/optimizer/grappler_item.h"
 #include "tfdml/optimizer/op_types.h"
 #include "tfdml/optimizer/utils.h"
-#include "absl/container/flat_hash_set.h"
+#include "tfdml/runtime_adapter/padding.h"
 #include "tfdml/runtime_adapter/tensor_shape_utils.h"
-
 #include "tfdml/runtime_adapter/tensor_format.h"
 #include "tensorflow/core/framework/tensor.pb.h"
-#include "tfdml/runtime_adapter/padding.h"
 
 namespace tfdml {
 
 constexpr char kDataFormat[] = "data_format";
-
 constexpr char kPadding[] = "padding";
 constexpr char kDilations[] = "dilations";
 
-struct RemapperContext {
-  explicit RemapperContext(GrapplerItem* item, Status* status)
-      : nodes_to_preserve(item->NodesToPreserve()),
-        graph_view(&item->graph, status),
-        graph_properties(*item),
-        inferred_graph_properties(false){}
+struct RemapperContext
+{
+    static Status InitializeRemapperContext(
+        const GrapplerItem& item,
+        RemapperContext* context);
 
-  absl::flat_hash_set<std::string> nodes_to_preserve;
-  MutableGraphView graph_view;
-  GraphProperties graph_properties;
-  bool inferred_graph_properties;
+    tensorflow::GraphDef graph;
+
+    int num_nodes;
+    absl::flat_hash_set<std::string> nodes_to_preserve;
+    std::unique_ptr<GraphProperties> graph_properties;
+    std::unique_ptr<MutableGraphView> graph_view;
+    bool inferred_graph_properties;
 };
 
-// Contraction node followed by a BiasAdd.
-struct ContractionWithBiasAdd {
-  ContractionWithBiasAdd() = default;
-  ContractionWithBiasAdd(int contraction, int bias_add, int bias_port)
-      : contraction(contraction), bias_add(bias_add), bias_port(bias_port) {}
-
-  int contraction = kMissingIndex;
-  int bias_add = kMissingIndex;
-  int bias_port = 1;
-};
-
-// Contraction node followed by a BiasAdd and Activation.
-struct ContractionWithBiasAddAndActivation {
-  ContractionWithBiasAddAndActivation() = default;
-  ContractionWithBiasAddAndActivation(int contraction, int bias_add,
-                                      int activation, int bias_port)
-      : contraction(contraction),
-        bias_add(bias_add),
-        activation(activation),
-        bias_port(bias_port) {}
-
-  int contraction = kMissingIndex;
-  int bias_add = kMissingIndex;
-  int activation = kMissingIndex;
-  int bias_port = 1;
-};
-
-// Contraction node followed by a Squeeze and BiasAdd.
-struct ContractionWithSqueezeAndBiasAdd {
-  ContractionWithSqueezeAndBiasAdd() = default;
-  ContractionWithSqueezeAndBiasAdd(int contraction, int squeeze, int bias_add)
-      : contraction(contraction), squeeze(squeeze), bias_add(bias_add) {}
-
-  int contraction = kMissingIndex;
-  int squeeze = kMissingIndex;
-  int bias_add = kMissingIndex;
-};
+Status RemapperContext::InitializeRemapperContext(
+    const GrapplerItem& item,
+    RemapperContext* context)
+{
+    assert(context != nullptr);
+    context->graph_properties = absl::make_unique<GraphProperties>(item);
+    TF_RETURN_IF_ERROR(
+        context->graph_properties->InferStatically(true));
+    TF_RETURN_IF_ERROR(
+        context->graph_properties->AnnotateOutputShapes(&context->graph));
+    Status status;
+    context->graph_view =
+        absl::make_unique<MutableGraphView>(&context->graph, &status);
+    TF_RETURN_IF_ERROR(status);
+    context->num_nodes = context->graph.node_size();
+    const auto& nodes_to_preserve = item.NodesToPreserve();
+    context->nodes_to_preserve = absl::flat_hash_set<std::string>(
+        nodes_to_preserve.begin(),
+        nodes_to_preserve.end());
+    return Status::OK();
+}
 
 // Pad node followed by a Conv2D.
 struct PadWithConv2D {
@@ -91,48 +76,8 @@ struct PadWithConv2D {
   int32_t new_padding_values[8] = {0};
 };
 
-// Contraction node followed by a BiasAdd and Add.
-struct ContractionWithBiasAddAndAdd {
-  ContractionWithBiasAddAndAdd() = default;
-  ContractionWithBiasAddAndAdd(int contraction, int bias_add, int add,
-                               int port_id, int bias_port)
-      : contraction(contraction),
-        bias_add(bias_add),
-        add(add),
-        port_id(port_id),
-        bias_port(bias_port) {}
-
-  int contraction = kMissingIndex;
-  int bias_add = kMissingIndex;
-  int add = kMissingIndex;
-  int port_id = 0;
-  int bias_port = 1;
-};
-
-// Contraction node followed by a BiasAdd, Add and Relu.
-// Plus Tanh and Sigmoid for MatMul in MKL
-struct ContractionWithBiasAndAddActivation {
-  ContractionWithBiasAndAddActivation() = default;
-  ContractionWithBiasAndAddActivation(int contraction, int bias_add, int add,
-                                      int port_id, int activation,
-                                      int bias_port)
-      : contraction(contraction),
-        bias_add(bias_add),
-        add(add),
-        port_id(port_id),
-        activation(activation),
-        bias_port(bias_port) {}
-
-  int contraction = kMissingIndex;
-  int bias_add = kMissingIndex;
-  int add = kMissingIndex;
-  int port_id = 0;
-  int activation = kMissingIndex;
-  int bias_port = 1;
-};
-
-bool IsInPreserveSet(const RemapperContext& ctx, const tensorflow::NodeDef* node) {
-  return ctx.nodes_to_preserve.count(node->name()) > 0;
+bool IsInPreserveSet(const RemapperContext* ctx, const tensorflow::NodeDef* node) {
+  return ctx->nodes_to_preserve.count(node->name()) > 0;
 }
 
 bool HaveSameDataType(const tensorflow::NodeDef* lhs, const tensorflow::NodeDef* rhs,
@@ -158,15 +103,15 @@ inline bool HasAtMostOneFanoutAtPort0(const MutableNodeView& node_view) {
   return node_view.GetRegularFanout(0).size() <= 1;
 }
 
-bool FindPadWithConv2D(const RemapperContext& ctx, int node_index,
+bool FindPadWithConv2D(const RemapperContext* ctx, int node_index,
                        PadWithConv2D* matched) {
-  const auto* conv_node_view = ctx.graph_view.GetNode(node_index);
+  const auto* conv_node_view = ctx->graph_view->GetNode(node_index);
   const auto* conv_node_def = conv_node_view->node();
 
   // Root of the pattern must be a Conv2D.
   if (!IsConv2D(*conv_node_def)) return false;
 
-  // TODO(lyandy): Forward controls for patterns with control dependencies.
+  // Forward controls for patterns with control dependencies.
   if (HasControlFaninOrFanout(*conv_node_view)) return false;
 
   // Input to the Conv2D must be a Pad.
@@ -193,15 +138,11 @@ bool FindPadWithConv2D(const RemapperContext& ctx, int node_index,
 
   if (!valid_data_format) return false;
   const std::vector<tensorflow::OpInfo::TensorProperties>& pad_props =
-      ctx.graph_properties.GetInputProperties(pad_node_def->name());
+      ctx->graph_properties->GetInputProperties(pad_node_def->name());
   const auto& pad_op = pad_node_def->op();
 
   if (pad_op == "PadV2") {
     if (pad_props.size() != 3) return false;
-    if (!pad_props[2].has_value()) return false;
-    if (!pad_props[2].has_shape()) return false;
-    // if (!TensorShapeUtils::IsScalar(pad_props[2].shape())) return false;
-    if (pad_props[2].shape().dim_size() != 1) return false;
 
     // Make sure that the padding value is 0
     tensorflow::DataType dtype = pad_props[2].value().dtype();
@@ -216,19 +157,25 @@ bool FindPadWithConv2D(const RemapperContext& ctx, int node_index,
     const auto* value_attr = constant_values_node_view->GetAttr("value");
     if (value_attr == nullptr) return false;
 
-    float float_val = value_attr->f();
-    // switch (dtype) {
-    //   case tensorflow::DT_HALF:
-    //     // float_val = static_cast<float>(value_attr->tensor().scalar<Eigen::half>()());
-    //     float_val = value_attr->f();//val_tensor.half_val(0);
-    //     break;
-    //   case tensorflow::DT_FLOAT:
-    //     // float_val = val_tensor.scalar<float>()();
-    //     float_val = value_attr->f();//val_tensor.float_val(0);
-    //     break;
-    //   default:
-    //     return false;
-    // }
+    float float_val;
+    switch (val_tensor.dtype()) {
+      case tensorflow::DT_HALF:
+        if (val_tensor.half_val_size()==0) {
+          float_val = value_attr->f();
+        } else {
+          float_val = val_tensor.half_val(0);
+        }
+        break;
+      case tensorflow::DT_FLOAT:
+        if (val_tensor.float_val_size()==0) {
+          float_val = value_attr->f();
+        } else {
+          float_val = val_tensor.float_val(0);
+        }
+        break;
+      default:
+        return false;
+    }
 
     if (float_val != 0.0f) return false;
   } else if (pad_op != "Pad") {
@@ -241,39 +188,60 @@ bool FindPadWithConv2D(const RemapperContext& ctx, int node_index,
   int c_index = GetTensorDimIndex(data_format, 'C', 4);
 
   if (pad_props.size() < 2) return false;
-  if (!pad_props[1].has_value()) return false;
   if (!pad_props[1].has_shape()) return false;
-  // if (!TensorShapeUtils::IsMatrix(pad_props[1].shape())) return false;
   if (pad_props[1].shape().dim_size() != 2) return false;
   if (pad_props[1].shape().dim(0).size() != 4) return false;
   if (pad_props[1].shape().dim(1).size() != 2) return false;
 
-  // tensorflow::TensorProto val_tensor;
-  // bool valid_const_tensor = val_tensor.FromProto(paddings_node_def->attr().at("value").tensor());
-  // bool valid_const_tensor =
-  //     tensorflow::GetNodeAttr(*paddings_node_def, "value", &val_tensor).ok();
-  // if (!valid_const_tensor) return false;
-
-  auto val_tensor = paddings_node_def->attr().at("value").tensor();
-
   const auto* value_attr = paddings_node_view->GetAttr("value");
   if (value_attr == nullptr) return false;
 
+  auto val_tensor = paddings_node_def->attr().at("value").tensor();
+  const int version = val_tensor.version_number();
+
   // Make sure that the paddings are known and that the batch and depth paddings
   // are 0
-  switch (pad_props[1].value().dtype()) {
+  switch (val_tensor.dtype()) {
     case tensorflow::DT_INT32: {
-      auto int32_padding_values = value_attr->list();
+      auto int32_padding_values = absl::Span<const int32_t>(
+            reinterpret_cast<const int32_t*>(val_tensor.tensor_content().data()),
+            val_tensor.tensor_content().size() / sizeof(int32_t));
       for (int i = 0; i < 4; ++i) {
-        matched->new_padding_values[i * 2] = int32_padding_values.i(i * 2);
-        matched->new_padding_values[i * 2 + 1] = int32_padding_values.i(i * 2 + 1);
+        int32_t val1;
+        int32_t val2;
+        if (version == 0 && val_tensor.int_val_size()==1){
+          val1 = val_tensor.int_val(0);
+          val2 = val_tensor.int_val(0);
+        } else if (version == 0 && val_tensor.int_val_size()==0) {
+          val1 = int32_padding_values.at(i * 2);
+          val2 = int32_padding_values.at(i * 2 + 1);
+        } else {
+          val1 = val_tensor.int_val(i*2);
+          val2 = val_tensor.int_val(i * 2 + 1);
+        }
+        matched->new_padding_values[i * 2] = val1;
+        matched->new_padding_values[i * 2 + 1] = val2;
       }
     } break;
     case tensorflow::DT_INT64: {
-      auto int64_padding_values = value_attr->list();
+      auto int64_padding_values = absl::Span<const int64_t>(
+          reinterpret_cast<const int64_t*>(val_tensor.tensor_content().data()),
+          val_tensor.tensor_content().size() / sizeof(int64_t));
       for (int i = 0; i < 4; ++i) {
-        matched->new_padding_values[i * 2] = int64_padding_values.i(i * 2);
-        matched->new_padding_values[i * 2 + 1] = int64_padding_values.i(i * 2 + 1);
+        int64_t val1;
+        int64_t val2;
+        if (version == 0 && val_tensor.int_val_size()==1){
+          val1 = val_tensor.int64_val(0);
+          val2 = val_tensor.int64_val(0);
+        } else if (version == 0 && val_tensor.int_val_size()==0) {
+          val1 = int64_padding_values.at(i * 2);
+          val2 = int64_padding_values.at(i * 2 + 1);
+        } else {
+          val1 = val_tensor.int64_val(i*2);
+          val2 = val_tensor.int64_val(i * 2 + 1);
+        }
+        matched->new_padding_values[i * 2] = val1;
+        matched->new_padding_values[i * 2 + 1] = val2;
       }
     } break;
     default:
@@ -287,10 +255,6 @@ bool FindPadWithConv2D(const RemapperContext& ctx, int node_index,
   if (matched->new_padding_values[c_index * 2 + 1] != 0) return false;
 
   Padding padding_type;
-  // tensorflow::TensorProto padding_t;
-  // bool valid_padding_type =
-  //     tensorflow::GetNodeAttr(*conv_node_def, kPadding, &padding_type).ok();
-  // if (!valid_padding_type) return false;
 
   auto padding_t = conv_node_def->attr().at(kPadding).tensor();
 
@@ -301,9 +265,9 @@ bool FindPadWithConv2D(const RemapperContext& ctx, int node_index,
     padding_type = Padding::VALID;
   } else if (p_value_attr->s() == "EXPLICIT") {
     padding_type = Padding::EXPLICIT;
-  } else {
+  } else if (p_value_attr->s() == "SAME") {
     padding_type = Padding::SAME;
-  }
+  } else return false;
 
   if (padding_type == Padding::EXPLICIT) {
     auto paddings = conv_node_def->attr().at("explicit_paddings").list();
@@ -314,7 +278,7 @@ bool FindPadWithConv2D(const RemapperContext& ctx, int node_index,
     }
   } else if (padding_type == Padding::SAME) {
     const auto& conv_props =
-        ctx.graph_properties.GetInputProperties(conv_node_def->name());
+        ctx->graph_properties->GetInputProperties(conv_node_def->name());
     if (conv_props.size() != 2) return false;
     if (!conv_props[1].has_shape()) return false;
     auto filter_shape = conv_props[1].shape();
@@ -416,7 +380,7 @@ Status AddFusedContractionNode(RemapperContext* ctx,
                                const PadWithConv2D& matched,
                                std::vector<bool>* invalidated_nodes,
                                std::vector<bool>* nodes_to_delete) {
-  const tensorflow::GraphDef* graph = ctx->graph_view.graph();
+  const tensorflow::GraphDef* graph = ctx->graph_view->graph();
   const tensorflow::NodeDef& pad = graph->node(matched.pad);
   const tensorflow::NodeDef& conv_2d = graph->node(matched.conv_2d);
 
@@ -430,7 +394,7 @@ Status AddFusedContractionNode(RemapperContext* ctx,
 
   FuseConv2DExplicitPaddings(matched, fused_op);
 
-  Mutation* mutation = ctx->graph_view.GetMutationBuilder();
+  Mutation* mutation = ctx->graph_view->GetMutationBuilder();
   Status status;
   mutation->AddNode(std::move(fused_op), &status);
   TF_RETURN_IF_ERROR(status);
@@ -447,7 +411,7 @@ Status AddFusedContractionNode(RemapperContext* ctx,
 //   (1) Fusing Pad into Conv2D
 bool RequiresInferredShapes(const RemapperContext& ctx, int node_index) {
   // Candidate for a FusedBatchNorm splitting.
-  const auto* node_view = ctx.graph_view.GetNode(node_index);
+  const auto* node_view = ctx.graph_view->GetNode(node_index);
   const auto* node_def = node_view->node();
 
   const auto is_pad_conv2d_fusion_candidate = [&]() -> bool {
@@ -487,14 +451,14 @@ bool RequiresInferredShapes(const RemapperContext& ctx, int node_index) {
 
 Status Remapper::Optimize(const GrapplerItem& item,
                           tensorflow::GraphDef* optimized_graph) {
-  GrapplerItem mutable_item = item;
-  Status status;
-  RemapperContext ctx(&mutable_item, &status);
-  TF_RETURN_IF_ERROR(status);
+  RemapperContext ctx;
+  TF_RETURN_IF_ERROR(RemapperContext::InitializeRemapperContext(
+    item,
+    &ctx));
   // Processing graph in reverse-topological sorted order allows to remap
   // longer chains of dependent ops in one pass.
   TF_RETURN_IF_ERROR(
-      ctx.graph_view.SortTopologically(/*ignore_cycles=*/false, {}));
+      ctx.graph_view->SortTopologically(/*ignore_cycles=*/false, {}));
 
   const int num_nodes = item.graph.node_size();
   // Skip nodes that were invalidated by a remapper, e.g. do not process BiasAdd
@@ -505,7 +469,6 @@ Status Remapper::Optimize(const GrapplerItem& item,
   // _Fused{...} kernels do not have registered gradient function, so we must
   // not perform rewrite if the graph will be differentiated later.
   bool allow_non_differentiable_rewrites = true;
-      // item.optimization_options().allow_non_differentiable_rewrites;
 
   for (int i = num_nodes - 1; i >= 0; --i) {
     // Check if node was invalidated by one of the previous remaps.
@@ -516,7 +479,7 @@ Status Remapper::Optimize(const GrapplerItem& item,
     // Infer properties lazily in case they are not needed.
     if (!ctx.inferred_graph_properties && RequiresInferredShapes(ctx, i)) {
       const bool assume_valid_feeds = true;
-      TF_RETURN_IF_ERROR(ctx.graph_properties.InferStatically(
+      TF_RETURN_IF_ERROR(ctx.graph_properties->InferStatically(
           assume_valid_feeds,
           /*aggressive_shape_inference=*/false,
           /*include_input_tensor_values=*/true,
@@ -524,13 +487,10 @@ Status Remapper::Optimize(const GrapplerItem& item,
       ctx.inferred_graph_properties = true;
     }
 
-    ContractionWithBiasAddAndAdd contract_with_bias_and_add;
-    ContractionWithBiasAndAddActivation contract_with_bias_and_add_activation;
-
     // Infer properties lazily in case they are not needed.
     if (!ctx.inferred_graph_properties && RequiresInferredShapes(ctx, i)) {
       const bool assume_valid_feeds = true;
-      TF_RETURN_IF_ERROR(ctx.graph_properties.InferStatically(
+      TF_RETURN_IF_ERROR(ctx.graph_properties->InferStatically(
           assume_valid_feeds,
           /*aggressive_shape_inference=*/false,
           /*include_input_tensor_values=*/true,
@@ -541,7 +501,7 @@ Status Remapper::Optimize(const GrapplerItem& item,
     // Remap Pad + Conv2D into Conv2D with explicit padding
     PadWithConv2D pad_with_conv_2d;
     if (allow_non_differentiable_rewrites &&
-        FindPadWithConv2D(ctx, i, &pad_with_conv_2d)) {
+        FindPadWithConv2D(&ctx, i, &pad_with_conv_2d)) {
       TF_RETURN_IF_ERROR(AddFusedContractionNode(
           &ctx, pad_with_conv_2d, &invalidated_nodes, &nodes_to_delete));
       continue;
@@ -550,15 +510,15 @@ Status Remapper::Optimize(const GrapplerItem& item,
   }
 
   // Remove invalidated nodes.
-  Mutation* mutation = ctx.graph_view.GetMutationBuilder();
+  Mutation* mutation = ctx.graph_view->GetMutationBuilder();
   for (int i = 0; i < num_nodes; ++i) {
     if (nodes_to_delete[i]) {
-      mutation->RemoveNode(ctx.graph_view.GetNode(i));
+      mutation->RemoveNode(ctx.graph_view->GetNode(i));
     }
   }
   TF_RETURN_IF_ERROR(mutation->Apply());
 
-  *optimized_graph = std::move(mutable_item.graph);
+  *optimized_graph = ctx.graph;
 
   return Status::OK();
 }
