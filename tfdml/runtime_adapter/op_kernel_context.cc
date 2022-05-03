@@ -209,10 +209,8 @@ StatusOr<Tensor> OpKernelContext::allocate_output(
     return Tensor(raw_tensor);
 }
 
-// TODO: Make candidate_input_indices constant once the API has been fixed
-// https://github.com/tensorflow/tensorflow/pull/54139
 StatusOr<Tensor> OpKernelContext::forward_input_or_allocate_output(
-    absl::Span<int> candidate_input_indices,
+    absl::Span<const int> candidate_input_indices,
     int output_index,
     const TensorShape& output_shape,
     int* forwarded_input)
