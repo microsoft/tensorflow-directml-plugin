@@ -60,7 +60,7 @@ parameters:
 - name: testKerasPackage
   displayName: TensorFlow Package Version
   type: string
-  default: tensorflow-cpu==2.9.0rc1
+  default: keras==2.9.0rc1
 
 - name: enableTests
   displayName: Enable Tests

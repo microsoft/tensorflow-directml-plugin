@@ -19,7 +19,7 @@ parameters:
   default: tensorflow-cpu==2.9.0rc1
 - name: kerasPackage
   type: string
-  default: keras-nightly==2.9.0.dev2022010508
+  default: keras==2.9.0rc1
 - name: pluginBuildPipeline
   type: string
   default: current
