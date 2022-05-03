@@ -15,19 +15,25 @@ limitations under the License.
 
 #include "tfdml/optimizer/utils.h"
 
-namespace tfdml {
+namespace tfdml
+{
 
 // Returns the data type in attribute `attr_name` of `node`. If that attribute
 // doesn't exist, returns DT_INVALID.
-tensorflow::DataType GetDataTypeFromAttr(const tensorflow::NodeDef& node, const std::string& type_attr) {
-  if (!node.attr().count(type_attr)) {
-    return tensorflow::DT_INVALID;
-  }
-  const auto& attr = node.attr().at(type_attr);
-  if (attr.value_case() != tensorflow::AttrValue::kType) {
-    return tensorflow::DT_INVALID;
-  }
-  return attr.type();
+tensorflow::DataType GetDataTypeFromAttr(
+    const tensorflow::NodeDef& node,
+    const std::string& type_attr)
+{
+    if (!node.attr().count(type_attr))
+    {
+        return tensorflow::DT_INVALID;
+    }
+    const auto& attr = node.attr().at(type_attr);
+    if (attr.value_case() != tensorflow::AttrValue::kType)
+    {
+        return tensorflow::DT_INVALID;
+    }
+    return attr.type();
 }
 
-}  // end namespace tfdml
+} // end namespace tfdml

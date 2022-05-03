@@ -13,16 +13,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/core/framework/node_def.pb.h"
 #include "tensorflow/core/framework/attr_value.pb.h"
+#include "tensorflow/core/framework/node_def.pb.h"
 
-
-namespace tfdml {
+namespace tfdml
+{
 
 // // Utilities for manipulating node name and input strings.
 
 // Returns the data type in attribute `attr_name` of `node`. If that attribute
 // doesn't exist, returns DT_INVALID.
-tensorflow::DataType GetDataTypeFromAttr(const tensorflow::NodeDef& node, const std::string& type_attr);
+tensorflow::DataType GetDataTypeFromAttr(
+    const tensorflow::NodeDef& node,
+    const std::string& type_attr);
 
-}  // end namespace tfdml
+} // end namespace tfdml
