@@ -71,7 +71,7 @@ class OpKernelContext
     TF_DataType expected_output_dtype(int index);
     StatusOr<Tensor> allocate_output(int index, const TensorShape& shape);
     StatusOr<Tensor> forward_input_or_allocate_output(
-        absl::Span<int> candidate_input_indices,
+        absl::Span<const int> candidate_input_indices,
         int output_index,
         const TensorShape& output_shape,
         int* forwarded_input = nullptr);
