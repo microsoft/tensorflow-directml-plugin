@@ -25,6 +25,22 @@ namespace tfdml
 class NodeDef
 {
   public:
+    NodeDef() = default;
+
+    NodeDef(
+        std::string_view op_name,
+        std::string_view op_type_name,
+        absl::InlinedVector<MemoryType, 8> tensor_memory_types,
+        absl::InlinedVector<AttributeValue, 4> attribute_values,
+        uint32_t input_tensor_count)
+        : op_name(op_name),
+          op_type_name(op_type_name),
+          tensor_memory_types(std::move(tensor_memory_types)),
+          attribute_values(std::move(attribute_values)),
+          input_tensor_count(input_tensor_count)
+    {
+    }
+
     inline std::string_view GetOpName() const { return op_name; }
 
     inline std::string_view GetOpTypeName() const { return op_type_name; }

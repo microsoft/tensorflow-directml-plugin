@@ -27,8 +27,8 @@ void TF_AddNVariantDeclaration(
     TF_OpKernelContext* ctx,
     void (*binary_add_func)(
         TF_OpKernelContext* ctx,
-        const TF_Tensor* a,
-        const TF_Tensor* b,
+        TF_Tensor* a,
+        TF_Tensor* b,
         TF_Tensor* out),
     TF_Status* status);
 
@@ -36,7 +36,7 @@ void TF_ZerosLikeVariantDeclaration(
     TF_OpKernelContext* ctx,
     void (*zeros_like_func)(
         TF_OpKernelContext* ctx,
-        const TF_Tensor* input,
+        TF_Tensor* input,
         TF_Tensor* out),
     TF_Status* status);
 
@@ -71,7 +71,7 @@ class OpKernelContext
     TF_DataType expected_output_dtype(int index);
     StatusOr<Tensor> allocate_output(int index, const TensorShape& shape);
     StatusOr<Tensor> forward_input_or_allocate_output(
-        absl::Span<int> candidate_input_indices,
+        absl::Span<const int> candidate_input_indices,
         int output_index,
         const TensorShape& output_shape,
         int* forwarded_input = nullptr);
@@ -86,7 +86,7 @@ class OpKernelContext
     MemoryType output_memory_type(int index) const;
     Status set_output(int index, const Tensor& tensor);
     const OpKernel& op_kernel() const;
-    Status AssignVariable(int var_index, int value_index);
+    Status AssignVariable(int var_index, int value_index, bool validate_shape);
 
     Status AssignUpdateVariable(
         int var_index,
@@ -106,13 +106,13 @@ class OpKernelContext
 
     Status AddNVariant(void (*binary_add_func)(
         TF_OpKernelContext* ctx,
-        const TF_Tensor* a,
-        const TF_Tensor* b,
+        TF_Tensor* a,
+        TF_Tensor* b,
         TF_Tensor* out));
 
     Status ZerosLikeVariant(void (*zeros_like_func)(
         TF_OpKernelContext* ctx,
-        const TF_Tensor* input,
+        TF_Tensor* input,
         TF_Tensor* out));
 
     Status GetInputTensorFromVariable(

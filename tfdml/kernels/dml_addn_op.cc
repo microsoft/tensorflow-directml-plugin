@@ -95,10 +95,6 @@ class DmlAddNKernel : public DmlKernel
     }
 };
 
-class DummyInitializationHelper : public InitializationHelper
-{
-};
-
 static inline bool IsSupportedAddType(TF_DataType dtype)
 {
     switch (dtype)
@@ -113,21 +109,41 @@ static inline bool IsSupportedAddType(TF_DataType dtype)
     }
 }
 
-class DmlBinaryAddVariantHelper : public DmlKernel
+class BinaryAddVariantInitHelper : public InitializationHelper
 {
   public:
-    using DmlKernel::Compute;
+    using Attributes = EmptyAttributes;
 
-    explicit DmlBinaryAddVariantHelper(
+    BinaryAddVariantInitHelper(
         DmlDevice* dml_device,
-        TF_OpKernelContext* ctx,
         TF_DataType dtype,
         uint32_t num_elements)
+        : dml_device(dml_device),
+          dtype(dtype),
+          num_elements(num_elements)
     {
-        uint32_t tensor_sizes[] = {1, 1, 1, num_elements};
+    }
 
-        auto tensor_desc =
-            DmlTensorDesc::Create(dtype, tensor_sizes, tensor_sizes);
+    DmlDevice* dml_device;
+    TF_DataType dtype;
+    uint32_t num_elements;
+};
+
+class DmlBinaryAddVariantKernel : public DmlKernel
+{
+  public:
+    using InitHelper = BinaryAddVariantInitHelper;
+
+    explicit DmlBinaryAddVariantKernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        uint32_t tensor_sizes[] = {1, 1, 1, init_helper->num_elements};
+
+        auto tensor_desc = DmlTensorDesc::Create(
+            init_helper->dtype,
+            tensor_sizes,
+            tensor_sizes);
 
         DmlTensorInfo a_info = {};
         a_info.kernel_index = 0;
@@ -142,13 +158,13 @@ class DmlBinaryAddVariantHelper : public DmlKernel
         tensors.outputs = {a_info};
 
         auto inputs = GetDmlTensorDescs(tensors.inputs);
-        auto scope = dml::Graph(dml_device->GetDmlDevice());
+        auto scope = dml::Graph(init_helper->dml_device->GetDmlDevice());
         const auto a = dml::InputTensor(scope, 0, inputs[0]);
         const auto b = dml::InputTensor(scope, 1, inputs[1]);
         auto result = a + b;
 
         // TFDML #24881131
-        if (Is64BitSignedIntegerType(dtype))
+        if (Is64BitSignedIntegerType(init_helper->dtype))
         {
             result = dml::ConvertInt32ToInt64(result);
         }
@@ -156,25 +172,17 @@ class DmlBinaryAddVariantHelper : public DmlKernel
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
 
-        auto init_helper = std::make_shared<DummyInitializationHelper>();
-
-        status_ = Initialize(
-            ctx,
-            std::move(tensors),
-            compiled_op.Get(),
-            std::move(init_helper),
-            dml_device->GetDmlDevice(),
-            dml_device->GetDeviceContext(),
-            "AddN");
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 
     StatusOr<DmlGpuEvent> Compute(
-        DmlDevice* dml_device,
-        TF_OpKernelContext* ctx,
-        const TF_Tensor* a_tensor,
-        const TF_Tensor* b_tensor,
-        TF_Tensor* out_tensor) const
+        OpKernelContext* ctx,
+        const Tensor& a_tensor,
+        const Tensor& b_tensor,
+        Tensor& out_tensor) const
     {
+        auto* dml_device = static_cast<DmlDevice*>(ctx->device());
+
         D3D12BufferRegion a_buffer =
             dml_device->GetDeviceContext()->GetBufferForTensor(a_tensor);
         D3D12BufferRegion b_buffer =
@@ -194,25 +202,141 @@ class DmlBinaryAddVariantHelper : public DmlKernel
         };
 
         return DmlKernel::Compute(
-            ctx,
+            ctx->raw(),
             dml_device->GetDmlDevice(),
             dml_device->GetDeviceContext(),
             input_bindings,
             output_bindings);
     }
+};
 
-    const Status& GetStatus() const { return status_; }
+class DmlBinaryAddVariantKernelWrapper : public OpKernel
+{
+  public:
+    explicit DmlBinaryAddVariantKernelWrapper(
+        std::shared_ptr<NodeDef> node_def,
+        DmlDevice* dml_device,
+        const Tensor* a_tensor,
+        const Tensor* b_tensor,
+        Tensor* out_tensor)
+        : OpKernel(node_def),
+          node_def_(node_def),
+          dml_device_(dml_device),
+          a_tensor_(a_tensor),
+          b_tensor_(b_tensor),
+          out_tensor_(out_tensor)
+    {
+    }
+
+    std::shared_ptr<DmlKernel> TryGetCachedKernel(
+        const DmlKernelManager& kernel_manager,
+        const DmlKernelKey& key) const
+    {
+        // Retrieve the kernel from the cache
+        return kernel_manager.TryGetCachedKernel<DmlBinaryAddVariantKernel>(
+            key);
+    }
+
+    void Compute(OpKernelContext* ctx)
+    {
+        DmlDevice* dml_device = static_cast<DmlDevice*>(ctx->device());
+
+        const DmlKernelManager& kernel_manager =
+            *dml_device->GetKernelManager();
+        std::shared_ptr<DmlKernel> kernel;
+        DmlKernelKey key;
+
+        // Construct a kernel key which uniquely identifies the kernel
+        // instance we need
+        key = CreateKernelKey(ctx);
+
+        // Retrieve an appropriate DmlKernel from the cache. If the kernel
+        // hasn't been cached yet, it will be null
+        kernel = TryGetCachedKernel(kernel_manager, key);
+
+        if (!kernel)
+        {
+            auto shared_helper = std::make_shared<BinaryAddVariantInitHelper>(
+                dml_device_,
+                a_tensor_->dtype(),
+                static_cast<uint32_t>(a_tensor_->NumElements()));
+
+            DmlKernelConstruction dml_construction(
+                dml_device,
+                ctx,
+                {},
+                shared_helper);
+
+            kernel =
+                kernel_manager.CreateCachedKernel<DmlBinaryAddVariantKernel>(
+                    &dml_construction,
+                    key,
+                    shared_helper.get());
+
+            // Check for validation done during kernel construction
+            if (!ctx->status().ok())
+            {
+                return;
+            }
+        }
+
+        assert(kernel != nullptr);
+
+        // Check for errors triggered during the kernel context's constructor
+        // (e.g. OOM when allocating the output buffers)
+        if (!ctx->status().ok())
+        {
+            return;
+        }
+
+        auto status_or_event =
+            static_cast<DmlBinaryAddVariantKernel*>(kernel.get())
+                ->Compute(ctx, *a_tensor_, *b_tensor_, *out_tensor_);
+        OP_REQUIRES_OK(ctx, status_or_event.status());
+
+        // Keep this kernel alive at least until it's completed execution on the
+        // GPU
+        kernel_manager.QueueReference(
+            kernel,
+            status_or_event.ConsumeValueOrDie());
+    }
+
+    DmlKernelKey CreateKernelKey(OpKernelContext* ctx) const
+    {
+        DmlKernelKey key = {};
+        key.op_type_name = "AddV2";
+        key.node_def = node_def_;
+
+        DmlInputTensorKey tensor_key = {};
+        tensor_key.is_constant_cpu_input = false;
+        tensor_key.tensor = TensorShapeAndType{
+            TensorShape({a_tensor_->NumElements()}),
+            a_tensor_->dtype()};
+
+        key.input_tensors.push_back(tensor_key);
+        key.input_tensors.push_back(std::move(tensor_key));
+
+        return key;
+    }
 
   private:
-    Status status_;
+    std::shared_ptr<NodeDef> node_def_;
+    DmlDevice* dml_device_;
+    const Tensor* a_tensor_;
+    const Tensor* b_tensor_;
+    Tensor* out_tensor_;
 };
 
 static void BinaryAddVariant(
     TF_OpKernelContext* ctx,
-    const TF_Tensor* a_tensor,
-    const TF_Tensor* b_tensor,
-    TF_Tensor* out_tensor)
+    TF_Tensor* raw_a_tensor,
+    TF_Tensor* raw_b_tensor,
+    TF_Tensor* raw_out_tensor)
 {
+    Tensor a_tensor(raw_a_tensor);
+    Tensor b_tensor(raw_b_tensor);
+    Tensor out_tensor(raw_out_tensor);
+
     Status status;
     SP_Stream stream = TF_GetStream(ctx, status.raw());
     CHECK(status.ok());
@@ -220,40 +344,38 @@ static void BinaryAddVariant(
     Device* device = static_cast<Device*>(stream->stream_handle);
     DmlDevice* dml_device = static_cast<DmlDevice*>(device);
 
-    TF_DataType dtype = TF_TensorType(a_tensor);
-    int64_t num_elements = TF_TensorElementCount(a_tensor);
-
-    if (!IsSupportedAddType(dtype))
+    if (!IsSupportedAddType(a_tensor.dtype()))
     {
         TF_OpKernelContext_Failure(
             ctx,
             errors::InvalidArgument(
-                DataTypeString(dtype),
+                DataTypeString(a_tensor.dtype()),
                 " is not a supported type for Add.")
                 .raw());
         return;
     }
 
-    if (num_elements == 0)
+    if (a_tensor.NumElements() == 0)
     {
         return;
     }
 
-    DmlBinaryAddVariantHelper dml_kernel(dml_device, ctx, dtype, num_elements);
+    auto node_def = std::make_shared<NodeDef>(
+        "AddV2",
+        "DmlAddV2Variant",
+        absl::InlinedVector<MemoryType, 8>(3, MemoryType::DEVICE_MEMORY),
+        absl::InlinedVector<AttributeValue, 4>(a_tensor.dtype()),
+        2);
 
-    if (!dml_kernel.GetStatus().ok())
-    {
-        TF_OpKernelContext_Failure(ctx, dml_kernel.GetStatus().raw());
-        return;
-    }
+    DmlBinaryAddVariantKernelWrapper dml_kernel(
+        std::move(node_def),
+        dml_device,
+        &a_tensor,
+        &b_tensor,
+        &out_tensor);
 
-    StatusOr<DmlGpuEvent> status_or_event =
-        dml_kernel.Compute(dml_device, ctx, a_tensor, b_tensor, out_tensor);
-
-    if (!status_or_event.ok())
-    {
-        TF_OpKernelContext_Failure(ctx, status_or_event.status().raw());
-    }
+    OpKernelContext cc_ctx(ctx, &dml_kernel);
+    dml_kernel.Compute(&cc_ctx);
 }
 
 class DmlAddNVariantKernel : public OpKernel
@@ -262,7 +384,7 @@ class DmlAddNVariantKernel : public OpKernel
     explicit DmlAddNVariantKernel(
         OpKernelConstruction* ctx,
         std::shared_ptr<const NodeDef> node_def)
-        : OpKernel(std::move(node_def))
+        : OpKernel(node_def)
     {
     }
 

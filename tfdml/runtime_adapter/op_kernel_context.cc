@@ -209,10 +209,8 @@ StatusOr<Tensor> OpKernelContext::allocate_output(
     return Tensor(raw_tensor);
 }
 
-// TODO: Make candidate_input_indices constant once the API has been fixed
-// https://github.com/tensorflow/tensorflow/pull/54139
 StatusOr<Tensor> OpKernelContext::forward_input_or_allocate_output(
-    absl::Span<int> candidate_input_indices,
+    absl::Span<const int> candidate_input_indices,
     int output_index,
     const TensorShape& output_shape,
     int* forwarded_input)
@@ -328,10 +326,15 @@ static void CopyTensorInSameDevice(
     device->CopyTensorInSameDevice(&input_tensor, &output_tensor);
 }
 
-Status OpKernelContext::AssignVariable(int var_index, int value_index)
+Status OpKernelContext::AssignVariable(
+    int var_index,
+    int value_index,
+    bool validate_shape)
 {
     Status status;
 
+    // TODO: Use validate_shape when TF_AssignVariable supports it
+    // https://github.com/tensorflow/tensorflow/pull/55678
     TF_AssignVariable(
         context_,
         var_index,
@@ -389,8 +392,8 @@ Status OpKernelContext::AssignRefVariable(
 
 Status OpKernelContext::AddNVariant(void (*binary_add_func)(
     TF_OpKernelContext* ctx,
-    const TF_Tensor* a,
-    const TF_Tensor* b,
+    TF_Tensor* a,
+    TF_Tensor* b,
     TF_Tensor* out))
 {
     Status status;
@@ -400,7 +403,7 @@ Status OpKernelContext::AddNVariant(void (*binary_add_func)(
 
 Status OpKernelContext::ZerosLikeVariant(void (*zeros_like_func)(
     TF_OpKernelContext* ctx,
-    const TF_Tensor* input,
+    TF_Tensor* input,
     TF_Tensor* out))
 {
     Status status;
@@ -417,7 +420,7 @@ Status OpKernelContext::GetInputTensorFromVariable(
     assert(var_index < num_inputs());
     constexpr bool sparse = false;
     static constexpr int64_t empty_sizes[1] = {0};
-    TF_Tensor* raw_tensor = TF_AllocateTensor(TF_FLOAT, empty_sizes, 1, 0);
+    TF_Tensor* raw_tensor = nullptr;
 
     Status status;
     TF_GetInputTensorFromVariable(

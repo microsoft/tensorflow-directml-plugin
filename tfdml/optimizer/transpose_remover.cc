@@ -149,6 +149,11 @@ Status TransposeRemover::Optimize(
     {
         MutableNodeView* fused_batch_norm_grad_node = graph_view->GetNode(i);
 
+        if (!IsOnDml(*fused_batch_norm_grad_node->node()))
+        {
+            continue;
+        }
+
         if (!IsFusedBatchNormGrad(*fused_batch_norm_grad_node->node()))
         {
             continue;
