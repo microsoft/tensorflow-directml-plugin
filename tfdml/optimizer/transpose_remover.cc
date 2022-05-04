@@ -24,6 +24,7 @@ limitations under the License.
 #include "tfdml/optimizer/node_utils.h"
 #include "tfdml/optimizer/op_types.h"
 #include "tfdml/optimizer/perm_utils.h"
+#include "tfdml/optimizer/tensor_proto_util.h"
 #include "tfdml/runtime_adapter/macros.h"
 
 namespace tfdml
@@ -74,21 +75,21 @@ static bool IsLayoutTranspose(
         return false;
     }
 
+    int num_elements = GetNumElements(perm_tensor);
+
+    if (num_elements != expected_perm.size())
+    {
+        return false;
+    }
+
     switch (perm_tensor.dtype())
     {
     case ::tensorflow::DT_INT32: {
-        if (perm_tensor.tensor_content().size() !=
-            expected_perm.size() * sizeof(int32_t))
+        for (int i = 0; i < num_elements; ++i)
         {
-            return false;
-        }
+            int32_t perm_value = GetTensorElement<int32_t>(perm_tensor, i);
 
-        const auto* perm_values = reinterpret_cast<const int32_t*>(
-            perm_tensor.tensor_content().c_str());
-
-        for (int i = 0; i < expected_perm.size(); ++i)
-        {
-            if (perm_values[i] != expected_perm[i])
+            if (perm_value != expected_perm[i])
             {
                 return false;
             }
@@ -96,18 +97,11 @@ static bool IsLayoutTranspose(
         break;
     }
     case ::tensorflow::DT_INT64: {
-        if (perm_tensor.tensor_content().size() !=
-            expected_perm.size() * sizeof(int64_t))
+        for (int i = 0; i < num_elements; ++i)
         {
-            return false;
-        }
+            int64_t perm_value = GetTensorElement<int64_t>(perm_tensor, i);
 
-        const auto* perm_values = reinterpret_cast<const int64_t*>(
-            perm_tensor.tensor_content().c_str());
-
-        for (int i = 0; i < expected_perm.size(); ++i)
-        {
-            if (perm_values[i] != expected_perm[i])
+            if (perm_value != expected_perm[i])
             {
                 return false;
             }

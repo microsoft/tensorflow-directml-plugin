@@ -363,6 +363,7 @@ add_library(
     tfdml/optimizer/perm_utils.cc
     tfdml/optimizer/proto_buffer_helpers.cc
     tfdml/optimizer/tensor_id.cc
+    tfdml/optimizer/tensor_proto_util.cc
     tfdml/optimizer/transpose_remover.cc
 )
 target_link_libraries(
