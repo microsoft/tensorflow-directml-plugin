@@ -242,13 +242,6 @@ bool IsFloorDiv(const tensorflow::NodeDef& node)
     return node.op() == "FloorDiv";
 }
 
-bool IsFusedBatchNorm(const tensorflow::NodeDef& node)
-{
-    const auto& op = node.op();
-    return op == "FusedBatchNorm" || op == "FusedBatchNormV2" ||
-           op == "FusedBatchNormV3";
-}
-
 bool IsIgamma(const tensorflow::NodeDef& node) { return node.op() == "Igamma"; }
 
 bool IsIgammac(const tensorflow::NodeDef& node)
@@ -270,8 +263,6 @@ bool IsLogicalOr(const tensorflow::NodeDef& node)
 {
     return node.op() == "LogicalOr";
 }
-
-bool IsMatMul(const tensorflow::NodeDef& node) { return node.op() == "MatMul"; }
 
 bool IsMaximum(const tensorflow::NodeDef& node)
 {
@@ -300,8 +291,6 @@ bool IsPolygamma(const tensorflow::NodeDef& node)
 }
 
 bool IsPow(const tensorflow::NodeDef& node) { return node.op() == "Pow"; }
-
-bool IsRank(const tensorflow::NodeDef& node) { return node.op() == "Rank"; }
 
 bool IsRealDiv(const tensorflow::NodeDef& node)
 {
