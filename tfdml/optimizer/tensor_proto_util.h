@@ -25,7 +25,7 @@ namespace tfdml
     {                                                                          \
         if (TENSOR.version_number() == 0 && TENSOR.DTYPE##_val_size() == 1)    \
         {                                                                      \
-            return TENSOR.DTYPE##_val(elem_index);                             \
+            return TENSOR.DTYPE##_val(0);                                      \
         }                                                                      \
         assert(TENSOR.DTYPE##_val_size() == GetNumElements(TENSOR));           \
         return TENSOR.DTYPE##_val(elem_index);                                 \
