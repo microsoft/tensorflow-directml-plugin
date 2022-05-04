@@ -364,6 +364,7 @@ add_library(
     tfdml/optimizer/proto_buffer_helpers.cc
     tfdml/optimizer/remapper.cc
     tfdml/optimizer/tensor_id.cc
+    tfdml/optimizer/tensor_proto_util.cc
     tfdml/optimizer/transpose_remover.cc
     tfdml/optimizer/utils.cc
 )
