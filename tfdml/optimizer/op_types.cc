@@ -77,8 +77,9 @@ bool IsRelu(const tensorflow::NodeDef& node) { return node.op() == "Relu"; }
 
 bool IsRelu6(const tensorflow::NodeDef& node) { return node.op() == "Relu6"; }
 
-bool IsSymbolicGradient(const tensorflow::NodeDef& node) {
-  return node.op() == "SymbolicGradient";
+bool IsSymbolicGradient(const tensorflow::NodeDef& node)
+{
+    return node.op() == "SymbolicGradient";
 }
 
 bool IsTranspose(const tensorflow::NodeDef& node)

@@ -58,11 +58,15 @@ Status RunOptimizer(
     absl::flat_hash_set<std::string> differentiable_functions;
 
     const auto find_differentiable_functions =
-        [&](const NodeDefs& nodes) -> void {
-        for (const tensorflow::NodeDef& node : nodes) {
-            if (IsSymbolicGradient(node)) {
+        [&](const NodeDefs& nodes) -> void
+    {
+        for (const tensorflow::NodeDef& node : nodes)
+        {
+            if (IsSymbolicGradient(node))
+            {
                 const auto* f_attr = FindOrNull(node.attr(), "f");
-                if (f_attr) {
+                if (f_attr)
+                {
                     op_options.allow_non_differentiable_rewrites = false;
                     break;
                 }
@@ -75,9 +79,13 @@ Status RunOptimizer(
     // SymbolicGradient nodes inside the function library.
     tensorflow::OpDef op_def;
     Status lookup_status = op_reg.LookUpOpDef("SymbolicGradient", &op_def);
-    if (lookup_status.ok()) op_options.allow_non_differentiable_rewrites = false;
+    if (lookup_status.ok())
+        op_options.allow_non_differentiable_rewrites = false;
 
-    GrapplerItem grappler_item_wrapper(grappler_item, op_options, input_graph_def);
+    GrapplerItem grappler_item_wrapper(
+        grappler_item,
+        op_options,
+        input_graph_def);
 
     TF_RETURN_IF_ERROR(static_cast<GraphOptimizer*>(optimizer)->Optimize(
         grappler_item_wrapper,

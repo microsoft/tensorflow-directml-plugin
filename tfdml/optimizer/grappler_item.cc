@@ -67,8 +67,9 @@ absl::flat_hash_set<std::string> GrapplerItem::NodesToPreserve() const
     return preserved_nodes;
 }
 
-OptimizationOptions& GrapplerItem::optimization_options() {
-  return optimization_options_;
+OptimizationOptions& GrapplerItem::optimization_options()
+{
+    return optimization_options_;
 }
 
 const TF_GrapplerItem* GrapplerItem::raw() const { return grappler_item_; }

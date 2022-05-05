@@ -20,12 +20,14 @@ namespace tfdml
 template <class Collection>
 const typename Collection::value_type::second_type* FindOrNull(
     const Collection& collection,
-    const typename Collection::value_type::first_type& key) {
-  typename Collection::const_iterator it = collection.find(key);
-  if (it == collection.end()) {
-    return 0;
-  }
-  return &it->second;
+    const typename Collection::value_type::first_type& key)
+{
+    typename Collection::const_iterator it = collection.find(key);
+    if (it == collection.end())
+    {
+        return 0;
+    }
+    return &it->second;
 }
 
 } // end namespace tfdml
