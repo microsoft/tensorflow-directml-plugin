@@ -110,9 +110,8 @@ static decltype(TF_ZerosLikeVariantDeclaration)* GetZerosLikeVariantSymbol()
     return reinterpret_cast<decltype(TF_ZerosLikeVariantDeclaration)*>(symbol);
 }
 
-decltype(
-    TF_AssignRefVariableDeclaration)* OpKernelContext::TF_AssignRefVariable =
-    GetAssignRefVariableSymbol();
+decltype(TF_AssignRefVariableDeclaration)*
+    OpKernelContext::TF_AssignRefVariable = GetAssignRefVariableSymbol();
 
 decltype(TF_AddNVariantDeclaration)* OpKernelContext::TF_AddNVariant =
     GetAddNVariantSymbol();
