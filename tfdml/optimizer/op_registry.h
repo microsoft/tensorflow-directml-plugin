@@ -27,11 +27,12 @@ namespace tfdml
 class OpRegistry
 {
   public:
-    static OpRegistry& Instance()
-    {
-        static OpRegistry instance;
-        return instance;
-    }
+    // static OpRegistry& Instance()
+    // {
+    //     static OpRegistry instance;
+    //     return instance;
+    // }
+    OpRegistry();
     void Initialize(TF_FunctionLibraryDefinition* function_lib_def);
     Status LookUpOpDef(const char* op_name, tensorflow::OpDef* op_def);
 

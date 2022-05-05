@@ -22,8 +22,10 @@ namespace tfdml
 {
 GrapplerItem::GrapplerItem(
     const TF_GrapplerItem* grappler_item,
+    OptimizationOptions optimization_options,
     tensorflow::GraphDef graph)
     : grappler_item_(grappler_item),
+      optimization_options_(optimization_options),
       graph(std::move(graph))
 {
 }
@@ -63,6 +65,10 @@ absl::flat_hash_set<std::string> GrapplerItem::NodesToPreserve() const
             preserved_node_name_lengths[i]));
     }
     return preserved_nodes;
+}
+
+OptimizationOptions& GrapplerItem::optimization_options() {
+  return optimization_options_;
 }
 
 const TF_GrapplerItem* GrapplerItem::raw() const { return grappler_item_; }

@@ -440,7 +440,6 @@ Status AddFusedContractionNode(
 //   (1) Fusing Pad into Conv2D
 bool RequiresInferredShapes(const RemapperContext& ctx, int node_index)
 {
-    // Candidate for a FusedBatchNorm splitting.
     const auto* node_view = ctx.graph_view->GetNode(node_index);
     const auto* node_def = node_view->node();
 
@@ -502,7 +501,7 @@ Status Remapper::Optimize(
 
     // _Fused{...} kernels do not have registered gradient function, so we must
     // not perform rewrite if the graph will be differentiated later.
-    bool allow_non_differentiable_rewrites = true;
+    bool allow_non_differentiable_rewrites = item.optimization_options_.allow_non_differentiable_rewrites;
 
     for (int i = num_nodes - 1; i >= 0; --i)
     {

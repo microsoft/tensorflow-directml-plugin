@@ -41,6 +41,7 @@ bool IsPad(const tensorflow::NodeDef& node);
 bool IsPlaceholder(const tensorflow::NodeDef& node);
 bool IsRelu(const tensorflow::NodeDef& node);
 bool IsRelu6(const tensorflow::NodeDef& node);
+bool IsSymbolicGradient(const tensorflow::NodeDef& node);
 bool IsTranspose(const tensorflow::NodeDef& node);
 
 } // namespace tfdml
