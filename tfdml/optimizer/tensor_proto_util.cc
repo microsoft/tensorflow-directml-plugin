@@ -23,6 +23,11 @@ int GetNumElements(const tensorflow::TensorProto& tensor)
     assert(tensor.has_tensor_shape());
     const tensorflow::TensorShapeProto& shape = tensor.tensor_shape();
 
+    if (shape.dim_size() == 0)
+    {
+        return 0;
+    }
+
     int64_t num_elements = 1;
     for (int i = 0; i < shape.dim_size(); ++i)
     {

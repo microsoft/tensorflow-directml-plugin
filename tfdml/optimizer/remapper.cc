@@ -173,13 +173,15 @@ bool FindPadWithConv2D(
         const auto* value_attr = constant_values_node_view->GetAttr("value");
         if (value_attr == nullptr) return false;
 
+        int num_elements = GetNumElements(val_tensor);
+
         float float_val;
         switch (val_tensor.dtype())
         {
         case tensorflow::DT_HALF:
-            if (val_tensor.half_val_size() == 0)
+            if (num_elements == 0)
             {
-                float_val = value_attr->f();
+                float_val = 0.0f;
             }
             else
             {
@@ -188,9 +190,9 @@ bool FindPadWithConv2D(
             }
             break;
         case tensorflow::DT_FLOAT:
-            if (val_tensor.float_val_size() == 0)
+            if (num_elements == 0)
             {
-                float_val = value_attr->f();
+                float_val = 0.0f;
             }
             else
             {
