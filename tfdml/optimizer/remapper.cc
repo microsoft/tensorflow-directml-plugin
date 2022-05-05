@@ -168,10 +168,10 @@ bool FindPadWithConv2D(
 
         if (!IsConstant(*constant_values_node_def)) return false;
 
-        auto val_tensor = constant_values_node_def->attr().at("value").tensor();
-
         const auto* value_attr = constant_values_node_view->GetAttr("value");
         if (value_attr == nullptr) return false;
+
+        auto val_tensor = value_attr->tensor();
 
         int num_elements = GetNumElements(val_tensor);
 
@@ -223,7 +223,7 @@ bool FindPadWithConv2D(
     const auto* value_attr = paddings_node_view->GetAttr("value");
     if (value_attr == nullptr) return false;
 
-    auto val_tensor = paddings_node_def->attr().at("value").tensor();
+    auto val_tensor = value_attr->tensor();
 
     // Make sure that the paddings are known and that the batch and depth
     // paddings are 0
@@ -259,8 +259,6 @@ bool FindPadWithConv2D(
     if (matched->new_padding_values[c_index * 2 + 1] != 0) return false;
 
     Padding padding_type;
-
-    auto padding_t = conv_node_def->attr().at(kPadding).tensor();
 
     const auto* p_value_attr = conv_node_view->GetAttr(kPadding);
     if (p_value_attr == nullptr) return false;
