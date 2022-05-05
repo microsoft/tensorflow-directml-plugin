@@ -18,6 +18,7 @@ limitations under the License.
 #include "tensorflow/core/framework/graph.pb.h"
 #include "tfdml/optimizer/graph_optimizer.h"
 #include "tfdml/optimizer/grappler_item.h"
+#include "tfdml/optimizer/map_utils.h"
 #include "tfdml/optimizer/op_registry.h"
 #include "tfdml/optimizer/op_types.h"
 #include "tfdml/optimizer/proto_buffer_helpers.h"
@@ -57,21 +58,24 @@ Status RunOptimizer(
     absl::flat_hash_set<std::string> differentiable_functions;
 
     const auto find_differentiable_functions =
-        [&](NodeDefs& nodes) -> void {
+        [&](const NodeDefs& nodes) -> void {
         for (const tensorflow::NodeDef& node : nodes) {
-        if (IsSymbolicGradient(node)) {
-            const auto* f_attr = gtl::FindOrNull(node.attr(), "f");
-            if (f_attr) differentiable_functions.insert(f_attr->func().name());
-        }
+            if (IsSymbolicGradient(node)) {
+                const auto* f_attr = FindOrNull(node.attr(), "f");
+                if (f_attr) {
+                    op_options.allow_non_differentiable_rewrites = false;
+                    break;
+                }
+            }
         }
     };
 
     // SymbolicGradient nodes inside the main graph.
     find_differentiable_functions(input_graph_def.node());
     // SymbolicGradient nodes inside the function library.
-    for (const tensorflow::FunctionDef& function : input_graph_def.library().function()) {
-        find_differentiable_functions(function.node_def());
-    }
+    tensorflow::OpDef op_def;
+    Status lookup_status = op_reg.LookUpOpDef("SymbolicGradient", &op_def);
+    if (lookup_status.ok()) op_options.allow_non_differentiable_rewrites = false;
 
     GrapplerItem grappler_item_wrapper(grappler_item, op_options, input_graph_def);
 

@@ -13,14 +13,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#pragma once
-
-namespace tensorflow
-{
-class NodeDef;
-}
-
 namespace tfdml
 {
-bool IsHostMemory(const tensorflow::NodeDef& node, int output_port);
-} // namespace tfdml
+// Returns a pointer to the const value associated with the given key if it
+// exists, or NULL otherwise.
+template <class Collection>
+const typename Collection::value_type::second_type* FindOrNull(
+    const Collection& collection,
+    const typename Collection::value_type::first_type& key) {
+  typename Collection::const_iterator it = collection.find(key);
+  if (it == collection.end()) {
+    return 0;
+  }
+  return &it->second;
+}
+
+} // end namespace tfdml

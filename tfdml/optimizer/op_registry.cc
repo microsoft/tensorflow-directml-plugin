@@ -21,6 +21,8 @@ limitations under the License.
 
 namespace tfdml
 {
+OpRegistry::OpRegistry() {}
+
 void OpRegistry::Initialize(TF_FunctionLibraryDefinition* function_lib_def)
 {
     function_lib_def_ = function_lib_def;

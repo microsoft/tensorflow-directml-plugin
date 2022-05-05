@@ -356,7 +356,6 @@ add_library(
     tfdml/optimizer/graph_view.cc
     tfdml/optimizer/grappler_item.cc
     tfdml/optimizer/hash.cc
-    tfdml/optimizer/node_utils.cc
     tfdml/optimizer/op_registry.cc
     tfdml/optimizer/op_types.cc
     tfdml/optimizer/optimizer_runner.cc

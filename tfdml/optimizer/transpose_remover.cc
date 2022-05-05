@@ -21,7 +21,6 @@ limitations under the License.
 #include "tfdml/optimizer/graph_properties.h"
 #include "tfdml/optimizer/graph_view.h"
 #include "tfdml/optimizer/grappler_item.h"
-#include "tfdml/optimizer/node_utils.h"
 #include "tfdml/optimizer/op_types.h"
 #include "tfdml/optimizer/perm_utils.h"
 #include "tfdml/optimizer/tensor_proto_util.h"
