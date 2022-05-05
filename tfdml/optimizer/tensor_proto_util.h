@@ -17,6 +17,7 @@ limitations under the License.
 
 #include "tensorflow/core/framework/tensor.pb.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/FixedPoint"
+#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tfdml
 {
@@ -53,7 +54,14 @@ T GetTensorElement(const tensorflow::TensorProto& tensor, int elem_index)
     if constexpr (std::is_same_v<T, Eigen::half>)
     {
         assert(tensor.dtype() == tensorflow::DT_HALF);
-        RETURN_TENSOR_VALUE(tensor, half);
+        if (tensor.version_number() == 0 && tensor.half_val_size() == 1)
+        {
+            auto half_val = tensor.half_val(0);
+            return *reinterpret_cast<Eigen::half*>(&half_val);
+        }
+        assert(tensor.half_val_size() == GetNumElements(tensor));
+        auto half_val = tensor.half_val(elem_index);
+        return *reinterpret_cast<Eigen::half*>(&half_val);
     }
     else if constexpr (std::is_same_v<T, float>)
     {

@@ -177,7 +177,6 @@ tf_proto_cpp(tensorflow/core/framework/versions.proto)
 tf_proto_cpp(tensorflow/core/framework/kernel_def.proto)
 tf_proto_cpp(tensorflow/core/grappler/costs/op_performance_data.proto)
 tf_proto_cpp(tensorflow/core/protobuf/device_properties.proto)
-tf_proto_cpp(tensorflow/core/protobuf/error_codes.proto)
 
 # A python interpreter is required to produce the plugin wheel. This python environment
 # must have the 'wheel' package installed.

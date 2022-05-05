@@ -11,14 +11,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include "tfdml/optimizer/remapper.h"
 #include "absl/container/flat_hash_set.h"
-
 #include "tensorflow/core/framework/tensor.pb.h"
 #include "tfdml/optimizer/graph_properties.h"
 #include "tfdml/optimizer/graph_view.h"
 #include "tfdml/optimizer/grappler_item.h"
 #include "tfdml/optimizer/op_types.h"
-#include "tfdml/optimizer/remapper.h"
+#include "tfdml/optimizer/tensor_proto_util.h"
 #include "tfdml/optimizer/utils.h"
 #include "tfdml/runtime_adapter/padding.h"
 #include "tfdml/runtime_adapter/tensor_format.h"
@@ -183,7 +183,8 @@ bool FindPadWithConv2D(
             }
             else
             {
-                float_val = val_tensor.half_val(0);
+                float_val = static_cast<float>(
+                    GetTensorElement<Eigen::half>(val_tensor, 0));
             }
             break;
         case tensorflow::DT_FLOAT:
@@ -193,7 +194,7 @@ bool FindPadWithConv2D(
             }
             else
             {
-                float_val = val_tensor.float_val(0);
+                float_val = GetTensorElement<float>(val_tensor, 0);
             }
             break;
         default: return false;
@@ -221,67 +222,28 @@ bool FindPadWithConv2D(
     if (value_attr == nullptr) return false;
 
     auto val_tensor = paddings_node_def->attr().at("value").tensor();
-    const int version = val_tensor.version_number();
 
     // Make sure that the paddings are known and that the batch and depth
     // paddings are 0
     switch (val_tensor.dtype())
     {
     case tensorflow::DT_INT32: {
-        auto int32_padding_values = absl::Span<const int32_t>(
-            reinterpret_cast<const int32_t*>(
-                val_tensor.tensor_content().data()),
-            val_tensor.tensor_content().size() / sizeof(int32_t));
         for (int i = 0; i < 4; ++i)
         {
-            int32_t val1;
-            int32_t val2;
-            if (version == 0 && val_tensor.int_val_size() == 1)
-            {
-                val1 = val_tensor.int_val(0);
-                val2 = val_tensor.int_val(0);
-            }
-            else if (version == 0 && val_tensor.int_val_size() == 0)
-            {
-                val1 = int32_padding_values.at(i * 2);
-                val2 = int32_padding_values.at(i * 2 + 1);
-            }
-            else
-            {
-                val1 = val_tensor.int_val(i * 2);
-                val2 = val_tensor.int_val(i * 2 + 1);
-            }
-            matched->new_padding_values[i * 2] = val1;
-            matched->new_padding_values[i * 2 + 1] = val2;
+            matched->new_padding_values[i * 2] =
+                GetTensorElement<int32_t>(val_tensor, i * 2);
+            matched->new_padding_values[i * 2 + 1] =
+                GetTensorElement<int32_t>(val_tensor, i * 2 + 1);
         }
     }
     break;
     case tensorflow::DT_INT64: {
-        auto int64_padding_values = absl::Span<const int64_t>(
-            reinterpret_cast<const int64_t*>(
-                val_tensor.tensor_content().data()),
-            val_tensor.tensor_content().size() / sizeof(int64_t));
         for (int i = 0; i < 4; ++i)
         {
-            int64_t val1;
-            int64_t val2;
-            if (version == 0 && val_tensor.int_val_size() == 1)
-            {
-                val1 = val_tensor.int64_val(0);
-                val2 = val_tensor.int64_val(0);
-            }
-            else if (version == 0 && val_tensor.int_val_size() == 0)
-            {
-                val1 = int64_padding_values.at(i * 2);
-                val2 = int64_padding_values.at(i * 2 + 1);
-            }
-            else
-            {
-                val1 = val_tensor.int64_val(i * 2);
-                val2 = val_tensor.int64_val(i * 2 + 1);
-            }
-            matched->new_padding_values[i * 2] = val1;
-            matched->new_padding_values[i * 2 + 1] = val2;
+            matched->new_padding_values[i * 2] =
+                GetTensorElement<int64_t>(val_tensor, i * 2);
+            matched->new_padding_values[i * 2 + 1] =
+                GetTensorElement<int64_t>(val_tensor, i * 2 + 1);
         }
     }
     break;
@@ -599,7 +561,7 @@ Status Remapper::Optimize(
     }
     TF_RETURN_IF_ERROR(mutation->Apply());
 
-    *optimized_graph = ctx.graph;
+    *optimized_graph = std::move(ctx.graph);
 
     return Status::OK();
 }

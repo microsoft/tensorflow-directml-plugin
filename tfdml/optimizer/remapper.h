@@ -28,7 +28,7 @@ namespace tfdml
 class Remapper : public GraphOptimizer
 {
   public:
-    ~Remapper() override {}
+    ~Remapper() override = default;
     Status Optimize(
         const GrapplerItem& item,
         tensorflow::GraphDef* optimized_graph) override;
