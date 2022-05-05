@@ -17,6 +17,7 @@ limitations under the License.
 #include "absl/strings/str_join.h"
 #include "tfdml/optimizer/device_name_utils.h"
 #include "tfdml/optimizer/graph_view_internal.h"
+#include "tfdml/optimizer/op_types.h"
 #include "tfdml/optimizer/tensor_id.h"
 #include "tfdml/runtime_adapter/macros.h"
 
@@ -26,18 +27,6 @@ namespace tfdml
 static std::string SafeTensorIdToString(const SafeTensorId& tensor_id)
 {
     return tensor_id.index() == 0 ? tensor_id.node() : tensor_id.ToString();
-}
-
-static bool IsNextIteration(const tensorflow::NodeDef& node)
-{
-    const auto& op = node.op();
-    return op == "NextIteration" || op == "RefNextIteration";
-}
-
-static bool IsMerge(const tensorflow::NodeDef& node)
-{
-    const auto& op = node.op();
-    return op == "Merge" || op == "RefMerge" || op == "_XlaMerge";
 }
 
 std::string AsControlDependency(const std::string& node_name)
