@@ -23,9 +23,8 @@ from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import test_util
 from tensorflow.python.platform import test
-import dml_test_util
 
-class L2LossTest(dml_test_util.TestCase):
+class L2LossTest(test.TestCase):
 
   @test_util.run_in_graph_and_eager_modes
   def testL2Loss(self):

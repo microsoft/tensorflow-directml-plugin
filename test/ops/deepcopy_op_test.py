@@ -22,9 +22,8 @@ from tensorflow.python.ops import gen_array_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.framework import ops
 from tensorflow.python.platform import test
-import dml_test_util
 
-class DeepcopyTest(dml_test_util.TestCase):
+class DeepcopyTest(test.TestCase):
 
   @test_util.run_in_graph_and_eager_modes
   def testDeepcopy(self):

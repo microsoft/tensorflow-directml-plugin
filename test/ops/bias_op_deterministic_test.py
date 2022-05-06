@@ -29,7 +29,6 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradients_impl
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.platform import test
-import dml_test_util
 
 
 class BiasAddDeterministicTest(bias_op_base.BiasAddTestBase,
@@ -69,7 +68,7 @@ class BiasAddDeterministicTest(bias_op_base.BiasAddTestBase,
           # for completeness.
           data_layout=['channels_first', 'channels_last'],
           data_rank=[1, 2, 3],
-          data_type=[dtypes.float16, dtypes.float32, dtypes.float64]))
+          data_type=[dtypes.float16, dtypes.float32]))
   @test_util.run_in_graph_and_eager_modes
   @test_util.run_cuda_only
   def testDeterministicGradients(self, data_layout, data_rank, data_type):

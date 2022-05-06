@@ -27,6 +27,11 @@ limitations under the License.
 
 struct TF_Tensor;
 
+namespace tensorflow
+{
+class TensorProto;
+}
+
 namespace tfdml
 {
 

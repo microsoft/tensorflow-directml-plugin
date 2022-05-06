@@ -28,10 +28,9 @@ from tensorflow.python.framework import tensor_spec
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradient_checker_v2
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class TransposeTest(dml_test_util.TestCase):
+class TransposeTest(test.TestCase):
 
   def _np_transpose(self, x, perm):
     ret = np.copy(x)
@@ -146,7 +145,7 @@ class TransposeTest(dml_test_util.TestCase):
 
   def test5DGPU(self):
     # If no GPU available, skip the test
-    if not dml_test_util.is_gpu_available(cuda_only=True):
+    if not test.is_gpu_available(cuda_only=True):
       return
     large_shapes = [[4, 10, 10, 10, 3], [4, 10, 10, 10, 8], [4, 10, 10, 10, 13],
                     [4, 3, 10, 10, 10], [4, 8, 10, 10, 10], [4, 13, 10, 10,
@@ -173,7 +172,7 @@ class TransposeTest(dml_test_util.TestCase):
 
   def test4DGPU(self):
     # If no GPU available, skip the test
-    if not dml_test_util.is_gpu_available(cuda_only=True):
+    if not test.is_gpu_available(cuda_only=True):
       return
     large_shapes = [[4, 10, 10, 3], [4, 10, 10, 8], [4, 10, 10, 13],
                     [4, 3, 10, 10], [4, 8, 10, 10], [4, 13, 10, 10]] * 3
@@ -233,7 +232,7 @@ class TransposeTest(dml_test_util.TestCase):
 
   def test3DGPU(self):
     # If no GPU available, skip the test
-    if not dml_test_util.is_gpu_available(cuda_only=True):
+    if not test.is_gpu_available(cuda_only=True):
       return
 
     datatypes = [np.int8, np.float16, np.float32, np.float64, np.complex128]
@@ -258,7 +257,7 @@ class TransposeTest(dml_test_util.TestCase):
 
   def testLargeSizeGPU(self):
     # If no GPU available, skip the test
-    if not dml_test_util.is_gpu_available(cuda_only=True):
+    if not test.is_gpu_available(cuda_only=True):
       return
 
     large_shapes = [[1000000, 31, 3], [3, 1000000, 31], [3, 31, 1000000],
@@ -281,7 +280,7 @@ class TransposeTest(dml_test_util.TestCase):
 
   def testRandomizedSmallDimLargeSizeGPU(self):
     # If no GPU available, skip the test
-    if not dml_test_util.is_gpu_available(cuda_only=True):
+    if not test.is_gpu_available(cuda_only=True):
       return
 
     # Draw 10 random shapes with large dimension sizes.

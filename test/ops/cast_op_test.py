@@ -27,10 +27,9 @@ from tensorflow.python.ops import gradient_checker_v2
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class CastOpTest(dml_test_util.TestCase):
+class CastOpTest(test.TestCase):
 
   def _toDataType(self, dtype):
     """Returns TensorFlow data type for numpy type."""
@@ -52,7 +51,7 @@ class CastOpTest(dml_test_util.TestCase):
       return None
 
   def _cast(self, x, dtype, use_gpu=False):
-    with dml_test_util.device(use_gpu):
+    with test_util.device(use_gpu):
       val = constant_op.constant(x, self._toDataType(np.array([x]).dtype))
       cast = math_ops.cast(val, self._toDataType(dtype), name="cast")
       return self.evaluate(cast)
@@ -193,7 +192,7 @@ class CastOpTest(dml_test_util.TestCase):
       self.assertEqual(result.dtype, dtypes.float32)
 
 
-class SparseTensorCastTest(dml_test_util.TestCase):
+class SparseTensorCastTest(test.TestCase):
 
   def testCast(self):
     indices = constant_op.constant([[0], [1], [2]], dtypes.int64)
@@ -208,7 +207,7 @@ class SparseTensorCastTest(dml_test_util.TestCase):
     self.assertAllEqual(st_cast.dense_shape, [3])
 
 
-class SaturateCastTest(dml_test_util.TestCase):
+class SaturateCastTest(test.TestCase):
 
   def testSaturate(self):
     in_types = dtypes.float32,

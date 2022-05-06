@@ -22,14 +22,13 @@ from tensorflow.python.framework import ops
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.platform import test
-import dml_test_util
 
 
 @test_util.with_eager_op_as_function
-class BitcastTest(dml_test_util.TestCase):
+class BitcastTest(test.TestCase):
 
   def _testBitcast(self, x, datatype, shape):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       tf_ans = array_ops.bitcast(x, datatype)
       out = self.evaluate(tf_ans)
       buff_after = memoryview(out).tobytes()

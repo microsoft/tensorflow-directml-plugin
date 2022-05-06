@@ -25,14 +25,14 @@ set(protobuf_BUILD_TESTS OFF)
 if(WIN32)
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/39/44/727261f794c3dfceed58663e570745f53cddf2cf102ff9615b31442a9644/tf_nightly_cpu-2.9.0.dev20220329-cp37-cp37m-win_amd64.whl
-        URL_HASH SHA256=5b83b84eb15455604a06f4efa7772e6fe3ab0dd27dd29ed4f211cdbbe6d1a4a8
+        URL https://files.pythonhosted.org/packages/c3/90/30b0ab573c40a8d27d217025986403bdf2fb9a2f161acf790e5803101b5e/tensorflow_cpu-2.9.0rc1-cp37-cp37m-win_amd64.whl
+        URL_HASH SHA256=fec1c4758d2392fec1b1e398fbf7fb5d878ec3a0c8e0620169281ab5b31b67ad
     )
 else()
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/e0/97/4c801bbec3278abd547fc83ee4c51cf899c6b4815928a4858d4ec05bad75/tf_nightly_cpu-2.9.0.dev20220329-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-        URL_HASH SHA256=8c4c14bfe44166937e605c54451fb3327441c062d20c92fcca59e2b448a822a5
+        URL https://files.pythonhosted.org/packages/98/91/72a1e9840b304d89caefde9d0528603bd610d2fb2d46b665f0f7571ca152/tensorflow_cpu-2.9.0rc1-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+        URL_HASH SHA256=462a8c38815ecc4e021859f7db65792f3ab2f2f723b32e1597a75866f63cf2bc
     )
 endif()
 
@@ -46,8 +46,8 @@ FetchContent_Declare(
 # DirectML Redistributable NuGet package
 FetchContent_Declare(
     directml_redist
-    URL https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.7.0
-    URL_HASH SHA256=77bd5de862c36f084c138ff3341936dca01bd21e58bfc57cb45118b116b1f9f4
+    URL https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/1.8.2
+    URL_HASH SHA256=a58141244b075cc3abfdc247310224b68b64ddd2aaac25ea04ed703deb5d4f9b
 )
 
 # DirectMLX helper library
@@ -163,6 +163,20 @@ endfunction()
 
 # Generate the necessary .proto files in the TF wheel (performed at build time).
 tf_proto_cpp(tensorflow/core/profiler/protobuf/xplane.proto)
+tf_proto_cpp(tensorflow/core/framework/graph.proto)
+tf_proto_cpp(tensorflow/core/framework/function.proto)
+tf_proto_cpp(tensorflow/core/framework/attr_value.proto)
+tf_proto_cpp(tensorflow/core/framework/tensor.proto)
+tf_proto_cpp(tensorflow/core/framework/resource_handle.proto)
+tf_proto_cpp(tensorflow/core/framework/tensor_shape.proto)
+tf_proto_cpp(tensorflow/core/framework/types.proto)
+tf_proto_cpp(tensorflow/core/framework/node_def.proto)
+tf_proto_cpp(tensorflow/core/framework/full_type.proto)
+tf_proto_cpp(tensorflow/core/framework/op_def.proto)
+tf_proto_cpp(tensorflow/core/framework/versions.proto)
+tf_proto_cpp(tensorflow/core/framework/kernel_def.proto)
+tf_proto_cpp(tensorflow/core/grappler/costs/op_performance_data.proto)
+tf_proto_cpp(tensorflow/core/protobuf/device_properties.proto)
 
 # A python interpreter is required to produce the plugin wheel. This python environment
 # must have the 'wheel' package installed.

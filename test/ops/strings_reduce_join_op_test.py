@@ -19,11 +19,10 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.ops.ragged import ragged_factory_ops
 from tensorflow.python.ops.ragged import ragged_string_ops
 from tensorflow.python.platform import googletest
-import dml_test_util
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class StringsReduceJoinOpTest(dml_test_util.TestCase,
+class StringsReduceJoinOpTest(test_util.TensorFlowTestCase,
                               parameterized.TestCase):
 
   def test_rank_one(self):

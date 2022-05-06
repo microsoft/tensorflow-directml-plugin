@@ -32,7 +32,7 @@ with open('TFDML_WHEEL_VERSION', 'r') as f:
 _PLUGIN_LIB_PATH = 'tensorflow-plugins'
 _MY_PLUGIN_PATH = 'tensorflow-directml-plugin'
 
-# The plugin should be compatible with any version of TF >= 2.9.0.dev20220316;
+# The plugin should be compatible with any version of TF >= 2.9.0rc1;
 # however, this cannot be expressed as a dependency since there are different
 # package names: tensorflow, tensorflow-cpu, tf-nightly, etc.
 REQUIRED_PACKAGES = []
@@ -147,6 +147,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Mathematics',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',

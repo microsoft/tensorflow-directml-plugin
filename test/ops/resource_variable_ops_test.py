@@ -56,7 +56,6 @@ from tensorflow.python.training import momentum
 from tensorflow.python.training import saver
 from tensorflow.python.training import training_util
 from tensorflow.python.util import compat
-import dml_test_util
 
 
 def _eager_safe_var_handle_op(*args, **kwargs):
@@ -71,7 +70,7 @@ def _eager_safe_var_handle_op(*args, **kwargs):
 
 @test_util.with_eager_op_as_function
 @test_util.with_control_flow_v2
-class ResourceVariableOpsTest(dml_test_util.TestCase,
+class ResourceVariableOpsTest(test.TestCase,
                               parameterized.TestCase):
 
   def tearDown(self):
@@ -100,15 +99,15 @@ class ResourceVariableOpsTest(dml_test_util.TestCase,
 
   @test_util.run_gpu_only
   def testGPUInt64(self):
-    with context.eager_mode(), context.device("dml:0"):
+    with context.eager_mode(), context.device("gpu:0"):
       v = resource_variable_ops.ResourceVariable(1, dtype=dtypes.int64)
       self.assertAllEqual(1, v.numpy())
 
   @test_util.run_gpu_only
   def testGPUBfloat16(self):
-    with context.eager_mode(), ops.device("dml:0"):
+    with context.eager_mode(), ops.device("gpu:0"):
       v = resource_variable_ops.ResourceVariable(1, dtype=dtypes.bfloat16)
-      self.assertEqual("/job:localhost/replica:0/task:0/device:DML:0",
+      self.assertEqual("/job:localhost/replica:0/task:0/device:GPU:0",
                        v.device)
       self.assertAllEqual(1, v.numpy())
 
@@ -724,7 +723,7 @@ class ResourceVariableOpsTest(dml_test_util.TestCase,
         compat.as_bytes(self.evaluate(read)[0][0]), compat.as_bytes("b"))
 
   def testGPU(self):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       abc = variable_scope.get_variable(
           "abc",
           shape=[1],
@@ -824,6 +823,10 @@ class ResourceVariableOpsTest(dml_test_util.TestCase,
     self.assertEqual(4.0, self.evaluate(v.value()))
 
   def testAssignRuntimeShapeCheck(self):
+    # TODO: Enable when the API supports validate_shape
+    # https://github.com/tensorflow/tensorflow/pull/55678
+    self.skipTest("Pluggable devices don't support validate_shape yet")
+
     with forward_compat.forward_compatibility_horizon(2022, 3, 30):
       v = resource_variable_ops.ResourceVariable([1.0, 1.0], name="var0")
 
@@ -1617,7 +1620,6 @@ class ResourceVariableOpsTest(dml_test_util.TestCase,
       dict(dtype=dtypes.int64),
       dict(dtype=dtypes.half),
       dict(dtype=dtypes.float32),
-      dict(dtype=dtypes.double),
   ])
   @test_util.run_gpu_only
   @test_util.run_in_graph_and_eager_modes
@@ -1637,7 +1639,7 @@ class ResourceVariableOpsTest(dml_test_util.TestCase,
 
   @test_util.run_v2_only
   def testUninitializedVariableMemoryUsage(self):
-    if dml_test_util.is_gpu_available():
+    if test_util.is_gpu_available():
       self.skipTest("Disabled when a GPU is available")
     if memory_checker.CppMemoryChecker is None:
       self.skipTest("Requires the C++ memory checker")

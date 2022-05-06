@@ -344,6 +344,36 @@ target_precompile_headers(
     tfdml/kernels/pch.h
 )
 
+# Target comprising all TFDML grappler optimizations
+add_library(
+    optimizer
+    STATIC
+    tfdml/optimizer/data_format_ops_converter.cc
+    tfdml/optimizer/device_name_utils.cc
+    tfdml/optimizer/device_type.cc
+    tfdml/optimizer/graph_optimizer.cc
+    tfdml/optimizer/graph_properties.cc
+    tfdml/optimizer/graph_view.cc
+    tfdml/optimizer/grappler_item.cc
+    tfdml/optimizer/hash.cc
+    tfdml/optimizer/op_registry.cc
+    tfdml/optimizer/op_types.cc
+    tfdml/optimizer/optimizer_runner.cc
+    tfdml/optimizer/perm_utils.cc
+    tfdml/optimizer/proto_buffer_helpers.cc
+    tfdml/optimizer/remapper.cc
+    tfdml/optimizer/tensor_id.cc
+    tfdml/optimizer/tensor_proto_util.cc
+    tfdml/optimizer/transpose_remover.cc
+    tfdml/optimizer/utils.cc
+)
+target_link_libraries(
+    optimizer
+    PUBLIC
+    runtime_adapter
+    core
+)
+
 # Target to build the TF plugin module.
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
@@ -353,6 +383,7 @@ add_library(
     SHARED
     tfdml/plugin/plugin_device.cc
     tfdml/plugin/plugin_kernel.cc
+    tfdml/plugin/plugin_optimizer.cc
     tfdml/plugin/plugin_profiler.cc
 )
 target_link_libraries(
@@ -361,8 +392,9 @@ target_link_libraries(
     common_build_props
     core
     kernels
-    runtime_adapter
+    optimizer
     protobuf::libprotobuf
+    runtime_adapter
 )
 set_target_properties(tfdml_plugin PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 
@@ -387,7 +419,8 @@ add_custom_command(
     COMMAND 
         ${Python_EXECUTABLE} 
         ${CMAKE_SOURCE_DIR}/tfdml/wheel/build_wheel.py
-        --plugin_path $<TARGET_FILE:tfdml_plugin>
+        --plugin_paths
+            $<TARGET_FILE:tfdml_plugin>
         --build_dir ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS
         tfdml_plugin

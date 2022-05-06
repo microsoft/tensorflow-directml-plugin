@@ -26,7 +26,6 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import benchmark
 from tensorflow.python.platform import test as test_lib
-import dml_test_util
 
 
 def _AddTest(test, op_name, testcase_name, fn):
@@ -125,7 +124,7 @@ class MatrixBandPartBenchmark(test_lib.Benchmark):
         if test_lib.is_gpu_available(True):
           with ops.Graph().as_default(), \
               session.Session(config=benchmark.benchmark_config()) as sess, \
-              ops.device("/dml:0"):
+              ops.device("/gpu:0"):
             matrix = variables.Variable(array_ops.ones(shape_))
             band = array_ops.matrix_band_part(matrix, limits[0], limits[1])
             self.evaluate(variables.global_variables_initializer())

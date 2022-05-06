@@ -35,7 +35,8 @@ class VisibleDevicesTest(absltest.TestCase):
             valid_id_count += 1
 
         import tensorflow as tf
-        dml_devices = tf.config.list_physical_devices("DML")
+        gpu_devices = tf.config.list_physical_devices("GPU")
+        dml_devices = list(filter(lambda x: tf.config.experimental.get_device_details(x)["device_name"] == "DML", gpu_devices))
 
         # We can't guarantee the machine running this test has multiple devices/adapters,
         # but it must have at least one.

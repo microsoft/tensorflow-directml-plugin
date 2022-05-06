@@ -28,7 +28,6 @@ from tensorflow.python.keras import keras_parameterized
 from tensorflow.python.keras import testing_utils
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
-import dml_test_util
 
 
 def _conv2d_filter(**kwargs):
@@ -110,7 +109,7 @@ def _gather_test_cases():
 OUTPUT_TEST_CASES = _gather_test_cases()
 
 
-class CoreLayerIntegrationTest(dml_test_util.KerasParameterizedTestCase):
+class CoreLayerIntegrationTest(keras_parameterized.TestCase):
   """Test that layers and models produce the correct tensor types."""
 
   # In v1 graph there are only symbolic tensors.

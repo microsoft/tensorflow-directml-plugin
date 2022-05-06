@@ -31,10 +31,9 @@ from tensorflow.python.ops import random_ops
 from tensorflow.python.ops import resource_variable_ops
 import tensorflow.python.ops.nn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
-import dml_test_util
 
 
-class TopKTest(dml_test_util.TestCase):
+class TopKTest(test.TestCase):
 
   def _validateTopK(self,
                     inputs,

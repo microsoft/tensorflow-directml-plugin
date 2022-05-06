@@ -34,10 +34,9 @@ from tensorflow.python.ops import logging_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
 from tensorflow.python.util import compat
-import dml_test_util
 
 
-class ConstantTest(dml_test_util.TestCase):
+class ConstantTest(test.TestCase):
 
   def _testCpu(self, x):
     np_ans = np.array(x)
@@ -276,7 +275,7 @@ class ConstantTest(dml_test_util.TestCase):
       c = constant_op.constant([[1, 2], [3], [4, 5]])
 
 
-class AsTensorTest(dml_test_util.TestCase):
+class AsTensorTest(test.TestCase):
 
   def testAsTensorForTensorInput(self):
     with ops.Graph().as_default():
@@ -366,7 +365,7 @@ class AsTensorTest(dml_test_util.TestCase):
         ops.convert_to_tensor(tensor_shape.TensorShape([1, None, 64])[1])
 
 
-class IdentityOpTest(dml_test_util.TestCase):
+class IdentityOpTest(test.TestCase):
 
   def testIdTensor(self):
     with ops.Graph().as_default():
@@ -378,7 +377,7 @@ class IdentityOpTest(dml_test_util.TestCase):
                            id_op.op.node_def)
 
 
-class ZerosTest(dml_test_util.TestCase):
+class ZerosTest(test.TestCase):
 
   def _Zeros(self, shape):
     with self.cached_session():
@@ -477,7 +476,7 @@ class ZerosTest(dml_test_util.TestCase):
     self.assertFalse(np.any(z_value))
 
 
-class ZerosLikeTest(dml_test_util.TestCase):
+class ZerosLikeTest(test.TestCase):
 
   def _compareZeros(self, dtype, fully_defined_shape, use_gpu):
     with self.cached_session(use_gpu=use_gpu):
@@ -554,7 +553,7 @@ class ZerosLikeTest(dml_test_util.TestCase):
 
   @test_util.run_deprecated_v1
   def testZerosLikeVariant(self):
-    with self.session(use_gpu=True):
+    with self.session(use_gpu=False):
       variant_tensor = tensor_pb2.TensorProto(
           dtype=dtypes_lib.variant.as_datatype_enum,
           tensor_shape=tensor_shape.TensorShape([]).as_proto(),
@@ -577,7 +576,7 @@ class ZerosLikeTest(dml_test_util.TestCase):
       zeros_like_op.run()
 
 
-class OnesTest(dml_test_util.TestCase):
+class OnesTest(test.TestCase):
 
   def _Ones(self, shape):
     with self.cached_session():
@@ -656,7 +655,7 @@ class OnesTest(dml_test_util.TestCase):
     self.assertTrue(np.all(value))
 
 
-class OnesLikeTest(dml_test_util.TestCase):
+class OnesLikeTest(test.TestCase):
 
   def testOnesLike(self):
     for dtype in [
@@ -688,7 +687,7 @@ class OnesLikeTest(dml_test_util.TestCase):
     self.assertEqual(d.get_shape().as_list(), z.get_shape().as_list())
 
 
-class FillTest(dml_test_util.TestCase):
+class FillTest(test.TestCase):
 
   def _compare(self, dims, val, np_ans, use_gpu):
     with self.cached_session(use_gpu=use_gpu):
@@ -777,7 +776,7 @@ class FillTest(dml_test_util.TestCase):
     self.assertLess(err, 1e-3)
 
 
-class PlaceholderTest(dml_test_util.TestCase):
+class PlaceholderTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testDtype(self):
@@ -963,11 +962,11 @@ versions {
       self.assertAllEqual([2.0, 3.0], ret.eval(feed_dict={p: [1.0, 2.0]}))
 
 
-class PlaceholderWithDefaultTest(dml_test_util.TestCase):
+class PlaceholderWithDefaultTest(test.TestCase):
 
   @test_util.run_deprecated_v1
   def testFullShape(self):
-    with self.session(force_gpu=dml_test_util.is_gpu_available()):
+    with self.session(force_gpu=test_util.is_gpu_available()):
       p = array_ops.placeholder_with_default([[2, 2], [2, 2]], shape=[2, 2])
       a = array_ops.identity(p)
       self.assertAllEqual([[2, 2], [2, 2]], self.evaluate(a))
@@ -979,7 +978,7 @@ class PlaceholderWithDefaultTest(dml_test_util.TestCase):
 
   @test_util.run_deprecated_v1
   def testPartialShape(self):
-    with self.session(force_gpu=dml_test_util.is_gpu_available()):
+    with self.session(force_gpu=test_util.is_gpu_available()):
       p = array_ops.placeholder_with_default([1, 2, 3], shape=[None])
       a = array_ops.identity(p)
       self.assertAllEqual([1, 2, 3], self.evaluate(a))
@@ -990,7 +989,7 @@ class PlaceholderWithDefaultTest(dml_test_util.TestCase):
 
   @test_util.run_deprecated_v1
   def testNoShape(self):
-    with self.session(force_gpu=dml_test_util.is_gpu_available()):
+    with self.session(force_gpu=test_util.is_gpu_available()):
       p = array_ops.placeholder_with_default([17], shape=None)
       a = array_ops.identity(p)
       self.assertAllEqual([17], self.evaluate(a))
@@ -1000,7 +999,7 @@ class PlaceholderWithDefaultTest(dml_test_util.TestCase):
 
   @test_util.run_deprecated_v1
   def testGradient(self):
-    with self.session(force_gpu=dml_test_util.is_gpu_available()):
+    with self.session(force_gpu=test_util.is_gpu_available()):
       x = array_ops.placeholder(dtypes_lib.float32, [5, 7])
       y = array_ops.placeholder_with_default(x, None)
       err = gradient_checker.compute_gradient_error(x, [5, 7], y, [5, 7])

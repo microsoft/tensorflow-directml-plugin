@@ -18,17 +18,17 @@ import numpy as np
 from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import errors
 from tensorflow.python.framework import ops
+from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import inplace_ops
 from tensorflow.python.platform import test as test_lib
-import dml_test_util
 
 
-class InplaceOpsTest(dml_test_util.TestCase):
+class InplaceOpsTest(test_lib.TestCase):
 
   def testBasicUpdate(self):
     for dtype in [dtypes.float32, dtypes.int32, dtypes.int64]:
-      with dml_test_util.use_gpu():
+      with test_util.use_gpu():
         x = array_ops.ones([7, 3], dtype)
         y = np.ones([7, 3], dtype.as_numpy_dtype)
         self.assertAllClose(x, y)
@@ -44,7 +44,7 @@ class InplaceOpsTest(dml_test_util.TestCase):
         self.assertAllClose(x, y)
 
   def testBasicUpdateBool(self):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       x = array_ops.ones([7, 3], dtypes.bool)
       y = np.ones([7, 3], dtypes.bool.as_numpy_dtype)
       self.assertAllClose(x, y)
@@ -62,7 +62,7 @@ class InplaceOpsTest(dml_test_util.TestCase):
 
   def testBasicAdd(self):
     for dtype in [dtypes.float32, dtypes.int32, dtypes.int64]:
-      with dml_test_util.use_gpu():
+      with test_util.use_gpu():
         x = array_ops.ones([7, 3], dtype)
         y = np.ones([7, 3], dtype.as_numpy_dtype)
         self.assertAllClose(x, y)
@@ -81,7 +81,7 @@ class InplaceOpsTest(dml_test_util.TestCase):
 
   def testBasicSub(self):
     for dtype in [dtypes.float32, dtypes.int32, dtypes.int64]:
-      with dml_test_util.use_gpu():
+      with test_util.use_gpu():
         x = array_ops.ones([7, 3], dtype)
         y = np.ones([7, 3], dtype.as_numpy_dtype)
         self.assertAllClose(x, y)
@@ -99,7 +99,7 @@ class InplaceOpsTest(dml_test_util.TestCase):
         self.assertAllClose(x, y)
 
   def testRandom(self):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       d0, d1, d2 = 100, 3, 5
       x = array_ops.zeros([d0, d1, d2])
       y = np.zeros([d0, d1, d2])
@@ -119,7 +119,7 @@ class InplaceOpsTest(dml_test_util.TestCase):
         self.assertAllClose(x, y)
 
   def testRandom1D(self):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       d0 = 100
       x = array_ops.zeros([d0])
       y = np.zeros([d0])
@@ -139,7 +139,7 @@ class InplaceOpsTest(dml_test_util.TestCase):
         self.assertAllClose(x, y)
 
   def testAlias(self):
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       x = array_ops.ones([2, 3])
       y = inplace_ops.alias_inplace_add(x, [0], [[1, 2, 3]])
       with ops.control_dependencies([y]):
@@ -163,7 +163,7 @@ class InplaceOpsTest(dml_test_util.TestCase):
         dtypes.float32, dtypes.float64, dtypes.int32, dtypes.int64, dtypes.bool,
         dtypes.uint8
     ]:
-      with dml_test_util.use_gpu():
+      with test_util.use_gpu():
         test_shapes = [(), (1,), (2, 3), (0, 2), (2, 3, 5), (2, 0, 5)]
         for shape in test_shapes:
           val = self.evaluate(inplace_ops.empty(shape, dtype))
@@ -183,7 +183,7 @@ class InplaceOpsTest(dml_test_util.TestCase):
           self.assertEqual(val.dtype, dtype.as_numpy_dtype)
           self.assertAllEqual(val, np.zeros(shape, dtype.as_numpy_dtype))
 
-    with dml_test_util.use_gpu():
+    with test_util.use_gpu():
       val = self.evaluate(inplace_ops.empty((1, 2), dtypes.string, init=True))
       self.assertEqual(val.tolist(), [[b"", b""]])
 
@@ -198,7 +198,7 @@ class InplaceOpsTest(dml_test_util.TestCase):
     ]
     for dtype in [dtypes.float32, dtypes.int32, dtypes.int64]:
       for op_fn in op_fns:
-        with dml_test_util.use_gpu():
+        with test_util.use_gpu():
           x = array_ops.zeros([7, 0], dtype)
           y = np.zeros([7, 0], dtype.as_numpy_dtype)
           self.assertAllClose(x, y)

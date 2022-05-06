@@ -30,12 +30,11 @@ from tensorflow.python.ops import gradient_checker_v2
 from tensorflow.python.ops import image_ops
 from tensorflow.python.ops import math_ops
 from tensorflow.python.platform import test
-import dml_test_util
 
 
 @test_util.for_all_test_methods(test_util.disable_xla,
                                 'align_corners=False not supported by XLA')
-class ResizeNearestNeighborOpTestBase(dml_test_util.TestCase):
+class ResizeNearestNeighborOpTestBase(test.TestCase):
 
   TYPES = [np.float16, np.float32, np.float64, dtypes.bfloat16.as_numpy_dtype]
 
@@ -113,7 +112,7 @@ class ResizeNearestNeighborOpTestBase(dml_test_util.TestCase):
         self.assertAllClose(grad_cpu, grad_gpu, rtol=1e-5, atol=1e-5)
 
 
-class ResizeBilinearOpTestBase(dml_test_util.TestCase, parameterized.TestCase):
+class ResizeBilinearOpTestBase(test.TestCase, parameterized.TestCase):
 
   def _itGen(self, smaller_shape, larger_shape):
     up_sample = (smaller_shape, larger_shape)
@@ -276,7 +275,7 @@ class ResizeBilinearOpTestBase(dml_test_util.TestCase, parameterized.TestCase):
         dtype=np.float64)
 
 
-class ResizeBicubicOpTestBase(dml_test_util.TestCase, parameterized.TestCase):
+class ResizeBicubicOpTestBase(test.TestCase, parameterized.TestCase):
   """Tests resize bicubic ops."""
 
   def testShapeIsCorrectAfterOp(self):
@@ -348,7 +347,7 @@ class ResizeBicubicOpTestBase(dml_test_util.TestCase, parameterized.TestCase):
     self.assertEqual([None], grad)
 
 
-class ScaleAndTranslateOpTestBase(dml_test_util.TestCase):
+class ScaleAndTranslateOpTestBase(test.TestCase):
   """Tests scale and translate op."""
 
   def testGrads(self):
@@ -418,7 +417,7 @@ class ScaleAndTranslateOpTestBase(dml_test_util.TestCase):
         self.assertAllClose(np.ones_like(grad_v), grad_v)
 
 
-class CropAndResizeOpTestBase(dml_test_util.TestCase):
+class CropAndResizeOpTestBase(test.TestCase):
 
   def testShapeIsCorrectAfterOp(self):
     batch = 2
@@ -531,34 +530,22 @@ class CropAndResizeOpTestBase(dml_test_util.TestCase):
                     image_tensor, boxes_tensor, box_ind_tensor,
                     constant_op.constant(crop_size, shape=[2]))
 
-              with dml_test_util.device(use_gpu=True):
+              with test_util.device(use_gpu=True):
                 with self.cached_session():
-                  # pylint: disable=cell-var-from-loop
-                  if (config.is_op_determinism_enabled() and
-                      dml_test_util.is_gpu_available()):
-                    with self.assertRaises(errors_impl.UnimplementedError):
-                      gradient_checker_v2.compute_gradient(
+                  err1 = gradient_checker_v2.max_error(
+                      *gradient_checker_v2.compute_gradient(
                           lambda x: crop_resize(x, boxes_tensor),
-                          [image_tensor])
-                    with self.assertRaises(errors_impl.UnimplementedError):
-                      gradient_checker_v2.compute_gradient(
+                          [image_tensor]))
+                  err2 = gradient_checker_v2.max_error(
+                      *gradient_checker_v2.compute_gradient(
                           lambda x: crop_resize(image_tensor, x),
-                          [boxes_tensor])
-                  else:
-                    err1 = gradient_checker_v2.max_error(
-                        *gradient_checker_v2.compute_gradient(
-                            lambda x: crop_resize(x, boxes_tensor),
-                            [image_tensor]))
-                    err2 = gradient_checker_v2.max_error(
-                        *gradient_checker_v2.compute_gradient(
-                            lambda x: crop_resize(image_tensor, x),
-                            [boxes_tensor]))
-                    err = max(err1, err2)
-                    self.assertLess(err, 2e-3)
+                          [boxes_tensor]))
+                  err = max(err1, err2)
+                  self.assertLess(err, 2e-3)
 
 
 @test_util.run_all_in_graph_and_eager_modes
-class RGBToHSVOpTestBase(dml_test_util.TestCase):
+class RGBToHSVOpTestBase(test.TestCase):
 
   TYPES = [np.float32, np.float64]
 

@@ -29,65 +29,10 @@ from tensorflow.python.framework import random_seed
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import gradients_impl
-from tensorflow.python.ops import image_grad_test_base as test_base
 from tensorflow.python.ops import image_ops
 from tensorflow.python.ops import random_ops
 from tensorflow.python.platform import test
-import dml_test_util
-
-
-class ResizeNearestNeighborOpDeterminismExceptionsTest(dml_test_util.TestCase,
-                                                       parameterized.TestCase):
-  """Test d9m-unimplemented exceptions from ResizeNearestNeighborOpGrad.
-
-  Test that tf.errors.UnimplementedError is thrown, as appropriate, by the
-  GPU-specific code-path through ResizeNearestNeighborOpGrad when deterministic
-  ops are enabled.
-
-  This test assumes that image_grad_test.py runs equivalent test cases when
-  deterministic ops are not enabled and will therefore detect erroneous
-  exception throwing in those cases.
-  """
-
-  @parameterized.parameters(
-      {
-          'align_corners': False,
-          'half_pixel_centers': False,
-          'data_type': dtypes.float16
-      }, {
-          'align_corners': False,
-          'half_pixel_centers': False,
-          'data_type': dtypes.float32
-      }, {
-          'align_corners': False,
-          'half_pixel_centers': False,
-          'data_type': dtypes.float64
-      }, {
-          'align_corners': True,
-          'half_pixel_centers': False,
-          'data_type': dtypes.float32
-      }, {
-          'align_corners': False,
-          'half_pixel_centers': True,
-          'data_type': dtypes.float32
-      })
-  @test_util.run_gpu_only
-  @test_util.run_all_in_graph_and_eager_modes
-  def testExceptionThrowing(self, align_corners, half_pixel_centers, data_type):
-    with self.session(), dml_test_util.force_gpu():
-      input_image = array_ops.zeros((1, 2, 2, 1), dtype=data_type)
-      with backprop.GradientTape() as tape:
-        tape.watch(input_image)
-        output_image = image_ops.resize_nearest_neighbor(
-            input_image, (3, 3),
-            align_corners=align_corners,
-            half_pixel_centers=half_pixel_centers)
-      with self.assertRaisesRegex(
-          errors.UnimplementedError,
-          'A deterministic GPU implementation of ResizeNearestNeighborGrad' +
-          ' is not currently available.'):
-        gradient = tape.gradient(output_image, input_image)
-        self.evaluate(gradient)
+import image_grad_test_base as test_base
 
 
 class ResizeBilinearOpDeterministicTest(test_base.ResizeBilinearOpTestBase):
@@ -109,11 +54,6 @@ class ResizeBilinearOpDeterministicTest(test_base.ResizeBilinearOpTestBase):
           'align_corners': False,
           'half_pixel_centers': False,
           'data_type': dtypes.float32
-      },
-      {
-          'align_corners': False,
-          'half_pixel_centers': False,
-          'data_type': dtypes.float64
       },
       {
           'align_corners': True,
@@ -187,7 +127,7 @@ class ResizeBilinearOpDeterministicTest(test_base.ResizeBilinearOpTestBase):
           self.assertAllEqual(result_a, result_b)
 
 
-class CropAndResizeOpDeterminismExceptionsTest(dml_test_util.TestCase):
+class CropAndResizeOpDeterminismExceptionsTest(test.TestCase):
   """Test d9m-unimplemented exceptions from CropAndResizeBackprop{Image|Boxes}.
 
   Test that tf.errors.UnimplementedError is thrown or not thrown, as
@@ -214,33 +154,6 @@ class CropAndResizeOpDeterminismExceptionsTest(dml_test_util.TestCase):
         shape=(num_boxes,), minval=0, maxval=batch_size, dtype=dtypes.int32)
     crop_size = constant_op.constant([3, 3], dtype=dtypes.int32)
     return image, boxes, box_indices, crop_size
-
-  @test_util.run_in_graph_and_eager_modes
-  @test_util.run_gpu_only
-  def testExceptionThrowing(self):
-    for dtype in [dtypes.float16, dtypes.float32, dtypes.float64]:
-      image, boxes, box_indices, crop_size = self._genParams(dtype)
-      with backprop.GradientTape(persistent=True) as tape:
-        tape.watch(image)
-        tape.watch(boxes)
-        op_output = image_ops.crop_and_resize_v2(image, boxes, box_indices,
-                                                 crop_size)
-      image_error_message = ('Deterministic GPU implementation of' +
-                             ' CropAndResizeBackpropImage not available')
-      with self.assertRaisesRegex(errors_impl.UnimplementedError,
-                                  image_error_message):
-        result = tape.gradient(op_output, image)
-        self.evaluate(result)
-      expected_error_message = ('Deterministic GPU implementation of' +
-                                ' CropAndResizeBackpropBoxes not available')
-      if context.executing_eagerly():
-        # With eager execution, the backprop-to-image code is apparently
-        # executed (first), even when its output is never used.
-        expected_error_message = image_error_message
-      with self.assertRaisesRegex(errors_impl.UnimplementedError,
-                                  expected_error_message):
-        result = tape.gradient(op_output, boxes)
-        self.evaluate(result)
 
 
 class CropAndResizeOpDeterministicTest(test_base.CropAndResizeOpTestBase):

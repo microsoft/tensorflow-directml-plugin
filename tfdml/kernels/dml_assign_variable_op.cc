@@ -51,33 +51,9 @@ class DmlAssignVariableOp : public OpKernel
                 " and ",
                 DataTypeString(ctx->input(value_index).dtype())));
 
-        if (validate_shape_)
-        {
-            constexpr bool exclusive_lock = false;
-            constexpr bool is_variant = false;
-            Tensor var_tensor;
-            OP_REQUIRES_OK(
-                ctx,
-                ctx->GetInputTensorFromVariable(
-                    var_index,
-                    exclusive_lock,
-                    is_variant,
-                    &var_tensor));
-
-            Tensor value_tensor = ctx->input(value_index);
-
-            OP_REQUIRES(
-                ctx,
-                var_tensor.shape().IsSameSize(value_tensor.shape()),
-                errors::InvalidArgument(
-                    "Trying to assign to variable with tensor with wrong shape."
-                    " Expected ",
-                    var_tensor.shape().DebugString(),
-                    " got ",
-                    value_tensor.shape().DebugString()));
-        }
-
-        OP_REQUIRES_OK(ctx, ctx->AssignVariable(var_index, value_index));
+        OP_REQUIRES_OK(
+            ctx,
+            ctx->AssignVariable(var_index, value_index, validate_shape_));
     }
 
   private:
@@ -103,17 +79,25 @@ class DmlAssign : public OpKernel
 
     void Compute(OpKernelContext* ctx)
     {
-        // TODO: Enable once the AssignRefVariable API is merged
-        // https://github.com/tensorflow/tensorflow/pull/55379
-        // constexpr int input_ref_index = 0;
-        // constexpr int output_ref_index = 0;
-        // constexpr int value_index = 1;
-        // ctx->AssignRefVariable(
-        //     input_ref_index,
-        //     output_ref_index,
-        //     value_index,
-        //     exclusive_lock_,
-        //     validate_shape_);
+        OP_REQUIRES(
+            ctx,
+            ctx->AssignRefVariableSupported(),
+            errors::InvalidArgument(
+                "AssignRefVariable is not yet supported for pluggable devices "
+                "in this version of TensorFlow."));
+
+        constexpr int input_ref_index = 0;
+        constexpr int output_ref_index = 0;
+        constexpr int value_index = 1;
+
+        OP_REQUIRES_OK(
+            ctx,
+            ctx->AssignRefVariable(
+                input_ref_index,
+                output_ref_index,
+                value_index,
+                exclusive_lock_,
+                validate_shape_));
     }
 
   private:
@@ -370,6 +354,7 @@ void RegisterAssignVariableOp()
     K::WithTypeConstraint<T, TF_DOUBLE>::Register();
     K::WithTypeConstraint<T, TF_INT64>::Register();
     K::WithTypeConstraint<T, TF_UINT32>::Register();
+    K::WithTypeConstraint<T, TF_BFLOAT16>::Register();
 }
 
 void RegisterAssignAddVariableOp()
@@ -452,10 +437,7 @@ void RegisterKernels_AssignVariableOps()
     RegisterAssignSubVariableOp();
     RegisterAssignAdd();
     RegisterAssignSub();
-
-    // TODO: Enable once the AssignRefVariable API is merged
-    // https://github.com/tensorflow/tensorflow/pull/55379
-    // RegisterAssign();
+    RegisterAssign();
 }
 
 } // namespace tfdml
