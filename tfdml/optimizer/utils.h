@@ -1,4 +1,4 @@
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#pragma once
+#include "tensorflow/core/framework/graph.pb.h"
 
 namespace tensorflow
 {
@@ -22,5 +22,13 @@ class NodeDef;
 
 namespace tfdml
 {
-bool IsHostMemory(const tensorflow::NodeDef& node, int output_port);
-} // namespace tfdml
+
+// // Utilities for manipulating node name and input strings.
+
+// Returns the data type in attribute `attr_name` of `node`. If that attribute
+// doesn't exist, returns DT_INVALID.
+tensorflow::DataType GetDataTypeFromAttr(
+    const tensorflow::NodeDef& node,
+    const std::string& type_attr);
+
+} // end namespace tfdml

@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,27 +13,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/optimizer/tensor_proto_util.h"
-#include "tensorflow/core/framework/tensor.pb.h"
-
 namespace tfdml
 {
-int GetNumElements(const tensorflow::TensorProto& tensor)
+// Returns a pointer to the const value associated with the given key if it
+// exists, or NULL otherwise.
+template <class Collection>
+const typename Collection::value_type::second_type* FindOrNull(
+    const Collection& collection,
+    const typename Collection::value_type::first_type& key)
 {
-    assert(tensor.has_tensor_shape());
-    const tensorflow::TensorShapeProto& shape = tensor.tensor_shape();
-
-    if (shape.dim_size() == 0)
+    typename Collection::const_iterator it = collection.find(key);
+    if (it == collection.end())
     {
         return 0;
     }
-
-    int64_t num_elements = 1;
-    for (int i = 0; i < shape.dim_size(); ++i)
-    {
-        num_elements *= shape.dim(i).size();
-    }
-
-    return num_elements;
+    return &it->second;
 }
-} // namespace tfdml
+
+} // end namespace tfdml

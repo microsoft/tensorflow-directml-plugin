@@ -356,15 +356,16 @@ add_library(
     tfdml/optimizer/graph_view.cc
     tfdml/optimizer/grappler_item.cc
     tfdml/optimizer/hash.cc
-    tfdml/optimizer/node_utils.cc
     tfdml/optimizer/op_registry.cc
     tfdml/optimizer/op_types.cc
     tfdml/optimizer/optimizer_runner.cc
     tfdml/optimizer/perm_utils.cc
     tfdml/optimizer/proto_buffer_helpers.cc
+    tfdml/optimizer/remapper.cc
     tfdml/optimizer/tensor_id.cc
     tfdml/optimizer/tensor_proto_util.cc
     tfdml/optimizer/transpose_remover.cc
+    tfdml/optimizer/utils.cc
 )
 target_link_libraries(
     optimizer

@@ -19,6 +19,7 @@ limitations under the License.
 #include "tfdml/optimizer/data_format_ops_converter.h"
 #include "tfdml/optimizer/optimizer_runner.h"
 #include "tfdml/optimizer/proto_buffer_helpers.h"
+#include "tfdml/optimizer/remapper.h"
 #include "tfdml/optimizer/transpose_remover.h"
 
 namespace tfdml
@@ -31,6 +32,7 @@ static void* CreateOptimizer()
         // https://github.com/tensorflow/tensorflow/pull/55558
         new DataFormatOpsConverter(),
         new TransposeRemover(),
+        new Remapper(),
     };
 }
 

@@ -20,14 +20,25 @@ struct TF_GrapplerItem;
 
 namespace tfdml
 {
+struct OptimizationOptions
+{
+    // Is it allowed to add nodes to the graph that do not have registered
+    // gradient function.
+    bool allow_non_differentiable_rewrites = true;
+};
+
 struct GrapplerItem
 {
     GrapplerItem(
         const TF_GrapplerItem* grappler_item,
+        OptimizationOptions optimization_options,
         tensorflow::GraphDef graph);
+
     absl::flat_hash_set<std::string> NodesToPreserve() const;
     const TF_GrapplerItem* raw() const;
     tensorflow::GraphDef graph;
+    OptimizationOptions& optimization_options();
+    OptimizationOptions optimization_options_;
 
   private:
     const TF_GrapplerItem* const grappler_item_;

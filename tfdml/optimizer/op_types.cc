@@ -22,28 +22,9 @@ constexpr char kAttrT[] = "T";
 
 namespace tfdml
 {
-bool IsFusedBatchNormGrad(const tensorflow::NodeDef& node)
+bool IsBiasAdd(const tensorflow::NodeDef& node)
 {
-    return node.op() == "FusedBatchNormGrad" ||
-           node.op() == "FusedBatchNormGradV2" ||
-           node.op() == "FusedBatchNormGradV3";
-}
-
-bool IsConv2D(const tensorflow::NodeDef& node) { return node.op() == "Conv2D"; }
-
-bool IsMerge(const tensorflow::NodeDef& node)
-{
-    const auto& op = node.op();
-    return op == "Merge" || op == "RefMerge" || op == "_XlaMerge";
-}
-bool IsPad(const tensorflow::NodeDef& node)
-{
-    const auto& op = node.op();
-    return op == "Pad" || op == "PadV2";
-}
-bool IsTranspose(const tensorflow::NodeDef& node)
-{
-    return node.op() == "Transpose";
+    return node.op() == "BiasAdd" || node.op() == "BiasAddV1";
 }
 
 bool IsConstant(const tensorflow::NodeDef& node)
@@ -51,10 +32,59 @@ bool IsConstant(const tensorflow::NodeDef& node)
     return node.op() == "Const";
 }
 
+bool IsConv2D(const tensorflow::NodeDef& node) { return node.op() == "Conv2D"; }
+
+bool IsElu(const tensorflow::NodeDef& node) { return node.op() == "Elu"; }
+
+bool IsFusedBatchNormGrad(const tensorflow::NodeDef& node)
+{
+    return node.op() == "FusedBatchNormGrad" ||
+           node.op() == "FusedBatchNormGradV2" ||
+           node.op() == "FusedBatchNormGradV3";
+}
+
+bool IsLeakyRelu(const tensorflow::NodeDef& node)
+{
+    return node.op() == "LeakyRelu";
+}
+
+bool IsMerge(const tensorflow::NodeDef& node)
+{
+    const auto& op = node.op();
+    return op == "Merge" || op == "RefMerge" || op == "_XlaMerge";
+}
+
+bool IsPlaceholder(const tensorflow::NodeDef& node)
+{
+    const auto& op = node.op();
+    return op == "Placeholder" || op == "PlaceholderV2" ||
+           op == "PlaceholderWithDefault";
+}
+
 bool IsNextIteration(const tensorflow::NodeDef& node)
 {
     const auto& op = node.op();
     return op == "NextIteration" || op == "RefNextIteration";
+}
+
+bool IsPad(const tensorflow::NodeDef& node)
+{
+    const auto& op = node.op();
+    return op == "Pad" || op == "PadV2";
+}
+
+bool IsRelu(const tensorflow::NodeDef& node) { return node.op() == "Relu"; }
+
+bool IsRelu6(const tensorflow::NodeDef& node) { return node.op() == "Relu6"; }
+
+bool IsSymbolicGradient(const tensorflow::NodeDef& node)
+{
+    return node.op() == "SymbolicGradient";
+}
+
+bool IsTranspose(const tensorflow::NodeDef& node)
+{
+    return node.op() == "Transpose";
 }
 
 } // namespace tfdml

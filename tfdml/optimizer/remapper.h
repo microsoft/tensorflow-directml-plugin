@@ -13,25 +13,24 @@ limitations under the License.
 
 #pragma once
 
+#include "tfdml/optimizer/graph_optimizer.h"
 #include "tfdml/runtime_adapter/status.h"
-
-struct TF_FunctionLibraryDefinition;
 
 namespace tensorflow
 {
-class OpDef;
+class GraphDef;
 }
 
 namespace tfdml
 {
-class OpRegistry
+// Optimize TF computations by remapping subgraphs/nodes onto other subgraphs or
+// nodes to decrease the amount of operations needed to perform a computation.
+class Remapper : public GraphOptimizer
 {
   public:
-    OpRegistry();
-    void Initialize(TF_FunctionLibraryDefinition* function_lib_def);
-    Status LookUpOpDef(const char* op_name, tensorflow::OpDef* op_def);
-
-  private:
-    TF_FunctionLibraryDefinition* function_lib_def_ = nullptr;
+    ~Remapper() override = default;
+    Status Optimize(
+        const GrapplerItem& item,
+        tensorflow::GraphDef* optimized_graph) override;
 };
 } // namespace tfdml

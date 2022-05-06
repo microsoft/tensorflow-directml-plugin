@@ -29,11 +29,19 @@ class MutableNodeView;
 constexpr char kOpDataFormatVecPermute[] = "DataFormatVecPermute";
 constexpr char kOpDataFormatDimMap[] = "DataFormatDimMap";
 
-bool IsFusedBatchNormGrad(const tensorflow::NodeDef& node);
-bool IsConv2D(const tensorflow::NodeDef& node);
-bool IsMerge(const tensorflow::NodeDef& node);
-bool IsPad(const tensorflow::NodeDef& node);
-bool IsTranspose(const tensorflow::NodeDef& node);
+bool IsBiasAdd(const tensorflow::NodeDef& node);
 bool IsConstant(const tensorflow::NodeDef& node);
+bool IsConv2D(const tensorflow::NodeDef& node);
+bool IsElu(const tensorflow::NodeDef& node);
+bool IsFusedBatchNormGrad(const tensorflow::NodeDef& node);
+bool IsLeakyRelu(const tensorflow::NodeDef& node);
+bool IsMerge(const tensorflow::NodeDef& node);
 bool IsNextIteration(const tensorflow::NodeDef& node);
+bool IsPad(const tensorflow::NodeDef& node);
+bool IsPlaceholder(const tensorflow::NodeDef& node);
+bool IsRelu(const tensorflow::NodeDef& node);
+bool IsRelu6(const tensorflow::NodeDef& node);
+bool IsSymbolicGradient(const tensorflow::NodeDef& node);
+bool IsTranspose(const tensorflow::NodeDef& node);
+
 } // namespace tfdml

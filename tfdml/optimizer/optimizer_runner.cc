@@ -18,7 +18,9 @@ limitations under the License.
 #include "tensorflow/core/framework/graph.pb.h"
 #include "tfdml/optimizer/graph_optimizer.h"
 #include "tfdml/optimizer/grappler_item.h"
+#include "tfdml/optimizer/map_utils.h"
 #include "tfdml/optimizer/op_registry.h"
+#include "tfdml/optimizer/op_types.h"
 #include "tfdml/optimizer/proto_buffer_helpers.h"
 #include "tfdml/runtime_adapter/macros.h"
 #include "tfdml/runtime_adapter/status.h"
@@ -46,8 +48,44 @@ Status RunOptimizer(
     absl::Cleanup f_lib_cleanup = [f_lib]
     { TF_DeleteFunctionLibraryDefinition(f_lib); };
 
-    OpRegistry::Instance().Initialize(f_lib);
-    GrapplerItem grappler_item_wrapper(grappler_item, input_graph_def);
+    OpRegistry op_reg;
+    op_reg.Initialize(f_lib);
+    OptimizationOptions op_options;
+
+    using NodeDefs = google::protobuf::RepeatedPtrField<tensorflow::NodeDef>;
+
+    // Find functions for which we might need to compute a gradient at runtime.
+    absl::flat_hash_set<std::string> differentiable_functions;
+
+    const auto find_differentiable_functions =
+        [&](const NodeDefs& nodes) -> void
+    {
+        for (const tensorflow::NodeDef& node : nodes)
+        {
+            if (IsSymbolicGradient(node))
+            {
+                const auto* f_attr = FindOrNull(node.attr(), "f");
+                if (f_attr)
+                {
+                    op_options.allow_non_differentiable_rewrites = false;
+                    break;
+                }
+            }
+        }
+    };
+
+    // SymbolicGradient nodes inside the main graph.
+    find_differentiable_functions(input_graph_def.node());
+    // SymbolicGradient nodes inside the function library.
+    tensorflow::OpDef op_def;
+    Status lookup_status = op_reg.LookUpOpDef("SymbolicGradient", &op_def);
+    if (lookup_status.ok())
+        op_options.allow_non_differentiable_rewrites = false;
+
+    GrapplerItem grappler_item_wrapper(
+        grappler_item,
+        op_options,
+        input_graph_def);
 
     TF_RETURN_IF_ERROR(static_cast<GraphOptimizer*>(optimizer)->Optimize(
         grappler_item_wrapper,

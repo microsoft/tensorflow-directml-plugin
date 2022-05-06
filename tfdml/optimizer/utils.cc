@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,27 +13,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tfdml/optimizer/tensor_proto_util.h"
-#include "tensorflow/core/framework/tensor.pb.h"
+#include "tfdml/optimizer/utils.h"
 
 namespace tfdml
 {
-int GetNumElements(const tensorflow::TensorProto& tensor)
+
+// Returns the data type in attribute `attr_name` of `node`. If that attribute
+// doesn't exist, returns DT_INVALID.
+tensorflow::DataType GetDataTypeFromAttr(
+    const tensorflow::NodeDef& node,
+    const std::string& type_attr)
 {
-    assert(tensor.has_tensor_shape());
-    const tensorflow::TensorShapeProto& shape = tensor.tensor_shape();
-
-    if (shape.dim_size() == 0)
+    if (!node.attr().count(type_attr))
     {
-        return 0;
+        return tensorflow::DT_INVALID;
     }
-
-    int64_t num_elements = 1;
-    for (int i = 0; i < shape.dim_size(); ++i)
+    const auto& attr = node.attr().at(type_attr);
+    if (attr.value_case() != tensorflow::AttrValue::kType)
     {
-        num_elements *= shape.dim(i).size();
+        return tensorflow::DT_INVALID;
     }
-
-    return num_elements;
+    return attr.type();
 }
-} // namespace tfdml
+
+} // end namespace tfdml
