@@ -41,8 +41,6 @@ class GraphProperties
         bool include_tensor_values);
     Status InferStatically(bool assume_valid_feeds);
 
-    Status AnnotateOutputShapes(tensorflow::GraphDef* output_graph_def) const;
-
     const std::vector<tensorflow::OpInfo::TensorProperties>& GetInputProperties(
         const std::string& node_name) const
     {

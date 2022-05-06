@@ -53,9 +53,8 @@ Status RemapperContext::InitializeRemapperContext(
     assert(context != nullptr);
     context->graph_properties = absl::make_unique<GraphProperties>(item);
     TF_RETURN_IF_ERROR(context->graph_properties->InferStatically(true));
-    TF_RETURN_IF_ERROR(
-        context->graph_properties->AnnotateOutputShapes(&context->graph));
     Status status;
+    context->graph = item.graph;
     context->graph_view =
         absl::make_unique<MutableGraphView>(&context->graph, &status);
     TF_RETURN_IF_ERROR(status);
