@@ -16,10 +16,10 @@ parameters:
   default: test
 - name: tensorflowPackage
   type: string
-  default: tensorflow-cpu==2.9.0rc1
+  default: tensorflow-cpu==2.9.0rc2
 - name: kerasPackage
   type: string
-  default: keras==2.9.0rc1
+  default: keras==2.9.0rc2
 - name: pluginBuildPipeline
   type: string
   default: current
