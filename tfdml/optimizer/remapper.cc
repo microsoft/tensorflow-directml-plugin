@@ -523,18 +523,6 @@ Status Remapper::Optimize(
             ctx.inferred_graph_properties = true;
         }
 
-        // Infer properties lazily in case they are not needed.
-        if (!ctx.inferred_graph_properties && RequiresInferredShapes(ctx, i))
-        {
-            const bool assume_valid_feeds = true;
-            TF_RETURN_IF_ERROR(ctx.graph_properties->InferStatically(
-                assume_valid_feeds,
-                /*aggressive_shape_inference=*/false,
-                /*include_input_tensor_values=*/true,
-                /*include_output_tensor_values=*/false));
-            ctx.inferred_graph_properties = true;
-        }
-
         // Remap Pad + Conv2D into Conv2D with explicit padding
         PadWithConv2D pad_with_conv_2d;
         if (allow_non_differentiable_rewrites &&

@@ -16,7 +16,6 @@
 """Tests for tensorflow.nn.l2_loss."""
 
 import tensorflow as tf
-tf.debugging.set_log_device_placement(True)
 import numpy as np
 
 from tensorflow.python.framework import constant_op
