@@ -3,7 +3,7 @@
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
- 
+
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
@@ -144,11 +144,6 @@ class DmlTracing
     void LogKernelComputeTelemetry(const char* kernel_name);
 
     void LogDeviceCreationTelemetry(
-        const char* adapterName,
-        uint32_t vendor_id,
-        uint32_t device_id,
         const LUID& adapter_luid,
-        const tfdml::DriverVersion& driver_version,
-        bool compute_only,
         uint32_t priority);
 };
