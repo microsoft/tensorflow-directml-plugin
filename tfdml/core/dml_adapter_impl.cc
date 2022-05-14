@@ -3,7 +3,7 @@
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
- 
+
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
@@ -142,27 +142,6 @@ std::vector<DmlAdapterImpl> FilterAdapterListFromEnvVar(
     return filtered_adapters;
 }
 
-DmlAdapterImpl::DmlAdapterImpl(LUID adapter_luid) : adapter_luid_(adapter_luid)
-{
-#if _WIN32
-    ComPtr<IDXGIFactory4> dxgi_factory = CreateDxgiFactory();
-
-    ComPtr<IDXGIAdapter1> adapter;
-    DML_CHECK_SUCCEEDED(
-        dxgi_factory->EnumAdapterByLuid(adapter_luid, IID_PPV_ARGS(&adapter)));
-
-    Initialize(adapter.Get());
-#else
-    ComPtr<IDXCoreAdapterFactory> dxcore_factory = CreateDxCoreAdapterFactory();
-
-    ComPtr<IDXCoreAdapter> adapter;
-    DML_CHECK_SUCCEEDED(
-        dxcore_factory->GetAdapterByLuid(adapter_luid, IID_PPV_ARGS(&adapter)));
-
-    Initialize(adapter.Get());
-#endif
-}
-
 bool DmlAdapterImpl::IsUmaAdapter() const
 {
     D3D_FEATURE_LEVEL feature_level =
@@ -210,6 +189,7 @@ void DmlAdapterImpl::Initialize(IDXGIAdapter* adapter)
     dedicated_memory_in_bytes_ = desc.DedicatedVideoMemory;
     shared_memory_in_bytes_ = desc.SharedSystemMemory;
     is_compute_only_ = false;
+    adapter_luid_ = desc.AdapterLuid;
 }
 
 uint64_t DmlAdapterImpl::QueryAvailableLocalMemory() const
@@ -346,6 +326,11 @@ void DmlAdapterImpl::Initialize(IDXCoreAdapter* adapter)
         DXCoreAdapterProperty::SharedSystemMemory,
         sizeof(shared_memory_in_bytes_),
         &shared_memory_in_bytes_));
+
+    DML_CHECK_SUCCEEDED(adapter->GetProperty(
+        DXCoreAdapterProperty::InstanceLuid,
+        sizeof(adapter_luid_),
+        &adapter_luid_));
 
     const bool is_graphics_supported =
         adapter->IsAttributeSupported(DXCORE_ADAPTER_ATTRIBUTE_D3D12_GRAPHICS);
