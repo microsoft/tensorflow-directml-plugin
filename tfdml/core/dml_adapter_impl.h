@@ -26,8 +26,6 @@ namespace tfdml
 class DmlAdapterImpl
 {
   public:
-    /*implicit*/ DmlAdapterImpl(LUID adapter_luid);
-
 #if _WIN32
     /*implicit*/ DmlAdapterImpl(IDXGIAdapter* adapter);
 #else
