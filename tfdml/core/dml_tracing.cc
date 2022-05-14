@@ -3,7 +3,7 @@
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
- 
+
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
@@ -496,12 +496,7 @@ void DmlTracing::LogKernelComputeTelemetry(const char* kernel_name)
 }
 
 void DmlTracing::LogDeviceCreationTelemetry(
-    const char* adapterName,
-    uint32_t vendor_id,
-    uint32_t device_id,
     const LUID& adapter_luid,
-    const tfdml::DriverVersion& driver_version,
-    bool compute_only,
     uint32_t priority)
 {
 #ifdef DIRECTML_ENABLE_TELEMETRY
@@ -511,16 +506,8 @@ void DmlTracing::LogDeviceCreationTelemetry(
         TraceLoggingBool(true, "UTCReplace_AppSessionGuid"),
         TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
         TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
-        TraceLoggingString(adapterName, "adapterName"),
-        TraceLoggingUInt32(vendor_id, "vendorId"),
-        TraceLoggingUInt32(device_id, "adapterDeviceId"),
         TraceLoggingUInt32(adapter_luid.LowPart, "adapterLuidLowPart"),
         TraceLoggingUInt32(adapter_luid.HighPart, "adapterLuidHighPart"),
-        TraceLoggingUInt16(driver_version.parts.a, "driverVersionA"),
-        TraceLoggingUInt16(driver_version.parts.b, "driverVersionB"),
-        TraceLoggingUInt16(driver_version.parts.c, "driverVersionC"),
-        TraceLoggingUInt16(driver_version.parts.d, "driverVersionD"),
-        TraceLoggingBool(compute_only, "isComputeOnly"),
         TraceLoggingUInt32(priority, "priority"));
 #endif
 }
