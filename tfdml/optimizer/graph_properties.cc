@@ -54,6 +54,8 @@ Status GraphProperties::InferStatically(
 {
     Status status;
     TF_InferStatically(graph_props_, false, false, false, false, status.raw());
+    // TF_InferStatically(graph_props_, assume_valid_feeds, aggressive_shape_inference, 
+    // include_input_tensor_values, include_output_tensor_values, status.raw());
     TF_RETURN_IF_ERROR(status);
 
     for (int i = 0; i < item_.graph.node_size(); ++i)
