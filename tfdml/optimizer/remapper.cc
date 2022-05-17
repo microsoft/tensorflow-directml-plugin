@@ -34,7 +34,7 @@ constexpr char kDilations[] = "dilations";
 struct RemapperContext
 {
     static Status InitializeRemapperContext(
-        const GrapplerItem& item,
+        GrapplerItem* item,
         RemapperContext* context);
 
     tensorflow::GraphDef graph;
@@ -47,22 +47,26 @@ struct RemapperContext
 };
 
 Status RemapperContext::InitializeRemapperContext(
-    const GrapplerItem& item,
+    GrapplerItem* item,
     RemapperContext* context)
 {
     assert(context != nullptr);
-    context->graph_properties = absl::make_unique<GraphProperties>(item);
-    // TF_RETURN_IF_ERROR(context->graph_properties->InferStatically(true, false, true, false));
-    Status status;
-    context->graph = item.graph;
-    context->graph_view =
-        absl::make_unique<MutableGraphView>(&context->graph, &status);
-    TF_RETURN_IF_ERROR(status);
-    context->num_nodes = context->graph.node_size();
-    const auto& nodes_to_preserve = item.NodesToPreserve();
+
+    const auto& nodes_to_preserve = item->NodesToPreserve();
     context->nodes_to_preserve = absl::flat_hash_set<std::string>(
         nodes_to_preserve.begin(),
         nodes_to_preserve.end());
+
+    Status status;
+    context->graph = item->graph;
+    context->graph_view =
+        absl::make_unique<MutableGraphView>(&context->graph, &status);
+    TF_RETURN_IF_ERROR(status);
+
+    context->graph_properties = absl::make_unique<GraphProperties>(*item);
+
+    context->inferred_graph_properties = false;
+    context->num_nodes = context->graph.node_size();
     return Status::OK();
 }
 
@@ -485,8 +489,9 @@ Status Remapper::Optimize(
     const GrapplerItem& item,
     tensorflow::GraphDef* optimized_graph)
 {
+    GrapplerItem mutable_item = item;
     RemapperContext ctx;
-    TF_RETURN_IF_ERROR(RemapperContext::InitializeRemapperContext(item, &ctx));
+    TF_RETURN_IF_ERROR(RemapperContext::InitializeRemapperContext(&mutable_item, &ctx));
     // Processing graph in reverse-topological sorted order allows to remap
     // longer chains of dependent ops in one pass.
     TF_RETURN_IF_ERROR(
