@@ -51,18 +51,22 @@ Status RemapperContext::InitializeRemapperContext(
     RemapperContext* context)
 {
     assert(context != nullptr);
-    context->graph_properties = absl::make_unique<GraphProperties>(item);
-    TF_RETURN_IF_ERROR(context->graph_properties->InferStatically(true));
+
+    const auto& nodes_to_preserve = item.NodesToPreserve();
+    context->nodes_to_preserve = absl::flat_hash_set<std::string>(
+        nodes_to_preserve.begin(),
+        nodes_to_preserve.end());
+
     Status status;
     context->graph = item.graph;
     context->graph_view =
         absl::make_unique<MutableGraphView>(&context->graph, &status);
     TF_RETURN_IF_ERROR(status);
+
+    context->graph_properties = absl::make_unique<GraphProperties>(item);
+
+    context->inferred_graph_properties = false;
     context->num_nodes = context->graph.node_size();
-    const auto& nodes_to_preserve = item.NodesToPreserve();
-    context->nodes_to_preserve = absl::flat_hash_set<std::string>(
-        nodes_to_preserve.begin(),
-        nodes_to_preserve.end());
     return Status::OK();
 }
 
@@ -486,7 +490,8 @@ Status Remapper::Optimize(
     tensorflow::GraphDef* optimized_graph)
 {
     RemapperContext ctx;
-    TF_RETURN_IF_ERROR(RemapperContext::InitializeRemapperContext(item, &ctx));
+    TF_RETURN_IF_ERROR(
+        RemapperContext::InitializeRemapperContext(item, &ctx));
     // Processing graph in reverse-topological sorted order allows to remap
     // longer chains of dependent ops in one pass.
     TF_RETURN_IF_ERROR(
@@ -514,7 +519,7 @@ Status Remapper::Optimize(
         // Infer properties lazily in case they are not needed.
         if (!ctx.inferred_graph_properties && RequiresInferredShapes(ctx, i))
         {
-            const bool assume_valid_feeds = true;
+            const bool assume_valid_feeds = false;
             TF_RETURN_IF_ERROR(ctx.graph_properties->InferStatically(
                 assume_valid_feeds,
                 /*aggressive_shape_inference=*/false,
