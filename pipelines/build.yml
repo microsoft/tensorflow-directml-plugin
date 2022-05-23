@@ -82,7 +82,7 @@ jobs:
           python build.py --config $(vars.configuration) --build_output $(buildOutPath) --wheel_version_suffix "$(vars.wheelVersionSuffix)"
         fi
       displayName: Build
-      # target: manylinux
+      target: manylinux
     # Rename instead of using auditwheel repair since libd3d12.so will not register as manylinux compliant
     # - powershell: |
         # get-childitem -file -recurse $(buildOutPath)
