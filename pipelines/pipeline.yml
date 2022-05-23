@@ -92,10 +92,10 @@ variables:
   blobStorageDropEnabled: ${{or(parameters.blobStorageDropEnabled, eq(variables.isScheduledRunOnMainOrReleaseBranch, 'True'))}}
 
 # For building manylinux2010-compliant Linux wheels:
-# resources:
-containers:
-- container: manylinux
-  image: tensorflow/tensorflow:2.5.0-custom-op-ubuntu16
+resources:
+  containers:
+  - container: manylinux
+    image: tensorflow/tensorflow:2.3.0-custom-op-ubuntu16
 
 stages:
 - stage: buildStage
