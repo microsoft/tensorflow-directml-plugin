@@ -28,8 +28,8 @@ steps:
 
 - script: |
     sudo apt update
-    sudo apt install ninja-build clang -y
-  displayName: Install Ninja & Clang
+    sudo apt install ninja-build -y
+  displayName: Install Ninja
   workingDirectory: $(Build.StagingDirectory)
   target: manylinux
 
@@ -38,7 +38,7 @@ steps:
     wget https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.0/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz
     tar -xf clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz
     sudo rm /usr/bin/c++
-    sudo ln -s $(Build.StagingDirectory)/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang /usr/bin/c++
+    sudo ln -s $(Build.StagingDirectory)/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang++ /usr/bin/c++
   displayName: Install Clang 13
   workingDirectory: $(Build.StagingDirectory)
   target: manylinux
