@@ -75,14 +75,13 @@ jobs:
   - ${{if contains(parameters.artifact, '-linux-') }}:
     - script: |
         $(miniconda.activateCommand)
-        export CXX=clang++
         if ["${{parameters.enableTelemetry}}" = "True"]; then
           python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
         else
           python build.py --config $(vars.configuration) --build_output $(buildOutPath) --wheel_version_suffix "$(vars.wheelVersionSuffix)"
         fi
       displayName: Build
-      # target: manylinux
+      target: manylinux
     # Rename instead of using auditwheel repair since libd3d12.so will not register as manylinux compliant
     # - powershell: |
         # get-childitem -file -recurse $(buildOutPath)
