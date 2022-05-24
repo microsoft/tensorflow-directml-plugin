@@ -24,7 +24,6 @@ if(NOT MSVC)
     # "function declared 'noreturn' should not return [-Winvalid-noreturn]"
     add_compile_options(-Wno-inconsistent-missing-override)
     add_compile_options(-Wno-invalid-noreturn)
-    add_compile_options(-Wno-invalid-constexpr)
     add_compile_options(-Wno-unknown-warning-option)
 endif()
 
