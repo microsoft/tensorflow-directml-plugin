@@ -38,8 +38,9 @@ T GetTensorElementHelper(const tensorflow::TensorProto& tensor, int elem_index)
 {
     static_assert(
         std::is_same<T, int32_t>::value || std::is_same<T, int16_t>::value ||
-        std::is_same<T, uint16_t>::value || std::is_same<T, int8_t>::value ||
-        std::is_same<T, uint8_t>::value);
+            std::is_same<T, uint16_t>::value ||
+            std::is_same<T, int8_t>::value || std::is_same<T, uint8_t>::value,
+        "No implementation exists for this type");
 
     assert(
         tensor.dtype() == tensorflow::DT_INT32 ||
