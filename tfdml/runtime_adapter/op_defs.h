@@ -109,7 +109,10 @@ constexpr ArgumentType GetArgumentType(typename OpDef::Argument arg)
 template <typename OpDef>
 constexpr absl::Span<const ArgumentDesc> GetInputArgumentDescs()
 {
-    static_assert(OpDef::argument_descs.size() >= OpDef::input_arg_count);
+    static_assert(
+        OpDef::argument_descs.size() >= OpDef::input_arg_count,
+        "OpDef::input_arg_count shouldn't be smaller than "
+        "OpDef::argument_descs.size()");
     return {OpDef::argument_descs.data(), OpDef::input_arg_count};
 }
 
@@ -118,7 +121,9 @@ constexpr absl::Span<const ArgumentDesc> GetOutputArgumentDescs()
 {
     static_assert(
         OpDef::argument_descs.size() ==
-        OpDef::input_arg_count + OpDef::output_arg_count);
+            OpDef::input_arg_count + OpDef::output_arg_count,
+        "OpDef::argument_descs.size() should be equal to "
+        "OpDef::input_arg_count + OpDef::output_arg_count");
     return {
         OpDef::argument_descs.data() + OpDef::input_arg_count,
         OpDef::output_arg_count};
