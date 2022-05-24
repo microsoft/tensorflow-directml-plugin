@@ -23,8 +23,9 @@ if(NOT MSVC)
     # "overrides a member function but is not marked 'override' [-Winconsistent-missing-override]"
     # "function declared 'noreturn' should not return [-Winvalid-noreturn]"
     add_compile_options(-Wno-inconsistent-missing-override)
-    add_compile_options(-Wno-invalid-noreturn)
     add_compile_options(-Wno-invalid-constexpr)
+    add_compile_options(-Wno-invalid-noreturn)
+    add_compile_options(-Wno-unknown-warning-option)
 endif()
 
 # Import dependencies and their targets.
