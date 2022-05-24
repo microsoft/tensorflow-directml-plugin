@@ -388,6 +388,14 @@ struct DmlDataFormatDimMapHost
         AttributeDesc{"src_format", AttributeType::String},
         AttributeDesc{"dst_format", AttributeType::String}};
 };
+
+constexpr std::array<
+    ArgumentDesc,
+    DmlDataFormatDimMapHost::input_arg_count +
+        DmlDataFormatDimMapHost::output_arg_count>
+    DmlDataFormatDimMapHost::argument_descs;
+constexpr std::array<AttributeDesc, 3> DmlDataFormatDimMapHost::attribute_descs;
+
 } // namespace ops
 
 void DataFormatDimMapShapeInferenceFn(

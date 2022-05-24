@@ -383,6 +383,15 @@ struct DmlDataFormatVecPermuteHost
         AttributeDesc{"src_format", AttributeType::String},
         AttributeDesc{"dst_format", AttributeType::String}};
 };
+
+constexpr std::array<AttributeDesc, 3>
+    DmlDataFormatVecPermuteHost::attribute_descs;
+constexpr std::array<
+    ArgumentDesc,
+    DmlDataFormatVecPermuteHost::input_arg_count +
+        DmlDataFormatVecPermuteHost::output_arg_count>
+    DmlDataFormatVecPermuteHost::argument_descs;
+
 } // namespace ops
 
 void DataFormatVecPermuteShapeInferenceFn(

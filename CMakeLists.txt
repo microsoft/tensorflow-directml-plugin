@@ -166,6 +166,7 @@ add_library(
     tfdml/runtime_adapter/kernel_shape_util.cc
     tfdml/runtime_adapter/mirror_pad_mode.cc
     tfdml/runtime_adapter/numbers.cc
+    tfdml/runtime_adapter/op_defs_core.cc
     tfdml/runtime_adapter/op_kernel_construction.cc
     tfdml/runtime_adapter/op_kernel_context.cc
     tfdml/runtime_adapter/padding.cc
