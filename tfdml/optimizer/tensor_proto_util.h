@@ -37,9 +37,9 @@ template <typename T>
 T GetTensorElementHelper(const tensorflow::TensorProto& tensor, int elem_index)
 {
     static_assert(
-        std::is_same_v<T, int32_t> || std::is_same_v<T, int16_t> ||
-        std::is_same_v<T, uint16_t> || std::is_same_v<T, int8_t> ||
-        std::is_same_v<T, uint8_t>);
+        std::is_same<T, int32_t>::value || std::is_same<T, int16_t>::value ||
+        std::is_same<T, uint16_t>::value || std::is_same<T, int8_t>::value ||
+        std::is_same<T, uint8_t>::value);
 
     assert(
         tensor.dtype() == tensorflow::DT_INT32 ||

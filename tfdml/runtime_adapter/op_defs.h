@@ -78,7 +78,7 @@ constexpr int ConvertOpDefEnumToIndex(E enum_value)
 {
     auto index = std::underlying_type_t<E>(enum_value);
     static_assert(
-        std::is_same_v<decltype(index), int>,
+        std::is_same<decltype(index), int>::value,
         "OpDef enums should have an underlying type of int");
     return index;
 }
