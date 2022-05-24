@@ -76,6 +76,7 @@ jobs:
     - script: |
         $(miniconda.activateCommand)
         export CXX=clang++
+        export CPLUS_INCLUDE_PATH="$(Build.StagingDirectory)/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04/include/c++/v1"
         if ["${{parameters.enableTelemetry}}" = "True"]; then
           python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
         else
