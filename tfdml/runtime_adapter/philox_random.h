@@ -20,6 +20,7 @@ limitations under the License.
 #pragma once
 
 #include <math.h>
+#include <stddef.h>
 #include <stdint.h>
 
 namespace tfdml
