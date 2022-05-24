@@ -21,6 +21,7 @@ limitations under the License.
 #include "attribute.h"
 #include "node_def.h"
 #include "types.h"
+#include "absl/strings/string_view.h"
 
 namespace tfdml
 {
@@ -36,11 +37,11 @@ class OpKernel
 
     std::shared_ptr<const NodeDef> node_def() const { return node_def_; }
 
-    const std::string_view type_string() const
+    const absl::string_view type_string() const
     {
         return node_def_->GetOpTypeName();
     }
-    const std::string_view name() const { return node_def_->GetOpName(); }
+    const absl::string_view name() const { return node_def_->GetOpName(); }
 
     MemoryType input_memory_type(int index) const
     {

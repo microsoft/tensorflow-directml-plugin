@@ -358,7 +358,7 @@ class DmlGatherNdKernel : public DmlKernel
     {
         auto init_helper = ctx->GetInitializationHelper<InitHelper>();
 
-        absl::Cleanup lock_cleanup = [init_helper] { init_helper->Unlock(); };
+        auto lock_cleanup = absl::MakeCleanup([init_helper] { init_helper->Unlock(); });
 
         const Tensor params_tensor =
             init_helper->GetParamsTensor(ctx->GetOpKernelContext());

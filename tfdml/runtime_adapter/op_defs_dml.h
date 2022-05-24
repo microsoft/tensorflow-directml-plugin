@@ -15,7 +15,10 @@ limitations under the License.
 
 #pragma once
 
-namespace tfdml::ops
+namespace tfdml
+{
+namespace ops
 {
 // Placeholder for DirectML-specific op definitions.
 } // namespace tfdml::ops
+} // namespace ops

@@ -1069,7 +1069,7 @@ class StridedSliceAssignInitHelper : public InitializationHelper
             return true;
         }
 
-        absl::Cleanup lock_cleanup = [this] { Unlock(); };
+        auto lock_cleanup = absl::MakeCleanup([this] { Unlock(); });
         const Tensor input_tensor = GetInputTensor(ctx);
 
         if (input_tensor.NumElements() == 0)
@@ -1319,7 +1319,7 @@ class DmlStridedSliceAssignKernel : public DmlKernel
         }
 
         auto init_helper = ctx->GetInitializationHelper<InitHelper>();
-        absl::Cleanup lock_cleanup = [init_helper] { init_helper->Unlock(); };
+        auto lock_cleanup = absl::MakeCleanup([init_helper] { init_helper->Unlock(); });
 
         const Tensor input_tensor =
             init_helper->GetInputTensor(ctx->GetOpKernelContext());

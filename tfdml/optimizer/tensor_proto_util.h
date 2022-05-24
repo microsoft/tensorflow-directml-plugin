@@ -50,7 +50,7 @@ T GetTensorElement(const tensorflow::TensorProto& tensor, int elem_index)
         return values[elem_index];
     }
 
-    if constexpr (std::is_same_v<T, Eigen::half>)
+    if (std::is_same_v<T, Eigen::half>)
     {
         assert(tensor.dtype() == tensorflow::DT_HALF);
         if (tensor.version_number() == 0 && tensor.half_val_size() == 1)
@@ -62,27 +62,27 @@ T GetTensorElement(const tensorflow::TensorProto& tensor, int elem_index)
         auto half_val = tensor.half_val(elem_index);
         return *reinterpret_cast<Eigen::half*>(&half_val);
     }
-    else if constexpr (std::is_same_v<T, float>)
+    else if (std::is_same_v<T, float>)
     {
         assert(tensor.dtype() == tensorflow::DT_FLOAT);
         RETURN_TENSOR_VALUE(tensor, float);
     }
-    else if constexpr (std::is_same_v<T, double>)
+    else if (std::is_same_v<T, double>)
     {
         assert(tensor.dtype() == tensorflow::DT_DOUBLE);
         RETURN_TENSOR_VALUE(tensor, double);
     }
-    else if constexpr (std::is_same_v<T, uint32_t>)
+    else if (std::is_same_v<T, uint32_t>)
     {
         assert(tensor.dtype() == tensorflow::DT_UINT32);
         RETURN_TENSOR_VALUE(tensor, uint32);
     }
-    else if constexpr (std::is_same_v<T, uint64_t>)
+    else if (std::is_same_v<T, uint64_t>)
     {
         assert(tensor.dtype() == tensorflow::DT_UINT64);
         RETURN_TENSOR_VALUE(tensor, uint64);
     }
-    else if constexpr (std::is_same_v<T, int64_t>)
+    else if (std::is_same_v<T, int64_t>)
     {
         assert(tensor.dtype() == tensorflow::DT_INT64);
         RETURN_TENSOR_VALUE(tensor, int64);
@@ -90,11 +90,6 @@ T GetTensorElement(const tensorflow::TensorProto& tensor, int elem_index)
     else
     {
         // DT_INT32, DT_INT16, DT_UINT16, DT_INT8, DT_UINT8.
-        static_assert(
-            std::is_same_v<T, int32_t> || std::is_same_v<T, int16_t> ||
-            std::is_same_v<T, uint16_t> || std::is_same_v<T, int8_t> ||
-            std::is_same_v<T, uint8_t>);
-
         assert(
             tensor.dtype() == tensorflow::DT_INT32 ||
             tensor.dtype() == tensorflow::DT_INT16 ||

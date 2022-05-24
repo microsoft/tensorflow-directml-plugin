@@ -28,16 +28,7 @@ steps:
 
 - script: |
     sudo apt update
-    sudo apt install ninja-build -y
-  displayName: Install Ninja
-  workingDirectory: $(Build.StagingDirectory)
-  target: manylinux
-
-# TODO: Remove this step and create a docker image that contains clang 13 instead
-- script: |
-    wget https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.0/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz
-    tar -xf clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz
-    sudo ln -s "$(Build.StagingDirectory)/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang++" /usr/bin/clang++
-  displayName: Install Clang 13
+    sudo apt install ninja-build clang -y
+  displayName: Install Ninja & Clang
   workingDirectory: $(Build.StagingDirectory)
   target: manylinux

@@ -23,6 +23,7 @@ limitations under the License.
 #include "tfdml/runtime_adapter/padding.h"
 #include "tfdml/runtime_adapter/status.h"
 #include "tfdml/runtime_adapter/tensor.h"
+#include "absl/strings/string_view.h"
 
 struct TF_OpKernelConstruction;
 
@@ -33,7 +34,7 @@ class OpKernelConstruction
   public:
     OpKernelConstruction(TF_OpKernelConstruction* context);
 
-    std::string_view GetName() const
+    absl::string_view GetName() const
     {
         auto name = TF_OpKernelConstruction_GetName(context_);
         return {name.data, name.len};
@@ -168,7 +169,7 @@ class OpKernelConstruction
         TF_OpKernelConstruction_GetAttrString(
             context_,
             attr_name,
-            value->data(),
+            &(*value)[0],
             size_in_bytes,
             status.raw());
 

@@ -18,8 +18,9 @@ limitations under the License.
 // This file is generated. Do not edit it directly. See generate_op_defs_core.py.
 #pragma once
 
-namespace tfdml::ops
+namespace tfdml
 {
+    namespace ops {
 struct RiscBinaryArithmetic
 {
     static constexpr const char* name = "RiscBinaryArithmetic";
@@ -63604,4 +63605,5 @@ struct AudioMicrofrontend
     };
 };
 
-} // namespace tfdml::ops
+} // namespace ops
+} // namespace tfdml

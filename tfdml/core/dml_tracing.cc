@@ -32,6 +32,7 @@ limitations under the License.
 #include "tfdml/core/dml_dso_loader.h"
 #include "tfdml/runtime_adapter/env.h"
 #include "third_party/microsofttelemetry.h"
+#include "absl/strings/string_view.h"
 
 #pragma comment(lib, "advapi32.lib")
 
@@ -346,12 +347,12 @@ void DmlTracing::LogExecutionContextFlush()
     }
 }
 
-std::optional<DmlTracing::ProfilerEventId> DmlTracing::TryLogKernelComputeStart(
+absl::optional<DmlTracing::ProfilerEventId> DmlTracing::TryLogKernelComputeStart(
     uint32_t device_ordinal,
-    const std::string_view op_type,
-    const std::string_view op_name)
+    const absl::string_view op_type,
+    const absl::string_view op_name)
 {
-    std::optional<ProfilerEventId> profiler_event_id;
+    absl::optional<ProfilerEventId> profiler_event_id;
     if (profiler_active_ && trace_profiler_level_ >= TraceLevel::Standard)
     {
         auto timestamp = absl::GetCurrentTimeNanos();

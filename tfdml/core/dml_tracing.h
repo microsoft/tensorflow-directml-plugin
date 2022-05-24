@@ -20,6 +20,7 @@ limitations under the License.
 
 #include "absl/types/span.h"
 #include "tfdml/runtime_adapter/xplane_builder.h"
+#include "absl/strings/string_view.h"
 
 // DirectML tracer that emits the following types of events:
 // - ETW: for analysis in GPUView and WPA
@@ -56,13 +57,13 @@ class DmlTracing
     {
         // This event will be null if the TF profiler isn't active when the
         // scope is constructed.
-        std::optional<ProfilerEventId> device_event_id;
+        absl::optional<ProfilerEventId> device_event_id;
 
       public:
         KernelComputeEventScope(
             uint32_t device_id,
-            const std::string_view type,
-            const std::string_view name)
+            const absl::string_view type,
+            const absl::string_view name)
         {
             device_event_id = DmlTracing::Instance().TryLogKernelComputeStart(
                 device_id,
@@ -125,10 +126,10 @@ class DmlTracing
     void LogExecutionContextCopyBufferRegion();
     void LogExecutionContextFillBufferWithPattern();
     void LogExecutionContextFlush();
-    std::optional<ProfilerEventId> TryLogKernelComputeStart(
+    absl::optional<ProfilerEventId> TryLogKernelComputeStart(
         uint32_t device_ordinal,
-        const std::string_view op_type,
-        const std::string_view op_name);
+        const absl::string_view op_type,
+        const absl::string_view op_name);
     void LogKernelComputeEnd(const ProfilerEventId& id);
 
     // GPU timeline
