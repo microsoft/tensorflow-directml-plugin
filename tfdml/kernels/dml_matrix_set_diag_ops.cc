@@ -271,11 +271,7 @@ template <
     std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 static void RegisterMatrixSetDiag()
 {
-    using Op = ops::MatrixSetDiag;
-    K<Op, T>::template WithTypeConstraint<
-        Op::Attribute::T,
-        DataTypeToEnum<T>()>::Register();
-
+    RegisterMatrixSetDiag<T>();
     RegisterMatrixSetDiag<Ts...>();
 }
 
@@ -294,11 +290,7 @@ template <
     std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 static void RegisterMatrixSetDiagV2()
 {
-    using Op = ops::MatrixSetDiagV2;
-    K<Op, T>::template WithHostMemoryArguments<Op::Argument::k>::
-        template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::
-            Register();
-
+    RegisterMatrixSetDiagV2<T>();
     RegisterMatrixSetDiagV2<Ts...>();
 }
 
@@ -317,11 +309,7 @@ template <
     std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 static void RegisterBatchMatrixSetDiag()
 {
-    using Op = ops::BatchMatrixSetDiag;
-    K<Op, T>::template WithTypeConstraint<
-        Op::Attribute::T,
-        DataTypeToEnum<T>()>::Register();
-
+    RegisterBatchMatrixSetDiag<T>();
     RegisterBatchMatrixSetDiag<Ts...>();
 }
 

@@ -431,9 +431,7 @@ template <
     std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 void RegisterGatherNd()
 {
-    using Op = ops::GatherNd;
-    K<Op, Op::Attribute::Tparams, T, int32_t>::Register();
-    K<Op, Op::Attribute::Tparams, T, int64_t>::Register();
+    RegisterGatherNd<T>();
     RegisterGatherNd<Ts...>();
 }
 
@@ -453,11 +451,7 @@ template <
     std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 void RegisterResourceGatherNd()
 {
-    using Op = ops::ResourceGatherNd;
-    K<Op, Op::Attribute::dtype, T, int32_t>::template WithHostMemoryArguments<
-        Op::Argument::resource>::Register();
-    K<Op, Op::Attribute::dtype, T, int64_t>::template WithHostMemoryArguments<
-        Op::Argument::resource>::Register();
+    RegisterResourceGatherNd<T>();
     RegisterResourceGatherNd<Ts...>();
 }
 

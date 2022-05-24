@@ -284,15 +284,7 @@ template <
     std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 static void RegisterRoll()
 {
-    using Op = ops::Roll;
-    K<Op, int32_t, int32_t>::template WithTypeConstraint<Op::Attribute::T, T>::
-        Register();
-    K<Op, int64_t, int32_t>::template WithTypeConstraint<Op::Attribute::T, T>::
-        Register();
-    K<Op, int32_t, int64_t>::template WithTypeConstraint<Op::Attribute::T, T>::
-        Register();
-    K<Op, int64_t, int64_t>::template WithTypeConstraint<Op::Attribute::T, T>::
-        Register();
+    RegisterRoll<T>();
     RegisterRoll<Ts...>();
 }
 

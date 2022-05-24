@@ -360,11 +360,7 @@ template <
     std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 void RegisterPad()
 {
-    using Op = ops::Pad;
-    K<Op, T, int32_t>::template WithHostMemoryArguments<
-        Op::Argument::paddings>::Register();
-    K<Op, T, int64_t>::template WithHostMemoryArguments<
-        Op::Argument::paddings>::Register();
+    RegisterPad<T>();
     RegisterPad<Ts...>();
 }
 
@@ -386,13 +382,7 @@ template <
     std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 void RegisterPadV2()
 {
-    using Op = ops::PadV2;
-    K<Op, T, int32_t>::template WithHostMemoryArguments<
-        Op::Argument::paddings,
-        Op::Argument::constant_values>::Register();
-    K<Op, T, int64_t>::template WithHostMemoryArguments<
-        Op::Argument::paddings,
-        Op::Argument::constant_values>::Register();
+    RegisterPadV2<T>();
     RegisterPadV2<Ts...>();
 }
 
@@ -412,11 +402,7 @@ template <
     std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 void RegisterMirrorPad()
 {
-    using Op = ops::MirrorPad;
-    K<Op, T, int32_t>::template WithHostMemoryArguments<
-        Op::Argument::paddings>::Register();
-    K<Op, T, int64_t>::template WithHostMemoryArguments<
-        Op::Argument::paddings>::Register();
+    RegisterMirrorPad<T>();
     RegisterMirrorPad<Ts...>();
 }
 

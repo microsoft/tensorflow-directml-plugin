@@ -460,9 +460,7 @@ template <
     std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 void RegisterGather()
 {
-    using Op = ops::Gather;
-    K<Op, Op::Attribute::Tparams, T, int32_t>::Register();
-    K<Op, Op::Attribute::Tparams, T, int64_t>::Register();
+    RegisterGather<T>();
     RegisterGather<Ts...>();
 }
 
@@ -482,11 +480,7 @@ template <
     std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 void RegisterGatherV2()
 {
-    using Op = ops::GatherV2;
-    K<Op, Op::Attribute::Tparams, T, int32_t>::template WithHostMemoryArguments<
-        Op::Argument::axis>::Register();
-    K<Op, Op::Attribute::Tparams, T, int64_t>::template WithHostMemoryArguments<
-        Op::Argument::axis>::Register();
+    RegisterGatherV2<T>();
     RegisterGatherV2<Ts...>();
 }
 
@@ -506,11 +500,7 @@ template <
     std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 void RegisterResourceGather()
 {
-    using Op = ops::ResourceGather;
-    K<Op, Op::Attribute::dtype, T, int32_t, DmlKernelCachePolicy::Never>::
-        template WithHostMemoryArguments<Op::Argument::resource>::Register();
-    K<Op, Op::Attribute::dtype, T, int64_t, DmlKernelCachePolicy::Never>::
-        template WithHostMemoryArguments<Op::Argument::resource>::Register();
+    RegisterResourceGather<T>();
     RegisterResourceGather<Ts...>();
 }
 
