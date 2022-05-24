@@ -52,7 +52,7 @@ T GetTensorElementHelper(const tensorflow::TensorProto& tensor, int elem_index)
 }
 
 template <>
-Eigen::half GetTensorElementHelper<Eigen::half>(
+inline Eigen::half GetTensorElementHelper<Eigen::half>(
     const tensorflow::TensorProto& tensor,
     int elem_index)
 {
@@ -68,7 +68,7 @@ Eigen::half GetTensorElementHelper<Eigen::half>(
 }
 
 template <>
-float GetTensorElementHelper<float>(
+inline float GetTensorElementHelper<float>(
     const tensorflow::TensorProto& tensor,
     int elem_index)
 {
@@ -77,7 +77,7 @@ float GetTensorElementHelper<float>(
 }
 
 template <>
-double GetTensorElementHelper<double>(
+inline double GetTensorElementHelper<double>(
     const tensorflow::TensorProto& tensor,
     int elem_index)
 {
@@ -86,7 +86,7 @@ double GetTensorElementHelper<double>(
 }
 
 template <>
-uint32_t GetTensorElementHelper<uint32_t>(
+inline uint32_t GetTensorElementHelper<uint32_t>(
     const tensorflow::TensorProto& tensor,
     int elem_index)
 {
@@ -95,7 +95,7 @@ uint32_t GetTensorElementHelper<uint32_t>(
 }
 
 template <>
-uint64_t GetTensorElementHelper<uint64_t>(
+inline uint64_t GetTensorElementHelper<uint64_t>(
     const tensorflow::TensorProto& tensor,
     int elem_index)
 {
@@ -104,7 +104,7 @@ uint64_t GetTensorElementHelper<uint64_t>(
 }
 
 template <>
-int64_t GetTensorElementHelper<int64_t>(
+inline int64_t GetTensorElementHelper<int64_t>(
     const tensorflow::TensorProto& tensor,
     int elem_index)
 {
