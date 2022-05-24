@@ -37,7 +37,7 @@ steps:
 - script: |
     wget https://github.com/llvm/llvm-project/releases/download/llvmorg-13.0.0/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz
     tar -xf clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz
-    export CXX="$(Build.StagingDirectory)/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang++"
+    sudo ln -s "$(Build.StagingDirectory)/clang+llvm-13.0.0-x86_64-linux-gnu-ubuntu-16.04/bin/clang++" /usr/bin/clang++
   displayName: Install Clang 13
   workingDirectory: $(Build.StagingDirectory)
   target: manylinux
