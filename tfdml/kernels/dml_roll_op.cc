@@ -264,7 +264,7 @@ using K = typename KernelDefinition<
             template WithHostMemoryArguments<Op::Argument::shift>::
                 template WithHostMemoryArguments<Op::Argument::axis>;
 
-template <TF_DataType T, TF_DataType... Ts>
+template <TF_DataType T>
 static void RegisterRoll()
 {
     using Op = ops::Roll;
@@ -276,7 +276,24 @@ static void RegisterRoll()
         Register();
     K<Op, int64_t, int64_t>::template WithTypeConstraint<Op::Attribute::T, T>::
         Register();
-    if constexpr (sizeof...(Ts) > 0) RegisterRoll<Ts...>();
+}
+
+template <
+    TF_DataType T,
+    TF_DataType... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
+static void RegisterRoll()
+{
+    using Op = ops::Roll;
+    K<Op, int32_t, int32_t>::template WithTypeConstraint<Op::Attribute::T, T>::
+        Register();
+    K<Op, int64_t, int32_t>::template WithTypeConstraint<Op::Attribute::T, T>::
+        Register();
+    K<Op, int32_t, int64_t>::template WithTypeConstraint<Op::Attribute::T, T>::
+        Register();
+    K<Op, int64_t, int64_t>::template WithTypeConstraint<Op::Attribute::T, T>::
+        Register();
+    RegisterRoll<Ts...>();
 }
 
 void RegisterKernels_Roll()

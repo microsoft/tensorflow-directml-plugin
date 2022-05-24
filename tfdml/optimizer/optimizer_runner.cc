@@ -36,8 +36,8 @@ Status RunOptimizer(
     // TODO: Remove the copy once the API takes a const TF_Buffer*
     // https://github.com/tensorflow/tensorflow/issues/55226
     TF_Buffer* input_graph_copy = TF_NewBuffer();
-    auto input_graph_copy_cleanup = absl::MakeCleanup([input_graph_copy]
-    { TF_DeleteBuffer(input_graph_copy); });
+    auto input_graph_copy_cleanup = absl::MakeCleanup(
+        [input_graph_copy] { TF_DeleteBuffer(input_graph_copy); });
     TF_RETURN_IF_ERROR(GraphDefToBuffer(input_graph_def, input_graph_copy));
 
     Status status;
@@ -45,8 +45,8 @@ Status RunOptimizer(
         TF_NewFunctionLibraryDefinition(input_graph_copy, status.raw());
     TF_RETURN_IF_ERROR(status);
 
-    auto f_lib_cleanup = absl::MakeCleanup([f_lib]
-    { TF_DeleteFunctionLibraryDefinition(f_lib); });
+    auto f_lib_cleanup = absl::MakeCleanup(
+        [f_lib] { TF_DeleteFunctionLibraryDefinition(f_lib); });
 
     OpRegistry op_reg;
     op_reg.Initialize(f_lib);

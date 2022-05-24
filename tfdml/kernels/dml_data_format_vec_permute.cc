@@ -254,7 +254,8 @@ class DmlDataFormatVecPermuteHostOp : public OpKernel
         OP_REQUIRES_OK(ctx, ctx->GetAttr("dst_format", &dst_format_));
 
         TF_Graph* graph = TF_NewGraph();
-        auto graph_cleanup = absl::MakeCleanup([graph] { TF_DeleteGraph(graph); });
+        auto graph_cleanup =
+            absl::MakeCleanup([graph] { TF_DeleteGraph(graph); });
 
         // Initialize the placeholder that sets the input for the
         // DataFormatVecPermute op on the CPU
@@ -297,8 +298,8 @@ class DmlDataFormatVecPermuteHostOp : public OpKernel
 
         // Create a new session that will be executed on the CPU
         TF_SessionOptions* opts = TF_NewSessionOptions();
-        auto session_opts_cleanup = absl::MakeCleanup([opts]
-        { TF_DeleteSessionOptions(opts); });
+        auto session_opts_cleanup =
+            absl::MakeCleanup([opts] { TF_DeleteSessionOptions(opts); });
 
         sess_ = TF_NewSession(graph, opts, status.raw());
         OP_REQUIRES_OK(ctx, status);
@@ -389,7 +390,8 @@ void DataFormatVecPermuteShapeInferenceFn(
     TF_Status* status)
 {
     TF_ShapeHandle* handle = TF_NewShapeHandle();
-    auto handle_cleanup = absl::MakeCleanup([handle] { TF_DeleteShapeHandle(handle); });
+    auto handle_cleanup =
+        absl::MakeCleanup([handle] { TF_DeleteShapeHandle(handle); });
 
     TF_ShapeInferenceContextGetInput(ctx, 0, handle, status);
     CHECK(TF_GetCode(status) == TF_OK);

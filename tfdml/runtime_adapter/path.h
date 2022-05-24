@@ -17,7 +17,8 @@ limitations under the License.
 
 #include "absl/strings/string_view.h"
 
-namespace tfdml {
+namespace tfdml
+{
 std::string JoinPathImpl(std::initializer_list<absl::string_view> paths);
 
 // Join multiple paths together.
@@ -39,7 +40,8 @@ std::string JoinPathImpl(std::initializer_list<absl::string_view> paths);
 // string path = file::JoinPath("/var/log", dirname, filename);
 // string path = file::JoinPath(FLAGS_test_srcdir, filename);
 template <typename... T>
-inline std::string JoinPath(const T&... args) {
-  return JoinPathImpl({args...});
+inline std::string JoinPath(const T&... args)
+{
+    return JoinPathImpl({args...});
 }
 } // namespace tfdml

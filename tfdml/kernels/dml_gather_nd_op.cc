@@ -358,7 +358,8 @@ class DmlGatherNdKernel : public DmlKernel
     {
         auto init_helper = ctx->GetInitializationHelper<InitHelper>();
 
-        auto lock_cleanup = absl::MakeCleanup([init_helper] { init_helper->Unlock(); });
+        auto lock_cleanup =
+            absl::MakeCleanup([init_helper] { init_helper->Unlock(); });
 
         const Tensor params_tensor =
             init_helper->GetParamsTensor(ctx->GetOpKernelContext());
@@ -416,16 +417,27 @@ using K = typename KernelDefinition<Op, DmlKernelWrapper<DmlGatherNdKernel<TInde
     ::template WithTypeConstraint<Op::Attribute::Tindices, DataTypeToEnum<TIndex>()>;
 // clang-format on
 
-template <TF_DataType T, TF_DataType... Ts>
+template <TF_DataType T>
 void RegisterGatherNd()
 {
     using Op = ops::GatherNd;
     K<Op, Op::Attribute::Tparams, T, int32_t>::Register();
     K<Op, Op::Attribute::Tparams, T, int64_t>::Register();
-    if constexpr (sizeof...(Ts) > 0) RegisterGatherNd<Ts...>();
 }
 
-template <TF_DataType T, TF_DataType... Ts>
+template <
+    TF_DataType T,
+    TF_DataType... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
+void RegisterGatherNd()
+{
+    using Op = ops::GatherNd;
+    K<Op, Op::Attribute::Tparams, T, int32_t>::Register();
+    K<Op, Op::Attribute::Tparams, T, int64_t>::Register();
+    RegisterGatherNd<Ts...>();
+}
+
+template <TF_DataType T>
 void RegisterResourceGatherNd()
 {
     using Op = ops::ResourceGatherNd;
@@ -433,7 +445,20 @@ void RegisterResourceGatherNd()
         Op::Argument::resource>::Register();
     K<Op, Op::Attribute::dtype, T, int64_t>::template WithHostMemoryArguments<
         Op::Argument::resource>::Register();
-    if constexpr (sizeof...(Ts) > 0) RegisterResourceGatherNd<Ts...>();
+}
+
+template <
+    TF_DataType T,
+    TF_DataType... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
+void RegisterResourceGatherNd()
+{
+    using Op = ops::ResourceGatherNd;
+    K<Op, Op::Attribute::dtype, T, int32_t>::template WithHostMemoryArguments<
+        Op::Argument::resource>::Register();
+    K<Op, Op::Attribute::dtype, T, int64_t>::template WithHostMemoryArguments<
+        Op::Argument::resource>::Register();
+    RegisterResourceGatherNd<Ts...>();
 }
 
 void RegisterKernels_GatherNd()

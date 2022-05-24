@@ -428,7 +428,19 @@ using K = KernelDefinition<
     Op,
     DmlKernelWrapper<DmlMatrixDiagPartKernel<T>, MatrixDiagPartShapeHelper<T>>>;
 
-template <typename T, typename... Ts>
+template <typename T>
+static void RegisterMatrixDiagPart()
+{
+    using Op = ops::MatrixDiagPart;
+    K<Op, T>::template WithTypeConstraint<
+        Op::Attribute::T,
+        DataTypeToEnum<T>()>::Register();
+}
+
+template <
+    typename T,
+    typename... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 static void RegisterMatrixDiagPart()
 {
     using Op = ops::MatrixDiagPart;
@@ -436,10 +448,23 @@ static void RegisterMatrixDiagPart()
         Op::Attribute::T,
         DataTypeToEnum<T>()>::Register();
 
-    if constexpr (sizeof...(Ts) > 0) RegisterMatrixDiagPart<Ts...>();
+    RegisterMatrixDiagPart<Ts...>();
 }
 
-template <typename T, typename... Ts>
+template <typename T>
+static void RegisterMatrixDiagPartV2()
+{
+    using Op = ops::MatrixDiagPartV2;
+    K<Op, T>::template WithHostMemoryArguments<Op::Argument::k>::
+        template WithHostMemoryArguments<Op::Argument::padding_value>::
+            template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::
+                Register();
+}
+
+template <
+    typename T,
+    typename... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 static void RegisterMatrixDiagPartV2()
 {
     using Op = ops::MatrixDiagPartV2;
@@ -448,10 +473,22 @@ static void RegisterMatrixDiagPartV2()
             template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::
                 Register();
 
-    if constexpr (sizeof...(Ts) > 0) RegisterMatrixDiagPartV2<Ts...>();
+    RegisterMatrixDiagPartV2<Ts...>();
 }
 
-template <typename T, typename... Ts>
+template <typename T>
+static void RegisterBatchMatrixDiagPart()
+{
+    using Op = ops::BatchMatrixDiagPart;
+    K<Op, T>::template WithTypeConstraint<
+        Op::Attribute::T,
+        DataTypeToEnum<T>()>::Register();
+}
+
+template <
+    typename T,
+    typename... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
 static void RegisterBatchMatrixDiagPart()
 {
     using Op = ops::BatchMatrixDiagPart;
@@ -459,7 +496,7 @@ static void RegisterBatchMatrixDiagPart()
         Op::Attribute::T,
         DataTypeToEnum<T>()>::Register();
 
-    if constexpr (sizeof...(Ts) > 0) RegisterBatchMatrixDiagPart<Ts...>();
+    RegisterBatchMatrixDiagPart<Ts...>();
 }
 
 void RegisterKernels_MatrixDiagPart()

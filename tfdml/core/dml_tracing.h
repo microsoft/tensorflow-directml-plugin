@@ -18,9 +18,9 @@ limitations under the License.
 #include "dml_common.h"
 #include "tfdml/core/dml_adapter.h"
 
+#include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "tfdml/runtime_adapter/xplane_builder.h"
-#include "absl/strings/string_view.h"
 
 // DirectML tracer that emits the following types of events:
 // - ETW: for analysis in GPUView and WPA

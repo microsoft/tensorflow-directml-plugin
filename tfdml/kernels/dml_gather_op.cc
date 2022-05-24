@@ -446,16 +446,27 @@ using K = typename KernelDefinition<Op, DmlKernelWrapper<DmlGatherKernel<TIndex>
     ::template WithTypeConstraint<Op::Attribute::Tindices, DataTypeToEnum<TIndex>()>;
 // clang-format on
 
-template <TF_DataType T, TF_DataType... Ts>
+template <TF_DataType T>
 void RegisterGather()
 {
     using Op = ops::Gather;
     K<Op, Op::Attribute::Tparams, T, int32_t>::Register();
     K<Op, Op::Attribute::Tparams, T, int64_t>::Register();
-    if constexpr (sizeof...(Ts) > 0) RegisterGather<Ts...>();
 }
 
-template <TF_DataType T, TF_DataType... Ts>
+template <
+    TF_DataType T,
+    TF_DataType... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
+void RegisterGather()
+{
+    using Op = ops::Gather;
+    K<Op, Op::Attribute::Tparams, T, int32_t>::Register();
+    K<Op, Op::Attribute::Tparams, T, int64_t>::Register();
+    RegisterGather<Ts...>();
+}
+
+template <TF_DataType T>
 void RegisterGatherV2()
 {
     using Op = ops::GatherV2;
@@ -463,10 +474,23 @@ void RegisterGatherV2()
         Op::Argument::axis>::Register();
     K<Op, Op::Attribute::Tparams, T, int64_t>::template WithHostMemoryArguments<
         Op::Argument::axis>::Register();
-    if constexpr (sizeof...(Ts) > 0) RegisterGatherV2<Ts...>();
 }
 
-template <TF_DataType T, TF_DataType... Ts>
+template <
+    TF_DataType T,
+    TF_DataType... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
+void RegisterGatherV2()
+{
+    using Op = ops::GatherV2;
+    K<Op, Op::Attribute::Tparams, T, int32_t>::template WithHostMemoryArguments<
+        Op::Argument::axis>::Register();
+    K<Op, Op::Attribute::Tparams, T, int64_t>::template WithHostMemoryArguments<
+        Op::Argument::axis>::Register();
+    RegisterGatherV2<Ts...>();
+}
+
+template <TF_DataType T>
 void RegisterResourceGather()
 {
     using Op = ops::ResourceGather;
@@ -474,7 +498,20 @@ void RegisterResourceGather()
         template WithHostMemoryArguments<Op::Argument::resource>::Register();
     K<Op, Op::Attribute::dtype, T, int64_t, DmlKernelCachePolicy::Never>::
         template WithHostMemoryArguments<Op::Argument::resource>::Register();
-    if constexpr (sizeof...(Ts) > 0) RegisterResourceGather<Ts...>();
+}
+
+template <
+    TF_DataType T,
+    TF_DataType... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
+void RegisterResourceGather()
+{
+    using Op = ops::ResourceGather;
+    K<Op, Op::Attribute::dtype, T, int32_t, DmlKernelCachePolicy::Never>::
+        template WithHostMemoryArguments<Op::Argument::resource>::Register();
+    K<Op, Op::Attribute::dtype, T, int64_t, DmlKernelCachePolicy::Never>::
+        template WithHostMemoryArguments<Op::Argument::resource>::Register();
+    RegisterResourceGather<Ts...>();
 }
 
 void RegisterKernels_Gather()

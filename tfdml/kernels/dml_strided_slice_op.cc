@@ -1319,7 +1319,8 @@ class DmlStridedSliceAssignKernel : public DmlKernel
         }
 
         auto init_helper = ctx->GetInitializationHelper<InitHelper>();
-        auto lock_cleanup = absl::MakeCleanup([init_helper] { init_helper->Unlock(); });
+        auto lock_cleanup =
+            absl::MakeCleanup([init_helper] { init_helper->Unlock(); });
 
         const Tensor input_tensor =
             init_helper->GetInputTensor(ctx->GetOpKernelContext());

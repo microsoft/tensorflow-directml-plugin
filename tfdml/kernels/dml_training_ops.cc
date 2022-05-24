@@ -715,7 +715,7 @@ class DmlAdamKernelWrapper
     DmlKernelKey CreateKernelKey(OpKernelContext* ctx) const override
     {
         DmlKernelKey key = {};
-        key.op_type_name = this->type_string();
+        key.op_type_name = std::string(this->type_string());
         key.node_def = node_def_;
 
         using TensorIndices =
