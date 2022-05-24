@@ -9,7 +9,7 @@ steps:
     echo "##vso[task.prependpath]$(Build.StagingDirectory)/cmake/bin"
   displayName: Install CMake
   workingDirectory: $(Build.StagingDirectory)
-  target: manylinux
+  # target: manylinux
 
 - script: |
     miniconda_path="miniconda3"
@@ -24,11 +24,11 @@ steps:
   displayName: Install Miniconda
   name: miniconda
   workingDirectory: $(Build.StagingDirectory)
-  target: manylinux
+  # target: manylinux
 
 - script: |
     sudo apt update
     sudo apt install ninja-build clang -y
   displayName: Install Ninja & Clang
   workingDirectory: $(Build.StagingDirectory)
-  target: manylinux
+  # target: manylinux
