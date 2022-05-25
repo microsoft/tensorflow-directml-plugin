@@ -228,7 +228,7 @@ void DmlKernelWrapperBase::Compute(OpKernelContext* ctx)
 DmlKernelKey DmlKernelWrapperBase::CreateKernelKey(OpKernelContext* ctx) const
 {
     DmlKernelKey key = {};
-    key.op_type_name = this->type_string();
+    key.op_type_name = std::string(this->type_string());
     key.node_def = this->node_def();
 
     for (int i = 0; i < ctx->num_inputs(); ++i)

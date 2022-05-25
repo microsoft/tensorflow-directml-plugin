@@ -3,7 +3,7 @@
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
- 
+
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
@@ -15,6 +15,7 @@ limitations under the License.
 
 #pragma once
 
+#include "absl/strings/string_view.h"
 #include "attribute.h"
 #include "op_defs.h"
 #include "tensorflow/c/kernels.h"
@@ -33,7 +34,7 @@ class OpKernelConstruction
   public:
     OpKernelConstruction(TF_OpKernelConstruction* context);
 
-    std::string_view GetName() const
+    absl::string_view GetName() const
     {
         auto name = TF_OpKernelConstruction_GetName(context_);
         return {name.data, name.len};
@@ -168,7 +169,7 @@ class OpKernelConstruction
         TF_OpKernelConstruction_GetAttrString(
             context_,
             attr_name,
-            value->data(),
+            &(*value)[0],
             size_in_bytes,
             status.raw());
 

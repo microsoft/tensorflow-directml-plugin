@@ -3,7 +3,7 @@
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
- 
+
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
@@ -16,6 +16,7 @@ limitations under the License.
 #pragma once
 
 #include "absl/container/inlined_vector.h"
+#include "absl/strings/string_view.h"
 #include "absl/types/variant.h"
 #include "tfdml/runtime_adapter/op_defs.h"
 #include "tfdml/runtime_adapter/op_kernel_construction.h"
@@ -30,8 +31,8 @@ class NodeDef
     NodeDef() = default;
 
     NodeDef(
-        std::string_view op_name,
-        std::string_view op_type_name,
+        absl::string_view op_name,
+        absl::string_view op_type_name,
         absl::InlinedVector<MemoryType, 8> tensor_memory_types,
         absl::InlinedVector<AttributeValue, 4> attribute_values,
         uint32_t input_tensor_count)
@@ -43,9 +44,9 @@ class NodeDef
     {
     }
 
-    inline std::string_view GetOpName() const { return op_name; }
+    inline absl::string_view GetOpName() const { return op_name; }
 
-    inline std::string_view GetOpTypeName() const { return op_type_name; }
+    inline absl::string_view GetOpTypeName() const { return op_type_name; }
 
     inline MemoryType GetInputTensorMemoryType(
         uint32_t input_tensor_index) const
@@ -125,8 +126,8 @@ class NodeDef
     }
 
   private:
-    std::string_view op_name;
-    std::string_view op_type_name;
+    absl::string_view op_name;
+    absl::string_view op_type_name;
 
     // Contiguous list of inputs types followed by output types.
     absl::InlinedVector<MemoryType, 8> tensor_memory_types;

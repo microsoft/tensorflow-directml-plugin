@@ -1882,7 +1882,7 @@ class DepthwiseConv2DBackpropInitHelper : public InitializationHelper
 
         const char* label = nullptr;
         const char* backprop_sizes_name = nullptr;
-        if constexpr (BackpropTensorIndex == 0)
+        if (BackpropTensorIndex == 0)
         {
             label = "Conv2DBackpropInput";
             backprop_sizes_name = "input_sizes";
@@ -2405,7 +2405,7 @@ struct Conv3DAttributes
 {
     explicit Conv3DAttributes(OpKernelConstruction* context)
     {
-        if constexpr (HasDataFormatAttribute)
+        if (HasDataFormatAttribute)
         {
             std::string data_format_str;
             OP_REQUIRES_OK(
@@ -2748,7 +2748,7 @@ class Conv3DGradInitHelper : public InitializationHelper
         std::string label;
         TensorShape input_shape;
         TensorShape filter_shape;
-        if constexpr (BackpropInput)
+        if (BackpropInput)
         {
             label = "Conv3DBackpropInputOp";
             const Tensor input_sizes = context->input(0);

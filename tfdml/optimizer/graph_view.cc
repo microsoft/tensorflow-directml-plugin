@@ -1170,9 +1170,11 @@ Status MutableGraphView::CheckKernelRegisteredForNodes()
 
             if (iter == diff.processed_attrs->end())
             {
-                diff.processed_attrs->insert(google::protobuf::MapPair(
-                    attr_to_add.first,
-                    attr_to_add.second));
+                diff.processed_attrs->insert(
+                    google::protobuf::
+                        MapPair<std::string, tensorflow::AttrValue>(
+                            attr_to_add.first,
+                            attr_to_add.second));
             }
             else
             {

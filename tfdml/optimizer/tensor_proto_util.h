@@ -34,6 +34,86 @@ namespace tfdml
 int GetNumElements(const tensorflow::TensorProto& tensor);
 
 template <typename T>
+T GetTensorElementHelper(const tensorflow::TensorProto& tensor, int elem_index)
+{
+    static_assert(
+        std::is_same<T, int32_t>::value || std::is_same<T, int16_t>::value ||
+            std::is_same<T, uint16_t>::value ||
+            std::is_same<T, int8_t>::value || std::is_same<T, uint8_t>::value,
+        "No implementation exists for this type");
+
+    assert(
+        tensor.dtype() == tensorflow::DT_INT32 ||
+        tensor.dtype() == tensorflow::DT_INT16 ||
+        tensor.dtype() == tensorflow::DT_UINT16 ||
+        tensor.dtype() == tensorflow::DT_INT8 ||
+        tensor.dtype() == tensorflow::DT_UINT8);
+
+    RETURN_TENSOR_VALUE(tensor, int);
+}
+
+template <>
+inline Eigen::half GetTensorElementHelper<Eigen::half>(
+    const tensorflow::TensorProto& tensor,
+    int elem_index)
+{
+    assert(tensor.dtype() == tensorflow::DT_HALF);
+    if (tensor.version_number() == 0 && tensor.half_val_size() == 1)
+    {
+        auto half_val = tensor.half_val(0);
+        return *reinterpret_cast<Eigen::half*>(&half_val);
+    }
+    assert(tensor.half_val_size() == GetNumElements(tensor));
+    auto half_val = tensor.half_val(elem_index);
+    return *reinterpret_cast<Eigen::half*>(&half_val);
+}
+
+template <>
+inline float GetTensorElementHelper<float>(
+    const tensorflow::TensorProto& tensor,
+    int elem_index)
+{
+    assert(tensor.dtype() == tensorflow::DT_FLOAT);
+    RETURN_TENSOR_VALUE(tensor, float);
+}
+
+template <>
+inline double GetTensorElementHelper<double>(
+    const tensorflow::TensorProto& tensor,
+    int elem_index)
+{
+    assert(tensor.dtype() == tensorflow::DT_DOUBLE);
+    RETURN_TENSOR_VALUE(tensor, double);
+}
+
+template <>
+inline uint32_t GetTensorElementHelper<uint32_t>(
+    const tensorflow::TensorProto& tensor,
+    int elem_index)
+{
+    assert(tensor.dtype() == tensorflow::DT_UINT32);
+    RETURN_TENSOR_VALUE(tensor, uint32);
+}
+
+template <>
+inline uint64_t GetTensorElementHelper<uint64_t>(
+    const tensorflow::TensorProto& tensor,
+    int elem_index)
+{
+    assert(tensor.dtype() == tensorflow::DT_UINT64);
+    RETURN_TENSOR_VALUE(tensor, uint64);
+}
+
+template <>
+inline int64_t GetTensorElementHelper<int64_t>(
+    const tensorflow::TensorProto& tensor,
+    int elem_index)
+{
+    assert(tensor.dtype() == tensorflow::DT_INT64);
+    RETURN_TENSOR_VALUE(tensor, int64);
+}
+
+template <typename T>
 T GetTensorElement(const tensorflow::TensorProto& tensor, int elem_index)
 {
     assert(elem_index < GetNumElements(tensor));
@@ -50,60 +130,7 @@ T GetTensorElement(const tensorflow::TensorProto& tensor, int elem_index)
         return values[elem_index];
     }
 
-    if constexpr (std::is_same_v<T, Eigen::half>)
-    {
-        assert(tensor.dtype() == tensorflow::DT_HALF);
-        if (tensor.version_number() == 0 && tensor.half_val_size() == 1)
-        {
-            auto half_val = tensor.half_val(0);
-            return *reinterpret_cast<Eigen::half*>(&half_val);
-        }
-        assert(tensor.half_val_size() == GetNumElements(tensor));
-        auto half_val = tensor.half_val(elem_index);
-        return *reinterpret_cast<Eigen::half*>(&half_val);
-    }
-    else if constexpr (std::is_same_v<T, float>)
-    {
-        assert(tensor.dtype() == tensorflow::DT_FLOAT);
-        RETURN_TENSOR_VALUE(tensor, float);
-    }
-    else if constexpr (std::is_same_v<T, double>)
-    {
-        assert(tensor.dtype() == tensorflow::DT_DOUBLE);
-        RETURN_TENSOR_VALUE(tensor, double);
-    }
-    else if constexpr (std::is_same_v<T, uint32_t>)
-    {
-        assert(tensor.dtype() == tensorflow::DT_UINT32);
-        RETURN_TENSOR_VALUE(tensor, uint32);
-    }
-    else if constexpr (std::is_same_v<T, uint64_t>)
-    {
-        assert(tensor.dtype() == tensorflow::DT_UINT64);
-        RETURN_TENSOR_VALUE(tensor, uint64);
-    }
-    else if constexpr (std::is_same_v<T, int64_t>)
-    {
-        assert(tensor.dtype() == tensorflow::DT_INT64);
-        RETURN_TENSOR_VALUE(tensor, int64);
-    }
-    else
-    {
-        // DT_INT32, DT_INT16, DT_UINT16, DT_INT8, DT_UINT8.
-        static_assert(
-            std::is_same_v<T, int32_t> || std::is_same_v<T, int16_t> ||
-            std::is_same_v<T, uint16_t> || std::is_same_v<T, int8_t> ||
-            std::is_same_v<T, uint8_t>);
-
-        assert(
-            tensor.dtype() == tensorflow::DT_INT32 ||
-            tensor.dtype() == tensorflow::DT_INT16 ||
-            tensor.dtype() == tensorflow::DT_UINT16 ||
-            tensor.dtype() == tensorflow::DT_INT8 ||
-            tensor.dtype() == tensorflow::DT_UINT8);
-
-        RETURN_TENSOR_VALUE(tensor, int);
-    }
+    return GetTensorElementHelper<T>(tensor, elem_index);
 }
 
 } // namespace tfdml

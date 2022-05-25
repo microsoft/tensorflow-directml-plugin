@@ -91,11 +91,12 @@ variables:
   isScheduledRunOnMainOrReleaseBranch: ${{and(eq(variables.isScheduledRun, 'True'), eq(variables.isMainOrReleaseBranch, 'True'))}}
   blobStorageDropEnabled: ${{or(parameters.blobStorageDropEnabled, eq(variables.isScheduledRunOnMainOrReleaseBranch, 'True'))}}
 
+# TODO: Make our own docker image for our unique dependencies (e.g. clang) instead of using the tensorflow core one
 # For building manylinux2010-compliant Linux wheels:
-# resources:
-#   containers:
-#   - container: manylinux
-#     image: tensorflow/tensorflow:2.3.0-custom-op-ubuntu16
+resources:
+  containers:
+  - container: manylinux
+    image: tensorflow/tensorflow:2.5.0-custom-op-ubuntu16
 
 stages:
 - stage: buildStage

@@ -265,7 +265,7 @@ class NodeViewInternal
     const tensorflow::AttrValue* GetAttr(absl::string_view attr_name) const
     {
         if (!attrs_) return nullptr;
-        auto iter = attrs_->find(attr_name);
+        auto iter = attrs_->find(std::string(attr_name));
         return iter == attrs_->end() ? nullptr : &iter->second;
     }
 
@@ -275,7 +275,7 @@ class NodeViewInternal
     // Checks if an attribute exist in the node.
     bool HasAttr(absl::string_view attr_name) const
     {
-        return attrs_ && attrs_->find(attr_name) != attrs_->end();
+        return attrs_ && attrs_->find(std::string(attr_name)) != attrs_->end();
     }
 
   protected:
@@ -360,7 +360,7 @@ class GraphViewInternal
     // returned.
     const NodeViewT* GetNode(absl::string_view node_name) const
     {
-        auto it = node_index_by_name_.find(node_name);
+        auto it = node_index_by_name_.find(std::string(node_name));
         if (it == node_index_by_name_.end())
         {
             return nullptr;
@@ -370,7 +370,7 @@ class GraphViewInternal
 
     NodeViewT* GetNode(absl::string_view node_name)
     {
-        auto it = node_index_by_name_.find(node_name);
+        auto it = node_index_by_name_.find(std::string(node_name));
         if (it == node_index_by_name_.end())
         {
             return nullptr;
@@ -556,7 +556,7 @@ inline bool CheckNodeNameExists(
     const absl::flat_hash_map<absl::string_view, int>& updated_node_names,
     const GraphViewT* graph_view)
 {
-    auto it = updated_node_names.find(node_name);
+    auto it = updated_node_names.find(std::string(node_name));
     if (it != updated_node_names.end())
     {
         return it->second == kNodeNamePresent;
@@ -1069,7 +1069,9 @@ inline void AddOrUpdateAttribute(
     if (iter == new_node->node.mutable_attr()->end())
     {
         new_node->node.mutable_attr()->insert(
-            google::protobuf::MapPair(std::string(attr_name), attr_value));
+            google::protobuf::MapPair<std::string, tensorflow::AttrValue>(
+                std::string(attr_name),
+                attr_value));
     }
     else
     {

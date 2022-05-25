@@ -7,10 +7,10 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
 
 # The C++ standard needs to be set globally to ensure Abseil targets are compiled
 # with the same standard as the dependent targets.
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_definitions(-D_SCL_SECURE_NO_WARNINGS)
-add_definitions(-D_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
+add_definitions(-D_SILENCE_ALL_CXX14_DEPRECATION_WARNINGS)
 
 # PIC needs to be enabled globally for Abseil targets.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -24,6 +24,7 @@ if(NOT MSVC)
     # "function declared 'noreturn' should not return [-Winvalid-noreturn]"
     add_compile_options(-Wno-inconsistent-missing-override)
     add_compile_options(-Wno-invalid-noreturn)
+    add_compile_options(-Wno-unknown-warning-option)
 endif()
 
 # Import dependencies and their targets.
@@ -48,6 +49,7 @@ if(MSVC)
         /WX 
         /wd4190 # 'TF_NewWhile' has C-linkage specified, but returns UDT 'TF_WhileParams' which is incompatible with C
         /wd4005 # The version of protobuf that TensorFlow uses doesn't do an ifndef before defining WIN32_LEAN_AND_MEAN
+        /wd5105 # macro expansion producing 'defined' has undefined behavior in winbase.h
         /Zc:preprocessor
         $<$<CONFIG:Debug>:/FS>
     )
@@ -164,9 +166,11 @@ add_library(
     tfdml/runtime_adapter/kernel_shape_util.cc
     tfdml/runtime_adapter/mirror_pad_mode.cc
     tfdml/runtime_adapter/numbers.cc
+    tfdml/runtime_adapter/op_defs_core.cc
     tfdml/runtime_adapter/op_kernel_construction.cc
     tfdml/runtime_adapter/op_kernel_context.cc
     tfdml/runtime_adapter/padding.cc
+    tfdml/runtime_adapter/path.cc
     tfdml/runtime_adapter/stateless_random_ops.cc
     tfdml/runtime_adapter/status.cc
     tfdml/runtime_adapter/tensor.cc

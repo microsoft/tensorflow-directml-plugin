@@ -169,7 +169,7 @@ class KernelDefinition<
     template <typename C = void, typename... Cs>
     static void SetTypeConstraints(TF_KernelBuilder* builder)
     {
-        if constexpr (!std::is_same_v<C, void>)
+        if constexpr (!std::is_same<C, void>::value)
         {
             Status status;
             const auto& attr_desc = GetAttributeDesc<Op>(C::AttributeValue);

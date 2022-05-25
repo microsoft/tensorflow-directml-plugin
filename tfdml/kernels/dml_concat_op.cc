@@ -208,7 +208,7 @@ class DmlConcatKernel : public DmlKernel
 
         uint32_t first_concat_tensor_index;
         uint32_t concat_dim_tensor_index;
-        if constexpr (AxisArgName == NAME_IS_CONCAT_DIM)
+        if (AxisArgName == NAME_IS_CONCAT_DIM)
         {
             // For Concat, the inputs come AFTER the axis
             first_concat_tensor_index = 1;

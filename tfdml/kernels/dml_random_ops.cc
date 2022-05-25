@@ -606,7 +606,8 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
         OP_REQUIRES_OK(ctx, ctx->GetAttr("seed2", &seed2_));
 
         TF_Graph* graph = TF_NewGraph();
-        absl::Cleanup graph_cleanup = [graph] { TF_DeleteGraph(graph); };
+        auto graph_cleanup =
+            absl::MakeCleanup([graph] { TF_DeleteGraph(graph); });
 
         // Initialize the placeholder that sets the shape for the random op on
         // the CPU
@@ -653,8 +654,8 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
 
         // Create a new session that will be executed on the CPU
         TF_SessionOptions* opts = TF_NewSessionOptions();
-        absl::Cleanup session_opts_cleanup = [opts]
-        { TF_DeleteSessionOptions(opts); };
+        auto session_opts_cleanup =
+            absl::MakeCleanup([opts] { TF_DeleteSessionOptions(opts); });
 
         sess_ = TF_NewSession(graph, opts, status.raw());
         OP_REQUIRES_OK(ctx, status);
