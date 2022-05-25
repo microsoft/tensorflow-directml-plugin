@@ -38,7 +38,7 @@ Status OpRegistry::LookUpOpDef(const char* op_name, tensorflow::OpDef* op_def)
 
     Status status;
     TF_Buffer* op_buf = TF_NewBuffer();
-    absl::Cleanup buf_cleanup = [op_buf] { TF_DeleteBuffer(op_buf); };
+    auto buf_cleanup = absl::MakeCleanup([op_buf] { TF_DeleteBuffer(op_buf); });
 
     TF_LookUpOpDef(function_lib_def_, op_name, op_buf, status.raw());
     TF_RETURN_IF_ERROR(status);

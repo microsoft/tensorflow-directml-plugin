@@ -3,7 +3,7 @@
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
- 
+
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
@@ -78,7 +78,7 @@ constexpr int ConvertOpDefEnumToIndex(E enum_value)
 {
     auto index = std::underlying_type_t<E>(enum_value);
     static_assert(
-        std::is_same_v<decltype(index), int>,
+        std::is_same<decltype(index), int>::value,
         "OpDef enums should have an underlying type of int");
     return index;
 }
@@ -109,7 +109,10 @@ constexpr ArgumentType GetArgumentType(typename OpDef::Argument arg)
 template <typename OpDef>
 constexpr absl::Span<const ArgumentDesc> GetInputArgumentDescs()
 {
-    static_assert(OpDef::argument_descs.size() >= OpDef::input_arg_count);
+    static_assert(
+        OpDef::argument_descs.size() >= OpDef::input_arg_count,
+        "OpDef::input_arg_count shouldn't be smaller than "
+        "OpDef::argument_descs.size()");
     return {OpDef::argument_descs.data(), OpDef::input_arg_count};
 }
 
@@ -118,7 +121,9 @@ constexpr absl::Span<const ArgumentDesc> GetOutputArgumentDescs()
 {
     static_assert(
         OpDef::argument_descs.size() ==
-        OpDef::input_arg_count + OpDef::output_arg_count);
+            OpDef::input_arg_count + OpDef::output_arg_count,
+        "OpDef::argument_descs.size() should be equal to "
+        "OpDef::input_arg_count + OpDef::output_arg_count");
     return {
         OpDef::argument_descs.data() + OpDef::input_arg_count,
         OpDef::output_arg_count};

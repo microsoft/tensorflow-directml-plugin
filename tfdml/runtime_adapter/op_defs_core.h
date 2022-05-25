@@ -3,7 +3,7 @@
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
- 
+
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
@@ -18,70 +18,10 @@ limitations under the License.
 // This file is generated. Do not edit it directly. See generate_op_defs_core.py.
 #pragma once
 
-namespace tfdml::ops
+namespace tfdml
 {
-struct RiscBinaryArithmetic
+namespace ops
 {
-    static constexpr const char* name = "RiscBinaryArithmetic";
-    
-    enum class Argument
-    {
-        x,
-        y,
-        z
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"z", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        op_type,
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"op_type", AttributeType::String},
-        AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
-struct RpcServer
-{
-    static constexpr const char* name = "RpcServer";
-    
-    enum class Argument
-    {
-        server_address,
-        server
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"server_address", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"server", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
 struct Mod
 {
     static constexpr const char* name = "Mod";
@@ -210,6 +150,41 @@ struct TensorMapInsert
     };
 };
 
+struct DTensorAllReduce
+{
+    static constexpr const char* name = "DTensorAllReduce";
+    
+    enum class Argument
+    {
+        input,
+        group_assignment,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"group_assignment", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        reduce_op,
+        device_type
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"reduce_op", AttributeType::String},
+        AttributeDesc{"device_type", AttributeType::String}
+    };
+};
+
 struct RpcClient
 {
     static constexpr const char* name = "RpcClient";
@@ -242,6 +217,1216 @@ struct RpcClient
     {
         AttributeDesc{"shared_name", AttributeType::String},
         AttributeDesc{"list_registered_methods", AttributeType::Bool}
+    };
+};
+
+struct DTensorShardedPrefix
+{
+    static constexpr const char* name = "DTensorShardedPrefix";
+    
+    enum class Argument
+    {
+        prefix,
+        tensor_names,
+        shape_and_slices,
+        mesh,
+        layouts,
+        tensors,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 6;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"prefix", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"tensor_names", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"shape_and_slices", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"mesh", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"layouts", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"tensors", ArgumentDesc::TensorCount::SequenceAttrList, "dtypes"},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        dtypes
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"dtypes", AttributeType::ListType}
+    };
+};
+
+struct StatsAggregatorSummary
+{
+    static constexpr const char* name = "StatsAggregatorSummary";
+    
+    enum class Argument
+    {
+        iterator,
+        summary
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"iterator", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"summary", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct EncodeProto
+{
+    static constexpr const char* name = "EncodeProto";
+    
+    enum class Argument
+    {
+        sizes,
+        values,
+        bytes
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"sizes", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"values", ArgumentDesc::TensorCount::SequenceAttrList, "Tinput_types"},
+        ArgumentDesc{"bytes", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        field_names,
+        message_type,
+        descriptor_source,
+        Tinput_types
+    };
+
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    {
+        AttributeDesc{"field_names", AttributeType::ListString},
+        AttributeDesc{"message_type", AttributeType::String},
+        AttributeDesc{"descriptor_source", AttributeType::String},
+        AttributeDesc{"Tinput_types", AttributeType::ListType}
+    };
+};
+
+struct Old
+{
+    static constexpr const char* name = "Old";
+    
+    enum class Argument
+    {
+
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct Relayout
+{
+    static constexpr const char* name = "Relayout";
+    
+    enum class Argument
+    {
+        input,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        layout,
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"layout", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct AudioSpectrogram
+{
+    static constexpr const char* name = "AudioSpectrogram";
+    
+    enum class Argument
+    {
+        input,
+        spectrogram
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"spectrogram", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        window_size,
+        stride,
+        magnitude_squared
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"window_size", AttributeType::Int},
+        AttributeDesc{"stride", AttributeType::Int},
+        AttributeDesc{"magnitude_squared", AttributeType::Bool}
+    };
+};
+
+struct DTensorReduceScatter
+{
+    static constexpr const char* name = "DTensorReduceScatter";
+    
+    enum class Argument
+    {
+        input,
+        group_assignment,
+        scatter_dimension,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"group_assignment", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"scatter_dimension", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        reduce_op,
+        device_type
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"reduce_op", AttributeType::String},
+        AttributeDesc{"device_type", AttributeType::String}
+    };
+};
+
+struct _ArrayToList
+{
+    static constexpr const char* name = "_ArrayToList";
+    
+    enum class Argument
+    {
+        input,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::SequenceAttrInt, "N"},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::SequenceAttrList, "out_types"}
+    };
+
+    enum class Attribute
+    {
+        T,
+        N,
+        out_types
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"out_types", AttributeType::ListType}
+    };
+};
+
+struct DTensorAllGather
+{
+    static constexpr const char* name = "DTensorAllGather";
+    
+    enum class Argument
+    {
+        input,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        input_layout,
+        output_layout
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"input_layout", AttributeType::String},
+        AttributeDesc{"output_layout", AttributeType::String}
+    };
+};
+
+struct UniqueDataset
+{
+    static constexpr const char* name = "UniqueDataset";
+    
+    enum class Argument
+    {
+        input_dataset,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        output_types,
+        output_shapes,
+        metadata
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
+    };
+};
+
+struct ApplyRMSProp
+{
+    static constexpr const char* name = "ApplyRMSProp";
+    
+    enum class Argument
+    {
+        var,
+        ms,
+        mom,
+        lr,
+        rho,
+        momentum,
+        epsilon,
+        grad,
+        out
+    };
+
+    static constexpr uint32_t input_arg_count = 8;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"var", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"ms", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"mom", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"lr", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"rho", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"momentum", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"epsilon", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"grad", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"out", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        use_locking
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool}
+    };
+};
+
+struct BesselY0
+{
+    static constexpr const char* name = "BesselY0";
+    
+    enum class Argument
+    {
+        x,
+        y
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct AttrBool
+{
+    static constexpr const char* name = "AttrBool";
+    
+    enum class Argument
+    {
+
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+
+    };
+
+    enum class Attribute
+    {
+        a
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"a", AttributeType::Bool}
+    };
+};
+
+struct DatasetToTFRecord
+{
+    static constexpr const char* name = "DatasetToTFRecord";
+    
+    enum class Argument
+    {
+        input_dataset,
+        filename,
+        compression_type
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"filename", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"compression_type", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct RefIn
+{
+    static constexpr const char* name = "RefIn";
+    
+    enum class Argument
+    {
+        a
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct DTensorAllScatter
+{
+    static constexpr const char* name = "DTensorAllScatter";
+    
+    enum class Argument
+    {
+        input,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        input_layout,
+        output_layout
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"input_layout", AttributeType::String},
+        AttributeDesc{"output_layout", AttributeType::String}
+    };
+};
+
+struct TwoFloatInputsIntOutput
+{
+    static constexpr const char* name = "TwoFloatInputsIntOutput";
+    
+    enum class Argument
+    {
+        a,
+        b,
+        c
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"b", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"c", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct TensorDataset
+{
+    static constexpr const char* name = "TensorDataset";
+    
+    enum class Argument
+    {
+        components,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"components", ArgumentDesc::TensorCount::SequenceAttrList, "Toutput_types"},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        Toutput_types,
+        output_shapes,
+        metadata
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"Toutput_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
+    };
+};
+
+struct FloatOutputStringOutput
+{
+    static constexpr const char* name = "FloatOutputStringOutput";
+    
+    enum class Argument
+    {
+        a,
+        b
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 2;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"b", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct PriorityQueue
+{
+    static constexpr const char* name = "PriorityQueue";
+    
+    enum class Argument
+    {
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        component_types,
+        shapes,
+        capacity,
+        container,
+        shared_name
+    };
+
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    {
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
+    };
+};
+
+struct CopyToMesh
+{
+    static constexpr const char* name = "CopyToMesh";
+    
+    enum class Argument
+    {
+        input,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        layout,
+        source_layout,
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"layout", AttributeType::String},
+        AttributeDesc{"source_layout", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct ScanDataset
+{
+    static constexpr const char* name = "ScanDataset";
+    
+    enum class Argument
+    {
+        input_dataset,
+        initial_state,
+        other_arguments,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"initial_state", ArgumentDesc::TensorCount::SequenceAttrList, "Tstate"},
+        ArgumentDesc{"other_arguments", ArgumentDesc::TensorCount::SequenceAttrList, "Targuments"},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        f,
+        Tstate,
+        Targuments,
+        output_types,
+        output_shapes,
+        preserve_cardinality,
+        use_default_device,
+        metadata
+    };
+
+    static constexpr std::array<AttributeDesc, 8> attribute_descs
+    {
+        AttributeDesc{"f", AttributeType::Func},
+        AttributeDesc{"Tstate", AttributeType::ListType},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"preserve_cardinality", AttributeType::Bool},
+        AttributeDesc{"use_default_device", AttributeType::Bool},
+        AttributeDesc{"metadata", AttributeType::String}
+    };
+};
+
+struct ExperimentalUnbatchDataset
+{
+    static constexpr const char* name = "ExperimentalUnbatchDataset";
+    
+    enum class Argument
+    {
+        input_dataset,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        output_types,
+        output_shapes
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
+    };
+};
+
+struct _FusedConv3D
+{
+    static constexpr const char* name = "_FusedConv3D";
+    
+    enum class Argument
+    {
+        input,
+        filter,
+        args,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"filter", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"args", ArgumentDesc::TensorCount::SequenceAttrInt, "num_args"},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        num_args,
+        strides,
+        padding,
+        data_format,
+        dilations,
+        padding_list,
+        fused_ops,
+        epsilon,
+        leakyrelu_alpha
+    };
+
+    static constexpr std::array<AttributeDesc, 10> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt},
+        AttributeDesc{"fused_ops", AttributeType::ListString},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"leakyrelu_alpha", AttributeType::Float}
+    };
+};
+
+struct RecordInput
+{
+    static constexpr const char* name = "RecordInput";
+    
+    enum class Argument
+    {
+        records
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"records", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        file_pattern,
+        file_random_seed,
+        file_shuffle_shift_ratio,
+        file_buffer_size,
+        file_parallelism,
+        batch_size,
+        compression_type
+    };
+
+    static constexpr std::array<AttributeDesc, 7> attribute_descs
+    {
+        AttributeDesc{"file_pattern", AttributeType::String},
+        AttributeDesc{"file_random_seed", AttributeType::Int},
+        AttributeDesc{"file_shuffle_shift_ratio", AttributeType::Float},
+        AttributeDesc{"file_buffer_size", AttributeType::Int},
+        AttributeDesc{"file_parallelism", AttributeType::Int},
+        AttributeDesc{"batch_size", AttributeType::Int},
+        AttributeDesc{"compression_type", AttributeType::String}
+    };
+};
+
+struct TensorArrayWrite
+{
+    static constexpr const char* name = "TensorArrayWrite";
+    
+    enum class Argument
+    {
+        handle,
+        index,
+        value,
+        flow_in,
+        flow_out
+    };
+
+    static constexpr uint32_t input_arg_count = 4;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"index", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"value", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"flow_in", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"flow_out", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct DTensorRestoreV2
+{
+    static constexpr const char* name = "DTensorRestoreV2";
+    
+    enum class Argument
+    {
+        prefix,
+        tensor_names,
+        shape_and_slices,
+        tensors
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"prefix", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"tensor_names", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"shape_and_slices", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"tensors", ArgumentDesc::TensorCount::SequenceAttrList, "dtypes"}
+    };
+
+    enum class Attribute
+    {
+        input_shapes,
+        input_layouts,
+        dtypes
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"input_shapes", AttributeType::ListShape},
+        AttributeDesc{"input_layouts", AttributeType::ListString},
+        AttributeDesc{"dtypes", AttributeType::ListType}
+    };
+};
+
+struct ConfigureAndInitializeGlobalTPU
+{
+    static constexpr const char* name = "ConfigureAndInitializeGlobalTPU";
+    
+    enum class Argument
+    {
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct Foo3
+{
+    static constexpr const char* name = "Foo3";
+    
+    enum class Argument
+    {
+        a,
+        b,
+        c,
+        d,
+        e
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 2;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"b", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"c", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"d", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"e", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct LookupTableSizeV2
+{
+    static constexpr const char* name = "LookupTableSizeV2";
+    
+    enum class Argument
+    {
+        table_handle,
+        size
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"table_handle", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"size", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct SampleDistortedBoundingBoxV2
+{
+    static constexpr const char* name = "SampleDistortedBoundingBoxV2";
+    
+    enum class Argument
+    {
+        image_size,
+        bounding_boxes,
+        min_object_covered,
+        begin,
+        size,
+        bboxes
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 3;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"image_size", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"bounding_boxes", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"min_object_covered", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"begin", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"size", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"bboxes", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        seed,
+        seed2,
+        aspect_ratio_range,
+        area_range,
+        max_attempts,
+        use_image_if_no_bounding_boxes
+    };
+
+    static constexpr std::array<AttributeDesc, 7> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"aspect_ratio_range", AttributeType::ListFloat},
+        AttributeDesc{"area_range", AttributeType::ListFloat},
+        AttributeDesc{"max_attempts", AttributeType::Int},
+        AttributeDesc{"use_image_if_no_bounding_boxes", AttributeType::Bool}
+    };
+};
+
+struct A
+{
+    static constexpr const char* name = "A";
+    
+    enum class Argument
+    {
+        out
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"out", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct RiscBinaryArithmetic
+{
+    static constexpr const char* name = "RiscBinaryArithmetic";
+    
+    enum class Argument
+    {
+        x,
+        y,
+        z
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"z", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        op_type,
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"op_type", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct RpcServer
+{
+    static constexpr const char* name = "RpcServer";
+    
+    enum class Argument
+    {
+        server_address,
+        server
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"server_address", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"server", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct OnesLike
+{
+    static constexpr const char* name = "OnesLike";
+    
+    enum class Argument
+    {
+        x,
+        y
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct ShutdownTPUSystem
+{
+    static constexpr const char* name = "ShutdownTPUSystem";
+    
+    enum class Argument
+    {
+        success
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"success", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
     };
 };
 
@@ -284,33 +1469,6 @@ struct ResourceApplyKerasMomentum
     };
 };
 
-struct RpcServerStart
-{
-    static constexpr const char* name = "RpcServerStart";
-    
-    enum class Argument
-    {
-        server
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"server", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
 struct IntAttr
 {
     static constexpr const char* name = "IntAttr";
@@ -338,22 +1496,20 @@ struct IntAttr
     };
 };
 
-struct DeleteRpcFutureResource
+struct RpcServerStart
 {
-    static constexpr const char* name = "DeleteRpcFutureResource";
+    static constexpr const char* name = "RpcServerStart";
     
     enum class Argument
     {
-        handle,
-        deleter
+        server
     };
 
-    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t input_arg_count = 1;
     static constexpr uint32_t output_arg_count = 0;
     static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
     {
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"deleter", ArgumentDesc::TensorCount::Single}
+        ArgumentDesc{"server", ArgumentDesc::TensorCount::Single}
     };
 
     enum class Attribute
@@ -468,30 +1624,75 @@ struct RpcServerRegister
     };
 };
 
-struct OpWithDefaultAttr
+struct DeleteRpcFutureResource
 {
-    static constexpr const char* name = "OpWithDefaultAttr";
+    static constexpr const char* name = "DeleteRpcFutureResource";
     
     enum class Argument
     {
-        a
+        handle,
+        deleter
     };
 
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 1;
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 0;
     static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
     {
-        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single}
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"deleter", ArgumentDesc::TensorCount::Single}
     };
 
     enum class Attribute
     {
-        default_float
+
     };
 
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
     {
-        AttributeDesc{"default_float", AttributeType::Float}
+
+    };
+};
+
+struct EnqueueTPUEmbeddingArbitraryTensorBatch
+{
+    static constexpr const char* name = "EnqueueTPUEmbeddingArbitraryTensorBatch";
+    
+    enum class Argument
+    {
+        sample_indices_or_row_splits,
+        embedding_indices,
+        aggregation_weights,
+        mode_override
+    };
+
+    static constexpr uint32_t input_arg_count = 4;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"sample_indices_or_row_splits", ArgumentDesc::TensorCount::SequenceAttrInt, "N"},
+        ArgumentDesc{"embedding_indices", ArgumentDesc::TensorCount::SequenceAttrInt, "N"},
+        ArgumentDesc{"aggregation_weights", ArgumentDesc::TensorCount::SequenceAttrInt, "N"},
+        ArgumentDesc{"mode_override", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T1,
+        T2,
+        T3,
+        N,
+        device_ordinal,
+        combiners
+    };
+
+    static constexpr std::array<AttributeDesc, 6> attribute_descs
+    {
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"T3", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"device_ordinal", AttributeType::Int},
+        AttributeDesc{"combiners", AttributeType::ListString}
     };
 };
 
@@ -535,17 +1736,19 @@ struct RpcCall
         client,
         method_name,
         args,
+        timeout_in_ms,
         future,
         deleter
     };
 
-    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t input_arg_count = 4;
     static constexpr uint32_t output_arg_count = 2;
     static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
     {
         ArgumentDesc{"client", ArgumentDesc::TensorCount::Single},
         ArgumentDesc{"method_name", ArgumentDesc::TensorCount::Single},
         ArgumentDesc{"args", ArgumentDesc::TensorCount::SequenceAttrList, "Tin"},
+        ArgumentDesc{"timeout_in_ms", ArgumentDesc::TensorCount::Single},
         ArgumentDesc{"future", ArgumentDesc::TensorCount::Single},
         ArgumentDesc{"deleter", ArgumentDesc::TensorCount::Single}
     };
@@ -968,15 +2171,17 @@ struct ParallelBatchDataset
         parallel_copy,
         output_types,
         output_shapes,
-        deterministic
+        deterministic,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
         AttributeDesc{"parallel_copy", AttributeType::Bool},
         AttributeDesc{"output_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape},
-        AttributeDesc{"deterministic", AttributeType::String}
+        AttributeDesc{"deterministic", AttributeType::String},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -1080,35 +2285,6 @@ struct MergeSummary
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
         AttributeDesc{"N", AttributeType::Int}
-    };
-};
-
-struct Unary
-{
-    static constexpr const char* name = "Unary";
-    
-    enum class Argument
-    {
-        a,
-        b
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"b", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -1378,33 +2554,6 @@ struct RequiresOlderGraphVersion
     };
 };
 
-struct Old
-{
-    static constexpr const char* name = "Old";
-    
-    enum class Argument
-    {
-
-    };
-
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
 struct Imag
 {
     static constexpr const char* name = "Imag";
@@ -1642,6 +2791,37 @@ struct SleepOp
     static constexpr std::array<AttributeDesc, 0> attribute_descs
     {
 
+    };
+};
+
+struct SleepIdentityOp
+{
+    static constexpr const char* name = "SleepIdentityOp";
+    
+    enum class Argument
+    {
+        sleep_seconds,
+        input,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"sleep_seconds", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -2127,123 +3307,6 @@ struct ExperimentalLatencyStatsDataset
     };
 };
 
-struct _MklQuantizedDepthwiseConv2D
-{
-    static constexpr const char* name = "_MklQuantizedDepthwiseConv2D";
-    
-    enum class Argument
-    {
-        input,
-        filter,
-        min_input,
-        max_input,
-        min_filter,
-        max_filter,
-        output,
-        min_output,
-        max_output
-    };
-
-    static constexpr uint32_t input_arg_count = 6;
-    static constexpr uint32_t output_arg_count = 3;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"filter", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"min_input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"max_input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"min_filter", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"max_filter", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"min_output", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"max_output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        Tinput,
-        Tfilter,
-        out_type,
-        data_format,
-        strides,
-        is_filter_const,
-        padding,
-        dilations
-    };
-
-    static constexpr std::array<AttributeDesc, 8> attribute_descs
-    {
-        AttributeDesc{"Tinput", AttributeType::Type},
-        AttributeDesc{"Tfilter", AttributeType::Type},
-        AttributeDesc{"out_type", AttributeType::Type},
-        AttributeDesc{"data_format", AttributeType::String},
-        AttributeDesc{"strides", AttributeType::ListInt},
-        AttributeDesc{"is_filter_const", AttributeType::Bool},
-        AttributeDesc{"padding", AttributeType::String},
-        AttributeDesc{"dilations", AttributeType::ListInt}
-    };
-};
-
-struct ListOutput
-{
-    static constexpr const char* name = "ListOutput";
-    
-    enum class Argument
-    {
-        a
-    };
-
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"a", ArgumentDesc::TensorCount::SequenceAttrList, "T"}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::ListType}
-    };
-};
-
-struct ExperimentalMaxIntraOpParallelismDataset
-{
-    static constexpr const char* name = "ExperimentalMaxIntraOpParallelismDataset";
-    
-    enum class Argument
-    {
-        input_dataset,
-        max_intra_op_parallelism,
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"max_intra_op_parallelism", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        output_types,
-        output_shapes
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
-    };
-};
-
 struct RiscSlice
 {
     static constexpr const char* name = "RiscSlice";
@@ -2539,6 +3602,297 @@ struct ResourceUsingOp
     };
 };
 
+struct StatelessRandomGammaV2
+{
+    static constexpr const char* name = "StatelessRandomGammaV2";
+    
+    enum class Argument
+    {
+        shape,
+        seed,
+        alpha,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"shape", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"seed", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"alpha", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        dtype,
+        T,
+        Tseed
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"Tseed", AttributeType::Type}
+    };
+};
+
+struct RefInputIntInput
+{
+    static constexpr const char* name = "RefInputIntInput";
+    
+    enum class Argument
+    {
+        a,
+        b
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"b", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct EncodeJpeg
+{
+    static constexpr const char* name = "EncodeJpeg";
+    
+    enum class Argument
+    {
+        image,
+        contents
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"image", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"contents", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        format,
+        quality,
+        progressive,
+        optimize_size,
+        chroma_downsampling,
+        density_unit,
+        x_density,
+        y_density,
+        xmp_metadata
+    };
+
+    static constexpr std::array<AttributeDesc, 9> attribute_descs
+    {
+        AttributeDesc{"format", AttributeType::String},
+        AttributeDesc{"quality", AttributeType::Int},
+        AttributeDesc{"progressive", AttributeType::Bool},
+        AttributeDesc{"optimize_size", AttributeType::Bool},
+        AttributeDesc{"chroma_downsampling", AttributeType::Bool},
+        AttributeDesc{"density_unit", AttributeType::String},
+        AttributeDesc{"x_density", AttributeType::Int},
+        AttributeDesc{"y_density", AttributeType::Int},
+        AttributeDesc{"xmp_metadata", AttributeType::String}
+    };
+};
+
+struct NonMaxSuppressionWithOverlaps
+{
+    static constexpr const char* name = "NonMaxSuppressionWithOverlaps";
+    
+    enum class Argument
+    {
+        overlaps,
+        scores,
+        max_output_size,
+        overlap_threshold,
+        score_threshold,
+        selected_indices
+    };
+
+    static constexpr uint32_t input_arg_count = 5;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"overlaps", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"scores", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"max_output_size", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"overlap_threshold", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"score_threshold", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"selected_indices", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct BesselJ0
+{
+    static constexpr const char* name = "BesselJ0";
+    
+    enum class Argument
+    {
+        x,
+        y
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct IsResourceHandleRefCounting
+{
+    static constexpr const char* name = "IsResourceHandleRefCounting";
+    
+    enum class Argument
+    {
+        handle,
+        result
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"result", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct Int64Output
+{
+    static constexpr const char* name = "Int64Output";
+    
+    enum class Argument
+    {
+        out
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"out", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct MakeWeakResourceHandle
+{
+    static constexpr const char* name = "MakeWeakResourceHandle";
+    
+    enum class Argument
+    {
+        handle,
+        dup
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"dup", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct QueueSize
+{
+    static constexpr const char* name = "QueueSize";
+    
+    enum class Argument
+    {
+        handle,
+        size
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"size", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
 struct TestStringOutput
 {
     static constexpr const char* name = "TestStringOutput";
@@ -2761,146 +4115,6 @@ struct EncodePng
     {
         AttributeDesc{"compression", AttributeType::Int},
         AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
-struct Foo3
-{
-    static constexpr const char* name = "Foo3";
-    
-    enum class Argument
-    {
-        a,
-        b,
-        c,
-        d,
-        e
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 2;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"b", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"c", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"d", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"e", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
-struct LookupTableSizeV2
-{
-    static constexpr const char* name = "LookupTableSizeV2";
-    
-    enum class Argument
-    {
-        table_handle,
-        size
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"table_handle", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"size", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
-struct SampleDistortedBoundingBoxV2
-{
-    static constexpr const char* name = "SampleDistortedBoundingBoxV2";
-    
-    enum class Argument
-    {
-        image_size,
-        bounding_boxes,
-        min_object_covered,
-        begin,
-        size,
-        bboxes
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 3;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"image_size", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"bounding_boxes", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"min_object_covered", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"begin", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"size", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"bboxes", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T,
-        seed,
-        seed2,
-        aspect_ratio_range,
-        area_range,
-        max_attempts,
-        use_image_if_no_bounding_boxes
-    };
-
-    static constexpr std::array<AttributeDesc, 7> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"seed", AttributeType::Int},
-        AttributeDesc{"seed2", AttributeType::Int},
-        AttributeDesc{"aspect_ratio_range", AttributeType::ListFloat},
-        AttributeDesc{"area_range", AttributeType::ListFloat},
-        AttributeDesc{"max_attempts", AttributeType::Int},
-        AttributeDesc{"use_image_if_no_bounding_boxes", AttributeType::Bool}
-    };
-};
-
-struct A
-{
-    static constexpr const char* name = "A";
-    
-    enum class Argument
-    {
-        out
-    };
-
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"out", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
     };
 };
 
@@ -3410,6 +4624,43 @@ struct Erfinv
     };
 };
 
+struct XlaCustomCall
+{
+    static constexpr const char* name = "XlaCustomCall";
+    
+    enum class Argument
+    {
+        args,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"args", ArgumentDesc::TensorCount::SequenceAttrList, "T"},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        target_name,
+        backend_config,
+        T,
+        dtype,
+        shape
+    };
+
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    {
+        AttributeDesc{"target_name", AttributeType::String},
+        AttributeDesc{"backend_config", AttributeType::String},
+        AttributeDesc{"T", AttributeType::ListType},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape}
+    };
+};
+
 struct QuantizedConv2DWithBias
 {
     static constexpr const char* name = "QuantizedConv2DWithBias";
@@ -3491,117 +4742,6 @@ struct None
     static constexpr std::array<AttributeDesc, 0> attribute_descs
     {
 
-    };
-};
-
-struct ApplyFtrl
-{
-    static constexpr const char* name = "ApplyFtrl";
-    
-    enum class Argument
-    {
-        var,
-        accum,
-        linear,
-        grad,
-        lr,
-        l1,
-        l2,
-        lr_power,
-        out
-    };
-
-    static constexpr uint32_t input_arg_count = 8;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"var", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"accum", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"linear", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"grad", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"lr", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"l1", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"l2", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"lr_power", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"out", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T,
-        use_locking,
-        multiply_linear_by_lr
-    };
-
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"use_locking", AttributeType::Bool},
-        AttributeDesc{"multiply_linear_by_lr", AttributeType::Bool}
-    };
-};
-
-struct PaddingFIFOQueue
-{
-    static constexpr const char* name = "PaddingFIFOQueue";
-    
-    enum class Argument
-    {
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        component_types,
-        shapes,
-        capacity,
-        container,
-        shared_name
-    };
-
-    static constexpr std::array<AttributeDesc, 5> attribute_descs
-    {
-        AttributeDesc{"component_types", AttributeType::ListType},
-        AttributeDesc{"shapes", AttributeType::ListShape},
-        AttributeDesc{"capacity", AttributeType::Int},
-        AttributeDesc{"container", AttributeType::String},
-        AttributeDesc{"shared_name", AttributeType::String}
-    };
-};
-
-struct ListInput
-{
-    static constexpr const char* name = "ListInput";
-    
-    enum class Argument
-    {
-        a
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"a", ArgumentDesc::TensorCount::SequenceAttrInt, "N"}
-    };
-
-    enum class Attribute
-    {
-        N,
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"N", AttributeType::Int},
-        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -3786,33 +4926,6 @@ struct IntOutput
     static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
     {
         ArgumentDesc{"a", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
-struct Int64Output
-{
-    static constexpr const char* name = "Int64Output";
-    
-    enum class Argument
-    {
-        out
-    };
-
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"out", ArgumentDesc::TensorCount::Single}
     };
 
     enum class Attribute
@@ -4209,15 +5322,17 @@ struct FlatMapDataset
         f,
         Targuments,
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
         AttributeDesc{"f", AttributeType::Func},
         AttributeDesc{"Targuments", AttributeType::ListType},
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -4245,33 +5360,6 @@ struct FloatOutput
     static constexpr std::array<AttributeDesc, 0> attribute_descs
     {
 
-    };
-};
-
-struct OutT
-{
-    static constexpr const char* name = "OutT";
-    
-    enum class Argument
-    {
-        a
-    };
-
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -4626,13 +5714,15 @@ struct SkipDataset
     enum class Attribute
     {
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -4903,97 +5993,6 @@ struct ChooseFastestDataset
     };
 };
 
-struct TwoFloatInputsIntOutput
-{
-    static constexpr const char* name = "TwoFloatInputsIntOutput";
-    
-    enum class Argument
-    {
-        a,
-        b,
-        c
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"b", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"c", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
-struct TensorDataset
-{
-    static constexpr const char* name = "TensorDataset";
-    
-    enum class Argument
-    {
-        components,
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"components", ArgumentDesc::TensorCount::SequenceAttrList, "Toutput_types"},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        Toutput_types,
-        output_shapes
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"Toutput_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
-    };
-};
-
-struct FloatOutputStringOutput
-{
-    static constexpr const char* name = "FloatOutputStringOutput";
-    
-    enum class Argument
-    {
-        a,
-        b
-    };
-
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 2;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"b", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
 struct TwoIntInputs
 {
     static constexpr const char* name = "TwoIntInputs";
@@ -5143,144 +6142,6 @@ struct TwoFloatInputs
     };
 };
 
-struct OpWithFutureDefaultAttr
-{
-    static constexpr const char* name = "OpWithFutureDefaultAttr";
-    
-    enum class Argument
-    {
-
-    };
-
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
-struct StatelessRandomGammaV2
-{
-    static constexpr const char* name = "StatelessRandomGammaV2";
-    
-    enum class Argument
-    {
-        shape,
-        seed,
-        alpha,
-        output
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"shape", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"seed", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"alpha", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        dtype,
-        T,
-        Tseed
-    };
-
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
-    {
-        AttributeDesc{"dtype", AttributeType::Type},
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"Tseed", AttributeType::Type}
-    };
-};
-
-struct RefInputIntInput
-{
-    static constexpr const char* name = "RefInputIntInput";
-    
-    enum class Argument
-    {
-        a,
-        b
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"b", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
-struct EncodeJpeg
-{
-    static constexpr const char* name = "EncodeJpeg";
-    
-    enum class Argument
-    {
-        image,
-        contents
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"image", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"contents", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        format,
-        quality,
-        progressive,
-        optimize_size,
-        chroma_downsampling,
-        density_unit,
-        x_density,
-        y_density,
-        xmp_metadata
-    };
-
-    static constexpr std::array<AttributeDesc, 9> attribute_descs
-    {
-        AttributeDesc{"format", AttributeType::String},
-        AttributeDesc{"quality", AttributeType::Int},
-        AttributeDesc{"progressive", AttributeType::Bool},
-        AttributeDesc{"optimize_size", AttributeType::Bool},
-        AttributeDesc{"chroma_downsampling", AttributeType::Bool},
-        AttributeDesc{"density_unit", AttributeType::String},
-        AttributeDesc{"x_density", AttributeType::Int},
-        AttributeDesc{"y_density", AttributeType::Int},
-        AttributeDesc{"xmp_metadata", AttributeType::String}
-    };
-};
-
 struct _MklAvgPoolGrad
 {
     static constexpr const char* name = "_MklAvgPoolGrad";
@@ -5373,6 +6234,317 @@ struct RefInputFloatInputIntOutput
         ArgumentDesc{"a", ArgumentDesc::TensorCount::Single},
         ArgumentDesc{"b", ArgumentDesc::TensorCount::Single},
         ArgumentDesc{"c", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct ApplyFtrl
+{
+    static constexpr const char* name = "ApplyFtrl";
+    
+    enum class Argument
+    {
+        var,
+        accum,
+        linear,
+        grad,
+        lr,
+        l1,
+        l2,
+        lr_power,
+        out
+    };
+
+    static constexpr uint32_t input_arg_count = 8;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"var", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"accum", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"linear", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"grad", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"lr", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"l1", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"l2", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"lr_power", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"out", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        use_locking,
+        multiply_linear_by_lr
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"use_locking", AttributeType::Bool},
+        AttributeDesc{"multiply_linear_by_lr", AttributeType::Bool}
+    };
+};
+
+struct PaddingFIFOQueue
+{
+    static constexpr const char* name = "PaddingFIFOQueue";
+    
+    enum class Argument
+    {
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        component_types,
+        shapes,
+        capacity,
+        container,
+        shared_name
+    };
+
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    {
+        AttributeDesc{"component_types", AttributeType::ListType},
+        AttributeDesc{"shapes", AttributeType::ListShape},
+        AttributeDesc{"capacity", AttributeType::Int},
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
+    };
+};
+
+struct ListInput
+{
+    static constexpr const char* name = "ListInput";
+    
+    enum class Argument
+    {
+        a
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"a", ArgumentDesc::TensorCount::SequenceAttrInt, "N"}
+    };
+
+    enum class Attribute
+    {
+        N,
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct _MklQuantizedDepthwiseConv2D
+{
+    static constexpr const char* name = "_MklQuantizedDepthwiseConv2D";
+    
+    enum class Argument
+    {
+        input,
+        filter,
+        min_input,
+        max_input,
+        min_filter,
+        max_filter,
+        output,
+        min_output,
+        max_output
+    };
+
+    static constexpr uint32_t input_arg_count = 6;
+    static constexpr uint32_t output_arg_count = 3;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"filter", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"min_input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"max_input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"min_filter", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"max_filter", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"min_output", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"max_output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        Tinput,
+        Tfilter,
+        out_type,
+        data_format,
+        strides,
+        is_filter_const,
+        padding,
+        dilations
+    };
+
+    static constexpr std::array<AttributeDesc, 8> attribute_descs
+    {
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
+    };
+};
+
+struct ListOutput
+{
+    static constexpr const char* name = "ListOutput";
+    
+    enum class Argument
+    {
+        a
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"a", ArgumentDesc::TensorCount::SequenceAttrList, "T"}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::ListType}
+    };
+};
+
+struct ExperimentalMaxIntraOpParallelismDataset
+{
+    static constexpr const char* name = "ExperimentalMaxIntraOpParallelismDataset";
+    
+    enum class Argument
+    {
+        input_dataset,
+        max_intra_op_parallelism,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"max_intra_op_parallelism", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        output_types,
+        output_shapes
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
+    };
+};
+
+struct Unary
+{
+    static constexpr const char* name = "Unary";
+    
+    enum class Argument
+    {
+        a,
+        b
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"b", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct OpWithDefaultAttr
+{
+    static constexpr const char* name = "OpWithDefaultAttr";
+    
+    enum class Argument
+    {
+        a
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        default_float
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"default_float", AttributeType::Float}
+    };
+};
+
+struct OpWithFutureDefaultAttr
+{
+    static constexpr const char* name = "OpWithFutureDefaultAttr";
+    
+    enum class Argument
+    {
+
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+
     };
 
     enum class Attribute
@@ -5728,6 +6900,33 @@ struct DecodeProtoV2
         AttributeDesc{"descriptor_source", AttributeType::String},
         AttributeDesc{"message_format", AttributeType::String},
         AttributeDesc{"sanitize", AttributeType::Bool}
+    };
+};
+
+struct OutT
+{
+    static constexpr const char* name = "OutT";
+    
+    enum class Argument
+    {
+        a
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -6195,35 +7394,6 @@ struct XlaWhile
     };
 };
 
-struct DatasetCardinality
-{
-    static constexpr const char* name = "DatasetCardinality";
-    
-    enum class Argument
-    {
-        input_dataset,
-        cardinality
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"cardinality", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
 struct BatchDatasetV2
 {
     static constexpr const char* name = "BatchDatasetV2";
@@ -6250,14 +7420,16 @@ struct BatchDatasetV2
     {
         parallel_copy,
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
         AttributeDesc{"parallel_copy", AttributeType::Bool},
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -6287,6 +7459,35 @@ struct Restrict
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
         AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct DatasetCardinality
+{
+    static constexpr const char* name = "DatasetCardinality";
+    
+    enum class Argument
+    {
+        input_dataset,
+        cardinality
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"cardinality", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
     };
 };
 
@@ -6536,6 +7737,33 @@ struct TypeListRestrict
     };
 };
 
+struct _RecvTPUEmbeddingDeduplicationData
+{
+    static constexpr const char* name = "_RecvTPUEmbeddingDeduplicationData";
+    
+    enum class Argument
+    {
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        config
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"config", AttributeType::String}
+    };
+};
+
 struct OutTypeListRestrict
 {
     static constexpr const char* name = "OutTypeListRestrict";
@@ -6761,6 +7989,61 @@ struct StackPop
     };
 };
 
+struct FusedBatchNormV2
+{
+    static constexpr const char* name = "FusedBatchNormV2";
+    
+    enum class Argument
+    {
+        x,
+        scale,
+        offset,
+        mean,
+        variance,
+        y,
+        batch_mean,
+        batch_variance,
+        reserve_space_1,
+        reserve_space_2
+    };
+
+    static constexpr uint32_t input_arg_count = 5;
+    static constexpr uint32_t output_arg_count = 5;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"scale", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"offset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"mean", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"variance", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"batch_mean", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"batch_variance", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"reserve_space_1", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"reserve_space_2", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        U,
+        epsilon,
+        exponential_avg_factor,
+        data_format,
+        is_training
+    };
+
+    static constexpr std::array<AttributeDesc, 6> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"exponential_avg_factor", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
+    };
+};
+
 struct CudnnRNNParamsToCanonicalV2
 {
     static constexpr const char* name = "CudnnRNNParamsToCanonicalV2";
@@ -6876,61 +8159,6 @@ struct Attr
     };
 };
 
-struct FusedBatchNormV2
-{
-    static constexpr const char* name = "FusedBatchNormV2";
-    
-    enum class Argument
-    {
-        x,
-        scale,
-        offset,
-        mean,
-        variance,
-        y,
-        batch_mean,
-        batch_variance,
-        reserve_space_1,
-        reserve_space_2
-    };
-
-    static constexpr uint32_t input_arg_count = 5;
-    static constexpr uint32_t output_arg_count = 5;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"scale", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"offset", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"mean", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"variance", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"batch_mean", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"batch_variance", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"reserve_space_1", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"reserve_space_2", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T,
-        U,
-        epsilon,
-        exponential_avg_factor,
-        data_format,
-        is_training
-    };
-
-    static constexpr std::array<AttributeDesc, 6> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"U", AttributeType::Type},
-        AttributeDesc{"epsilon", AttributeType::Float},
-        AttributeDesc{"exponential_avg_factor", AttributeType::Float},
-        AttributeDesc{"data_format", AttributeType::String},
-        AttributeDesc{"is_training", AttributeType::Bool}
-    };
-};
-
 struct GatherV2
 {
     static constexpr const char* name = "GatherV2";
@@ -6994,171 +8222,6 @@ struct AttrFloat
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
         AttributeDesc{"a", AttributeType::Float}
-    };
-};
-
-struct _ArrayToList
-{
-    static constexpr const char* name = "_ArrayToList";
-    
-    enum class Argument
-    {
-        input,
-        output
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::SequenceAttrInt, "N"},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::SequenceAttrList, "out_types"}
-    };
-
-    enum class Attribute
-    {
-        T,
-        N,
-        out_types
-    };
-
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"N", AttributeType::Int},
-        AttributeDesc{"out_types", AttributeType::ListType}
-    };
-};
-
-struct UniqueDataset
-{
-    static constexpr const char* name = "UniqueDataset";
-    
-    enum class Argument
-    {
-        input_dataset,
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        output_types,
-        output_shapes
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
-    };
-};
-
-struct ApplyRMSProp
-{
-    static constexpr const char* name = "ApplyRMSProp";
-    
-    enum class Argument
-    {
-        var,
-        ms,
-        mom,
-        lr,
-        rho,
-        momentum,
-        epsilon,
-        grad,
-        out
-    };
-
-    static constexpr uint32_t input_arg_count = 8;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"var", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"ms", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"mom", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"lr", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"rho", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"momentum", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"epsilon", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"grad", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"out", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T,
-        use_locking
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"use_locking", AttributeType::Bool}
-    };
-};
-
-struct BesselY0
-{
-    static constexpr const char* name = "BesselY0";
-    
-    enum class Argument
-    {
-        x,
-        y
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
-struct AttrBool
-{
-    static constexpr const char* name = "AttrBool";
-    
-    enum class Argument
-    {
-
-    };
-
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-
-    };
-
-    enum class Attribute
-    {
-        a
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"a", AttributeType::Bool}
     };
 };
 
@@ -7675,13 +8738,15 @@ struct WindowDataset
     enum class Attribute
     {
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -7912,6 +8977,37 @@ struct ArgMax
     };
 };
 
+struct _RecvTPUEmbeddingActivations
+{
+    static constexpr const char* name = "_RecvTPUEmbeddingActivations";
+    
+    enum class Argument
+    {
+        deduplication_data,
+        outputs
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"deduplication_data", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"outputs", ArgumentDesc::TensorCount::SequenceAttrInt, "num_tables"}
+    };
+
+    enum class Attribute
+    {
+        num_tables,
+        config
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"num_tables", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
+    };
+};
+
 struct AttrShapeList
 {
     static constexpr const char* name = "AttrShapeList";
@@ -7969,10 +9065,11 @@ struct ParallelMapDataset
         output_shapes,
         use_inter_op_parallelism,
         sloppy,
-        preserve_cardinality
+        preserve_cardinality,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 7> attribute_descs
+    static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
         AttributeDesc{"f", AttributeType::Func},
         AttributeDesc{"Targuments", AttributeType::ListType},
@@ -7980,7 +9077,8 @@ struct ParallelMapDataset
         AttributeDesc{"output_shapes", AttributeType::ListShape},
         AttributeDesc{"use_inter_op_parallelism", AttributeType::Bool},
         AttributeDesc{"sloppy", AttributeType::Bool},
-        AttributeDesc{"preserve_cardinality", AttributeType::Bool}
+        AttributeDesc{"preserve_cardinality", AttributeType::Bool},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -8196,39 +9294,6 @@ struct AttrPartialShapeList
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
         AttributeDesc{"a", AttributeType::ListShape}
-    };
-};
-
-struct BiasAdd
-{
-    static constexpr const char* name = "BiasAdd";
-    
-    enum class Argument
-    {
-        value,
-        bias,
-        output
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"value", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"bias", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T,
-        data_format
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"data_format", AttributeType::String}
     };
 };
 
@@ -8691,6 +9756,70 @@ struct ReservedAttr
     };
 };
 
+struct HashTableV2
+{
+    static constexpr const char* name = "HashTableV2";
+    
+    enum class Argument
+    {
+        table_handle
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"table_handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        container,
+        shared_name,
+        use_node_name_sharing,
+        key_dtype,
+        value_dtype
+    };
+
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    {
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"use_node_name_sharing", AttributeType::Bool},
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type}
+    };
+};
+
+struct CustomAggregator
+{
+    static constexpr const char* name = "CustomAggregator";
+    
+    enum class Argument
+    {
+        input,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        id
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"id", AttributeType::String}
+    };
+};
+
 struct AttrTypeDefault
 {
     static constexpr const char* name = "AttrTypeDefault";
@@ -8888,13 +10017,15 @@ struct RegisterDataset
     enum class Attribute
     {
         external_state_policy,
-        element_spec
+        element_spec,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
         AttributeDesc{"external_state_policy", AttributeType::Int},
-        AttributeDesc{"element_spec", AttributeType::String}
+        AttributeDesc{"element_spec", AttributeType::String},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -8924,6 +10055,35 @@ struct Ceil
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
         AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct XlaOptimizationBarrier
+{
+    static constexpr const char* name = "XlaOptimizationBarrier";
+    
+    enum class Argument
+    {
+        input,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::SequenceAttrList, "T"},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::SequenceAttrList, "T"}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::ListType}
     };
 };
 
@@ -9231,49 +10391,6 @@ struct _MklConcatV2
     };
 };
 
-struct Conv2D
-{
-    static constexpr const char* name = "Conv2D";
-    
-    enum class Argument
-    {
-        input,
-        filter,
-        output
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"filter", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T,
-        strides,
-        use_cudnn_on_gpu,
-        padding,
-        explicit_paddings,
-        data_format,
-        dilations
-    };
-
-    static constexpr std::array<AttributeDesc, 7> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"strides", AttributeType::ListInt},
-        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
-        AttributeDesc{"padding", AttributeType::String},
-        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
-        AttributeDesc{"data_format", AttributeType::String},
-        AttributeDesc{"dilations", AttributeType::ListInt}
-    };
-};
-
 struct NInTwoTypeVariables
 {
     static constexpr const char* name = "NInTwoTypeVariables";
@@ -9562,16 +10679,18 @@ struct ParallelInterleaveDatasetV3
         deterministic,
         Targuments,
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
         AttributeDesc{"f", AttributeType::Func},
         AttributeDesc{"deterministic", AttributeType::String},
         AttributeDesc{"Targuments", AttributeType::ListType},
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -9644,16 +10763,18 @@ struct MapAndBatchDataset
         Targuments,
         output_types,
         output_shapes,
-        preserve_cardinality
+        preserve_cardinality,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
         AttributeDesc{"f", AttributeType::Func},
         AttributeDesc{"Targuments", AttributeType::ListType},
         AttributeDesc{"output_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape},
-        AttributeDesc{"preserve_cardinality", AttributeType::Bool}
+        AttributeDesc{"preserve_cardinality", AttributeType::Bool},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -9991,64 +11112,6 @@ struct NPolymorphicRestrictOut
     };
 };
 
-struct DatasetToTFRecord
-{
-    static constexpr const char* name = "DatasetToTFRecord";
-    
-    enum class Argument
-    {
-        input_dataset,
-        filename,
-        compression_type
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"filename", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"compression_type", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
-struct RefIn
-{
-    static constexpr const char* name = "RefIn";
-    
-    enum class Argument
-    {
-        a
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"a", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
 struct TwoRefsIn
 {
     static constexpr const char* name = "TwoRefsIn";
@@ -10075,41 +11138,6 @@ struct TwoRefsIn
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
         AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
-struct ShuffleDatasetV2
-{
-    static constexpr const char* name = "ShuffleDatasetV2";
-    
-    enum class Argument
-    {
-        input_dataset,
-        buffer_size,
-        seed_generator,
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"buffer_size", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"seed_generator", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        output_types,
-        output_shapes
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -10204,6 +11232,43 @@ struct BoostedTreesCalculateBestFeatureSplitV2
     {
         AttributeDesc{"num_features", AttributeType::Int},
         AttributeDesc{"logits_dimension", AttributeType::Int}
+    };
+};
+
+struct ShuffleDatasetV2
+{
+    static constexpr const char* name = "ShuffleDatasetV2";
+    
+    enum class Argument
+    {
+        input_dataset,
+        buffer_size,
+        seed_generator,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"buffer_size", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"seed_generator", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        output_types,
+        output_shapes,
+        metadata
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -10376,13 +11441,15 @@ struct ConcatenateDataset
     enum class Attribute
     {
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -10412,14 +11479,16 @@ struct ShardDataset
     {
         require_non_empty,
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
         AttributeDesc{"require_non_empty", AttributeType::Bool},
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -10824,76 +11893,6 @@ struct XlaLaunch
     };
 };
 
-struct XlaClusterOutput
-{
-    static constexpr const char* name = "XlaClusterOutput";
-    
-    enum class Argument
-    {
-        input,
-        outputs
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"outputs", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
-struct BatchNormWithGlobalNormalization
-{
-    static constexpr const char* name = "BatchNormWithGlobalNormalization";
-    
-    enum class Argument
-    {
-        t,
-        m,
-        v,
-        beta,
-        gamma,
-        result
-    };
-
-    static constexpr uint32_t input_arg_count = 5;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"t", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"m", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"v", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"beta", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"gamma", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"result", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T,
-        variance_epsilon,
-        scale_after_normalization
-    };
-
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"variance_epsilon", AttributeType::Float},
-        AttributeDesc{"scale_after_normalization", AttributeType::Bool}
-    };
-};
-
 struct SparseApplyFtrlV2
 {
     static constexpr const char* name = "SparseApplyFtrlV2";
@@ -10981,6 +11980,76 @@ struct Cumsum
         AttributeDesc{"reverse", AttributeType::Bool},
         AttributeDesc{"T", AttributeType::Type},
         AttributeDesc{"Tidx", AttributeType::Type}
+    };
+};
+
+struct BatchNormWithGlobalNormalization
+{
+    static constexpr const char* name = "BatchNormWithGlobalNormalization";
+    
+    enum class Argument
+    {
+        t,
+        m,
+        v,
+        beta,
+        gamma,
+        result
+    };
+
+    static constexpr uint32_t input_arg_count = 5;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"t", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"m", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"v", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"beta", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"gamma", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"result", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        variance_epsilon,
+        scale_after_normalization
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"variance_epsilon", AttributeType::Float},
+        AttributeDesc{"scale_after_normalization", AttributeType::Bool}
+    };
+};
+
+struct XlaClusterOutput
+{
+    static constexpr const char* name = "XlaClusterOutput";
+    
+    enum class Argument
+    {
+        input,
+        outputs
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"outputs", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -11979,12 +13048,45 @@ struct FixedLengthRecordDatasetV2
 
     enum class Attribute
     {
-
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
+        AttributeDesc{"metadata", AttributeType::String}
+    };
+};
 
+struct _NcclBroadcastRecv
+{
+    static constexpr const char* name = "_NcclBroadcastRecv";
+    
+    enum class Argument
+    {
+        shape,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"shape", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        num_devices,
+        shared_name
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_devices", AttributeType::Int},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -12054,39 +13156,6 @@ struct CudnnRNNBackpropV2
         AttributeDesc{"dropout", AttributeType::Float},
         AttributeDesc{"seed", AttributeType::Int},
         AttributeDesc{"seed2", AttributeType::Int}
-    };
-};
-
-struct _NcclBroadcastRecv
-{
-    static constexpr const char* name = "_NcclBroadcastRecv";
-    
-    enum class Argument
-    {
-        shape,
-        output
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"shape", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T,
-        num_devices,
-        shared_name
-    };
-
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"num_devices", AttributeType::Int},
-        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -13015,6 +14084,41 @@ struct BatchSelfAdjointEigV2
     };
 };
 
+struct RandomIndexShuffle
+{
+    static constexpr const char* name = "RandomIndexShuffle";
+    
+    enum class Argument
+    {
+        index,
+        seed,
+        max_index,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"index", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"seed", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"max_index", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        dtype,
+        Tseed
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tseed", AttributeType::Type}
+    };
+};
+
 struct MatrixDeterminant
 {
     static constexpr const char* name = "MatrixDeterminant";
@@ -13418,35 +14522,6 @@ struct ImmutableConst
 struct ZerosLike
 {
     static constexpr const char* name = "ZerosLike";
-    
-    enum class Argument
-    {
-        x,
-        y
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
-struct OnesLike
-{
-    static constexpr const char* name = "OnesLike";
     
     enum class Argument
     {
@@ -14894,54 +15969,38 @@ struct _ParallelConcatUpdate
     };
 };
 
-struct CudnnRNNParamsToCanonical
+struct Gather
 {
-    static constexpr const char* name = "CudnnRNNParamsToCanonical";
+    static constexpr const char* name = "Gather";
     
     enum class Argument
     {
-        num_layers,
-        num_units,
-        input_size,
         params,
-        weights,
-        biases
+        indices,
+        output
     };
 
-    static constexpr uint32_t input_arg_count = 4;
-    static constexpr uint32_t output_arg_count = 2;
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
     static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
     {
-        ArgumentDesc{"num_layers", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"num_units", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"input_size", ArgumentDesc::TensorCount::Single},
         ArgumentDesc{"params", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"weights", ArgumentDesc::TensorCount::SequenceAttrInt, "num_params"},
-        ArgumentDesc{"biases", ArgumentDesc::TensorCount::SequenceAttrInt, "num_params"}
+        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
     };
 
     enum class Attribute
     {
-        T,
-        num_params,
-        rnn_mode,
-        input_mode,
-        direction,
-        dropout,
-        seed,
-        seed2
+        validate_indices,
+        Tparams,
+        Tindices
     };
 
-    static constexpr std::array<AttributeDesc, 8> attribute_descs
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"num_params", AttributeType::Int},
-        AttributeDesc{"rnn_mode", AttributeType::String},
-        AttributeDesc{"input_mode", AttributeType::String},
-        AttributeDesc{"direction", AttributeType::String},
-        AttributeDesc{"dropout", AttributeType::Float},
-        AttributeDesc{"seed", AttributeType::Int},
-        AttributeDesc{"seed2", AttributeType::Int}
+        AttributeDesc{"validate_indices", AttributeType::Bool},
+        AttributeDesc{"Tparams", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
     };
 };
 
@@ -14998,38 +16057,54 @@ struct FusedBatchNorm
     };
 };
 
-struct Gather
+struct CudnnRNNParamsToCanonical
 {
-    static constexpr const char* name = "Gather";
+    static constexpr const char* name = "CudnnRNNParamsToCanonical";
     
     enum class Argument
     {
+        num_layers,
+        num_units,
+        input_size,
         params,
-        indices,
-        output
+        weights,
+        biases
     };
 
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 1;
+    static constexpr uint32_t input_arg_count = 4;
+    static constexpr uint32_t output_arg_count = 2;
     static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
     {
+        ArgumentDesc{"num_layers", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"num_units", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"input_size", ArgumentDesc::TensorCount::Single},
         ArgumentDesc{"params", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+        ArgumentDesc{"weights", ArgumentDesc::TensorCount::SequenceAttrInt, "num_params"},
+        ArgumentDesc{"biases", ArgumentDesc::TensorCount::SequenceAttrInt, "num_params"}
     };
 
     enum class Attribute
     {
-        validate_indices,
-        Tparams,
-        Tindices
+        T,
+        num_params,
+        rnn_mode,
+        input_mode,
+        direction,
+        dropout,
+        seed,
+        seed2
     };
 
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
-        AttributeDesc{"validate_indices", AttributeType::Bool},
-        AttributeDesc{"Tparams", AttributeType::Type},
-        AttributeDesc{"Tindices", AttributeType::Type}
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_params", AttributeType::Int},
+        AttributeDesc{"rnn_mode", AttributeType::String},
+        AttributeDesc{"input_mode", AttributeType::String},
+        AttributeDesc{"direction", AttributeType::String},
+        AttributeDesc{"dropout", AttributeType::Float},
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int}
     };
 };
 
@@ -16347,6 +17422,41 @@ struct SparseSegmentSumGrad
     };
 };
 
+struct _SendTPUEmbeddingGradients
+{
+    static constexpr const char* name = "_SendTPUEmbeddingGradients";
+    
+    enum class Argument
+    {
+        gradients,
+        learning_rates,
+        deduplication_data
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"gradients", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"learning_rates", ArgumentDesc::TensorCount::SequenceAttrInt, "NumLearningRateTags"},
+        ArgumentDesc{"deduplication_data", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        NumTables,
+        NumLearningRateTags,
+        config
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"NumTables", AttributeType::Int},
+        AttributeDesc{"NumLearningRateTags", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
+    };
+};
+
 struct _MklTranspose
 {
     static constexpr const char* name = "_MklTranspose";
@@ -16629,13 +17739,15 @@ struct TakeDataset
     enum class Attribute
     {
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -17276,33 +18388,6 @@ struct RiscFft
     };
 };
 
-struct DummyMemoryCache
-{
-    static constexpr const char* name = "DummyMemoryCache";
-    
-    enum class Argument
-    {
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
 struct TensorStridedSliceUpdate
 {
     static constexpr const char* name = "TensorStridedSliceUpdate";
@@ -17349,6 +18434,33 @@ struct TensorStridedSliceUpdate
         AttributeDesc{"ellipsis_mask", AttributeType::Int},
         AttributeDesc{"new_axis_mask", AttributeType::Int},
         AttributeDesc{"shrink_axis_mask", AttributeType::Int}
+    };
+};
+
+struct DummyMemoryCache
+{
+    static constexpr const char* name = "DummyMemoryCache";
+    
+    enum class Argument
+    {
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
     };
 };
 
@@ -17817,10 +18929,11 @@ struct GeneratorDataset
         Tnext_func_args,
         Tfinalize_func_args,
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 8> attribute_descs
+    static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
         AttributeDesc{"init_func", AttributeType::Func},
         AttributeDesc{"next_func", AttributeType::Func},
@@ -17829,7 +18942,8 @@ struct GeneratorDataset
         AttributeDesc{"Tnext_func_args", AttributeType::ListType},
         AttributeDesc{"Tfinalize_func_args", AttributeType::ListType},
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -18108,15 +19222,17 @@ struct InterleaveDataset
         f,
         Targuments,
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
         AttributeDesc{"f", AttributeType::Func},
         AttributeDesc{"Targuments", AttributeType::ListType},
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -19059,6 +20175,72 @@ struct ScatterNdNonAliasingAdd
     };
 };
 
+struct PrintV2
+{
+    static constexpr const char* name = "PrintV2";
+    
+    enum class Argument
+    {
+        input
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        output_stream,
+        end
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"output_stream", AttributeType::String},
+        AttributeDesc{"end", AttributeType::String}
+    };
+};
+
+struct CollectiveReduceV3
+{
+    static constexpr const char* name = "CollectiveReduceV3";
+    
+    enum class Argument
+    {
+        input,
+        communicator,
+        group_assignment,
+        data
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"communicator", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"group_assignment", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"data", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        reduction,
+        timeout_seconds
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"reduction", AttributeType::String},
+        AttributeDesc{"timeout_seconds", AttributeType::Float}
+    };
+};
+
 struct BoostedTreesAggregateStats
 {
     static constexpr const char* name = "BoostedTreesAggregateStats";
@@ -19180,6 +20362,41 @@ struct UnicodeDecodeWithOffsets
     };
 };
 
+struct NcclAllReduce
+{
+    static constexpr const char* name = "NcclAllReduce";
+    
+    enum class Argument
+    {
+        input,
+        data
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"data", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        reduction,
+        T,
+        num_devices,
+        shared_name
+    };
+
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    {
+        AttributeDesc{"reduction", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_devices", AttributeType::Int},
+        AttributeDesc{"shared_name", AttributeType::String}
+    };
+};
+
 struct QuantizeV2
 {
     static constexpr const char* name = "QuantizeV2";
@@ -19224,41 +20441,6 @@ struct QuantizeV2
         AttributeDesc{"narrow_range", AttributeType::Bool},
         AttributeDesc{"axis", AttributeType::Int},
         AttributeDesc{"ensure_minimum_range", AttributeType::Float}
-    };
-};
-
-struct NcclAllReduce
-{
-    static constexpr const char* name = "NcclAllReduce";
-    
-    enum class Argument
-    {
-        input,
-        data
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"data", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        reduction,
-        T,
-        num_devices,
-        shared_name
-    };
-
-    static constexpr std::array<AttributeDesc, 4> attribute_descs
-    {
-        AttributeDesc{"reduction", AttributeType::String},
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"num_devices", AttributeType::Int},
-        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -19669,6 +20851,45 @@ struct QuantizedInstanceNorm
     };
 };
 
+struct FilterDataset
+{
+    static constexpr const char* name = "FilterDataset";
+    
+    enum class Argument
+    {
+        input_dataset,
+        other_arguments,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"other_arguments", ArgumentDesc::TensorCount::SequenceAttrList, "Targuments"},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        predicate,
+        Targuments,
+        output_types,
+        output_shapes,
+        metadata
+    };
+
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    {
+        AttributeDesc{"predicate", AttributeType::Func},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
+    };
+};
+
 struct UpperBound
 {
     static constexpr const char* name = "UpperBound";
@@ -19798,43 +21019,6 @@ struct AnonymousRandomSeedGenerator
     static constexpr std::array<AttributeDesc, 0> attribute_descs
     {
 
-    };
-};
-
-struct FilterDataset
-{
-    static constexpr const char* name = "FilterDataset";
-    
-    enum class Argument
-    {
-        input_dataset,
-        other_arguments,
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"other_arguments", ArgumentDesc::TensorCount::SequenceAttrList, "Targuments"},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        predicate,
-        Targuments,
-        output_types,
-        output_shapes
-    };
-
-    static constexpr std::array<AttributeDesc, 4> attribute_descs
-    {
-        AttributeDesc{"predicate", AttributeType::Func},
-        AttributeDesc{"Targuments", AttributeType::ListType},
-        AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -20262,10 +21446,11 @@ struct ParallelMapDatasetV2
         output_shapes,
         use_inter_op_parallelism,
         deterministic,
-        preserve_cardinality
+        preserve_cardinality,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 7> attribute_descs
+    static constexpr std::array<AttributeDesc, 8> attribute_descs
     {
         AttributeDesc{"f", AttributeType::Func},
         AttributeDesc{"Targuments", AttributeType::ListType},
@@ -20273,7 +21458,8 @@ struct ParallelMapDatasetV2
         AttributeDesc{"output_shapes", AttributeType::ListShape},
         AttributeDesc{"use_inter_op_parallelism", AttributeType::Bool},
         AttributeDesc{"deterministic", AttributeType::String},
-        AttributeDesc{"preserve_cardinality", AttributeType::Bool}
+        AttributeDesc{"preserve_cardinality", AttributeType::Bool},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -20902,32 +22088,38 @@ struct _MklConcat
     };
 };
 
-struct AnonymousMemoryCache
+struct TensorArrayConcat
 {
-    static constexpr const char* name = "AnonymousMemoryCache";
+    static constexpr const char* name = "TensorArrayConcat";
     
     enum class Argument
     {
         handle,
-        deleter
+        flow_in,
+        value,
+        lengths
     };
 
-    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t input_arg_count = 2;
     static constexpr uint32_t output_arg_count = 2;
     static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
     {
         ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"deleter", ArgumentDesc::TensorCount::Single}
+        ArgumentDesc{"flow_in", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"value", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"lengths", ArgumentDesc::TensorCount::Single}
     };
 
     enum class Attribute
     {
-
+        dtype,
+        element_shape_except0
     };
 
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"element_shape_except0", AttributeType::Shape}
     };
 };
 
@@ -20962,38 +22154,32 @@ struct BatchMatrixSetDiag
     };
 };
 
-struct TensorArrayConcat
+struct AnonymousMemoryCache
 {
-    static constexpr const char* name = "TensorArrayConcat";
+    static constexpr const char* name = "AnonymousMemoryCache";
     
     enum class Argument
     {
         handle,
-        flow_in,
-        value,
-        lengths
+        deleter
     };
 
-    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t input_arg_count = 0;
     static constexpr uint32_t output_arg_count = 2;
     static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
     {
         ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"flow_in", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"value", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"lengths", ArgumentDesc::TensorCount::Single}
+        ArgumentDesc{"deleter", ArgumentDesc::TensorCount::Single}
     };
 
     enum class Attribute
     {
-        dtype,
-        element_shape_except0
+
     };
 
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
     {
-        AttributeDesc{"dtype", AttributeType::Type},
-        AttributeDesc{"element_shape_except0", AttributeType::Shape}
+
     };
 };
 
@@ -21094,41 +22280,6 @@ struct ExperimentalPrivateThreadPoolDataset
     };
 };
 
-struct CacheDatasetV2
-{
-    static constexpr const char* name = "CacheDatasetV2";
-    
-    enum class Argument
-    {
-        input_dataset,
-        filename,
-        cache,
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"filename", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"cache", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        output_types,
-        output_shapes
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
-    };
-};
-
 struct DecodeWav
 {
     static constexpr const char* name = "DecodeWav";
@@ -21162,116 +22313,40 @@ struct DecodeWav
     };
 };
 
-struct AudioSpectrogram
+struct CacheDatasetV2
 {
-    static constexpr const char* name = "AudioSpectrogram";
-    
-    enum class Argument
-    {
-        input,
-        spectrogram
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"spectrogram", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        window_size,
-        stride,
-        magnitude_squared
-    };
-
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
-    {
-        AttributeDesc{"window_size", AttributeType::Int},
-        AttributeDesc{"stride", AttributeType::Int},
-        AttributeDesc{"magnitude_squared", AttributeType::Bool}
-    };
-};
-
-struct ShuffleAndRepeatDatasetV2
-{
-    static constexpr const char* name = "ShuffleAndRepeatDatasetV2";
+    static constexpr const char* name = "CacheDatasetV2";
     
     enum class Argument
     {
         input_dataset,
-        buffer_size,
-        seed,
-        seed2,
-        count,
-        seed_generator,
+        filename,
+        cache,
         handle
     };
 
-    static constexpr uint32_t input_arg_count = 6;
+    static constexpr uint32_t input_arg_count = 3;
     static constexpr uint32_t output_arg_count = 1;
     static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
     {
         ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"buffer_size", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"seed", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"seed2", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"count", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"seed_generator", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"filename", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"cache", ArgumentDesc::TensorCount::Single},
         ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
     };
 
     enum class Attribute
     {
-        reshuffle_each_iteration,
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
     static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
-        AttributeDesc{"reshuffle_each_iteration", AttributeType::Bool},
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
-    };
-};
-
-struct _MklMaximum
-{
-    static constexpr const char* name = "_MklMaximum";
-    
-    enum class Argument
-    {
-        x,
-        y,
-        mkl_x,
-        mkl_y,
-        z,
-        mkl_z
-    };
-
-    static constexpr uint32_t input_arg_count = 4;
-    static constexpr uint32_t output_arg_count = 2;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"mkl_x", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"mkl_y", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"z", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"mkl_z", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -21349,72 +22424,6 @@ struct Mfcc
     };
 };
 
-struct StatefulStandardNormalV2
-{
-    static constexpr const char* name = "StatefulStandardNormalV2";
-    
-    enum class Argument
-    {
-        resource,
-        algorithm,
-        shape,
-        output
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"algorithm", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"shape", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        dtype,
-        shape_dtype
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"dtype", AttributeType::Type},
-        AttributeDesc{"shape_dtype", AttributeType::Type}
-    };
-};
-
-struct _NcclBroadcastSend
-{
-    static constexpr const char* name = "_NcclBroadcastSend";
-    
-    enum class Argument
-    {
-        input
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T,
-        num_devices,
-        shared_name
-    };
-
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"num_devices", AttributeType::Int},
-        AttributeDesc{"shared_name", AttributeType::String}
-    };
-};
-
 struct PaddedBatchDataset
 {
     static constexpr const char* name = "PaddedBatchDataset";
@@ -21443,14 +22452,16 @@ struct PaddedBatchDataset
     {
         Toutput_types,
         output_shapes,
-        N
+        N,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
         AttributeDesc{"Toutput_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape},
-        AttributeDesc{"N", AttributeType::Int}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -22174,6 +23185,41 @@ struct Add
     };
 };
 
+struct CollectiveInitializeCommunicator
+{
+    static constexpr const char* name = "CollectiveInitializeCommunicator";
+    
+    enum class Argument
+    {
+        group_key,
+        rank,
+        group_size,
+        communicator
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"group_key", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"rank", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"group_size", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"communicator", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        communication_hint,
+        timeout_seconds
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"communication_hint", AttributeType::String},
+        AttributeDesc{"timeout_seconds", AttributeType::Float}
+    };
+};
+
 struct BoostedTreesEnsembleResourceHandleOp
 {
     static constexpr const char* name = "BoostedTreesEnsembleResourceHandleOp";
@@ -22229,6 +23275,47 @@ struct IsBoostedTreesEnsembleInitialized
     static constexpr std::array<AttributeDesc, 0> attribute_descs
     {
 
+    };
+};
+
+struct _MklFusedBatchMatMulV2
+{
+    static constexpr const char* name = "_MklFusedBatchMatMulV2";
+    
+    enum class Argument
+    {
+        x,
+        y,
+        args,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"args", ArgumentDesc::TensorCount::SequenceAttrInt, "num_args"},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        adj_x,
+        adj_y,
+        num_args,
+        fused_ops
+    };
+
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"adj_x", AttributeType::Bool},
+        AttributeDesc{"adj_y", AttributeType::Bool},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"fused_ops", AttributeType::ListString}
     };
 };
 
@@ -22292,66 +23379,6 @@ struct ResourceAccumulatorNumAccumulated
     };
 };
 
-struct FresnelCos
-{
-    static constexpr const char* name = "FresnelCos";
-    
-    enum class Argument
-    {
-        x,
-        y
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
-struct BiasAddGrad
-{
-    static constexpr const char* name = "BiasAddGrad";
-    
-    enum class Argument
-    {
-        out_backprop,
-        output
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"out_backprop", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T,
-        data_format
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"data_format", AttributeType::String}
-    };
-};
-
 struct BoostedTreesCalculateBestGainsPerFeature
 {
     static constexpr const char* name = "BoostedTreesCalculateBestGainsPerFeature";
@@ -22398,45 +23425,6 @@ struct BoostedTreesCalculateBestGainsPerFeature
     {
         AttributeDesc{"max_splits", AttributeType::Int},
         AttributeDesc{"num_features", AttributeType::Int}
-    };
-};
-
-struct ShuffleDataset
-{
-    static constexpr const char* name = "ShuffleDataset";
-    
-    enum class Argument
-    {
-        input_dataset,
-        buffer_size,
-        seed,
-        seed2,
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 4;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"buffer_size", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"seed", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"seed2", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        reshuffle_each_iteration,
-        output_types,
-        output_shapes
-    };
-
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
-    {
-        AttributeDesc{"reshuffle_each_iteration", AttributeType::Bool},
-        AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -22525,6 +23513,47 @@ struct BoostedTreesCalculateBestFeatureSplit
     {
         AttributeDesc{"logits_dimension", AttributeType::Int},
         AttributeDesc{"split_type", AttributeType::String}
+    };
+};
+
+struct ShuffleDataset
+{
+    static constexpr const char* name = "ShuffleDataset";
+    
+    enum class Argument
+    {
+        input_dataset,
+        buffer_size,
+        seed,
+        seed2,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 4;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"buffer_size", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"seed", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"seed2", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        reshuffle_each_iteration,
+        output_types,
+        output_shapes,
+        metadata
+    };
+
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    {
+        AttributeDesc{"reshuffle_each_iteration", AttributeType::Bool},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -22649,37 +23678,6 @@ struct BoostedTreesCreateEnsemble
     };
 };
 
-struct BoostedTreesDeserializeEnsemble
-{
-    static constexpr const char* name = "BoostedTreesDeserializeEnsemble";
-    
-    enum class Argument
-    {
-        tree_ensemble_handle,
-        stamp_token,
-        tree_ensemble_serialized
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"tree_ensemble_handle", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"stamp_token", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"tree_ensemble_serialized", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
 struct BiasAddV1
 {
     static constexpr const char* name = "BiasAddV1";
@@ -22708,6 +23706,37 @@ struct BiasAddV1
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
         AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct BoostedTreesDeserializeEnsemble
+{
+    static constexpr const char* name = "BoostedTreesDeserializeEnsemble";
+    
+    enum class Argument
+    {
+        tree_ensemble_handle,
+        stamp_token,
+        tree_ensemble_serialized
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"tree_ensemble_handle", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"stamp_token", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"tree_ensemble_serialized", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
     };
 };
 
@@ -23420,6 +24449,43 @@ struct BoostedTreesUpdateEnsembleV2
     };
 };
 
+struct RangeDataset
+{
+    static constexpr const char* name = "RangeDataset";
+    
+    enum class Argument
+    {
+        start,
+        stop,
+        step,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"start", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"stop", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"step", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        output_types,
+        output_shapes,
+        metadata
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
+    };
+};
+
 struct BoostedTreesQuantileStreamResourceHandleOp
 {
     static constexpr const char* name = "BoostedTreesQuantileStreamResourceHandleOp";
@@ -23446,41 +24512,6 @@ struct BoostedTreesQuantileStreamResourceHandleOp
     {
         AttributeDesc{"container", AttributeType::String},
         AttributeDesc{"shared_name", AttributeType::String}
-    };
-};
-
-struct RangeDataset
-{
-    static constexpr const char* name = "RangeDataset";
-    
-    enum class Argument
-    {
-        start,
-        stop,
-        step,
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"start", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"stop", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"step", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        output_types,
-        output_shapes
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -23518,6 +24549,41 @@ struct ScatterNdSub
         AttributeDesc{"T", AttributeType::Type},
         AttributeDesc{"Tindices", AttributeType::Type},
         AttributeDesc{"use_locking", AttributeType::Bool}
+    };
+};
+
+struct CollectiveAllToAllV3
+{
+    static constexpr const char* name = "CollectiveAllToAllV3";
+    
+    enum class Argument
+    {
+        input,
+        communicator,
+        group_assignment,
+        data
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"communicator", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"group_assignment", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"data", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        timeout_seconds
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"timeout_seconds", AttributeType::Float}
     };
 };
 
@@ -24307,38 +25373,71 @@ struct CollectiveBcastRecv
     };
 };
 
-struct _NcclReduceRecv
+struct CollectiveAssignGroupV2
 {
-    static constexpr const char* name = "_NcclReduceRecv";
+    static constexpr const char* name = "CollectiveAssignGroupV2";
     
     enum class Argument
     {
-        input,
-        data
+        group_assignment,
+        device_index,
+        base_key,
+        group_size,
+        group_key
     };
 
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 2;
     static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
     {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"data", ArgumentDesc::TensorCount::Single}
+        ArgumentDesc{"group_assignment", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"device_index", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"base_key", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"group_size", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"group_key", ArgumentDesc::TensorCount::Single}
     };
 
     enum class Attribute
     {
-        reduction,
-        T,
-        num_devices,
-        shared_name
+
     };
 
-    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
     {
-        AttributeDesc{"reduction", AttributeType::String},
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"num_devices", AttributeType::Int},
-        AttributeDesc{"shared_name", AttributeType::String}
+
+    };
+};
+
+struct ExperimentalThreadPoolDataset
+{
+    static constexpr const char* name = "ExperimentalThreadPoolDataset";
+    
+    enum class Argument
+    {
+        input_dataset,
+        thread_pool,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"thread_pool", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        output_types,
+        output_shapes
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
 };
 
@@ -24616,6 +25715,33 @@ struct Einsum
     };
 };
 
+struct _ConnectInterTPUEmbeddingCommunication
+{
+    static constexpr const char* name = "_ConnectInterTPUEmbeddingCommunication";
+    
+    enum class Argument
+    {
+        host_config
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"host_config", ArgumentDesc::TensorCount::SequenceAttrInt, "N"}
+    };
+
+    enum class Attribute
+    {
+        N
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"N", AttributeType::Int}
+    };
+};
+
 struct RefSwitch
 {
     static constexpr const char* name = "RefSwitch";
@@ -24646,57 +25772,6 @@ struct RefSwitch
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
         AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
-struct FusedBatchNormGrad
-{
-    static constexpr const char* name = "FusedBatchNormGrad";
-    
-    enum class Argument
-    {
-        y_backprop,
-        x,
-        scale,
-        reserve_space_1,
-        reserve_space_2,
-        x_backprop,
-        scale_backprop,
-        offset_backprop,
-        reserve_space_3,
-        reserve_space_4
-    };
-
-    static constexpr uint32_t input_arg_count = 5;
-    static constexpr uint32_t output_arg_count = 5;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"y_backprop", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"scale", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"reserve_space_1", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"reserve_space_2", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"x_backprop", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"scale_backprop", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"offset_backprop", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"reserve_space_3", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"reserve_space_4", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T,
-        epsilon,
-        data_format,
-        is_training
-    };
-
-    static constexpr std::array<AttributeDesc, 4> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"epsilon", AttributeType::Float},
-        AttributeDesc{"data_format", AttributeType::String},
-        AttributeDesc{"is_training", AttributeType::Bool}
     };
 };
 
@@ -24867,17 +25942,19 @@ struct MapDataset
         output_types,
         output_shapes,
         use_inter_op_parallelism,
-        preserve_cardinality
+        preserve_cardinality,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 6> attribute_descs
+    static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
         AttributeDesc{"f", AttributeType::Func},
         AttributeDesc{"Targuments", AttributeType::ListType},
         AttributeDesc{"output_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape},
         AttributeDesc{"use_inter_op_parallelism", AttributeType::Bool},
-        AttributeDesc{"preserve_cardinality", AttributeType::Bool}
+        AttributeDesc{"preserve_cardinality", AttributeType::Bool},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -25792,41 +26869,6 @@ struct BatchMatrixSolve
     };
 };
 
-struct AnonymousSeedGenerator
-{
-    static constexpr const char* name = "AnonymousSeedGenerator";
-    
-    enum class Argument
-    {
-        seed,
-        seed2,
-        reshuffle,
-        handle,
-        deleter
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 2;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"seed", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"seed2", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"reshuffle", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"deleter", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
 struct QuantizedConv2DAndReluAndRequantize
 {
     static constexpr const char* name = "QuantizedConv2DAndReluAndRequantize";
@@ -26040,6 +27082,33 @@ struct CTCLossV2
     };
 };
 
+struct IsTPUEmbeddingInitialized
+{
+    static constexpr const char* name = "IsTPUEmbeddingInitialized";
+    
+    enum class Argument
+    {
+        is_tpu_embedding_initialized
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"is_tpu_embedding_initialized", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        config
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"config", AttributeType::String}
+    };
+};
+
 struct WholeFileReaderV2
 {
     static constexpr const char* name = "WholeFileReaderV2";
@@ -26146,43 +27215,6 @@ struct CTCGreedyDecoder
         AttributeDesc{"merge_repeated", AttributeType::Bool},
         AttributeDesc{"blank_index", AttributeType::Int},
         AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
-struct FixedLengthRecordDataset
-{
-    static constexpr const char* name = "FixedLengthRecordDataset";
-    
-    enum class Argument
-    {
-        filenames,
-        header_bytes,
-        record_bytes,
-        footer_bytes,
-        buffer_size,
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 5;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"filenames", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"header_bytes", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"record_bytes", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"footer_bytes", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"buffer_size", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
     };
 };
 
@@ -27055,41 +28087,6 @@ struct PaddingFIFOQueueV2
     };
 };
 
-struct PriorityQueue
-{
-    static constexpr const char* name = "PriorityQueue";
-    
-    enum class Argument
-    {
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        component_types,
-        shapes,
-        capacity,
-        container,
-        shared_name
-    };
-
-    static constexpr std::array<AttributeDesc, 5> attribute_descs
-    {
-        AttributeDesc{"component_types", AttributeType::ListType},
-        AttributeDesc{"shapes", AttributeType::ListShape},
-        AttributeDesc{"capacity", AttributeType::Int},
-        AttributeDesc{"container", AttributeType::String},
-        AttributeDesc{"shared_name", AttributeType::String}
-    };
-};
-
 struct Lu
 {
     static constexpr const char* name = "Lu";
@@ -27328,13 +28325,15 @@ struct RandomDataset
     enum class Attribute
     {
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -27529,35 +28528,6 @@ struct QueueIsClosed
     {
         ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
         ArgumentDesc{"is_closed", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
-struct QueueSize
-{
-    static constexpr const char* name = "QueueSize";
-    
-    enum class Argument
-    {
-        handle,
-        size
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"size", ArgumentDesc::TensorCount::Single}
     };
 
     enum class Attribute
@@ -28016,13 +28986,15 @@ struct RepeatDataset
     enum class Attribute
     {
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -28164,10 +29136,11 @@ struct GroupByWindowDataset
         Treduce_func_other_arguments,
         Twindow_size_func_other_arguments,
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 8> attribute_descs
+    static constexpr std::array<AttributeDesc, 9> attribute_descs
     {
         AttributeDesc{"key_func", AttributeType::Func},
         AttributeDesc{"reduce_func", AttributeType::Func},
@@ -28176,7 +29149,8 @@ struct GroupByWindowDataset
         AttributeDesc{"Treduce_func_other_arguments", AttributeType::ListType},
         AttributeDesc{"Twindow_size_func_other_arguments", AttributeType::ListType},
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -28355,47 +29329,6 @@ struct TensorArrayReadV3
     };
 };
 
-struct ShuffleDatasetV3
-{
-    static constexpr const char* name = "ShuffleDatasetV3";
-    
-    enum class Argument
-    {
-        input_dataset,
-        buffer_size,
-        seed,
-        seed2,
-        seed_generator,
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 5;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"buffer_size", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"seed", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"seed2", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"seed_generator", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        reshuffle_each_iteration,
-        output_types,
-        output_shapes
-    };
-
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
-    {
-        AttributeDesc{"reshuffle_each_iteration", AttributeType::Bool},
-        AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
-    };
-};
-
 struct TensorArrayGatherV3
 {
     static constexpr const char* name = "TensorArrayGatherV3";
@@ -28428,6 +29361,49 @@ struct TensorArrayGatherV3
     {
         AttributeDesc{"dtype", AttributeType::Type},
         AttributeDesc{"element_shape", AttributeType::Shape}
+    };
+};
+
+struct ShuffleDatasetV3
+{
+    static constexpr const char* name = "ShuffleDatasetV3";
+    
+    enum class Argument
+    {
+        input_dataset,
+        buffer_size,
+        seed,
+        seed2,
+        seed_generator,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 5;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"buffer_size", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"seed", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"seed2", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"seed_generator", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        reshuffle_each_iteration,
+        output_types,
+        output_shapes,
+        metadata
+    };
+
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    {
+        AttributeDesc{"reshuffle_each_iteration", AttributeType::Bool},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -28530,43 +29506,6 @@ struct TensorArrayScatterV3
     };
 };
 
-struct TensorArrayV2
-{
-    static constexpr const char* name = "TensorArrayV2";
-    
-    enum class Argument
-    {
-        size,
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"size", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        dtype,
-        element_shape,
-        dynamic_size,
-        clear_after_read,
-        tensor_array_name
-    };
-
-    static constexpr std::array<AttributeDesc, 5> attribute_descs
-    {
-        AttributeDesc{"dtype", AttributeType::Type},
-        AttributeDesc{"element_shape", AttributeType::Shape},
-        AttributeDesc{"dynamic_size", AttributeType::Bool},
-        AttributeDesc{"clear_after_read", AttributeType::Bool},
-        AttributeDesc{"tensor_array_name", AttributeType::String}
-    };
-};
-
 struct AvgPoolGrad
 {
     static constexpr const char* name = "AvgPoolGrad";
@@ -28606,6 +29545,43 @@ struct AvgPoolGrad
     };
 };
 
+struct TensorArrayV2
+{
+    static constexpr const char* name = "TensorArrayV2";
+    
+    enum class Argument
+    {
+        size,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"size", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        dtype,
+        element_shape,
+        dynamic_size,
+        clear_after_read,
+        tensor_array_name
+    };
+
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    {
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"element_shape", AttributeType::Shape},
+        AttributeDesc{"dynamic_size", AttributeType::Bool},
+        AttributeDesc{"clear_after_read", AttributeType::Bool},
+        AttributeDesc{"tensor_array_name", AttributeType::String}
+    };
+};
+
 struct TensorArrayGradV2
 {
     static constexpr const char* name = "TensorArrayGradV2";
@@ -28634,156 +29610,6 @@ struct TensorArrayGradV2
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
         AttributeDesc{"source", AttributeType::String}
-    };
-};
-
-struct ScanDataset
-{
-    static constexpr const char* name = "ScanDataset";
-    
-    enum class Argument
-    {
-        input_dataset,
-        initial_state,
-        other_arguments,
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"initial_state", ArgumentDesc::TensorCount::SequenceAttrList, "Tstate"},
-        ArgumentDesc{"other_arguments", ArgumentDesc::TensorCount::SequenceAttrList, "Targuments"},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        f,
-        Tstate,
-        Targuments,
-        output_types,
-        output_shapes,
-        preserve_cardinality,
-        use_default_device
-    };
-
-    static constexpr std::array<AttributeDesc, 7> attribute_descs
-    {
-        AttributeDesc{"f", AttributeType::Func},
-        AttributeDesc{"Tstate", AttributeType::ListType},
-        AttributeDesc{"Targuments", AttributeType::ListType},
-        AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape},
-        AttributeDesc{"preserve_cardinality", AttributeType::Bool},
-        AttributeDesc{"use_default_device", AttributeType::Bool}
-    };
-};
-
-struct ExperimentalUnbatchDataset
-{
-    static constexpr const char* name = "ExperimentalUnbatchDataset";
-    
-    enum class Argument
-    {
-        input_dataset,
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        output_types,
-        output_shapes
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
-    };
-};
-
-struct RecordInput
-{
-    static constexpr const char* name = "RecordInput";
-    
-    enum class Argument
-    {
-        records
-    };
-
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"records", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        file_pattern,
-        file_random_seed,
-        file_shuffle_shift_ratio,
-        file_buffer_size,
-        file_parallelism,
-        batch_size,
-        compression_type
-    };
-
-    static constexpr std::array<AttributeDesc, 7> attribute_descs
-    {
-        AttributeDesc{"file_pattern", AttributeType::String},
-        AttributeDesc{"file_random_seed", AttributeType::Int},
-        AttributeDesc{"file_shuffle_shift_ratio", AttributeType::Float},
-        AttributeDesc{"file_buffer_size", AttributeType::Int},
-        AttributeDesc{"file_parallelism", AttributeType::Int},
-        AttributeDesc{"batch_size", AttributeType::Int},
-        AttributeDesc{"compression_type", AttributeType::String}
-    };
-};
-
-struct TensorArrayWrite
-{
-    static constexpr const char* name = "TensorArrayWrite";
-    
-    enum class Argument
-    {
-        handle,
-        index,
-        value,
-        flow_in,
-        flow_out
-    };
-
-    static constexpr uint32_t input_arg_count = 4;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"index", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"value", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"flow_in", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"flow_out", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -28987,41 +29813,6 @@ struct SparseReshape
     };
 };
 
-struct TensorArrayScatter
-{
-    static constexpr const char* name = "TensorArrayScatter";
-    
-    enum class Argument
-    {
-        handle,
-        indices,
-        value,
-        flow_in,
-        flow_out
-    };
-
-    static constexpr uint32_t input_arg_count = 4;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"value", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"flow_in", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"flow_out", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
 struct FusedBatchNormV3
 {
     static constexpr const char* name = "FusedBatchNormV3";
@@ -29076,6 +29867,68 @@ struct FusedBatchNormV3
         AttributeDesc{"exponential_avg_factor", AttributeType::Float},
         AttributeDesc{"data_format", AttributeType::String},
         AttributeDesc{"is_training", AttributeType::Bool}
+    };
+};
+
+struct TensorArrayScatter
+{
+    static constexpr const char* name = "TensorArrayScatter";
+    
+    enum class Argument
+    {
+        handle,
+        indices,
+        value,
+        flow_in,
+        flow_out
+    };
+
+    static constexpr uint32_t input_arg_count = 4;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"value", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"flow_in", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"flow_out", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct _FinalizeTPUEmbeddingSystemConfiguration
+{
+    static constexpr const char* name = "_FinalizeTPUEmbeddingSystemConfiguration";
+    
+    enum class Argument
+    {
+        host_config
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"host_config", ArgumentDesc::TensorCount::SequenceAttrInt, "N"}
+    };
+
+    enum class Attribute
+    {
+        N
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"N", AttributeType::Int}
     };
 };
 
@@ -30168,14 +31021,16 @@ struct TensorSliceDataset
     {
         Toutput_types,
         output_shapes,
-        is_files
+        is_files,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
         AttributeDesc{"Toutput_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape},
-        AttributeDesc{"is_files", AttributeType::Bool}
+        AttributeDesc{"is_files", AttributeType::Bool},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -30230,14 +31085,16 @@ struct ZipDataset
     {
         output_types,
         output_shapes,
-        N
+        N,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
         AttributeDesc{"output_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape},
-        AttributeDesc{"N", AttributeType::Int}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -30419,16 +31276,18 @@ struct PrefetchDataset
         output_shapes,
         slack_period,
         legacy_autotune,
-        buffer_size_min
+        buffer_size_min,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
         AttributeDesc{"output_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape},
         AttributeDesc{"slack_period", AttributeType::Int},
         AttributeDesc{"legacy_autotune", AttributeType::Bool},
-        AttributeDesc{"buffer_size_min", AttributeType::Int}
+        AttributeDesc{"buffer_size_min", AttributeType::Int},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -30517,16 +31376,18 @@ struct ParallelInterleaveDatasetV2
         Targuments,
         output_types,
         output_shapes,
-        sloppy
+        sloppy,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
         AttributeDesc{"f", AttributeType::Func},
         AttributeDesc{"Targuments", AttributeType::ListType},
         AttributeDesc{"output_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape},
-        AttributeDesc{"sloppy", AttributeType::Bool}
+        AttributeDesc{"sloppy", AttributeType::Bool},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -30566,16 +31427,61 @@ struct ParallelInterleaveDatasetV4
         deterministic,
         Targuments,
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
         AttributeDesc{"f", AttributeType::Func},
         AttributeDesc{"deterministic", AttributeType::String},
         AttributeDesc{"Targuments", AttributeType::ListType},
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
+    };
+};
+
+struct ParallelFilterDataset
+{
+    static constexpr const char* name = "ParallelFilterDataset";
+    
+    enum class Argument
+    {
+        input_dataset,
+        other_arguments,
+        num_parallel_calls,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"other_arguments", ArgumentDesc::TensorCount::SequenceAttrList, "Targuments"},
+        ArgumentDesc{"num_parallel_calls", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        predicate,
+        deterministic,
+        Targuments,
+        output_types,
+        output_shapes,
+        metadata
+    };
+
+    static constexpr std::array<AttributeDesc, 6> attribute_descs
+    {
+        AttributeDesc{"predicate", AttributeType::Func},
+        AttributeDesc{"deterministic", AttributeType::String},
+        AttributeDesc{"Targuments", AttributeType::ListType},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -30612,35 +31518,6 @@ struct WindowOp
     };
 };
 
-struct DeleteRandomSeedGenerator
-{
-    static constexpr const char* name = "DeleteRandomSeedGenerator";
-    
-    enum class Argument
-    {
-        handle,
-        deleter
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"deleter", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
 struct BatchDataset
 {
     static constexpr const char* name = "BatchDataset";
@@ -30664,13 +31541,15 @@ struct BatchDataset
     enum class Attribute
     {
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -30705,15 +31584,52 @@ struct PaddedBatchDatasetV2
         parallel_copy,
         Toutput_types,
         output_shapes,
-        N
+        N,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
         AttributeDesc{"parallel_copy", AttributeType::Bool},
         AttributeDesc{"Toutput_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape},
-        AttributeDesc{"N", AttributeType::Int}
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"metadata", AttributeType::String}
+    };
+};
+
+struct AnonymousSeedGenerator
+{
+    static constexpr const char* name = "AnonymousSeedGenerator";
+    
+    enum class Argument
+    {
+        seed,
+        seed2,
+        reshuffle,
+        handle,
+        deleter
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 2;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"seed", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"seed2", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"reshuffle", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"deleter", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
     };
 };
 
@@ -30780,6 +31696,35 @@ struct SaveDataset
         AttributeDesc{"shard_func", AttributeType::Func},
         AttributeDesc{"use_shard_func", AttributeType::Bool},
         AttributeDesc{"Tshard_func_args", AttributeType::ListType}
+    };
+};
+
+struct DeleteRandomSeedGenerator
+{
+    static constexpr const char* name = "DeleteRandomSeedGenerator";
+    
+    enum class Argument
+    {
+        handle,
+        deleter
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"deleter", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
     };
 };
 
@@ -30942,14 +31887,16 @@ struct ShuffleAndRepeatDataset
     {
         output_types,
         output_shapes,
-        reshuffle_each_iteration
+        reshuffle_each_iteration,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
         AttributeDesc{"output_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape},
-        AttributeDesc{"reshuffle_each_iteration", AttributeType::Bool}
+        AttributeDesc{"reshuffle_each_iteration", AttributeType::Bool},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -30981,6 +31928,88 @@ struct OptionalGetValue
     {
         AttributeDesc{"output_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape}
+    };
+};
+
+struct ShuffleAndRepeatDatasetV2
+{
+    static constexpr const char* name = "ShuffleAndRepeatDatasetV2";
+    
+    enum class Argument
+    {
+        input_dataset,
+        buffer_size,
+        seed,
+        seed2,
+        count,
+        seed_generator,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 6;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"buffer_size", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"seed", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"seed2", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"count", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"seed_generator", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        reshuffle_each_iteration,
+        output_types,
+        output_shapes,
+        metadata
+    };
+
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    {
+        AttributeDesc{"reshuffle_each_iteration", AttributeType::Bool},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
+    };
+};
+
+struct _MklMaximum
+{
+    static constexpr const char* name = "_MklMaximum";
+    
+    enum class Argument
+    {
+        x,
+        y,
+        mkl_x,
+        mkl_y,
+        z,
+        mkl_z
+    };
+
+    static constexpr uint32_t input_arg_count = 4;
+    static constexpr uint32_t output_arg_count = 2;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"mkl_x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"mkl_y", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"z", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"mkl_z", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -31151,13 +32180,15 @@ struct CacheDataset
     enum class Attribute
     {
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -31185,12 +32216,82 @@ struct TextLineDataset
 
     enum class Attribute
     {
-
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
+        AttributeDesc{"metadata", AttributeType::String}
+    };
+};
 
+struct FixedLengthRecordDataset
+{
+    static constexpr const char* name = "FixedLengthRecordDataset";
+    
+    enum class Argument
+    {
+        filenames,
+        header_bytes,
+        record_bytes,
+        footer_bytes,
+        buffer_size,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 5;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"filenames", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"header_bytes", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"record_bytes", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"footer_bytes", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"buffer_size", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        metadata
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"metadata", AttributeType::String}
+    };
+};
+
+struct SobolSample
+{
+    static constexpr const char* name = "SobolSample";
+    
+    enum class Argument
+    {
+        dim,
+        num_results,
+        skip,
+        samples
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"dim", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"num_results", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"skip", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"samples", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        dtype
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -31218,12 +32319,12 @@ struct TFRecordDataset
 
     enum class Attribute
     {
-
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
-
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -31259,39 +32360,6 @@ struct ReaderReadUpTo
     static constexpr std::array<AttributeDesc, 0> attribute_descs
     {
 
-    };
-};
-
-struct SobolSample
-{
-    static constexpr const char* name = "SobolSample";
-    
-    enum class Argument
-    {
-        dim,
-        num_results,
-        skip,
-        samples
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"dim", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"num_results", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"skip", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"samples", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        dtype
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"dtype", AttributeType::Type}
     };
 };
 
@@ -31448,6 +32516,64 @@ struct AnonymousIteratorV2
     };
 };
 
+struct Atan
+{
+    static constexpr const char* name = "Atan";
+    
+    enum class Argument
+    {
+        x,
+        y
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct AnonymousIteratorV3
+{
+    static constexpr const char* name = "AnonymousIteratorV3";
+    
+    enum class Argument
+    {
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        output_types,
+        output_shapes
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
+    };
+};
+
 struct DeleteIterator
 {
     static constexpr const char* name = "DeleteIterator";
@@ -31566,17 +32692,19 @@ struct ReduceDataset
         Targuments,
         output_types,
         output_shapes,
-        use_inter_op_parallelism
+        use_inter_op_parallelism,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 6> attribute_descs
+    static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
         AttributeDesc{"f", AttributeType::Func},
         AttributeDesc{"Tstate", AttributeType::ListType},
         AttributeDesc{"Targuments", AttributeType::ListType},
         AttributeDesc{"output_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape},
-        AttributeDesc{"use_inter_op_parallelism", AttributeType::Bool}
+        AttributeDesc{"use_inter_op_parallelism", AttributeType::Bool},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -31739,13 +32867,15 @@ struct DatasetToSingleElement
     enum class Attribute
     {
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -32640,6 +33770,37 @@ struct WrapDatasetVariant
     };
 };
 
+struct AnonymousMultiDeviceIteratorV3
+{
+    static constexpr const char* name = "AnonymousMultiDeviceIteratorV3";
+    
+    enum class Argument
+    {
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        devices,
+        output_types,
+        output_shapes
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"devices", AttributeType::ListString},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
+    };
+};
+
 struct StatelessMultinomial
 {
     static constexpr const char* name = "StatelessMultinomial";
@@ -32876,14 +34037,16 @@ struct OptionsDataset
     {
         serialized_options,
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
     {
         AttributeDesc{"serialized_options", AttributeType::String},
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -33114,72 +34277,6 @@ struct DebugIdentityV2
     };
 };
 
-struct StatsAggregatorSummary
-{
-    static constexpr const char* name = "StatsAggregatorSummary";
-    
-    enum class Argument
-    {
-        iterator,
-        summary
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"iterator", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"summary", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
-struct EncodeProto
-{
-    static constexpr const char* name = "EncodeProto";
-    
-    enum class Argument
-    {
-        sizes,
-        values,
-        bytes
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"sizes", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"values", ArgumentDesc::TensorCount::SequenceAttrList, "Tinput_types"},
-        ArgumentDesc{"bytes", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        field_names,
-        message_type,
-        descriptor_source,
-        Tinput_types
-    };
-
-    static constexpr std::array<AttributeDesc, 4> attribute_descs
-    {
-        AttributeDesc{"field_names", AttributeType::ListString},
-        AttributeDesc{"message_type", AttributeType::String},
-        AttributeDesc{"descriptor_source", AttributeType::String},
-        AttributeDesc{"Tinput_types", AttributeType::ListType}
-    };
-};
-
 struct AssertNextDataset
 {
     static constexpr const char* name = "AssertNextDataset";
@@ -33251,6 +34348,39 @@ struct RandomCrop
 struct ExperimentalAssertNextDataset
 {
     static constexpr const char* name = "ExperimentalAssertNextDataset";
+    
+    enum class Argument
+    {
+        input_dataset,
+        transformations,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"transformations", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        output_types,
+        output_shapes
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape}
+    };
+};
+
+struct AssertPrevDataset
+{
+    static constexpr const char* name = "AssertPrevDataset";
     
     enum class Argument
     {
@@ -33801,55 +34931,6 @@ struct CSVDataset
     };
 };
 
-struct BatchNormWithGlobalNormalizationGrad
-{
-    static constexpr const char* name = "BatchNormWithGlobalNormalizationGrad";
-    
-    enum class Argument
-    {
-        t,
-        m,
-        v,
-        gamma,
-        backprop,
-        dx,
-        dm,
-        dv,
-        db,
-        dg
-    };
-
-    static constexpr uint32_t input_arg_count = 5;
-    static constexpr uint32_t output_arg_count = 5;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"t", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"m", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"v", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"gamma", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"backprop", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"dx", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"dm", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"dv", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"db", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"dg", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T,
-        variance_epsilon,
-        scale_after_normalization
-    };
-
-    static constexpr std::array<AttributeDesc, 3> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"variance_epsilon", AttributeType::Float},
-        AttributeDesc{"scale_after_normalization", AttributeType::Bool}
-    };
-};
-
 struct ExperimentalCSVDataset
 {
     static constexpr const char* name = "ExperimentalCSVDataset";
@@ -34374,12 +35455,14 @@ struct SlidingWindowDataset
 
     enum class Attribute
     {
+        drop_remainder,
         output_types,
         output_shapes
     };
 
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
+        AttributeDesc{"drop_remainder", AttributeType::Bool},
         AttributeDesc{"output_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
@@ -35084,15 +36167,17 @@ struct ParallelInterleaveDataset
         f,
         Targuments,
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
         AttributeDesc{"f", AttributeType::Func},
         AttributeDesc{"Targuments", AttributeType::ListType},
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -35130,16 +36215,18 @@ struct LegacyParallelInterleaveDatasetV2
         deterministic,
         Targuments,
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    static constexpr std::array<AttributeDesc, 6> attribute_descs
     {
         AttributeDesc{"f", AttributeType::Func},
         AttributeDesc{"deterministic", AttributeType::String},
         AttributeDesc{"Targuments", AttributeType::ListType},
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -35538,59 +36625,6 @@ struct ExperimentalRandomDataset
     };
 };
 
-struct FusedBatchNormGradV2
-{
-    static constexpr const char* name = "FusedBatchNormGradV2";
-    
-    enum class Argument
-    {
-        y_backprop,
-        x,
-        scale,
-        reserve_space_1,
-        reserve_space_2,
-        x_backprop,
-        scale_backprop,
-        offset_backprop,
-        reserve_space_3,
-        reserve_space_4
-    };
-
-    static constexpr uint32_t input_arg_count = 5;
-    static constexpr uint32_t output_arg_count = 5;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"y_backprop", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"scale", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"reserve_space_1", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"reserve_space_2", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"x_backprop", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"scale_backprop", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"offset_backprop", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"reserve_space_3", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"reserve_space_4", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T,
-        U,
-        epsilon,
-        data_format,
-        is_training
-    };
-
-    static constexpr std::array<AttributeDesc, 5> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"U", AttributeType::Type},
-        AttributeDesc{"epsilon", AttributeType::Float},
-        AttributeDesc{"data_format", AttributeType::String},
-        AttributeDesc{"is_training", AttributeType::Bool}
-    };
-};
-
 struct ExperimentalRebatchDataset
 {
     static constexpr const char* name = "ExperimentalRebatchDataset";
@@ -35977,10 +37011,11 @@ struct SnapshotDatasetV2
         reader_func,
         shard_func,
         Treader_func_args,
-        Tshard_func_args
+        Tshard_func_args,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 11> attribute_descs
+    static constexpr std::array<AttributeDesc, 12> attribute_descs
     {
         AttributeDesc{"output_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape},
@@ -35992,7 +37027,8 @@ struct SnapshotDatasetV2
         AttributeDesc{"reader_func", AttributeType::Func},
         AttributeDesc{"shard_func", AttributeType::Func},
         AttributeDesc{"Treader_func_args", AttributeType::ListType},
-        AttributeDesc{"Tshard_func_args", AttributeType::ListType}
+        AttributeDesc{"Tshard_func_args", AttributeType::ListType},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -36508,15 +37544,17 @@ struct TakeWhileDataset
         predicate,
         Targuments,
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
     {
         AttributeDesc{"predicate", AttributeType::Func},
         AttributeDesc{"Targuments", AttributeType::ListType},
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -36552,39 +37590,6 @@ struct ExperimentalTakeWhileDataset
     {
         AttributeDesc{"predicate", AttributeType::Func},
         AttributeDesc{"Targuments", AttributeType::ListType},
-        AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
-    };
-};
-
-struct ExperimentalThreadPoolDataset
-{
-    static constexpr const char* name = "ExperimentalThreadPoolDataset";
-    
-    enum class Argument
-    {
-        input_dataset,
-        thread_pool,
-        handle
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input_dataset", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"thread_pool", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        output_types,
-        output_shapes
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
         AttributeDesc{"output_types", AttributeType::ListType},
         AttributeDesc{"output_shapes", AttributeType::ListShape}
     };
@@ -36794,13 +37799,15 @@ struct UnbatchDataset
     enum class Attribute
     {
         output_types,
-        output_shapes
+        output_shapes,
+        metadata
     };
 
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
     {
         AttributeDesc{"output_types", AttributeType::ListType},
-        AttributeDesc{"output_shapes", AttributeType::ListShape}
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"metadata", AttributeType::String}
     };
 };
 
@@ -36994,6 +38001,170 @@ struct DataServiceDatasetV2
         AttributeDesc{"output_shapes", AttributeType::ListShape},
         AttributeDesc{"data_transfer_protocol", AttributeType::String},
         AttributeDesc{"target_workers", AttributeType::String}
+    };
+};
+
+struct StatefulStandardNormal
+{
+    static constexpr const char* name = "StatefulStandardNormal";
+    
+    enum class Argument
+    {
+        resource,
+        shape,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"shape", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        dtype,
+        shape_dtype
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape_dtype", AttributeType::Type}
+    };
+};
+
+struct ParameterizedTruncatedNormal
+{
+    static constexpr const char* name = "ParameterizedTruncatedNormal";
+    
+    enum class Argument
+    {
+        shape,
+        means,
+        stdevs,
+        minvals,
+        maxvals,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 5;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"shape", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"means", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"stdevs", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"minvals", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"maxvals", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        seed,
+        seed2,
+        dtype,
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    {
+        AttributeDesc{"seed", AttributeType::Int},
+        AttributeDesc{"seed2", AttributeType::Int},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct DataServiceDatasetV3
+{
+    static constexpr const char* name = "DataServiceDatasetV3";
+    
+    enum class Argument
+    {
+        dataset_id,
+        processing_mode,
+        address,
+        protocol,
+        job_name,
+        consumer_index,
+        num_consumers,
+        max_outstanding_requests,
+        iteration_counter,
+        handle
+    };
+
+    static constexpr uint32_t input_arg_count = 9;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"dataset_id", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"processing_mode", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"address", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"protocol", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"job_name", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"consumer_index", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"num_consumers", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"max_outstanding_requests", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"iteration_counter", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        task_refresh_interval_hint_ms,
+        output_types,
+        output_shapes,
+        data_transfer_protocol,
+        target_workers,
+        uncompress,
+        uncompress_fn
+    };
+
+    static constexpr std::array<AttributeDesc, 7> attribute_descs
+    {
+        AttributeDesc{"task_refresh_interval_hint_ms", AttributeType::Int},
+        AttributeDesc{"output_types", AttributeType::ListType},
+        AttributeDesc{"output_shapes", AttributeType::ListShape},
+        AttributeDesc{"data_transfer_protocol", AttributeType::String},
+        AttributeDesc{"target_workers", AttributeType::String},
+        AttributeDesc{"uncompress", AttributeType::Bool},
+        AttributeDesc{"uncompress_fn", AttributeType::Func}
+    };
+};
+
+struct FileSystemSetConfiguration
+{
+    static constexpr const char* name = "FileSystemSetConfiguration";
+    
+    enum class Argument
+    {
+        scheme,
+        key,
+        value
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"scheme", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"key", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"value", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
     };
 };
 
@@ -37218,6 +38389,64 @@ struct DecodeJpeg
         AttributeDesc{"try_recover_truncated", AttributeType::Bool},
         AttributeDesc{"acceptable_fraction", AttributeType::Float},
         AttributeDesc{"dct_method", AttributeType::String}
+    };
+};
+
+struct BesselI1e
+{
+    static constexpr const char* name = "BesselI1e";
+    
+    enum class Argument
+    {
+        x,
+        y
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct AnonymousMutableHashTable
+{
+    static constexpr const char* name = "AnonymousMutableHashTable";
+    
+    enum class Argument
+    {
+        table_handle
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"table_handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        key_dtype,
+        value_dtype
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type}
     };
 };
 
@@ -38074,43 +39303,6 @@ struct NonMaxSuppressionV5
     {
         AttributeDesc{"T", AttributeType::Type},
         AttributeDesc{"pad_to_max_output_size", AttributeType::Bool}
-    };
-};
-
-struct NonMaxSuppressionWithOverlaps
-{
-    static constexpr const char* name = "NonMaxSuppressionWithOverlaps";
-    
-    enum class Argument
-    {
-        overlaps,
-        scores,
-        max_output_size,
-        overlap_threshold,
-        score_threshold,
-        selected_indices
-    };
-
-    static constexpr uint32_t input_arg_count = 5;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"overlaps", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"scores", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"max_output_size", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"overlap_threshold", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"score_threshold", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"selected_indices", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
     };
 };
 
@@ -39596,6 +40788,45 @@ struct Cholesky
     };
 };
 
+struct AnonymousMutableDenseHashTable
+{
+    static constexpr const char* name = "AnonymousMutableDenseHashTable";
+    
+    enum class Argument
+    {
+        empty_key,
+        deleted_key,
+        table_handle
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"empty_key", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"deleted_key", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"table_handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        key_dtype,
+        value_dtype,
+        value_shape,
+        initial_num_buckets,
+        max_load_factor
+    };
+
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    {
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type},
+        AttributeDesc{"value_shape", AttributeType::Shape},
+        AttributeDesc{"initial_num_buckets", AttributeType::Int},
+        AttributeDesc{"max_load_factor", AttributeType::Float}
+    };
+};
+
 struct ApplyPowerSign
 {
     static constexpr const char* name = "ApplyPowerSign";
@@ -39830,6 +41061,41 @@ struct MatrixSolve
     {
         AttributeDesc{"adjoint", AttributeType::Bool},
         AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct _MklLayerNorm
+{
+    static constexpr const char* name = "_MklLayerNorm";
+    
+    enum class Argument
+    {
+        x,
+        scale,
+        offset,
+        y
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"scale", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"offset", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        epsilon
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float}
     };
 };
 
@@ -40971,6 +42237,37 @@ struct TensorListScatter
     };
 };
 
+struct NextAfter
+{
+    static constexpr const char* name = "NextAfter";
+    
+    enum class Argument
+    {
+        x1,
+        x2,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"x1", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"x2", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
 struct TensorListScatterV2
 {
     static constexpr const char* name = "TensorListScatterV2";
@@ -41005,37 +42302,6 @@ struct TensorListScatterV2
     {
         AttributeDesc{"element_dtype", AttributeType::Type},
         AttributeDesc{"shape_type", AttributeType::Type}
-    };
-};
-
-struct NextAfter
-{
-    static constexpr const char* name = "NextAfter";
-    
-    enum class Argument
-    {
-        x1,
-        x2,
-        output
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"x1", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"x2", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -41237,35 +42503,6 @@ struct Print
     };
 };
 
-struct PrintV2
-{
-    static constexpr const char* name = "PrintV2";
-    
-    enum class Argument
-    {
-        input
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        output_stream,
-        end
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"output_stream", AttributeType::String},
-        AttributeDesc{"end", AttributeType::String}
-    };
-};
-
 struct TensorSummary
 {
     static constexpr const char* name = "TensorSummary";
@@ -41400,39 +42637,6 @@ struct SerializeTensor
     };
 };
 
-struct LookupTableInsert
-{
-    static constexpr const char* name = "LookupTableInsert";
-    
-    enum class Argument
-    {
-        table_handle,
-        keys,
-        values
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"table_handle", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"keys", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"values", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        Tin,
-        Tout
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"Tin", AttributeType::Type},
-        AttributeDesc{"Tout", AttributeType::Type}
-    };
-};
-
 struct _FusedBatchNormGradEx
 {
     static constexpr const char* name = "_FusedBatchNormGradEx";
@@ -41495,6 +42699,39 @@ struct _FusedBatchNormGradEx
         AttributeDesc{"activation_mode", AttributeType::String},
         AttributeDesc{"data_format", AttributeType::String},
         AttributeDesc{"is_training", AttributeType::Bool}
+    };
+};
+
+struct LookupTableInsert
+{
+    static constexpr const char* name = "LookupTableInsert";
+    
+    enum class Argument
+    {
+        table_handle,
+        keys,
+        values
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"table_handle", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"keys", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"values", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        Tin,
+        Tout
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"Tin", AttributeType::Type},
+        AttributeDesc{"Tout", AttributeType::Type}
     };
 };
 
@@ -41764,9 +43001,136 @@ struct HashTable
     };
 };
 
-struct HashTableV2
+struct Asin
 {
-    static constexpr const char* name = "HashTableV2";
+    static constexpr const char* name = "Asin";
+    
+    enum class Argument
+    {
+        x,
+        y
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct RequantizationRange
+{
+    static constexpr const char* name = "RequantizationRange";
+    
+    enum class Argument
+    {
+        input,
+        input_min,
+        input_max,
+        output_min,
+        output_max
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 2;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"input_min", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"input_max", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output_min", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output_max", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        Tinput
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"Tinput", AttributeType::Type}
+    };
+};
+
+struct QuantizedConv2DWithBiasAndRequantize
+{
+    static constexpr const char* name = "QuantizedConv2DWithBiasAndRequantize";
+    
+    enum class Argument
+    {
+        input,
+        filter,
+        bias,
+        min_input,
+        max_input,
+        min_filter,
+        max_filter,
+        min_freezed_output,
+        max_freezed_output,
+        output,
+        min_output,
+        max_output
+    };
+
+    static constexpr uint32_t input_arg_count = 9;
+    static constexpr uint32_t output_arg_count = 3;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"filter", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"bias", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"min_input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"max_input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"min_filter", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"max_filter", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"min_freezed_output", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"max_freezed_output", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"min_output", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"max_output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        Tinput,
+        Tfilter,
+        Tbias,
+        out_type,
+        strides,
+        padding,
+        dilations,
+        padding_list
+    };
+
+    static constexpr std::array<AttributeDesc, 8> attribute_descs
+    {
+        AttributeDesc{"Tinput", AttributeType::Type},
+        AttributeDesc{"Tfilter", AttributeType::Type},
+        AttributeDesc{"Tbias", AttributeType::Type},
+        AttributeDesc{"out_type", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt}
+    };
+};
+
+struct AnonymousHashTable
+{
+    static constexpr const char* name = "AnonymousHashTable";
     
     enum class Argument
     {
@@ -41782,18 +43146,12 @@ struct HashTableV2
 
     enum class Attribute
     {
-        container,
-        shared_name,
-        use_node_name_sharing,
         key_dtype,
         value_dtype
     };
 
-    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"container", AttributeType::String},
-        AttributeDesc{"shared_name", AttributeType::String},
-        AttributeDesc{"use_node_name_sharing", AttributeType::Bool},
         AttributeDesc{"key_dtype", AttributeType::Type},
         AttributeDesc{"value_dtype", AttributeType::Type}
     };
@@ -41831,6 +43189,70 @@ struct MutableHashTableV2
         AttributeDesc{"use_node_name_sharing", AttributeType::Bool},
         AttributeDesc{"key_dtype", AttributeType::Type},
         AttributeDesc{"value_dtype", AttributeType::Type}
+    };
+};
+
+struct Any
+{
+    static constexpr const char* name = "Any";
+    
+    enum class Argument
+    {
+        input,
+        reduction_indices,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"reduction_indices", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        keep_dims,
+        Tidx
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"keep_dims", AttributeType::Bool},
+        AttributeDesc{"Tidx", AttributeType::Type}
+    };
+};
+
+struct AnonymousMutableHashTableOfTensors
+{
+    static constexpr const char* name = "AnonymousMutableHashTableOfTensors";
+    
+    enum class Argument
+    {
+        table_handle
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"table_handle", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        key_dtype,
+        value_dtype,
+        value_shape
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"key_dtype", AttributeType::Type},
+        AttributeDesc{"value_dtype", AttributeType::Type},
+        AttributeDesc{"value_shape", AttributeType::Shape}
     };
 };
 
@@ -43418,99 +44840,6 @@ struct Ndtri
 struct Cos
 {
     static constexpr const char* name = "Cos";
-    
-    enum class Argument
-    {
-        x,
-        y
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
-struct Asin
-{
-    static constexpr const char* name = "Asin";
-    
-    enum class Argument
-    {
-        x,
-        y
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
-struct RequantizationRange
-{
-    static constexpr const char* name = "RequantizationRange";
-    
-    enum class Argument
-    {
-        input,
-        input_min,
-        input_max,
-        output_min,
-        output_max
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 2;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"input_min", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"input_max", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output_min", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output_max", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        Tinput
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"Tinput", AttributeType::Type}
-    };
-};
-
-struct Atan
-{
-    static constexpr const char* name = "Atan";
     
     enum class Argument
     {
@@ -45634,39 +46963,6 @@ struct SparseSegmentSqrtNWithNumSegments
     };
 };
 
-struct Any
-{
-    static constexpr const char* name = "Any";
-    
-    enum class Argument
-    {
-        input,
-        reduction_indices,
-        output
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"reduction_indices", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        keep_dims,
-        Tidx
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"keep_dims", AttributeType::Bool},
-        AttributeDesc{"Tidx", AttributeType::Type}
-    };
-};
-
 struct RiscConcat
 {
     static constexpr const char* name = "RiscConcat";
@@ -45755,12 +47051,14 @@ struct AssignVariableOp
 
     enum class Attribute
     {
-        dtype
+        dtype,
+        validate_shape
     };
 
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"dtype", AttributeType::Type}
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"validate_shape", AttributeType::Bool}
     };
 };
 
@@ -45972,6 +47270,39 @@ struct RaggedBincount
     };
 };
 
+struct _NcclReduceSend
+{
+    static constexpr const char* name = "_NcclReduceSend";
+    
+    enum class Argument
+    {
+        input
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        reduction,
+        T,
+        num_devices,
+        shared_name
+    };
+
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    {
+        AttributeDesc{"reduction", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_devices", AttributeType::Int},
+        AttributeDesc{"shared_name", AttributeType::String}
+    };
+};
+
 struct QuantizedMatMul
 {
     static constexpr const char* name = "QuantizedMatMul";
@@ -46022,39 +47353,6 @@ struct QuantizedMatMul
         AttributeDesc{"transpose_a", AttributeType::Bool},
         AttributeDesc{"transpose_b", AttributeType::Bool},
         AttributeDesc{"Tactivation", AttributeType::Type}
-    };
-};
-
-struct _NcclReduceSend
-{
-    static constexpr const char* name = "_NcclReduceSend";
-    
-    enum class Argument
-    {
-        input
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        reduction,
-        T,
-        num_devices,
-        shared_name
-    };
-
-    static constexpr std::array<AttributeDesc, 4> attribute_descs
-    {
-        AttributeDesc{"reduction", AttributeType::String},
-        AttributeDesc{"T", AttributeType::Type},
-        AttributeDesc{"num_devices", AttributeType::Int},
-        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -46386,6 +47684,41 @@ struct NcclReduce
     };
 };
 
+struct _NcclReduceRecv
+{
+    static constexpr const char* name = "_NcclReduceRecv";
+    
+    enum class Argument
+    {
+        input,
+        data
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"data", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        reduction,
+        T,
+        num_devices,
+        shared_name
+    };
+
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    {
+        AttributeDesc{"reduction", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_devices", AttributeType::Int},
+        AttributeDesc{"shared_name", AttributeType::String}
+    };
+};
+
 struct NcclBroadcast
 {
     static constexpr const char* name = "NcclBroadcast";
@@ -46414,6 +47747,72 @@ struct NcclBroadcast
     {
         AttributeDesc{"T", AttributeType::Type},
         AttributeDesc{"shape", AttributeType::Shape}
+    };
+};
+
+struct StatefulStandardNormalV2
+{
+    static constexpr const char* name = "StatefulStandardNormalV2";
+    
+    enum class Argument
+    {
+        resource,
+        algorithm,
+        shape,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"algorithm", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"shape", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        dtype,
+        shape_dtype
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape_dtype", AttributeType::Type}
+    };
+};
+
+struct _NcclBroadcastSend
+{
+    static constexpr const char* name = "_NcclBroadcastSend";
+    
+    enum class Argument
+    {
+        input
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        num_devices,
+        shared_name
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_devices", AttributeType::Int},
+        AttributeDesc{"shared_name", AttributeType::String}
     };
 };
 
@@ -46451,6 +47850,55 @@ struct AvgPool
         AttributeDesc{"padding", AttributeType::String},
         AttributeDesc{"data_format", AttributeType::String},
         AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct BatchNormWithGlobalNormalizationGrad
+{
+    static constexpr const char* name = "BatchNormWithGlobalNormalizationGrad";
+    
+    enum class Argument
+    {
+        t,
+        m,
+        v,
+        gamma,
+        backprop,
+        dx,
+        dm,
+        dv,
+        db,
+        dg
+    };
+
+    static constexpr uint32_t input_arg_count = 5;
+    static constexpr uint32_t output_arg_count = 5;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"t", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"m", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"v", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"gamma", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"backprop", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"dx", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"dm", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"dv", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"db", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"dg", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        variance_epsilon,
+        scale_after_normalization
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"variance_epsilon", AttributeType::Float},
+        AttributeDesc{"scale_after_normalization", AttributeType::Bool}
     };
 };
 
@@ -46517,6 +47965,110 @@ struct _FusedBatchNormEx
     };
 };
 
+struct FusedBatchNormGrad
+{
+    static constexpr const char* name = "FusedBatchNormGrad";
+    
+    enum class Argument
+    {
+        y_backprop,
+        x,
+        scale,
+        reserve_space_1,
+        reserve_space_2,
+        x_backprop,
+        scale_backprop,
+        offset_backprop,
+        reserve_space_3,
+        reserve_space_4
+    };
+
+    static constexpr uint32_t input_arg_count = 5;
+    static constexpr uint32_t output_arg_count = 5;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"y_backprop", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"scale", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"reserve_space_1", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"reserve_space_2", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"x_backprop", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"scale_backprop", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"offset_backprop", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"reserve_space_3", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"reserve_space_4", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        epsilon,
+        data_format,
+        is_training
+    };
+
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
+    };
+};
+
+struct FusedBatchNormGradV2
+{
+    static constexpr const char* name = "FusedBatchNormGradV2";
+    
+    enum class Argument
+    {
+        y_backprop,
+        x,
+        scale,
+        reserve_space_1,
+        reserve_space_2,
+        x_backprop,
+        scale_backprop,
+        offset_backprop,
+        reserve_space_3,
+        reserve_space_4
+    };
+
+    static constexpr uint32_t input_arg_count = 5;
+    static constexpr uint32_t output_arg_count = 5;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"y_backprop", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"scale", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"reserve_space_1", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"reserve_space_2", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"x_backprop", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"scale_backprop", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"offset_backprop", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"reserve_space_3", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"reserve_space_4", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        U,
+        epsilon,
+        data_format,
+        is_training
+    };
+
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"U", AttributeType::Type},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"is_training", AttributeType::Bool}
+    };
+};
+
 struct FusedBatchNormGradV3
 {
     static constexpr const char* name = "FusedBatchNormGradV3";
@@ -46569,6 +48121,142 @@ struct FusedBatchNormGradV3
         AttributeDesc{"epsilon", AttributeType::Float},
         AttributeDesc{"data_format", AttributeType::String},
         AttributeDesc{"is_training", AttributeType::Bool}
+    };
+};
+
+struct BiasAdd
+{
+    static constexpr const char* name = "BiasAdd";
+    
+    enum class Argument
+    {
+        value,
+        bias,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"value", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"bias", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        data_format
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String}
+    };
+};
+
+struct FresnelCos
+{
+    static constexpr const char* name = "FresnelCos";
+    
+    enum class Argument
+    {
+        x,
+        y
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct BiasAddGrad
+{
+    static constexpr const char* name = "BiasAddGrad";
+    
+    enum class Argument
+    {
+        out_backprop,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"out_backprop", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        data_format
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"data_format", AttributeType::String}
+    };
+};
+
+struct Conv2D
+{
+    static constexpr const char* name = "Conv2D";
+    
+    enum class Argument
+    {
+        input,
+        filter,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"filter", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        strides,
+        use_cudnn_on_gpu,
+        padding,
+        explicit_paddings,
+        data_format,
+        dilations
+    };
+
+    static constexpr std::array<AttributeDesc, 7> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"use_cudnn_on_gpu", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"explicit_paddings", AttributeType::ListInt},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt}
     };
 };
 
@@ -50587,69 +52275,6 @@ struct QuantizedConv2DAndRequantize
     };
 };
 
-struct QuantizedConv2DWithBiasAndRequantize
-{
-    static constexpr const char* name = "QuantizedConv2DWithBiasAndRequantize";
-    
-    enum class Argument
-    {
-        input,
-        filter,
-        bias,
-        min_input,
-        max_input,
-        min_filter,
-        max_filter,
-        min_freezed_output,
-        max_freezed_output,
-        output,
-        min_output,
-        max_output
-    };
-
-    static constexpr uint32_t input_arg_count = 9;
-    static constexpr uint32_t output_arg_count = 3;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"filter", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"bias", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"min_input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"max_input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"min_filter", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"max_filter", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"min_freezed_output", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"max_freezed_output", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"min_output", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"max_output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        Tinput,
-        Tfilter,
-        Tbias,
-        out_type,
-        strides,
-        padding,
-        dilations,
-        padding_list
-    };
-
-    static constexpr std::array<AttributeDesc, 8> attribute_descs
-    {
-        AttributeDesc{"Tinput", AttributeType::Type},
-        AttributeDesc{"Tfilter", AttributeType::Type},
-        AttributeDesc{"Tbias", AttributeType::Type},
-        AttributeDesc{"out_type", AttributeType::Type},
-        AttributeDesc{"strides", AttributeType::ListInt},
-        AttributeDesc{"padding", AttributeType::String},
-        AttributeDesc{"dilations", AttributeType::ListInt},
-        AttributeDesc{"padding_list", AttributeType::ListInt}
-    };
-};
-
 struct RiscBroadcast
 {
     static constexpr const char* name = "RiscBroadcast";
@@ -51204,6 +52829,39 @@ struct QuantizedMatMulWithBiasAndDequantize
     };
 };
 
+struct EnqueueTPUEmbeddingBatch
+{
+    static constexpr const char* name = "EnqueueTPUEmbeddingBatch";
+    
+    enum class Argument
+    {
+        batch,
+        mode_override
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"batch", ArgumentDesc::TensorCount::SequenceAttrInt, "N"},
+        ArgumentDesc{"mode_override", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        N,
+        device_ordinal,
+        combiners
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"device_ordinal", AttributeType::Int},
+        AttributeDesc{"combiners", AttributeType::ListString}
+    };
+};
+
 struct QuantizedDepthwiseConv2D
 {
     static constexpr const char* name = "QuantizedDepthwiseConv2D";
@@ -51320,6 +52978,37 @@ struct QuantizedDepthwiseConv2DWithBiasAndReluAndRequantize
     };
 };
 
+struct RiscUnary
+{
+    static constexpr const char* name = "RiscUnary";
+    
+    enum class Argument
+    {
+        x,
+        y
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        op_type,
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"op_type", AttributeType::String},
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
 struct ResourceScatterMul
 {
     static constexpr const char* name = "ResourceScatterMul";
@@ -51350,37 +53039,6 @@ struct ResourceScatterMul
     {
         AttributeDesc{"dtype", AttributeType::Type},
         AttributeDesc{"Tindices", AttributeType::Type}
-    };
-};
-
-struct RiscUnary
-{
-    static constexpr const char* name = "RiscUnary";
-    
-    enum class Argument
-    {
-        x,
-        y
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        op_type,
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"op_type", AttributeType::String},
-        AttributeDesc{"T", AttributeType::Type}
     };
 };
 
@@ -52135,82 +53793,6 @@ struct RandomStandardNormal
     };
 };
 
-struct StatefulStandardNormal
-{
-    static constexpr const char* name = "StatefulStandardNormal";
-    
-    enum class Argument
-    {
-        resource,
-        shape,
-        output
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"shape", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        dtype,
-        shape_dtype
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"dtype", AttributeType::Type},
-        AttributeDesc{"shape_dtype", AttributeType::Type}
-    };
-};
-
-struct ParameterizedTruncatedNormal
-{
-    static constexpr const char* name = "ParameterizedTruncatedNormal";
-    
-    enum class Argument
-    {
-        shape,
-        means,
-        stdevs,
-        minvals,
-        maxvals,
-        output
-    };
-
-    static constexpr uint32_t input_arg_count = 5;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"shape", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"means", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"stdevs", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"minvals", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"maxvals", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        seed,
-        seed2,
-        dtype,
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 4> attribute_descs
-    {
-        AttributeDesc{"seed", AttributeType::Int},
-        AttributeDesc{"seed2", AttributeType::Int},
-        AttributeDesc{"dtype", AttributeType::Type},
-        AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
 struct TruncatedNormal
 {
     static constexpr const char* name = "TruncatedNormal";
@@ -52274,6 +53856,468 @@ struct RandomGammaGrad
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
         AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct VarHandleOp
+{
+    static constexpr const char* name = "VarHandleOp";
+    
+    enum class Argument
+    {
+        resource
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        container,
+        shared_name,
+        dtype,
+        shape,
+        allowed_devices
+    };
+
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    {
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"shape", AttributeType::Shape},
+        AttributeDesc{"allowed_devices", AttributeType::ListString}
+    };
+};
+
+struct ReadVariableOp
+{
+    static constexpr const char* name = "ReadVariableOp";
+    
+    enum class Argument
+    {
+        resource,
+        value
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"value", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        dtype
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"dtype", AttributeType::Type}
+    };
+};
+
+struct DestroyResourceOp
+{
+    static constexpr const char* name = "DestroyResourceOp";
+    
+    enum class Argument
+    {
+        resource
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        ignore_lookup_error
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"ignore_lookup_error", AttributeType::Bool}
+    };
+};
+
+struct AssignAddVariableOp
+{
+    static constexpr const char* name = "AssignAddVariableOp";
+    
+    enum class Argument
+    {
+        resource,
+        value
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"value", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        dtype
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"dtype", AttributeType::Type}
+    };
+};
+
+struct ResourceGather
+{
+    static constexpr const char* name = "ResourceGather";
+    
+    enum class Argument
+    {
+        resource,
+        indices,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        batch_dims,
+        validate_indices,
+        dtype,
+        Tindices
+    };
+
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    {
+        AttributeDesc{"batch_dims", AttributeType::Int},
+        AttributeDesc{"validate_indices", AttributeType::Bool},
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
+    };
+};
+
+struct StringSplit
+{
+    static constexpr const char* name = "StringSplit";
+    
+    enum class Argument
+    {
+        input,
+        delimiter,
+        indices,
+        values,
+        shape
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 3;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"delimiter", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"values", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"shape", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        skip_empty
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"skip_empty", AttributeType::Bool}
+    };
+};
+
+struct ResourceGatherNd
+{
+    static constexpr const char* name = "ResourceGatherNd";
+    
+    enum class Argument
+    {
+        resource,
+        indices,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        dtype,
+        Tindices
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
+    };
+};
+
+struct ResourceScatterSub
+{
+    static constexpr const char* name = "ResourceScatterSub";
+    
+    enum class Argument
+    {
+        resource,
+        indices,
+        updates
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"updates", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        dtype,
+        Tindices
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
+    };
+};
+
+struct ResourceScatterMin
+{
+    static constexpr const char* name = "ResourceScatterMin";
+    
+    enum class Argument
+    {
+        resource,
+        indices,
+        updates
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"updates", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        dtype,
+        Tindices
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
+    };
+};
+
+struct ResourceScatterUpdate
+{
+    static constexpr const char* name = "ResourceScatterUpdate";
+    
+    enum class Argument
+    {
+        resource,
+        indices,
+        updates
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"updates", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        dtype,
+        Tindices
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"dtype", AttributeType::Type},
+        AttributeDesc{"Tindices", AttributeType::Type}
+    };
+};
+
+struct MakeUnique
+{
+    static constexpr const char* name = "MakeUnique";
+    
+    enum class Argument
+    {
+        input,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct MutexV2
+{
+    static constexpr const char* name = "MutexV2";
+    
+    enum class Argument
+    {
+        resource
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        container,
+        shared_name
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"container", AttributeType::String},
+        AttributeDesc{"shared_name", AttributeType::String}
+    };
+};
+
+struct ConsumeMutexLock
+{
+    static constexpr const char* name = "ConsumeMutexLock";
+    
+    enum class Argument
+    {
+        mutex_lock
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"mutex_lock", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+
+    };
+
+    static constexpr std::array<AttributeDesc, 0> attribute_descs
+    {
+
+    };
+};
+
+struct _MklNativeFusedConv3D
+{
+    static constexpr const char* name = "_MklNativeFusedConv3D";
+    
+    enum class Argument
+    {
+        input,
+        filter,
+        args,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"filter", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"args", ArgumentDesc::TensorCount::SequenceAttrInt, "num_args"},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        num_args,
+        strides,
+        is_filter_const,
+        padding,
+        data_format,
+        dilations,
+        padding_list,
+        fused_ops,
+        epsilon,
+        leakyrelu_alpha
+    };
+
+    static constexpr std::array<AttributeDesc, 11> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"num_args", AttributeType::Int},
+        AttributeDesc{"strides", AttributeType::ListInt},
+        AttributeDesc{"is_filter_const", AttributeType::Bool},
+        AttributeDesc{"padding", AttributeType::String},
+        AttributeDesc{"data_format", AttributeType::String},
+        AttributeDesc{"dilations", AttributeType::ListInt},
+        AttributeDesc{"padding_list", AttributeType::ListInt},
+        AttributeDesc{"fused_ops", AttributeType::ListString},
+        AttributeDesc{"epsilon", AttributeType::Float},
+        AttributeDesc{"leakyrelu_alpha", AttributeType::Float}
     };
 };
 
@@ -52604,6 +54648,35 @@ struct RiscImag
     {
         AttributeDesc{"T", AttributeType::Type},
         AttributeDesc{"Tout", AttributeType::Type}
+    };
+};
+
+struct _ConfigureTPUEmbeddingMemory
+{
+    static constexpr const char* name = "_ConfigureTPUEmbeddingMemory";
+    
+    enum class Argument
+    {
+        common_config,
+        task_host_config
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"common_config", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"task_host_config", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        config
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"config", AttributeType::String}
     };
 };
 
@@ -53428,35 +55501,6 @@ struct BesselI0e
     };
 };
 
-struct BesselI1e
-{
-    static constexpr const char* name = "BesselI1e";
-    
-    enum class Argument
-    {
-        x,
-        y
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
 struct BesselK0
 {
     static constexpr const char* name = "BesselK0";
@@ -53489,35 +55533,6 @@ struct BesselK0
 struct BesselK0e
 {
     static constexpr const char* name = "BesselK0e";
-    
-    enum class Argument
-    {
-        x,
-        y
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        T
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"T", AttributeType::Type}
-    };
-};
-
-struct BesselJ0
-{
-    static constexpr const char* name = "BesselJ0";
     
     enum class Argument
     {
@@ -53981,415 +55996,6 @@ struct StatefulRandomBinomial
         AttributeDesc{"S", AttributeType::Type},
         AttributeDesc{"T", AttributeType::Type},
         AttributeDesc{"dtype", AttributeType::Type}
-    };
-};
-
-struct VarHandleOp
-{
-    static constexpr const char* name = "VarHandleOp";
-    
-    enum class Argument
-    {
-        resource
-    };
-
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        container,
-        shared_name,
-        dtype,
-        shape,
-        allowed_devices
-    };
-
-    static constexpr std::array<AttributeDesc, 5> attribute_descs
-    {
-        AttributeDesc{"container", AttributeType::String},
-        AttributeDesc{"shared_name", AttributeType::String},
-        AttributeDesc{"dtype", AttributeType::Type},
-        AttributeDesc{"shape", AttributeType::Shape},
-        AttributeDesc{"allowed_devices", AttributeType::ListString}
-    };
-};
-
-struct ReadVariableOp
-{
-    static constexpr const char* name = "ReadVariableOp";
-    
-    enum class Argument
-    {
-        resource,
-        value
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"value", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        dtype
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"dtype", AttributeType::Type}
-    };
-};
-
-struct DestroyResourceOp
-{
-    static constexpr const char* name = "DestroyResourceOp";
-    
-    enum class Argument
-    {
-        resource
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        ignore_lookup_error
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"ignore_lookup_error", AttributeType::Bool}
-    };
-};
-
-struct AssignAddVariableOp
-{
-    static constexpr const char* name = "AssignAddVariableOp";
-    
-    enum class Argument
-    {
-        resource,
-        value
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"value", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        dtype
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"dtype", AttributeType::Type}
-    };
-};
-
-struct ResourceGather
-{
-    static constexpr const char* name = "ResourceGather";
-    
-    enum class Argument
-    {
-        resource,
-        indices,
-        output
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        batch_dims,
-        validate_indices,
-        dtype,
-        Tindices
-    };
-
-    static constexpr std::array<AttributeDesc, 4> attribute_descs
-    {
-        AttributeDesc{"batch_dims", AttributeType::Int},
-        AttributeDesc{"validate_indices", AttributeType::Bool},
-        AttributeDesc{"dtype", AttributeType::Type},
-        AttributeDesc{"Tindices", AttributeType::Type}
-    };
-};
-
-struct StringSplit
-{
-    static constexpr const char* name = "StringSplit";
-    
-    enum class Argument
-    {
-        input,
-        delimiter,
-        indices,
-        values,
-        shape
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 3;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"delimiter", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"values", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"shape", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        skip_empty
-    };
-
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
-    {
-        AttributeDesc{"skip_empty", AttributeType::Bool}
-    };
-};
-
-struct ResourceGatherNd
-{
-    static constexpr const char* name = "ResourceGatherNd";
-    
-    enum class Argument
-    {
-        resource,
-        indices,
-        output
-    };
-
-    static constexpr uint32_t input_arg_count = 2;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        dtype,
-        Tindices
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"dtype", AttributeType::Type},
-        AttributeDesc{"Tindices", AttributeType::Type}
-    };
-};
-
-struct ResourceScatterSub
-{
-    static constexpr const char* name = "ResourceScatterSub";
-    
-    enum class Argument
-    {
-        resource,
-        indices,
-        updates
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"updates", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        dtype,
-        Tindices
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"dtype", AttributeType::Type},
-        AttributeDesc{"Tindices", AttributeType::Type}
-    };
-};
-
-struct ResourceScatterMin
-{
-    static constexpr const char* name = "ResourceScatterMin";
-    
-    enum class Argument
-    {
-        resource,
-        indices,
-        updates
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"updates", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        dtype,
-        Tindices
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"dtype", AttributeType::Type},
-        AttributeDesc{"Tindices", AttributeType::Type}
-    };
-};
-
-struct ResourceScatterUpdate
-{
-    static constexpr const char* name = "ResourceScatterUpdate";
-    
-    enum class Argument
-    {
-        resource,
-        indices,
-        updates
-    };
-
-    static constexpr uint32_t input_arg_count = 3;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"indices", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"updates", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        dtype,
-        Tindices
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"dtype", AttributeType::Type},
-        AttributeDesc{"Tindices", AttributeType::Type}
-    };
-};
-
-struct MakeUnique
-{
-    static constexpr const char* name = "MakeUnique";
-    
-    enum class Argument
-    {
-        input,
-        output
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
-        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
-    };
-};
-
-struct MutexV2
-{
-    static constexpr const char* name = "MutexV2";
-    
-    enum class Argument
-    {
-        resource
-    };
-
-    static constexpr uint32_t input_arg_count = 0;
-    static constexpr uint32_t output_arg_count = 1;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"resource", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-        container,
-        shared_name
-    };
-
-    static constexpr std::array<AttributeDesc, 2> attribute_descs
-    {
-        AttributeDesc{"container", AttributeType::String},
-        AttributeDesc{"shared_name", AttributeType::String}
-    };
-};
-
-struct ConsumeMutexLock
-{
-    static constexpr const char* name = "ConsumeMutexLock";
-    
-    enum class Argument
-    {
-        mutex_lock
-    };
-
-    static constexpr uint32_t input_arg_count = 1;
-    static constexpr uint32_t output_arg_count = 0;
-    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
-    {
-        ArgumentDesc{"mutex_lock", ArgumentDesc::TensorCount::Single}
-    };
-
-    enum class Attribute
-    {
-
-    };
-
-    static constexpr std::array<AttributeDesc, 0> attribute_descs
-    {
-
     };
 };
 
@@ -58874,12 +60480,14 @@ struct _InitializeHostForDistributedTPU
 
     enum class Attribute
     {
-        enable_whole_mesh_compilations
+        enable_whole_mesh_compilations,
+        tpu_cancellation_closes_chips
     };
 
-    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
     {
-        AttributeDesc{"enable_whole_mesh_compilations", AttributeType::Bool}
+        AttributeDesc{"enable_whole_mesh_compilations", AttributeType::Bool},
+        AttributeDesc{"tpu_cancellation_closes_chips", AttributeType::Int}
     };
 };
 
@@ -59995,6 +61603,49 @@ struct EnqueueTPUEmbeddingRaggedTensorBatch
         AttributeDesc{"table_ids", AttributeType::ListInt},
         AttributeDesc{"max_sequence_lengths", AttributeType::ListInt},
         AttributeDesc{"num_features", AttributeType::ListInt}
+    };
+};
+
+struct DynamicEnqueueTPUEmbeddingArbitraryTensorBatch
+{
+    static constexpr const char* name = "DynamicEnqueueTPUEmbeddingArbitraryTensorBatch";
+    
+    enum class Argument
+    {
+        sample_indices_or_row_splits,
+        embedding_indices,
+        aggregation_weights,
+        mode_override,
+        device_ordinal
+    };
+
+    static constexpr uint32_t input_arg_count = 5;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"sample_indices_or_row_splits", ArgumentDesc::TensorCount::SequenceAttrInt, "N"},
+        ArgumentDesc{"embedding_indices", ArgumentDesc::TensorCount::SequenceAttrInt, "N"},
+        ArgumentDesc{"aggregation_weights", ArgumentDesc::TensorCount::SequenceAttrInt, "N"},
+        ArgumentDesc{"mode_override", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"device_ordinal", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T1,
+        T2,
+        T3,
+        N,
+        combiners
+    };
+
+    static constexpr std::array<AttributeDesc, 5> attribute_descs
+    {
+        AttributeDesc{"T1", AttributeType::Type},
+        AttributeDesc{"T2", AttributeType::Type},
+        AttributeDesc{"T3", AttributeType::Type},
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"combiners", AttributeType::ListString}
     };
 };
 
@@ -62598,6 +64249,64 @@ struct _MklNativeFusedBatchNormGradV3
     };
 };
 
+struct _MklFusedMish
+{
+    static constexpr const char* name = "_MklFusedMish";
+    
+    enum class Argument
+    {
+        features,
+        activations
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"features", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"activations", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
+struct _MklSwish
+{
+    static constexpr const char* name = "_MklSwish";
+    
+    enum class Argument
+    {
+        features,
+        activations
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"features", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"activations", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type}
+    };
+};
+
 struct XlaHostCompute
 {
     static constexpr const char* name = "XlaHostCompute";
@@ -62702,6 +64411,160 @@ struct TopKUnique
     static constexpr std::array<AttributeDesc, 1> attribute_descs
     {
         AttributeDesc{"k", AttributeType::Int}
+    };
+};
+
+struct _ExecuteTPUEmbeddingPartitioner
+{
+    static constexpr const char* name = "_ExecuteTPUEmbeddingPartitioner";
+    
+    enum class Argument
+    {
+        common_config
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"common_config", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        config
+    };
+
+    static constexpr std::array<AttributeDesc, 1> attribute_descs
+    {
+        AttributeDesc{"config", AttributeType::String}
+    };
+};
+
+struct _ConfigureTPUEmbeddingHost
+{
+    static constexpr const char* name = "_ConfigureTPUEmbeddingHost";
+    
+    enum class Argument
+    {
+        common_config,
+        task_host_config,
+        host_config
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"common_config", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"task_host_config", ArgumentDesc::TensorCount::SequenceAttrInt, "N"},
+        ArgumentDesc{"host_config", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        N,
+        config
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"N", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String}
+    };
+};
+
+struct LoadAllTPUEmbeddingParameters
+{
+    static constexpr const char* name = "LoadAllTPUEmbeddingParameters";
+    
+    enum class Argument
+    {
+        parameters,
+        auxiliary1,
+        auxiliary2,
+        auxiliary3,
+        auxiliary4,
+        auxiliary5,
+        auxiliary6,
+        auxiliary7
+    };
+
+    static constexpr uint32_t input_arg_count = 8;
+    static constexpr uint32_t output_arg_count = 0;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"parameters", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"auxiliary1", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"auxiliary2", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"auxiliary3", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"auxiliary4", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"auxiliary5", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"auxiliary6", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"auxiliary7", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"}
+    };
+
+    enum class Attribute
+    {
+        NumTables,
+        config,
+        num_shards,
+        shard_id
+    };
+
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    {
+        AttributeDesc{"NumTables", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int}
+    };
+};
+
+struct RetrieveAllTPUEmbeddingParameters
+{
+    static constexpr const char* name = "RetrieveAllTPUEmbeddingParameters";
+    
+    enum class Argument
+    {
+        parameters,
+        auxiliary1,
+        auxiliary2,
+        auxiliary3,
+        auxiliary4,
+        auxiliary5,
+        auxiliary6,
+        auxiliary7
+    };
+
+    static constexpr uint32_t input_arg_count = 0;
+    static constexpr uint32_t output_arg_count = 8;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"parameters", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"auxiliary1", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"auxiliary2", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"auxiliary3", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"auxiliary4", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"auxiliary5", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"auxiliary6", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"},
+        ArgumentDesc{"auxiliary7", ArgumentDesc::TensorCount::SequenceAttrInt, "NumTables"}
+    };
+
+    enum class Attribute
+    {
+        NumTables,
+        config,
+        num_shards,
+        shard_id
+    };
+
+    static constexpr std::array<AttributeDesc, 4> attribute_descs
+    {
+        AttributeDesc{"NumTables", AttributeType::Int},
+        AttributeDesc{"config", AttributeType::String},
+        AttributeDesc{"num_shards", AttributeType::Int},
+        AttributeDesc{"shard_id", AttributeType::Int}
     };
 };
 
@@ -62917,17 +64780,19 @@ struct XlaConvV2
         Tindices,
         dimension_numbers,
         precision_config,
-        preferred_element_type
+        preferred_element_type,
+        batch_group_count
     };
 
-    static constexpr std::array<AttributeDesc, 6> attribute_descs
+    static constexpr std::array<AttributeDesc, 7> attribute_descs
     {
         AttributeDesc{"LhsT", AttributeType::Type},
         AttributeDesc{"RhsT", AttributeType::Type},
         AttributeDesc{"Tindices", AttributeType::Type},
         AttributeDesc{"dimension_numbers", AttributeType::String},
         AttributeDesc{"precision_config", AttributeType::String},
-        AttributeDesc{"preferred_element_type", AttributeType::Type}
+        AttributeDesc{"preferred_element_type", AttributeType::Type},
+        AttributeDesc{"batch_group_count", AttributeType::Int}
     };
 };
 
@@ -63245,6 +65110,76 @@ struct XlaScatter
         AttributeDesc{"indices_are_sorted", AttributeType::Bool},
         AttributeDesc{"T", AttributeType::Type},
         AttributeDesc{"Tindices", AttributeType::Type}
+    };
+};
+
+struct XlaAllReduce
+{
+    static constexpr const char* name = "XlaAllReduce";
+    
+    enum class Argument
+    {
+        input,
+        group_assignment,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 2;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"group_assignment", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        reduce_op,
+        mode
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"reduce_op", AttributeType::String},
+        AttributeDesc{"mode", AttributeType::String}
+    };
+};
+
+struct XlaReduceScatter
+{
+    static constexpr const char* name = "XlaReduceScatter";
+    
+    enum class Argument
+    {
+        input,
+        group_assignment,
+        scatter_dimension,
+        output
+    };
+
+    static constexpr uint32_t input_arg_count = 3;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
+    {
+        ArgumentDesc{"input", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"group_assignment", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"scatter_dimension", ArgumentDesc::TensorCount::Single},
+        ArgumentDesc{"output", ArgumentDesc::TensorCount::Single}
+    };
+
+    enum class Attribute
+    {
+        T,
+        reduce_op
+    };
+
+    static constexpr std::array<AttributeDesc, 2> attribute_descs
+    {
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"reduce_op", AttributeType::String}
     };
 };
 
@@ -63604,4 +65539,5 @@ struct AudioMicrofrontend
     };
 };
 
-} // namespace tfdml::ops
+} // namespace tfdml
+} // namespace ops

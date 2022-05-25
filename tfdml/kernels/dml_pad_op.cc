@@ -344,7 +344,7 @@ using K = typename KernelDefinition<
         DataTypeToEnum<TPadding>()>::
         template WithTypeConstraint<Op::Attribute::T, type>;
 
-template <TF_DataType T, TF_DataType... Ts>
+template <TF_DataType T>
 void RegisterPad()
 {
     using Op = ops::Pad;
@@ -352,10 +352,19 @@ void RegisterPad()
         Op::Argument::paddings>::Register();
     K<Op, T, int64_t>::template WithHostMemoryArguments<
         Op::Argument::paddings>::Register();
-    if constexpr (sizeof...(Ts) > 0) RegisterPad<Ts...>();
 }
 
-template <TF_DataType T, TF_DataType... Ts>
+template <
+    TF_DataType T,
+    TF_DataType... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
+void RegisterPad()
+{
+    RegisterPad<T>();
+    RegisterPad<Ts...>();
+}
+
+template <TF_DataType T>
 void RegisterPadV2()
 {
     using Op = ops::PadV2;
@@ -365,10 +374,19 @@ void RegisterPadV2()
     K<Op, T, int64_t>::template WithHostMemoryArguments<
         Op::Argument::paddings,
         Op::Argument::constant_values>::Register();
-    if constexpr (sizeof...(Ts) > 0) RegisterPadV2<Ts...>();
 }
 
-template <TF_DataType T, TF_DataType... Ts>
+template <
+    TF_DataType T,
+    TF_DataType... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
+void RegisterPadV2()
+{
+    RegisterPadV2<T>();
+    RegisterPadV2<Ts...>();
+}
+
+template <TF_DataType T>
 void RegisterMirrorPad()
 {
     using Op = ops::MirrorPad;
@@ -376,7 +394,16 @@ void RegisterMirrorPad()
         Op::Argument::paddings>::Register();
     K<Op, T, int64_t>::template WithHostMemoryArguments<
         Op::Argument::paddings>::Register();
-    if constexpr (sizeof...(Ts) > 0) RegisterMirrorPad<Ts...>();
+}
+
+template <
+    TF_DataType T,
+    TF_DataType... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
+void RegisterMirrorPad()
+{
+    RegisterMirrorPad<T>();
+    RegisterMirrorPad<Ts...>();
 }
 
 void RegisterKernels_Pad()

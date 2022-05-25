@@ -94,21 +94,22 @@ Status GraphProperties::InferStatically(
             output_tensor_props_buffer[i] = TF_NewBuffer();
         }
 
-        absl::Cleanup props_cleanup = [&input_tensor_props_buffer,
-                                       &output_tensor_props_buffer,
-                                       num_inputs,
-                                       num_outputs]
-        {
-            for (int i = 0; i < num_inputs; i++)
+        auto props_cleanup = absl::MakeCleanup(
+            [&input_tensor_props_buffer,
+             &output_tensor_props_buffer,
+             num_inputs,
+             num_outputs]
             {
-                TF_DeleteBuffer(input_tensor_props_buffer[i]);
-            }
+                for (int i = 0; i < num_inputs; i++)
+                {
+                    TF_DeleteBuffer(input_tensor_props_buffer[i]);
+                }
 
-            for (int i = 0; i < num_outputs; i++)
-            {
-                TF_DeleteBuffer(output_tensor_props_buffer[i]);
-            }
-        };
+                for (int i = 0; i < num_outputs; i++)
+                {
+                    TF_DeleteBuffer(output_tensor_props_buffer[i]);
+                }
+            });
 
         TF_GetInputPropertiesList(
             graph_props_,
