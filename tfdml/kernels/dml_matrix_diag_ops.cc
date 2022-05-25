@@ -401,18 +401,26 @@ using K = KernelDefinition<
     Op,
     DmlKernelWrapper<DmlMatrixDiagKernel<T>, MatrixDiagShapeHelper<T>>>;
 
-template <typename T, typename... Ts>
+template <typename T>
 static void RegisterMatrixDiag()
 {
     using Op = ops::MatrixDiag;
     K<Op, T>::template WithTypeConstraint<
         Op::Attribute::T,
         DataTypeToEnum<T>()>::Register();
-
-    if constexpr (sizeof...(Ts) > 0) RegisterMatrixDiag<Ts...>();
 }
 
-template <typename T, typename... Ts>
+template <
+    typename T,
+    typename... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
+static void RegisterMatrixDiag()
+{
+    RegisterMatrixDiag<T>();
+    RegisterMatrixDiag<Ts...>();
+}
+
+template <typename T>
 static void RegisterMatrixDiagV2()
 {
     using Op = ops::MatrixDiagV2;
@@ -423,19 +431,35 @@ static void RegisterMatrixDiagV2()
                     template WithTypeConstraint<
                         Op::Attribute::T,
                         DataTypeToEnum<T>()>::Register();
-
-    if constexpr (sizeof...(Ts) > 0) RegisterMatrixDiagV2<Ts...>();
 }
 
-template <typename T, typename... Ts>
+template <
+    typename T,
+    typename... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
+static void RegisterMatrixDiagV2()
+{
+    RegisterMatrixDiagV2<T>();
+    RegisterMatrixDiagV2<Ts...>();
+}
+
+template <typename T>
 static void RegisterBatchMatrixDiag()
 {
     using Op = ops::BatchMatrixDiag;
     K<Op, T>::template WithTypeConstraint<
         Op::Attribute::T,
         DataTypeToEnum<T>()>::Register();
+}
 
-    if constexpr (sizeof...(Ts) > 0) RegisterBatchMatrixDiag<Ts...>();
+template <
+    typename T,
+    typename... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
+static void RegisterBatchMatrixDiag()
+{
+    RegisterBatchMatrixDiag<T>();
+    RegisterBatchMatrixDiag<Ts...>();
 }
 
 void RegisterKernels_MatrixDiag()

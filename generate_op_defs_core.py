@@ -32,6 +32,7 @@ from tensorflow.python.client import pywrap_tf_session as c_api
 from tensorflow.core.framework import op_def_pb2
 from tensorflow.python.util import compat
 import argparse
+import os
 
 def append_args(arg_metadata, arg_list):
     for arg in arg_list:
@@ -104,6 +105,14 @@ def generate_op_struct(op):
 }};
 """
 
+def generate_op_struct_def(op):
+    # Op names may have characters that make illegal C++ identifiers (e.g. the "Namespace>TestStringOutput" op).
+    # The struct can be named anything, so long as it's unique, since it stores the original op name as a field.
+    struct_name = op.name.replace(">","_")
+    return f"""
+constexpr std::array<ArgumentDesc, {struct_name}::input_arg_count + {struct_name}::output_arg_count> {struct_name}::argument_descs;
+constexpr std::array<AttributeDesc, {len(op.attr)}> {struct_name}::attribute_descs;"""
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--op_name", "-n", default="", help="Name of single op to generate (testing only)")
@@ -114,7 +123,12 @@ if __name__ == "__main__":
     op_list = op_def_pb2.OpList()
     op_list.ParseFromString(compat.as_bytes(data))
 
-    print('''/* Copyright (c) Microsoft Corporation.
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    header_path = f"{dir_path}/tfdml/runtime_adapter/op_defs_core.h"
+    impl_path = f"{dir_path}/tfdml/runtime_adapter/op_defs_core.cc"
+
+    with open(header_path, 'w') as f:
+        f.write('''/* Copyright (c) Microsoft Corporation.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -134,11 +148,52 @@ limitations under the License.
 // This file is generated. Do not edit it directly. See generate_op_defs_core.py.
 #pragma once
 
-namespace tfdml::ops
-{''')
+namespace tfdml
+{
+namespace ops
+{
+''')
 
-    for op in op_list.op:
-        if not args.op_name or (args.op_name == op.name):
-            print(generate_op_struct(op))
+    with open(header_path, 'a') as f:
+        for op in op_list.op:
+            if not args.op_name or (args.op_name == op.name):
+                f.write(generate_op_struct(op) + "\n")
 
-    print("} // namespace tfdml::ops")
+        f.write("} // namespace tfdml\n")
+        f.write("} // namespace ops\n")
+
+    with open(impl_path, 'w') as f:
+        f.write('''/* Copyright (c) Microsoft Corporation.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+ 
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================*/
+
+// clang-format off
+
+// This file is generated. Do not edit it directly. See generate_op_defs_core.py.
+
+#include "tfdml/runtime_adapter/op_defs.h"
+
+namespace tfdml
+{
+namespace ops
+{
+''')
+
+    with open(impl_path, 'a') as f:
+        for op in op_list.op:
+            if not args.op_name or (args.op_name == op.name):
+                f.write(generate_op_struct_def(op) + "\n")
+
+        f.write("} // namespace tfdml\n")
+        f.write("} // namespace ops\n")

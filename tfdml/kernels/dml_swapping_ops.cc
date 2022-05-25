@@ -99,6 +99,12 @@ struct _CopyFromGpuToHost
         AttributeDesc{"T", AttributeType::Type},
     };
 };
+
+constexpr std::array<AttributeDesc, 1> _CopyFromGpuToHost::attribute_descs;
+constexpr std::array<
+    ArgumentDesc,
+    _CopyFromGpuToHost::input_arg_count + _CopyFromGpuToHost::output_arg_count>
+    _CopyFromGpuToHost::argument_descs;
 } // namespace ops
 
 namespace ops
@@ -131,6 +137,12 @@ struct _CopyFromHostToGpu
         AttributeDesc{"T", AttributeType::Type},
     };
 };
+
+constexpr std::array<AttributeDesc, 1> _CopyFromHostToGpu::attribute_descs;
+constexpr std::array<
+    ArgumentDesc,
+    _CopyFromHostToGpu::input_arg_count + _CopyFromHostToGpu::output_arg_count>
+    _CopyFromHostToGpu::argument_descs;
 } // namespace ops
 
 static void RegisterKernels_CopyFromGpuToHost()

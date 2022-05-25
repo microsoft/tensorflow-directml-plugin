@@ -3,7 +3,7 @@
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
- 
+
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
@@ -17,6 +17,7 @@ limitations under the License.
 
 #include <string>
 
+#include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "attribute.h"
 #include "node_def.h"
@@ -36,11 +37,11 @@ class OpKernel
 
     std::shared_ptr<const NodeDef> node_def() const { return node_def_; }
 
-    const std::string_view type_string() const
+    const absl::string_view type_string() const
     {
         return node_def_->GetOpTypeName();
     }
-    const std::string_view name() const { return node_def_->GetOpName(); }
+    const absl::string_view name() const { return node_def_->GetOpName(); }
 
     MemoryType input_memory_type(int index) const
     {

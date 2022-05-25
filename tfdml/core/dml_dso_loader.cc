@@ -3,7 +3,7 @@
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
- 
+
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
@@ -14,12 +14,11 @@ limitations under the License.
 ==============================================================================*/
 #include <stdlib.h>
 
-#include <filesystem>
-
 #include "DirectMLConfig.h"
 #include "tensorflow/c/env.h"
 #include "tensorflow/c/logging.h"
 #include "tfdml/runtime_adapter/env.h"
+#include "tfdml/runtime_adapter/path.h"
 #include "tfdml/runtime_adapter/statusor.h"
 
 #if _WIN32
@@ -95,7 +94,7 @@ StatusOr<void*> GetDsoHandle(
     auto filename = env::FormatLibraryFileName(name, version);
     if (!search_path.empty())
     {
-        filename = (std::filesystem::path(search_path) / filename).string();
+        filename = JoinPath(search_path, filename);
     }
 
     void* dso_handle = nullptr;
@@ -156,7 +155,7 @@ StatusOr<void*> GetDirectMLLibraryHandle(const std::string& basename)
         // The DirectML DLL can't be located next to the pluggable device
         // library because TensorFlow would try to load it, so we place it in a
         // "directml" folder that we append to the search path
-        path = (std::filesystem::path(path) / "directml").string();
+        path = JoinPath(path, "directml");
 #endif
     }
 
@@ -193,7 +192,7 @@ StatusOr<void*> GetPixDsoHandle()
     // library because TensorFlow would try to load it, so we place it in a
     // "directml" folder that we append to the search path
     auto path = GetModuleDirectory();
-    path = (std::filesystem::path(path) / "directml").string();
+    path = JoinPath(path, "directml");
     return GetDsoHandle("WinPixEventRuntime", "", path);
 #else
     return Status(TF_UNIMPLEMENTED, "PIX events are not supported in WSL");

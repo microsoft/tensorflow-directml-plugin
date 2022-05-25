@@ -27,6 +27,7 @@ limitations under the License.
 #include <d3d12.h>
 
 #include "WinPixEventRuntime/pix3.h"
+#include "absl/strings/string_view.h"
 #include "tfdml/core/dml_adapter.h"
 #include "tfdml/core/dml_device_cache.h"
 #include "tfdml/core/dml_dso_loader.h"
@@ -346,12 +347,13 @@ void DmlTracing::LogExecutionContextFlush()
     }
 }
 
-std::optional<DmlTracing::ProfilerEventId> DmlTracing::TryLogKernelComputeStart(
-    uint32_t device_ordinal,
-    const std::string_view op_type,
-    const std::string_view op_name)
+absl::optional<DmlTracing::ProfilerEventId> DmlTracing::
+    TryLogKernelComputeStart(
+        uint32_t device_ordinal,
+        const absl::string_view op_type,
+        const absl::string_view op_name)
 {
-    std::optional<ProfilerEventId> profiler_event_id;
+    absl::optional<ProfilerEventId> profiler_event_id;
     if (profiler_active_ && trace_profiler_level_ >= TraceLevel::Standard)
     {
         auto timestamp = absl::GetCurrentTimeNanos();
