@@ -1,5 +1,5 @@
 '''
-setup.py file to build wheel for tfdml
+setup.py file to build wheel for tensorflow-directml-plugin
 '''
 
 from __future__ import absolute_import
@@ -116,9 +116,9 @@ setup(
     version=_VERSION.replace('-', ''),
     description=DOCLINES[0],
     long_description='\n'.join(DOCLINES[2:]),
-    url='https://github.com/tensorflow',
-    download_url='https://github.com/tensorflow',
-    author='Tensorflow',
+    url='https://github.com/microsoft/tensorflow-directml-plugin',
+    download_url='https://github.com/microsoft/tensorflow-directml-plugin',
+    author='Microsoft',
     author_email='askdirectml@microsoft.com',
     # Contained modules and scripts.
     packages=[_PLUGIN_LIB_PATH, _MY_PLUGIN_PATH],
