@@ -39,8 +39,8 @@ endif()
 # DirectX-Headers repo
 FetchContent_Declare(
     directx_headers
-    GIT_REPOSITORY https://github.com/microsoft/DirectX-Headers
-    GIT_TAG d49ae12ab350b20468a9667bad700f3227cd3f7a
+    GIT_REPOSITORY https://github.com/lygstate/DirectX-Headers
+    GIT_TAG a7d19030b872967c4224607c454273a2e65a5ed4
 )
 
 # DirectML Redistributable NuGet package

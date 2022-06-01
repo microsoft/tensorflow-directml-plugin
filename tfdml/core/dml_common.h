@@ -54,15 +54,15 @@ limitations under the License.
 #include "DirectML.h"
 #endif
 
-#include "DirectMLX.h"
-#include "directx/d3dx12.h"
-
 // When building for Windows, this include will statically assert that the
 // declared IIDs match those found in the Windows SDK.
 // clang-format off
 #include "dxguids/dxguids.h"
 #include "dml_guids.h"
 // clang-format on
+
+#include "DirectMLX.h"
+#include "directx/d3dx12.h"
 
 // Drop-in C++11-compatible replacements for optional, variant, and small_vector
 // which are used by the external ApiHelpers.h header
