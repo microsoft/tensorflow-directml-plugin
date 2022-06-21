@@ -47,7 +47,7 @@ See [BUILD.md](BUILD.md) for instructions on how to produce private builds of te
 
 ## Known Issues
 
-- If you are using the plugin on WSL with an NVIDIA RTX 2060 or 2070 GPU, versions of WSL prior to 0.60.0 will encounter a segmentation fault upon process exit in certain preview builds of Windows 11. If you encounter this issue, please upgrade to the latest version of WSL (>= 0.60.0).
+- If you are using the plugin on WSL with an NVIDIA RTX 2060 or 2070 GPU, versions of WSL prior to 0.60.0 will encounter a segmentation fault upon process exit in certain preview builds of Windows 11. If you encounter this issue, please [upgrade](https://docs.microsoft.com/en-us/windows/wsl/install-manual) to the latest version of WSL (>= 0.60.0).
 
 ## License
 
