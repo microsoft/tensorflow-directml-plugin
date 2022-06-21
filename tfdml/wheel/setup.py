@@ -1,13 +1,14 @@
 '''TensorFlow-DirectML-Plugin is an open-source DirectML backend for TensorFlow.
+
 Accelerate machine learning training with TensorFlow on Windows and Windows
 Subsystem for Linux (WSL).
 
 TensorFlow-DirectML-Plugin leverages TensorFlow's Pluggable Device API to create
 a DirectML backend for hardware-accelerated machine learning workflows on any
-DirectX 12 compatible GPU.
+DirectX 12-compatible GPU.
 
 Install the base tensorflow and tensorflow-directml-plugin packages to get started.
-Check out the GitHub repository to try the samples or build from source.
+Check out the GitHub repository to build from source.
 
 TensorFlow, the TensorFlow logo, and any related marks are trademarks of Google Inc.
 '''
