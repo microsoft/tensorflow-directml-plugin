@@ -155,10 +155,14 @@ class KernelDefinition<
             TF_KernelBuilder_HostMemory(builder, arg_desc.name);
         }
 
-        if (PriorityValue)
-        {
-            TF_KernelBuilder_Priority(builder, PriorityValue);
-        }
+        // TODO: Remove once this is fixed in TensorFlow Core
+        // Increment the PriorityValue by 1 as a Workaround to get rid of the
+        // `Multiple OpKernel registrations match NodeDef at the same priority`
+        // error caused by the DML "GPU" type conflicting with CUDA's "GPU" type
+        // at runtime. The pluggable device specification says that a pluggable
+        // device with the "GPU" type should override TensorFlow's default "GPU"
+        // type, but it doesn't seem to be working in practice.
+        TF_KernelBuilder_Priority(builder, PriorityValue + 1);
 
         Status status;
         TF_RegisterKernelBuilder(Op::name, builder, status.raw());
