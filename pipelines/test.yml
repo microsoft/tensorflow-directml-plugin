@@ -14,9 +14,12 @@ parameters:
 - name: resultsArtifactName
   type: string
   default: test
-- name: tensorflowPackage
+- name: tensorflowPackages
+  type: object
+  default: [tensorflow, tensorflow-cpu]
+- name: tensorflowVersion
   type: string
-  default: tensorflow-cpu==2.9.1
+  default: 2.9.1
 - name: kerasPackage
   type: string
   default: keras==2.9.0
@@ -122,67 +125,68 @@ jobs:
       displayName: Download ${{artifact}}
       condition: contains(variables.agentTestConfigs, '${{artifact}}')
 
-    - ${{if contains(artifact, '-linux-') }}:
-      - task: PowerShell@2
-        displayName: Setup ${{artifact}}
-        name: test_env_linux
+    - ${{each tensorflowPackage in parameters.tensorflowPackages}}:
+      - ${{if contains(artifact, '-linux-') }}:
+        - task: PowerShell@2
+          displayName: Setup ${{artifact}}
+          name: test_env_linux
+          condition: contains(variables.agentTestConfigs, '${{artifact}}')
+          inputs:
+            targetType: inline
+            script: |
+              $ScriptPath = "$(Build.SourcesDirectory)/pipelines/create_test_env.sh" -replace '\\','/'
+              $ScriptPathWsl = wsl wslpath -a $ScriptPath
+              $TestArtifactPath = "$(buildArtifactsPathRoot)/${{artifact}}" -replace '\\','/'
+              $TestArtifactPathWsl = wsl wslpath -a $TestArtifactPath
+              wsl bash $ScriptPathWsl $TestArtifactPathWsl ${{tensorflowPackage}}==${{parameters.tensorflowVersion}} ${{parameters.kerasPackage}}
+
+        - task: PowerShell@2
+          displayName: Test ${{artifact}}
+          condition: contains(variables.agentTestConfigs, '${{artifact}}')
+          inputs:
+            targetType: inline
+            script: |
+              $ScriptPath = "$(Build.SourcesDirectory)/test/test.py" -replace '\\','/'
+              $ScriptPathWsl = wsl wslpath -a $ScriptPath
+
+              # Results are written to Linux filesystem ($ResultsDirLinux) and copied to Windows ($ResultsDirWin)
+              $ResultsDirLinux = "/tmp/tfdml_plugin_pipeline/results/$(agentName)/${{artifact}}"
+              $ResultsDirWin = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}" -replace '\\','/'
+              $ResultsDirWinWsl = wsl wslpath -a $ResultsDirWin
+              New-Item -ItemType Directory $ResultsDirWin -Force | Out-Null
+
+              cmd /c "wsl $(test_env_linux.activateCommand); python $ScriptPathWsl --run --summarize --redirect_output --results_dir $ResultsDirLinux --groups ${{join(' ', parameters.testGroups)}}"
+              wsl cp -r $ResultsDirLinux/* $ResultsDirWinWsl
+
+      - ${{if contains(artifact, '-win-') }}:
+        - task: PowerShell@2
+          displayName: Setup ${{artifact}}
+          name: test_env_win
+          condition: contains(variables.agentTestConfigs, '${{artifact}}')
+          inputs:
+            targetType: filePath
+            filePath: pipelines/create_test_env.ps1
+            arguments: >
+              -TestArtifactPath $(buildArtifactsPathRoot)/${{artifact}}
+              -TensorFlowPackage ${{tensorflowPackage}}==${{parameters.tensorflowVersion}}
+              -KerasPackage ${{parameters.kerasPackage}}
+
+        - task: PowerShell@2
+          displayName: Test ${{artifact}}
+          condition: contains(variables.agentTestConfigs, '${{artifact}}')
+          inputs:
+            targetType: inline
+            script: |
+              Invoke-Expression '$(test_env_win.activateCommand)'
+              $ResultsDir = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}"
+              python $(Build.SourcesDirectory)/test/test.py --run --summarize --redirect_output --results_dir $ResultsDir --groups ${{join(' ', parameters.testGroups)}}
+
+      - task: PublishBuildArtifacts@1
+        displayName: Publish ${{artifact}}
         condition: contains(variables.agentTestConfigs, '${{artifact}}')
         inputs:
-          targetType: inline
-          script: |
-            $ScriptPath = "$(Build.SourcesDirectory)/pipelines/create_test_env.sh" -replace '\\','/'
-            $ScriptPathWsl = wsl wslpath -a $ScriptPath
-            $TestArtifactPath = "$(buildArtifactsPathRoot)/${{artifact}}" -replace '\\','/'
-            $TestArtifactPathWsl = wsl wslpath -a $TestArtifactPath
-            wsl bash $ScriptPathWsl $TestArtifactPathWsl ${{parameters.tensorflowPackage}} ${{parameters.kerasPackage}}
-
-      - task: PowerShell@2
-        displayName: Test ${{artifact}}
-        condition: contains(variables.agentTestConfigs, '${{artifact}}')
-        inputs:
-          targetType: inline
-          script: |
-            $ScriptPath = "$(Build.SourcesDirectory)/test/test.py" -replace '\\','/'
-            $ScriptPathWsl = wsl wslpath -a $ScriptPath
-
-            # Results are written to Linux filesystem ($ResultsDirLinux) and copied to Windows ($ResultsDirWin)
-            $ResultsDirLinux = "/tmp/tfdml_plugin_pipeline/results/$(agentName)/${{artifact}}"
-            $ResultsDirWin = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}" -replace '\\','/'
-            $ResultsDirWinWsl = wsl wslpath -a $ResultsDirWin
-            New-Item -ItemType Directory $ResultsDirWin -Force | Out-Null
-
-            cmd /c "wsl $(test_env_linux.activateCommand); python $ScriptPathWsl --run --summarize --redirect_output --results_dir $ResultsDirLinux --groups ${{join(' ', parameters.testGroups)}}"
-            wsl cp -r $ResultsDirLinux/* $ResultsDirWinWsl
-
-    - ${{if contains(artifact, '-win-') }}:
-      - task: PowerShell@2
-        displayName: Setup ${{artifact}}
-        name: test_env_win
-        condition: contains(variables.agentTestConfigs, '${{artifact}}')
-        inputs:
-          targetType: filePath
-          filePath: pipelines/create_test_env.ps1
-          arguments: >
-            -TestArtifactPath $(buildArtifactsPathRoot)/${{artifact}}
-            -TensorFlowPackage ${{parameters.tensorflowPackage}}
-            -KerasPackage ${{parameters.kerasPackage}}
-
-      - task: PowerShell@2
-        displayName: Test ${{artifact}}
-        condition: contains(variables.agentTestConfigs, '${{artifact}}')
-        inputs:
-          targetType: inline
-          script: |
-            Invoke-Expression '$(test_env_win.activateCommand)'
-            $ResultsDir = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}"
-            python $(Build.SourcesDirectory)/test/test.py --run --summarize --redirect_output --results_dir $ResultsDir --groups ${{join(' ', parameters.testGroups)}}
-
-    - task: PublishBuildArtifacts@1
-      displayName: Publish ${{artifact}}
-      condition: contains(variables.agentTestConfigs, '${{artifact}}')
-      inputs:
-        pathToPublish: $(System.ArtifactsDirectory)/results
-        artifactName: ${{parameters.resultsArtifactName}}
+          pathToPublish: $(System.ArtifactsDirectory)/results
+          artifactName: ${{parameters.resultsArtifactName}}
 
 #-------------------------------------------------------------------------------------------------------------------
 # Summarize Results
