@@ -155,7 +155,7 @@ jobs:
               $ResultsDirWinWsl = wsl wslpath -a $ResultsDirWin
               New-Item -ItemType Directory $ResultsDirWin -Force | Out-Null
 
-              cmd /c "wsl $(test_env_linux.activateCommand); python $ScriptPathWsl --run --summarize --redirect_output --results_dir $ResultsDirLinux --groups ${{join(' ', parameters.testGroups)}}"
+              cmd /c "wsl $(test_env_linux_${{replace(tensorflowPackage, '-', '_')}}.activateCommand); python $ScriptPathWsl --run --summarize --redirect_output --results_dir $ResultsDirLinux --groups ${{join(' ', parameters.testGroups)}}"
               wsl cp -r $ResultsDirLinux/* $ResultsDirWinWsl
 
       - ${{if contains(artifact, '-win-') }}:
@@ -177,7 +177,7 @@ jobs:
           inputs:
             targetType: inline
             script: |
-              Invoke-Expression '$(test_env_win.activateCommand)'
+              Invoke-Expression '$(test_env_win_${{replace(tensorflowPackage, '-', '_')}}.activateCommand)'
               $ResultsDir = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}"
               python $(Build.SourcesDirectory)/test/test.py --run --summarize --redirect_output --results_dir $ResultsDir --groups ${{join(' ', parameters.testGroups)}}
 
