@@ -150,8 +150,8 @@ jobs:
               $ScriptPathWsl = wsl wslpath -a $ScriptPath
 
               # Results are written to Linux filesystem ($ResultsDirLinux) and copied to Windows ($ResultsDirWin)
-              $ResultsDirLinux = "/tmp/tfdml_plugin_pipeline/results/$(agentName)/${{artifact}}"
-              $ResultsDirWin = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}" -replace '\\','/'
+              $ResultsDirLinux = "/tmp/tfdml_plugin_pipeline/results/$(agentName)/${{artifact}}/${{tensorflowPackage}}"
+              $ResultsDirWin = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}/${{tensorflowPackage}}" -replace '\\','/'
               $ResultsDirWinWsl = wsl wslpath -a $ResultsDirWin
               New-Item -ItemType Directory $ResultsDirWin -Force | Out-Null
 
@@ -178,7 +178,7 @@ jobs:
             targetType: inline
             script: |
               Invoke-Expression '$(test_env_win_${{replace(tensorflowPackage, '-', '_')}}.activateCommand)'
-              $ResultsDir = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}"
+              $ResultsDir = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}/${{tensorflowPackage}}"
               python $(Build.SourcesDirectory)/test/test.py --run --summarize --redirect_output --results_dir $ResultsDir --groups ${{join(' ', parameters.testGroups)}}
 
     - task: PublishBuildArtifacts@1
