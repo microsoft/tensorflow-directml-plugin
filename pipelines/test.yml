@@ -128,7 +128,7 @@ jobs:
     - ${{each tensorflowPackage in parameters.tensorflowPackages}}:
       - ${{if contains(artifact, '-linux-') }}:
         - task: PowerShell@2
-          displayName: Setup ${{artifact}}
+          displayName: Setup ${{artifact}} (${{tensorflowPackage}})
           name: test_env_linux_${{replace(tensorflowPackage, '-', '_')}}
           condition: contains(variables.agentTestConfigs, '${{artifact}}')
           inputs:
@@ -141,7 +141,7 @@ jobs:
               wsl bash $ScriptPathWsl $TestArtifactPathWsl ${{tensorflowPackage}}==${{parameters.tensorflowVersion}} ${{parameters.kerasPackage}}
 
         - task: PowerShell@2
-          displayName: Test ${{artifact}}
+          displayName: Test ${{artifact}} (${{tensorflowPackage}})
           condition: contains(variables.agentTestConfigs, '${{artifact}}')
           inputs:
             targetType: inline
@@ -160,7 +160,7 @@ jobs:
 
       - ${{if contains(artifact, '-win-') }}:
         - task: PowerShell@2
-          displayName: Setup ${{artifact}}
+          displayName: Setup ${{artifact}} (${{tensorflowPackage}})
           name: test_env_win_${{replace(tensorflowPackage, '-', '_')}}
           condition: contains(variables.agentTestConfigs, '${{artifact}}')
           inputs:
@@ -172,7 +172,7 @@ jobs:
               -KerasPackage ${{parameters.kerasPackage}}
 
         - task: PowerShell@2
-          displayName: Test ${{artifact}}
+          displayName: Test ${{artifact}} (${{tensorflowPackage}})
           condition: contains(variables.agentTestConfigs, '${{artifact}}')
           inputs:
             targetType: inline
