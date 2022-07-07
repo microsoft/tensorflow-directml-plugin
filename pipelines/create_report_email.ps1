@@ -307,6 +307,8 @@ if ($TestsArtifactsExist)
 
         $AgentJobs = $TestGroupSummary | Sort-Object -Property agent
         $CurrentAgentName = $null
+        $AgentColor = $Gray
+
         foreach ($AgentJob in $AgentJobs)
         {
             $AgentName = $AgentJob.agent
@@ -318,8 +320,7 @@ if ($TestsArtifactsExist)
 
             # Determine agent cell color.
             if     ($AgentJob.tests_failed_count -gt 0) { $AgentColor = $Red }
-            elseif ($AgentJob.tests_passed_count -gt 0) { $AgentColor = $Green }
-            else                                        { $AgentColor = $Gray }
+            elseif ($AgentJob.tests_passed_count -gt 0 -and $AgentColor -ne $Red) { $AgentColor = $Green }
 
             if ($AgentJob.agentHasResults)
             {
