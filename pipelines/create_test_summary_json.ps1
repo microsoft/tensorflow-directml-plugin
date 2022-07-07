@@ -25,8 +25,8 @@ foreach ($Job in $TestMatrix)
 {
     foreach ($TestConfig in $Job.agentTestConfigs)
     {
-        $Build, $Group = $TestConfig.split(':')
-        $ResultsPath = "$TestArtifactsPath/$($Job.agentName)/$Build/summary.$Group.json"
+        $Build, $TensorflowPackage, $Group = $TestConfig.split(':')
+        $ResultsPath = "$TestArtifactsPath/$($Job.agentName)/$Build/$TensorflowPackage/summary.$Group.json"
 
         if (!$Summary.ContainsKey($Group))
         {

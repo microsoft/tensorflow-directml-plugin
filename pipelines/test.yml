@@ -43,6 +43,7 @@ jobs:
         -AccessToken "$(accessToken)"
         -AgentPoolNames ${{join(', ', parameters.agentPool)}}
         -Artifacts ${{join(', ', parameters.artifacts)}}
+        -TensorflowPackages ${{join(', ', parameters.tensorflowPackages)}}
         -TestGroups ${{join(', ', parameters.testGroups)}}
         -OutputFilePath "$(System.ArtifactsDirectory)/matrix.json"
         -OutputVariableName "testMatrix"
