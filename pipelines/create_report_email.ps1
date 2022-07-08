@@ -354,7 +354,7 @@ if ($TestsArtifactsExist)
                 $Html += "<td rowspan=`"$TestGroupArtifactCount`" colspan=`"1`" style=`"$CellStyle`">$TestGroup</td>"
             }
 
-            $CellStyle = "border:1px solid gray; background-color: ${AgentColors[$AgentJob.agent]}"
+            $CellStyle = "border:1px solid gray; background-color: $($AgentColors[$AgentJob.agent])"
             if ($FirstAgentRow)
             {
                 $FirstAgentRow = $False
