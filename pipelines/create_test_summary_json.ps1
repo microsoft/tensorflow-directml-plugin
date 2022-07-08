@@ -35,7 +35,7 @@ foreach ($Job in $TestMatrix)
 
         $SummaryEntry = @{
             "agent" = $Job.agentName;
-            "build" = ${Build}-${TensorflowPackage};
+            "build" = "${Build}-${TensorflowPackage}";
             "agentWasOnline" = $Job.agentStatus -eq 'online';
             "agentWasEnabled" = $Job.agentEnabled;
             "agentHasResults" = Test-Path $ResultsPath;
