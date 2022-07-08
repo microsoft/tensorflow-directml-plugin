@@ -305,9 +305,22 @@ if ($TestsArtifactsExist)
         elseif ($TestGroupSummary.tests_passed_count -gt 0) { $GroupColor = $Green }
         else                                                { $GroupColor = $Gray }
 
-        $AgentJobs = $TestGroupSummary | Sort-Object -Property agent
+        $AgentJobs = $TestGroupSummary | Sort-Object -Property agent,build
         $CurrentAgentName = $null
-        $AgentColor = $Gray
+
+        $AgentColors = @{}
+
+        # Determine agent cell color.
+        foreach ($AgentJob in $AgentJobs)
+        {
+            if (-not $AgentColors.ContainsKey($AgentJob.agent))
+            {
+                $AgentColors[$AgentJob.agent] = $Gray
+            }
+
+            if     ($AgentJob.tests_failed_count -gt 0) { $AgentColors[$AgentJob.agent] = $Red }
+            elseif ($AgentJob.tests_passed_count -gt 0 -and $AgentColors[$AgentJob.agent] -ne $Red) { $AgentColors[$AgentJob.agent] = $Green }
+        }
 
         foreach ($AgentJob in $AgentJobs)
         {
@@ -317,10 +330,6 @@ if ($TestsArtifactsExist)
             $AgentArtifactsCount = ($AgentJobs | ? agent -eq $AgentName).count
 
             $AgentInfo = $AgentSummary.$AgentName
-
-            # Determine agent cell color.
-            if     ($AgentJob.tests_failed_count -gt 0) { $AgentColor = $Red }
-            elseif ($AgentJob.tests_passed_count -gt 0 -and $AgentColor -ne $Red) { $AgentColor = $Green }
 
             if ($AgentJob.agentHasResults)
             {
@@ -345,7 +354,7 @@ if ($TestsArtifactsExist)
                 $Html += "<td rowspan=`"$TestGroupArtifactCount`" colspan=`"1`" style=`"$CellStyle`">$TestGroup</td>"
             }
 
-            $CellStyle = "border:1px solid gray; background-color: $AgentColor"
+            $CellStyle = "border:1px solid gray; background-color: ${AgentColors[$AgentJob.agent]}"
             if ($FirstAgentRow)
             {
                 $FirstAgentRow = $False
