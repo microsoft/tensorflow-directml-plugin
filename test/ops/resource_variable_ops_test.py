@@ -1388,10 +1388,6 @@ class ResourceVariableOpsTest(test.TestCase,
 
   @test_util.disable_xla("b/208334252")  # XLA doesn't have a deterministic impl
   def testScatterAddDeterministic(self):
-    # TODO #38100209: Enable when Scatter ops use less memory to add duplicated
-    # indices together
-    self.skipTest("DML uses too much memory for some scatter operations")
-
     with context.eager_mode(), test_util.deterministic_ops():
       # Normally a nondeterministic codepath occurs when the variable has at
       # least 1024 elements. Test that op determinism ensures the op is
