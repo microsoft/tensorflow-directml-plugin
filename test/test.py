@@ -66,7 +66,7 @@ class TestGroup:
             results = []
 
             if self.parallel:
-                with Pool(processes=4) as pool:
+                with Pool(processes=6) as pool:
                     for test in self.tests:
                         result = pool.apply_async(_test_runner, (test, self.timeout_seconds, start_time))
                         results.append(result)
