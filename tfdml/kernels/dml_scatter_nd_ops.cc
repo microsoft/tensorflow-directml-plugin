@@ -759,7 +759,7 @@ class ScatterNdUnaryInitHelper : public InitializationHelper
     }
 };
 
-template <typename Index>
+template <typename Index, typename BinaryOp>
 class DmlScatterNdUnaryKernel : public DmlKernel
 {
   public:
@@ -770,35 +770,75 @@ class DmlScatterNdUnaryKernel : public DmlKernel
         const InitHelper* init_helper)
     {
         const TensorShape& indices_shape = ctx->GetInputTensorShape(0);
-        const TensorShape& updates_shape = ctx->GetInputTensorShape(1);
         const TensorShape& in_out_shape = ctx->GetOutputTensorShape(0);
 
-        DmlTensorInfo params_tensor;
-        params_tensor.desc = DmlTensorDesc::Create(
+        const int64_t indices_last_dim =
+            indices_shape.dim_size(indices_shape.dims() - 1);
+
+        const TensorShape flat_indices_shape = {
+            indices_shape.num_elements() / indices_last_dim,
+            indices_last_dim,
+        };
+
+        const int64_t slice_dim =
+            (indices_shape.dims() > 1)
+                ? indices_shape.dim_size(indices_shape.dims() - 1)
+                : 1;
+
+        int64_t slice_size = 1;
+        for (int64_t i = slice_dim; i < in_out_shape.dims(); ++i)
+        {
+            slice_size *= in_out_shape.dim_size(i);
+        }
+
+        const int64_t safe_slice_dim = (slice_dim < 1) ? 1 : slice_dim;
+        const int64_t num_updates =
+            indices_shape.num_elements() / safe_slice_dim;
+
+        const TensorShape flat_updates_shape = {
+            num_updates,
+            slice_size,
+        };
+
+        const TensorShape flat_in_out_shape = {
+            in_out_shape.num_elements() / slice_size,
+            slice_size,
+        };
+
+        const TensorShape strides_shape = {indices_last_dim};
+        const TF_DataType indices_dtype = ctx->GetInputDataType(0);
+
+        DmlTensorInfo input_tensor;
+        input_tensor.desc = DmlTensorDesc::Create(
             ctx->GetOutputDataType(0),
             in_out_shape,
             TensorShape({1}));
 
         DmlTensorInfo indices_tensor;
         indices_tensor.desc = DmlTensorDesc::Create(
-            ctx->GetInputDataType(0),
-            indices_shape,
-            indices_shape);
+            indices_dtype,
+            flat_indices_shape,
+            flat_indices_shape);
 
         DmlTensorInfo updates_tensor;
         updates_tensor.desc = DmlTensorDesc::Create(
             ctx->GetInputDataType(1),
-            updates_shape,
-            updates_shape);
+            flat_updates_shape,
+            flat_updates_shape);
+
+        DmlTensorInfo strides_tensor;
+        strides_tensor.desc =
+            DmlTensorDesc::Create(indices_dtype, strides_shape, strides_shape);
 
         DmlTensorInfo output_tensor;
         output_tensor.desc = DmlTensorDesc::Create(
             ctx->GetOutputDataType(0),
-            in_out_shape,
-            in_out_shape);
+            flat_in_out_shape,
+            flat_in_out_shape);
 
         DmlKernelTensors tensors;
-        tensors.inputs = {params_tensor, indices_tensor, updates_tensor};
+        tensors.inputs =
+            {input_tensor, indices_tensor, updates_tensor, strides_tensor};
         tensors.outputs = {output_tensor};
 
         auto dml_dtype =
@@ -817,20 +857,33 @@ class DmlScatterNdUnaryKernel : public DmlKernel
         auto input = dml::InputTensor(graph, 0, inputs[0]);
         auto indices = dml::InputTensor(graph, 1, inputs[1]);
         auto updates = dml::InputTensor(graph, 2, inputs[2]);
-        auto result = dml::ScatterND(
-            input,
-            indices,
-            updates,
-            in_out_shape.dims(),
-            indices_shape.dims());
+        auto strides = dml::InputTensor(graph, 3, inputs[3]);
 
         // TODO: Remove the Is64BitSignedIntegerType hack when DML has a more
         // solid solution for 64 bit datatypes
         // TFDML #24881131
-        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0)))
-        {
-            result = dml::ConvertInt32ToInt64(result);
-        }
+        auto result = BinaryOp()(
+            graph,
+            input,
+            indices,
+            updates,
+            strides,
+            Is64BitIntegerType(indices_dtype),
+            Is64BitSignedIntegerType(ctx->GetOutputDataType(0)));
+
+        const uint32_t strides_buffer_size =
+            indices_last_dim * DataTypeSize(indices_dtype);
+        strides_buffer_ = ctx->GetDmlDeviceContext()->AllocateDefaultBuffer(
+            ctx->GetOpKernelContext()->raw(),
+            strides_buffer_size);
+
+        OP_REQUIRES(
+            ctx->GetOpKernelContext(),
+            strides_buffer_,
+            errors::ResourceExhausted(
+                "OOM when allocating a buffer of ",
+                strides_buffer_size,
+                " bytes"));
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             graph.Compile(DML_EXECUTION_FLAG_NONE, {result});
@@ -840,39 +893,67 @@ class DmlScatterNdUnaryKernel : public DmlKernel
 
     StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
     {
+        const Tensor indices_tensor = ctx->GetInputTensor(0);
+        const Tensor updates_tensor = ctx->GetInputTensor(1);
+
+        const int64_t indices_last_dim =
+            indices_tensor.dim_size(indices_tensor.dims() - 1);
+
+        absl::InlinedVector<Index, 8> strides(indices_last_dim);
+        Index stride = 1;
+
+        for (int i = indices_last_dim - 1; i >= 0; --i)
+        {
+            strides[i] = stride;
+            stride *= ctx->GetOutputTensor(0).dim_size(i);
+        }
+
+        auto byte_ptr = reinterpret_cast<const uint8_t*>(strides.data());
+        auto byte_span =
+            absl::MakeSpan(byte_ptr, strides.size() * sizeof(Index));
+
+        TF_RETURN_IF_ERROR(
+            ctx->GetDmlDeviceContext()
+                ->CopyHostToBuffer(strides_buffer_->Region(), byte_span)
+                .status());
+
         DmlBuffer params_buffer =
             ctx->GetDmlDeviceContext()->AllocateDefaultBuffer(
                 ctx->GetOpKernelContext()->raw(),
                 input_buffer_size_);
 
-        D3D12BufferRegion indices_buffer =
-            ctx->GetDmlDeviceContext()->GetBufferForTensor(
-                ctx->GetInputTensor(0));
+        auto indices_buffer =
+            ctx->GetDmlDeviceContext()->GetBufferForTensor(indices_tensor);
+        auto updates_buffer =
+            ctx->GetDmlDeviceContext()->GetBufferForTensor(updates_tensor);
 
-        D3D12BufferRegion updates_buffer =
-            ctx->GetDmlDeviceContext()->GetBufferForTensor(
-                ctx->GetInputTensor(1));
+        // Create input bindings
+        absl::InlinedVector<absl::optional<DML_BUFFER_BINDING>, 4>
+            input_bindings;
+        input_bindings.push_back(params_buffer.GetBufferBinding());
+        input_bindings.push_back(indices_buffer.GetBufferBinding());
+        input_bindings.push_back(updates_buffer.GetBufferBinding());
+        input_bindings.push_back(strides_buffer_->GetBufferBinding());
 
         D3D12BufferRegion output_buffer =
             ctx->GetDmlDeviceContext()->GetBufferForTensor(
                 ctx->GetOutputTensor(0));
 
-        absl::InlinedVector<absl::optional<DML_BUFFER_BINDING>, 3>
-            input_bindings;
-        input_bindings.push_back(params_buffer.GetBufferBinding());
-        input_bindings.push_back(indices_buffer.GetBufferBinding());
-        input_bindings.push_back(updates_buffer.GetBufferBinding());
-
-        absl::InlinedVector<absl::optional<DML_BUFFER_BINDING>, 1>
-            output_bindings;
-        output_bindings.push_back(output_buffer.GetBufferBinding());
+        // Create output bindings
+        absl::optional<DML_BUFFER_BINDING> output_bindings[] = {
+            output_buffer.GetBufferBinding(),
+        };
 
         ctx->GetDmlDeviceContext()->ZeroBuffer(params_buffer.Region());
 
-        return DmlKernel::Compute(ctx, input_bindings, output_bindings);
+        TF_RETURN_IF_ERROR(
+            DmlKernel::Compute(ctx, input_bindings, output_bindings).status());
+
+        return ctx->GetDmlDeviceContext()->InsertUavBarrier();
     }
 
   private:
+    absl::optional<DmlBuffer> strides_buffer_;
     uint64_t input_buffer_size_ = 0;
 };
 
@@ -991,7 +1072,7 @@ template <typename Index, typename DataType>
 using ScatterNdKernel = typename KernelDefinition<
     ops::ScatterNd,
     DmlKernelWrapper<
-        DmlScatterNdUnaryKernel<Index>,
+        DmlScatterNdUnaryKernel<Index, ScatterNdPlusOp<DataType>>,
         GetOutputShapeFromDimsTensorHelper<Index, 2>>>::
     template WithHostMemoryArguments<ops::ScatterNd::Argument::shape>::
         template WithTypeConstraint<

@@ -34,6 +34,8 @@ from tensorflow.python.ops import resource_variable_ops
 from tensorflow.python.ops import state_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
+import os
+input(os.getpid())
 
 GRADIENT_TESTS_DTYPES = (dtypes.float16, dtypes.float32, dtypes.float64)
 
@@ -858,9 +860,6 @@ class ScatterNdTensorTest(test.TestCase):
                           constant_op.constant([1, 1, 1, 2, 1, 1, 1, 2]))
 
   def testUpdateMinMaxGradients(self):
-    # TODO #38100209: Enable when ScatterNd supports duplicated indices
-    self.skipTest("DML doesn't support duplicate indices for ScatterNd ops")
-
     with self.cached_session():
       x = array_ops.ones([4], dtype=dtypes.float32)
       indices = constant_op.constant([[1], [2], [3], [3]])
