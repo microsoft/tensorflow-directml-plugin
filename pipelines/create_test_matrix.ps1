@@ -52,11 +52,6 @@ foreach ($AgentPoolName in $AgentPoolNames)
 
     foreach ($Agent in $Agents)
     {
-        if (-not $Agent.UserCapabilities.'AP.TfArtifacts')
-        {
-            continue
-        }
-
         # Flat list of "<artifact>:<testGroup>" configurations to test.
         $TestConfigurations = [System.Collections.ArrayList]::new()
     
