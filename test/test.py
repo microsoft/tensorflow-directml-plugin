@@ -30,15 +30,27 @@ import tempfile
 import os
 import re
 import sys
+from multiprocessing import Pool
+
+def _test_runner(test, timeout_seconds, start_time):
+    try:
+        elapsed_time = time.time() - start_time
+        remaining_time = timeout_seconds - elapsed_time
+        test.run(remaining_time)
+    except KeyboardInterrupt:
+        return False
+    return True
+
 
 class TestGroup:
-    def __init__(self, name, tests, timeout_seconds, results_dir):
+    def __init__(self, name, tests, timeout_seconds, results_dir, parallel):
         self.name = name
         self.timeout_seconds = timeout_seconds
         self.tests = tests
         self.results_dir = results_dir
         self.run_results_file_path = Path(results_dir) / f"run.{name}.json"
         self.summary_file_path = Path(results_dir) / f"summary.{name}.json"
+        self.parallel = parallel
 
     def show(self):
         if self.tests:
@@ -51,10 +63,21 @@ class TestGroup:
     def run(self):
         if self.tests:
             start_time = time.time()
-            for test in self.tests:
-                elapsed_time = time.time() - start_time
-                remaining_time = self.timeout_seconds - elapsed_time
-                test.run(remaining_time)
+            results = []
+
+            if self.parallel:
+                with Pool(processes=4) as pool:
+                    for test in self.tests:
+                        result = pool.apply_async(_test_runner, (test, self.timeout_seconds, start_time))
+                        results.append(result)
+
+                    for result in results:
+                        if not result.get():
+                            raise KeyboardInterrupt
+            else:
+                for test in self.tests:
+                    if not _test_runner(test, self.timeout_seconds, start_time):
+                        raise KeyboardInterrupt
             end_time = time.time()
 
             with open(self.run_results_file_path, "w") as file:
@@ -301,7 +324,7 @@ def get_optional_json_property(json_object, property_name, default_value):
 
 
 # Parses tests.json to build a list of test groups to execute.
-def parse_test_groups(tests_json_path, test_filter, allowed_test_groups, results_dir, run_disabled, redirect_output):
+def parse_test_groups(tests_json_path, test_filter, allowed_test_groups, results_dir, run_disabled, redirect_output, parallel):
     test_groups = []
     test_names = set()
 
@@ -349,7 +372,8 @@ def parse_test_groups(tests_json_path, test_filter, allowed_test_groups, results
             test_group_name, 
             test_group_tests, 
             test_group_timeout_seconds,
-            results_dir
+            results_dir,
+            parallel,
         ))
     
     return test_groups
@@ -406,6 +430,11 @@ def main():
         action="store_true",
         help="Redirects test console output to log files in the results directory."
     )
+    parser.add_argument(
+        "--parallel", "-p",
+        action="store_true",
+        help="Runs multiple tests in parallel using a multiprocessing pool."
+    )
     args = parser.parse_args()
 
     if not(args.run or args.show or args.summarize):
@@ -419,7 +448,8 @@ def main():
         args.groups,
         args.results_dir, 
         args.run_disabled, 
-        args.redirect_output
+        args.redirect_output,
+        args.parallel,
     )
 
     # Show test commands.
