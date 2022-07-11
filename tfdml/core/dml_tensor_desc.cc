@@ -133,7 +133,7 @@ absl::InlinedVector<uint32_t, DML_TENSOR_DIMENSION_COUNT_MAX1> ComputeStrides(
     // TODO #24881131: 64-bit data support should be revisited once DML supports
     // these types
     // TFDML #24881131
-    uint32_t current_stride = Is64BitIntegerType(data_type) ? 2 : 1;
+    uint32_t current_stride = 1; //Is64BitIntegerType(data_type) ? 2 : 1;
 
     for (uint32_t i = 0; i < rank; ++i)
     {
@@ -194,6 +194,7 @@ static inline uint64_t ComputeEndPadding(TF_DataType data_type)
     // DirectML itself won't read/write the last 4 bytes, but we want the total
     // size to be accurate so that the entire region can be zeroed.
     return Is64BitIntegerType(data_type) ? sizeof(uint32_t) : 0;
+    // return 0;
 }
 
 /*static*/ DmlTensorDesc DmlTensorDesc::Create(
@@ -368,6 +369,10 @@ void DmlTensorDesc::ForceUnsignedDataType()
 {
     switch (buffer_tensor_desc_.DataType)
     {
+    case DML_TENSOR_DATA_TYPE_INT64:
+        buffer_tensor_desc_.DataType = DML_TENSOR_DATA_TYPE_UINT32;
+        break;
+
     case DML_TENSOR_DATA_TYPE_INT32:
         buffer_tensor_desc_.DataType = DML_TENSOR_DATA_TYPE_UINT32;
         break;
@@ -380,7 +385,8 @@ void DmlTensorDesc::ForceUnsignedDataType()
         buffer_tensor_desc_.DataType = DML_TENSOR_DATA_TYPE_UINT8;
         break;
 
-        // Nothing to do if already unsigned
+    // Nothing to do if already unsigned
+    case DML_TENSOR_DATA_TYPE_UINT64:
     case DML_TENSOR_DATA_TYPE_UINT32:
     case DML_TENSOR_DATA_TYPE_UINT16:
     case DML_TENSOR_DATA_TYPE_UINT8: break;

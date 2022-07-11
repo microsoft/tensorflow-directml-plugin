@@ -196,9 +196,11 @@ TF_DataType GetTfDataTypeFromDmlDataType(DML_TENSOR_DATA_TYPE type)
     {
     case DML_TENSOR_DATA_TYPE_FLOAT32: return TF_FLOAT;
     case DML_TENSOR_DATA_TYPE_FLOAT16: return TF_HALF;
+    case DML_TENSOR_DATA_TYPE_UINT64: return TF_UINT64;
     case DML_TENSOR_DATA_TYPE_UINT32: return TF_UINT8;
     case DML_TENSOR_DATA_TYPE_UINT16: return TF_UINT16;
     case DML_TENSOR_DATA_TYPE_UINT8: return TF_UINT8;
+    case DML_TENSOR_DATA_TYPE_INT64: return TF_INT64;
     case DML_TENSOR_DATA_TYPE_INT32: return TF_INT32;
     case DML_TENSOR_DATA_TYPE_INT16: return TF_INT16;
     case DML_TENSOR_DATA_TYPE_INT8: return TF_INT8;
@@ -209,12 +211,13 @@ TF_DataType GetTfDataTypeFromDmlDataType(DML_TENSOR_DATA_TYPE type)
 // TFDML #24881131
 bool Is64BitIntegerType(TF_DataType type)
 {
-    switch (type)
-    {
-    case TF_UINT64:
-    case TF_INT64: return true;
-    default: return false;
-    }
+    // switch (type)
+    // {
+    // case TF_UINT64:
+    // case TF_INT64: return true;
+    // default: return false;
+    // }
+    return false;
 }
 
 // TFDML #24881131
@@ -225,6 +228,7 @@ bool Is64BitSignedIntegerType(TF_DataType type)
     case TF_INT64: return true;
     default: return false;
     }
+    // return false;
 }
 
 // TFDML #24881131
@@ -235,6 +239,7 @@ bool Is64BitUnsignedIntegerType(TF_DataType type)
     case TF_UINT64: return true;
     default: return false;
     }
+    // return false;
 }
 
 // TODO: 64-bit data support should be revisited once DML supports 64 bit
@@ -244,8 +249,8 @@ DML_TENSOR_DATA_TYPE GetDmlDataTypeFromTfDataType(TF_DataType type)
 {
     switch (type)
     {
-    case TF_UINT64: return DML_TENSOR_DATA_TYPE_UINT32;
-    case TF_INT64: return DML_TENSOR_DATA_TYPE_INT32;
+    case TF_UINT64: return DML_TENSOR_DATA_TYPE_UINT64;
+    case TF_INT64: return DML_TENSOR_DATA_TYPE_INT64;
     case TF_FLOAT: return DML_TENSOR_DATA_TYPE_FLOAT32;
     case TF_HALF: return DML_TENSOR_DATA_TYPE_FLOAT16;
     case TF_UINT32: return DML_TENSOR_DATA_TYPE_UINT32;
