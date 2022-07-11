@@ -125,15 +125,7 @@ absl::InlinedVector<uint32_t, DML_TENSOR_DIMENSION_COUNT_MAX1> ComputeStrides(
     absl::InlinedVector<uint32_t, DML_TENSOR_DIMENSION_COUNT_MAX1> strides(
         rank);
 
-    // Double the stride values to emulate 64-bit integer support.
-    // DirectML doesn't support tensor of int64 because Direct3D doesn't support
-    // the data type. A workaround is to use strides to fake 64-bit memory
-    // access while only the lower 32 bits contains the data. This trick
-    // obviously doesn't work if the data element is genuine 64-bit.
-    // TODO #24881131: 64-bit data support should be revisited once DML supports
-    // these types
-    // TFDML #24881131
-    uint32_t current_stride = 1; //Is64BitIntegerType(data_type) ? 2 : 1;
+    uint32_t current_stride = 1;
 
     for (uint32_t i = 0; i < rank; ++i)
     {
