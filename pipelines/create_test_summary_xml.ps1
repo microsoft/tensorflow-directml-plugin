@@ -19,7 +19,7 @@ param
     [int]$MaxLogLinesReportedPerTestFailure = 50
 )
 
-$AllSummaryFiles = (Get-ChildItem "$TestArtifactsPath\*\*\summary.*.json")
+$AllSummaryFiles = (Get-ChildItem "$TestArtifactsPath\summary.*.json" -Recurse)
 $Groups = $AllSummaryFiles.Name -replace 'summary\.(\w+)\.json', '$1' | Select-Object -Unique
 
 $XmlMemoryStream = [System.IO.MemoryStream]::new()
