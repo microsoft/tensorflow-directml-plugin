@@ -27,6 +27,9 @@ Param
     # List of all possible build artifacts to test.
     [Parameter(Mandatory)][string[]]$Artifacts,
 
+    # List of all possible tensorflow packages to test against.
+    [Parameter(Mandatory)][string[]]$TensorflowPackages,
+
     # List of all possible test groups to test.
     [Parameter(Mandatory)][string[]]$TestGroups,
 
@@ -49,6 +52,11 @@ foreach ($AgentPoolName in $AgentPoolNames)
 
     foreach ($Agent in $Agents)
     {
+        if (-not $Agent.UserCapabilities.'AP.TfArtifacts')
+        {
+            continue
+        }
+
         # Flat list of "<artifact>:<testGroup>" configurations to test.
         $TestConfigurations = [System.Collections.ArrayList]::new()
     
@@ -61,10 +69,13 @@ foreach ($AgentPoolName in $AgentPoolNames)
             # Agents may support a subset of test groups, which is stored as a regex in the 'AP.SupportedTestGroups'
             # agent capability. If not set, this will match all test groups.
             $SupportedTestGroups = $TestGroups -match $Agent.UserCapabilities.'AP.TfTestGroups'
-    
-            foreach ($TestGroup in $SupportedTestGroups)
+
+            foreach ($TensorflowPackage in $TensorflowPackages)
             {
-                $TestConfigurations.Add("${Artifact}:${TestGroup}") | Out-Null
+                foreach ($TestGroup in $SupportedTestGroups)
+                {
+                    $TestConfigurations.Add("${Artifact}:${TensorflowPackage}:${TestGroup}") | Out-Null
+                }
             }
         }
     

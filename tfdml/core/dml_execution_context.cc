@@ -87,7 +87,7 @@ DmlExecutionContext::DmlExecutionContext(
     dml_command_list_ = std::make_shared<DmlCommandList>(
         d3d_device,
         dml_device,
-        dml_command_queue_->GetType());
+        dml_command_queue_);
 
     execution_thread_ = std::thread(
         ExecutionThreadProc,
@@ -339,7 +339,6 @@ D3D12_COMMAND_LIST_TYPE DmlExecutionContext::GetCommandListTypeForQueue() const
         // flush. The goal here is to balance feeding the GPU work while the CPU
         // is processing more commands and avoiding many small packets.
         bool flush = false;
-        DmlGpuEvent batch_completion_event = state->next_flush_event;
         if (state->flush_requested || batch.size() >= batch_flush_size ||
             elapsed_us >= batch_flush_time_us)
         {
@@ -356,7 +355,7 @@ D3D12_COMMAND_LIST_TYPE DmlExecutionContext::GetCommandListTypeForQueue() const
         {
             DmlTracing::Instance().LogExecutionContextFlush();
             // Record the commands into the command list.
-            command_list->Open(batch_completion_event);
+            command_list->Open();
             for (auto& command : batch)
             {
                 command(*command_list);

@@ -490,8 +490,7 @@ Status Remapper::Optimize(
     tensorflow::GraphDef* optimized_graph)
 {
     RemapperContext ctx;
-    TF_RETURN_IF_ERROR(
-        RemapperContext::InitializeRemapperContext(item, &ctx));
+    TF_RETURN_IF_ERROR(RemapperContext::InitializeRemapperContext(item, &ctx));
     // Processing graph in reverse-topological sorted order allows to remap
     // longer chains of dependent ops in one pass.
     TF_RETURN_IF_ERROR(
