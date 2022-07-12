@@ -164,9 +164,9 @@ DmlTensorLayout GetDmlTensorLayout(TensorFormat format, uint32_t rank);
 // Converts a TF-style TensorFormat into the equivalent DirectMLX enum value.
 dml::TensorPolicy GetDmlXTensorPolicy(TensorFormat format);
 
-// Retrieves a tensor policy that produces padded output striding as required
-// for int64 emulation.
-dml::TensorPolicy GetEmulatedInt64TensorPolicy();
+// // Retrieves a tensor policy that produces padded output striding as required
+// // for int64 emulation.
+// dml::TensorPolicy GetEmulatedInt64TensorPolicy();
 
 dml::TensorStrides ComputePackedStrides(const dml::Span<const uint32_t>& sizes);
 
