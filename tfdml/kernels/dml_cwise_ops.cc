@@ -223,23 +223,23 @@ class DmlCompositeBinaryKernel : public DmlKernel
         Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 
-    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
-    {
-        // Currently, 64-bit integers in DML are emulated using 32-bit integers
-        // using striding to emulate a larger type. Because we can't guarantee
-        // that our output tensor's memory is zero'd, we need to do so manually
-        // prior to running running gather.
-        Tensor output = ctx->GetOutputTensor(0);
+    // StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
+    // {
+    //     // Currently, 64-bit integers in DML are emulated using 32-bit integers
+    //     // using striding to emulate a larger type. Because we can't guarantee
+    //     // that our output tensor's memory is zero'd, we need to do so manually
+    //     // prior to running running gather.
+    //     Tensor output = ctx->GetOutputTensor(0);
 
-        // TFDML #24881131
-        if (Is64BitUnsignedIntegerType(output.dtype()))
-        {
-            ctx->GetDmlDeviceContext()->ZeroBuffer(
-                ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
-        }
+    //     // TFDML #24881131
+    //     if (Is64BitUnsignedIntegerType(output.dtype()))
+    //     {
+    //         ctx->GetDmlDeviceContext()->ZeroBuffer(
+    //             ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
+    //     }
 
-        return DmlKernel::Compute(ctx);
-    }
+    //     return DmlKernel::Compute(ctx);
+    // }
 };
 
 template <DML_OPERATOR_TYPE op_type, typename DML_OPERATOR_SPECIFIC_DESC>

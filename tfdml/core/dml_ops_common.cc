@@ -641,10 +641,4 @@ DML_SCALAR_UNION ScalarUnion(double value, DML_TENSOR_DATA_TYPE data_type)
     return scalar;
 }
 
-// TFDML #24881131
-Expression ConvertInt32ToInt64(Expression int32_tensor)
-{
-    return dml::Cast(int32_tensor, DML_TENSOR_DATA_TYPE_INT64);
-    // return int32_tensor;
-}
 } // namespace dml

@@ -208,43 +208,6 @@ TF_DataType GetTfDataTypeFromDmlDataType(DML_TENSOR_DATA_TYPE type)
     }
 }
 
-// TFDML #24881131
-bool Is64BitIntegerType(TF_DataType type)
-{
-    // switch (type)
-    // {
-    // case TF_UINT64:
-    // case TF_INT64: return true;
-    // default: return false;
-    // }
-    return false;
-}
-
-// TFDML #24881131
-bool Is64BitSignedIntegerType(TF_DataType type)
-{
-    switch (type)
-    {
-    case TF_INT64: return true;
-    default: return false;
-    }
-    // return false;
-}
-
-// TFDML #24881131
-bool Is64BitUnsignedIntegerType(TF_DataType type)
-{
-    switch (type)
-    {
-    case TF_UINT64: return true;
-    default: return false;
-    }
-    // return false;
-}
-
-// TODO: 64-bit data support should be revisited once DML supports 64 bit
-// datatypes
-// TFDML #24881131
 DML_TENSOR_DATA_TYPE GetDmlDataTypeFromTfDataType(TF_DataType type)
 {
     switch (type)
