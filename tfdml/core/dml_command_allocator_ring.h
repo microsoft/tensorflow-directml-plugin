@@ -39,7 +39,7 @@ class DmlCommandAllocatorRing
                 command_list_type,
                 IID_PPV_ARGS(&info.allocator)));
 
-            info.completion_event = std::move(initial_event);
+            info.completion_event = initial_event;
         }
     }
 
