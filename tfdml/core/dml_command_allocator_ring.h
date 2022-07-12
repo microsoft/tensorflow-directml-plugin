@@ -39,7 +39,7 @@ class DmlCommandAllocatorRing
                 command_list_type,
                 IID_PPV_ARGS(&info.allocator)));
 
-            info.completion_event = initial_event;
+            info.completion_event = std::move(initial_event);
         }
     }
 
@@ -65,7 +65,7 @@ class DmlCommandAllocatorRing
         // Set the completion event for the current allocator so it can be reset
         // eventually.
         command_allocators_[current_command_allocator_].completion_event =
-            next_completion_event;
+            std::move(next_completion_event);
 
         return command_allocators_[current_command_allocator_].Get();
     }
