@@ -15,7 +15,7 @@ param
 (
     [string]$TestArtifactsPath,
     [string]$OutputPath = "$TestArtifactsPath\test_summary.xml",
-    [int]$MaxTestCasesReportedPerTestFailure = 20,
+    [int]$MaxTestCasesReportedPerTestFailure = 1000,
     [int]$MaxLogLinesReportedPerTestFailure = 50
 )
 
@@ -53,8 +53,9 @@ foreach ($Group in $Groups)
             $LastEndTime = $AgentSummary.end_timestamp_seconds
         }
 
-        $BuildName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Leaf
-        $AgentName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Parent | Split-Path -Leaf
+        $TensorflowPackageName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Leaf
+        $BuildName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Parent | Split-Path -Leaf
+        $AgentName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Parent | Split-Path -Parent Split-Path -Leaf
 
         foreach ($Test in $AgentSummary.tests)
         {
@@ -88,7 +89,7 @@ foreach ($Group in $Groups)
                 { 
                     $TestFailureMessages[$Test.name] = [Collections.ArrayList]::new() 
                 }
-                $TestFailureMessages[$Test.name].Add("# $AgentName ($BuildName): Timed Out") | Out-Null
+                $TestFailureMessages[$Test.name].Add("# $AgentName ($BuildName, $TensorflowPackageName): Timed Out") | Out-Null
             }
             elseif ($Test.result -eq 'failed')
             {
@@ -99,13 +100,13 @@ foreach ($Group in $Groups)
                     $TestFailureMessages[$Test.name] = [Collections.ArrayList]::new() 
                 }
 
-                $CaseResultsFile = "$TestArtifactsPath/$AgentName/$BuildName/test.$($Test.name).xml"
-                $LogResultsFile = "$TestArtifactsPath/$AgentName/$BuildName/log.$($Test.name).txt"
+                $CaseResultsFile = "$TestArtifactsPath/$AgentName/$BuildName/$TensorflowPackageName/test.$($Test.name).xml"
+                $LogResultsFile = "$TestArtifactsPath/$AgentName/$BuildName/$TensorflowPackageName/log.$($Test.name).txt"
     
                 if ($Test.cases_failed -and (Test-Path $CaseResultsFile))
                 {
                     # Prefer to list failure messages from the Abseil test log.
-                    $TestFailureMessages[$Test.name].Add("## $AgentName ($BuildName): Cases Failed") | Out-Null
+                    $TestFailureMessages[$Test.name].Add("## $AgentName ($BuildName, $TensorflowPackageName): Cases Failed") | Out-Null
         
                     [xml]$TestResultsXml = Get-Content $CaseResultsFile
     
@@ -136,7 +137,7 @@ foreach ($Group in $Groups)
                     if ($Test.cases_failed.Count -gt $RelatedCasesToReport.Count)
                     {
                         $AdditionalCount = $Test.cases_failed.Count - $RelatedCasesToReport.Count
-                        $TestFailureMessages[$Test.name].Add("... (results truncated. See '$AgentName/$BuildName/test.$Test.xml' for $AdditionalCount additional failures.)") | Out-Null
+                        $TestFailureMessages[$Test.name].Add("... (results truncated. See '$AgentName/$BuildName/$TensorflowPackageName/test.$Test.xml' for $AdditionalCount additional failures.)") | Out-Null
                     }
                 }
                 elseif (Test-Path $LogResultsFile)
@@ -153,13 +154,13 @@ foreach ($Group in $Groups)
                     }
                     if ($Log.Count -gt $MaxLogLinesReportedPerTestFailure)
                     {
-                        $TestFailureMessages[$Test.name].Add("... (results truncated. See '$AgentName/$BuildName/log.$Test.txt' for full log.)") | Out-Null
+                        $TestFailureMessages[$Test.name].Add("... (results truncated. See '$AgentName/$BuildName/$TensorflowPackageName/log.$Test.txt' for full log.)") | Out-Null
                     }
                     $TestFailureMessages[$Test.name].Add('```') | Out-Null
                 }
                 else
                 {
-                    $TestFailureMessages[$Test.name].Add("## $AgentName ($BuildName): Unknown Errors") | Out-Null
+                    $TestFailureMessages[$Test.name].Add("## $AgentName ($BuildName, $TensorflowPackageName): Unknown Errors") | Out-Null
                 }
             }
         }
