@@ -68,7 +68,7 @@ jobs:
     name: $(agentPool)
     demands:
     - agent.name -equals $(agentName)
-  timeoutInMinutes: 240
+  timeoutInMinutes: 90
   cancelTimeoutInMinutes: 1
   continueOnError: true
   variables:
