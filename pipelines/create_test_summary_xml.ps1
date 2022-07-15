@@ -55,7 +55,7 @@ foreach ($Group in $Groups)
 
         $TensorflowPackageName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Leaf
         $BuildName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Parent | Split-Path -Leaf
-        $AgentName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Parent | Split-Path -Parent Split-Path -Leaf
+        $AgentName = $AgentSummaryFile.FullName | Split-Path -Parent | Split-Path -Parent | Split-Path -Parent | Split-Path -Leaf
 
         foreach ($Test in $AgentSummary.tests)
         {
