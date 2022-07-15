@@ -329,7 +329,7 @@ void DmlTensorDesc::ForceUnsignedDataType()
     switch (buffer_tensor_desc_.DataType)
     {
     case DML_TENSOR_DATA_TYPE_INT64:
-        buffer_tensor_desc_.DataType = DML_TENSOR_DATA_TYPE_UINT32;
+        buffer_tensor_desc_.DataType = DML_TENSOR_DATA_TYPE_UINT64;
         break;
 
     case DML_TENSOR_DATA_TYPE_INT32:
