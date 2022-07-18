@@ -335,12 +335,11 @@ Status OpKernelContext::AssignVariable(
 {
     Status status;
 
-    // TODO: Use validate_shape when TF_AssignVariable supports it
-    // https://github.com/tensorflow/tensorflow/pull/55678
     TF_AssignVariable(
         context_,
         var_index,
         value_index,
+        validate_shape,
         CopyTensorInSameDevice,
         status.raw());
 
