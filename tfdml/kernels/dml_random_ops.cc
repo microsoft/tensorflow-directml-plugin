@@ -723,7 +723,7 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
 template <typename T>
 static Status GetScalar(const Tensor& tensor, int input_idx, T* result)
 {
-    auto dtype = DataTypeToEnum<T>::v();
+    auto dtype = DataTypeToEnum<T>();
     if (tensor.dims() != 0)
     {
         return errors::InvalidArgument(
@@ -742,8 +742,8 @@ static Status GetScalar(const Tensor& tensor, int input_idx, T* result)
             ", not ",
             DataTypeString(tensor.dtype()));
     }
-    *result = tensor.flat<T>()(0);
-    return OkStatus();
+    *result = tensor.base<T>()[0];
+    return Status::OK();
 }
 
 template <typename AlgEnumType>
@@ -752,7 +752,7 @@ static Status GetAlg(OpKernelContext* ctx, int input_idx, Algorithm* alg)
     AlgEnumType alg_id;
     TF_RETURN_IF_ERROR(GetScalar(ctx->input(input_idx), input_idx, &alg_id));
     *alg = Algorithm(alg_id);
-    return OkStatus();
+    return Status::OK();
 }
 
 // 'Variable' doesn't support uint32 or uint64 yet (due to reasons explained
@@ -796,6 +796,7 @@ class RngSkipInitializationHelper : public InitializationHelper
     RngSkipInitializationHelper(
         OpKernelContext* ctx,
         std::shared_ptr<const Attributes> attr)
+        : state_var_lock_(ctx)
     {
         constexpr int alg_input_index = 1;
         OP_REQUIRES_OK(
@@ -810,8 +811,8 @@ class RngSkipInitializationHelper : public InitializationHelper
         // Like for the CPU and CUDA devices, only Philox is supported for now
         OP_REQUIRES(
             ctx,
-            algorithm == RNG_ALG_PHILOX,
-            errors::InvalidArgument("Unsupported algorithm id: ", algorithm));
+            algorithm_ == RNG_ALG_PHILOX,
+            errors::InvalidArgument("Unsupported algorithm id: ", algorithm_));
 
         constexpr int state_input_index = 0;
         constexpr bool exclusive_lock = false;
@@ -841,6 +842,7 @@ class RngSkipInitializationHelper : public InitializationHelper
     mutable VariableLock state_var_lock_;
 };
 
+template <typename AlgEnumType, typename DeltaType>
 class RngReadAndSkipShapeHelper : public ShapeHelper
 {
   public:
@@ -848,75 +850,126 @@ class RngReadAndSkipShapeHelper : public ShapeHelper
         OpKernelContext* ctx,
         const InitializationHelper* initialization_helper) const override
     {
-        auto init_helper =
-            static_cast<const RngSkipInitializationHelper<int32_t, int64_t>*>(
-                initialization_helper);
-        return {init_helper->GetStateTensor().shape()};
+        return {{RNG_MAX_COUNTER_SIZE + RNG_KEY_SIZE}};
     }
 };
 
+template <typename AlgEnumType, typename DeltaType, bool read_old_value>
 class DmlRngSkipKernel : public DmlKernel
 {
   public:
-    using InitHelper = RngSkipInitializationHelper<int64_t, int64_t>;
+    using InitHelper = RngSkipInitializationHelper<AlgEnumType, DeltaType>;
 
     explicit DmlRngSkipKernel(
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
     {
-        // var_tensor_ layout is counter+key, so var_tensor_ data is also
-        // counter data.
-        auto counter_data = var_tensor_->flat<T>().data();
-        // Delegates to PhiloxRandom to do the actual increasing.
-        auto counter =
-            GetCounterFromMem(reinterpret_cast<const uint64_t*>(counter_data));
-        UpdateCounterMemWithPhiloxRandom(
-            counter,
-            init_helper->GetDelta(),
-            out_data);
+        const Tensor& state_tensor = init_helper->GetStateTensor();
+
+        TensorShape input_output_shape = {1, 1, 1, state_tensor.NumElements()};
+
+        DmlTensorInfo input_output;
+        input_output.kernel_index = 0;
+        input_output.desc = DmlTensorDesc::Create(
+            state_tensor.dtype(),
+            input_output_shape,
+            input_output_shape);
+
+        DmlKernelTensors tensors;
+        tensors.inputs = {input_output};
+        tensors.outputs = {input_output};
+
+        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto scope = dml::Graph(ctx->GetDmlDevice());
+        auto input = dml::InputTensor(scope, 0, inputs[0]);
+        input = dml::Reinterpret(
+            input,
+            DML_TENSOR_DATA_TYPE_UINT32,
+            {1, 1, 1, static_cast<uint32_t>(state_tensor.NumElements()) * 2},
+            {});
+
+        constexpr uint32_t split_axis = 3;
+        auto split_inputs = dml::Split(
+            input,
+            split_axis,
+            {1, 1, 1, 1, input.GetOutputDesc().sizes[3] - 4});
+
+        const int64_t count = init_helper->GetDelta() * 256;
+
+        auto dml_data_type = input.GetOutputDesc().dataType;
+
+        auto count_lo = dml::FillValueConstant(
+            scope,
+            {1, 1, 1, 1},
+            dml_data_type,
+            dml::ScalarUnion(static_cast<uint32_t>(count), dml_data_type));
+
+        auto count_hi = dml::FillValueConstant(
+            scope,
+            {1, 1, 1, 1},
+            dml_data_type,
+            dml::ScalarUnion(
+                static_cast<uint32_t>(count >> 32),
+                dml_data_type));
+
+        split_inputs[0] += count_lo;
+        count_hi = dml::If(split_inputs[0] < count_lo, count_hi + 1, count_hi);
+
+        split_inputs[1] += count_hi;
+
+        auto split_input_1_lower = split_inputs[1] < count_hi;
+
+        split_inputs[2] =
+            dml::If(split_input_1_lower, split_inputs[2] + 1, split_inputs[2]);
+
+        auto zero = dml::ZeroTensor(
+            scope,
+            dml_data_type,
+            split_inputs[2].GetOutputDesc().sizes);
+
+        split_inputs[3] = dml::If(
+            split_input_1_lower && split_inputs[2] == zero,
+            split_inputs[3] + 1,
+            split_inputs[3]);
+
+        auto result = dml::Join(split_inputs, split_axis);
+
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 
     StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
     {
         auto init_helper = ctx->GetInitializationHelper<InitHelper>();
-        auto gpu_event_or_status = DmlKernel::Compute(ctx);
-        init_helper->Unlock();
-        return gpu_event_or_status;
-    }
-};
+        const Tensor& state_input = init_helper->GetStateTensor();
 
-class DmlRngReadAndSkipKernel : public DmlKernel
-{
-  public:
-    using InitHelper = RngSkipInitializationHelper<int32_t, int64_t>;
+        // We compute the new state in-place, which saves us from doing an
+        // output -> input copy at the end
+        D3D12BufferRegion input_output_buffers[] = {
+            ctx->GetDmlDeviceContext()->GetBufferForTensor(state_input),
+        };
 
-    explicit DmlRngReadAndSkipKernel(
-        DmlKernelConstruction* ctx,
-        const InitHelper* init_helper)
-    {
-        // var_tensor_ layout is counter+key, so var_tensor_ data is also
-        // counter data.
-        auto counter_data = var_tensor_->flat<T>().data();
-        // Delegates to PhiloxRandom to do the actual increasing.
-        auto counter =
-            GetCounterFromMem(reinterpret_cast<const uint64_t*>(counter_data));
-        UpdateCounterMemWithPhiloxRandom(
-            counter,
-            init_helper->GetDelta(),
-            out_data);
-    }
+        // Create bindings
+        auto input_bindings = dml_util::GetBufferBindings(input_output_buffers);
+        auto output_bindings =
+            dml_util::GetBufferBindings(input_output_buffers);
 
-    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
-    {
-        auto init_helper = ctx->GetInitializationHelper<InitHelper>();
-        const Tensor& input = init_helper->GetStateTensor();
-        Tensor& output = ctx->GetOutputTensor(0);
+        // For RngReadAndSkip, we copy the old value to the output before we
+        // start computing
+        if (read_old_value)
+        {
+            Tensor& output = ctx->GetOutputTensor(0);
 
-        ctx->GetOpKernelContext()->device()->CopyTensorInSameDevice(
-            &input,
-            &output);
+            ctx->GetOpKernelContext()->device()->CopyTensorInSameDevice(
+                &state_input,
+                &output);
+        }
 
-        auto gpu_event_or_status = DmlKernel::Compute(ctx);
+        auto gpu_event_or_status =
+            DmlKernel::Compute(ctx, input_bindings, output_bindings);
+
         init_helper->Unlock();
         return gpu_event_or_status;
     }
@@ -1035,7 +1088,7 @@ void RegisterRngSkip()
     using K = KernelDefinition<
         ops::RngSkip,
         DmlKernelWrapper<
-            DmlRngSkipKernel,
+            DmlRngSkipKernel<int64_t, int64_t, false>,
             NoOutputShapeHelper,
             DmlKernelCachePolicy::Never>>::
         WithHostMemoryArguments<
@@ -1051,8 +1104,8 @@ void RegisterRngReadAndSkip()
     using K = KernelDefinition<
         ops::RngReadAndSkip,
         DmlKernelWrapper<
-            DmlRngReadAndSkipKernel,
-            RngReadAndSkipShapeHelper,
+            DmlRngSkipKernel<int32_t, uint64_t, true>,
+            RngReadAndSkipShapeHelper<int32_t, uint64_t>,
             DmlKernelCachePolicy::Never>>::
         WithHostMemoryArguments<
             ops::RngReadAndSkip::Argument::resource,
