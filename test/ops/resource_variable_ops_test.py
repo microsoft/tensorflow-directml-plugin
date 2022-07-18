@@ -56,6 +56,7 @@ from tensorflow.python.training import momentum
 from tensorflow.python.training import saver
 from tensorflow.python.training import training_util
 from tensorflow.python.util import compat
+import tensorflow as tf
 
 
 def _eager_safe_var_handle_op(*args, **kwargs):
@@ -1663,6 +1664,71 @@ class ResourceVariableOpsTest(test.TestCase,
   def testIterateVariable(self):
     v = variables.Variable([1., 2.])
     self.assertAllClose([1., 2.], list(iter(v)))
+
+  @test_util.run_v2_only
+  def testRngSkip(self):
+    with ops.device("cpu:0"):
+      var = resource_variable_ops.ResourceVariable(
+          [1,2,3], dtype=dtypes.int64, name="var_cpu")
+      with ops.control_dependencies([var.initializer]):
+        tf.raw_ops.RngSkip(resource=var.handle, algorithm=1, delta=1)
+        expected_state1 = tf.identity(var)
+        tf.raw_ops.RngSkip(resource=var.handle, algorithm=1, delta=10)
+        expected_state2 = tf.identity(var)
+        tf.raw_ops.RngSkip(resource=var.handle, algorithm=1, delta=4)
+        expected_state3 = tf.identity(var)
+
+    with ops.device("gpu:0"):
+      var = resource_variable_ops.ResourceVariable(
+          [1,2,3], dtype=dtypes.int64, name="var_gpu")
+      with ops.control_dependencies([var.initializer]):
+        tf.raw_ops.RngSkip(resource=var.handle, algorithm=1, delta=1)
+        actual_state1 = tf.identity(var)
+        tf.raw_ops.RngSkip(resource=var.handle, algorithm=1, delta=10)
+        actual_state2 = tf.identity(var)
+        tf.raw_ops.RngSkip(resource=var.handle, algorithm=1, delta=4)
+        actual_state3 = tf.identity(var)
+
+    self.assertAllEqual(expected_state1, actual_state1)
+    self.assertAllEqual(expected_state2, actual_state2)
+    self.assertAllEqual(expected_state3, actual_state3)
+
+  @test_util.run_v2_only
+  def testRngReadAndSkip(self):
+    with ops.device("cpu:0"):
+      var = resource_variable_ops.ResourceVariable(
+          [1,2,3], dtype=dtypes.int64, name="var_cpu")
+      with ops.control_dependencies([var.initializer]):
+        expected_output1 = tf.raw_ops.RngReadAndSkip(
+            resource=var.handle, alg=1, delta=1)
+        expected_state1 = tf.identity(var)
+        expected_output2 = tf.raw_ops.RngReadAndSkip(
+            resource=var.handle, alg=1, delta=10)
+        expected_state2 = tf.identity(var)
+        expected_output3 = tf.raw_ops.RngReadAndSkip(
+            resource=var.handle, alg=1, delta=4)
+        expected_state3 = tf.identity(var)
+
+    with ops.device("gpu:0"):
+      var = resource_variable_ops.ResourceVariable(
+          [1,2,3], dtype=dtypes.int64, name="var_gpu")
+      with ops.control_dependencies([var.initializer]):
+        actual_output1 = tf.raw_ops.RngReadAndSkip(
+            resource=var.handle, alg=1, delta=1)
+        actual_state1 = tf.identity(var)
+        actual_output2 = tf.raw_ops.RngReadAndSkip(
+            resource=var.handle, alg=1, delta=10)
+        actual_state2 = tf.identity(var)
+        actual_output3 = tf.raw_ops.RngReadAndSkip(
+            resource=var.handle, alg=1, delta=4)
+        actual_state3 = tf.identity(var)
+
+    self.assertAllEqual(expected_output1, actual_output1)
+    self.assertAllEqual(expected_state1, actual_state1)
+    self.assertAllEqual(expected_output2, actual_output2)
+    self.assertAllEqual(expected_state2, actual_state2)
+    self.assertAllEqual(expected_output3, actual_output3)
+    self.assertAllEqual(expected_state3, actual_state3)
 
 
 if __name__ == "__main__":

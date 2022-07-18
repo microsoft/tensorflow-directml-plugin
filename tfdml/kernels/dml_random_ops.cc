@@ -17,7 +17,9 @@ limitations under the License.
 #include "absl/cleanup/cleanup.h"
 #include "tfdml/kernels/pch.h"
 #include "tfdml/runtime_adapter/guarded_philox_random.h"
+#include "tfdml/runtime_adapter/rng_alg.h"
 #include "tfdml/runtime_adapter/stateless_random_ops.h"
+#include "tfdml/runtime_adapter/variable_lock.h"
 
 namespace tfdml
 {
@@ -219,8 +221,6 @@ class StatelessRandomUniformInitHelper : public InitializationHelper
     random::PhiloxRandom::ResultType counter_;
 };
 
-using InitHelper = StatelessRandomUniformInitHelper;
-
 class StatelessRandomUniformShapeHelper : public ShapeHelper
 {
   public:
@@ -228,8 +228,8 @@ class StatelessRandomUniformShapeHelper : public ShapeHelper
         OpKernelContext* ctx,
         const InitializationHelper* initialization_helper) const override
     {
-        auto init_helper =
-            static_cast<const InitHelper*>(initialization_helper);
+        auto init_helper = static_cast<const StatelessRandomUniformInitHelper*>(
+            initialization_helper);
         return {init_helper->GetOutputShape()};
     }
 };
@@ -239,7 +239,7 @@ class DmlStatelessRandomUniformKernel : public DmlKernel
     std::array<uint32_t, 6> input_state_;
 
   public:
-    using InitHelper = tfdml::InitHelper;
+    using InitHelper = StatelessRandomUniformInitHelper;
 
     explicit DmlStatelessRandomUniformKernel(
         DmlKernelConstruction* ctx,
@@ -720,6 +720,261 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
     TF_Session* sess_ = nullptr;
 };
 
+template <typename T>
+static Status GetScalar(const Tensor& tensor, int input_idx, T* result)
+{
+    auto dtype = DataTypeToEnum<T>();
+    if (tensor.dims() != 0)
+    {
+        return errors::InvalidArgument(
+            "input ",
+            std::to_string(input_idx),
+            " (0-based) must have shape [], not ",
+            tensor.shape().DebugString());
+    }
+    if (tensor.dtype() != dtype)
+    {
+        return errors::InvalidArgument(
+            "dtype of input ",
+            std::to_string(input_idx),
+            " (0-based) must be ",
+            DataTypeString(dtype),
+            ", not ",
+            DataTypeString(tensor.dtype()));
+    }
+    *result = tensor.base<T>()[0];
+    return Status::OK();
+}
+
+template <typename AlgEnumType>
+static Status GetAlg(OpKernelContext* ctx, int input_idx, Algorithm* alg)
+{
+    AlgEnumType alg_id;
+    TF_RETURN_IF_ERROR(GetScalar(ctx->input(input_idx), input_idx, &alg_id));
+    *alg = Algorithm(alg_id);
+    return Status::OK();
+}
+
+// 'Variable' doesn't support uint32 or uint64 yet (due to reasons explained
+// in b/111604096 and cl/171681867), so we use signed int here. We choose int64
+// instead of int32 because `VarHandleOp` doesn't support int32 on GPU, and
+// because of the "int32 problem".
+using StateElementType = int64_t;
+
+static constexpr int64_t PHILOX_MIN_STATE_SIZE =
+    (random::PhiloxRandom::ResultType::kElementCount +
+     random::PhiloxRandom::Key::kElementCount) /
+    2;
+
+static Status CheckPhiloxState(const Tensor& state, int64_t alg_tag_skip = 0)
+{
+    static_assert(
+        std::is_same<StateElementType, int64_t>::value,
+        "StateElementType must be int64");
+    static_assert(
+        std::is_same<random::PhiloxRandom::ResultElementType, uint32_t>::value,
+        "PhiloxRandom::ResultElementType must be uint32");
+    auto min_size = alg_tag_skip + PHILOX_MIN_STATE_SIZE;
+    if (state.NumElements() < min_size)
+    {
+        return errors::InvalidArgument(
+            "For the Philox algorithm, the size of state"
+            " must be at least ",
+            min_size,
+            "; got ",
+            state.NumElements());
+    }
+    return Status::OK();
+}
+
+template <typename AlgEnumType, typename DeltaType>
+class RngSkipInitializationHelper : public InitializationHelper
+{
+  public:
+    using Attributes = EmptyAttributes;
+
+    RngSkipInitializationHelper(
+        OpKernelContext* ctx,
+        std::shared_ptr<const Attributes> attr)
+        : state_var_lock_(ctx)
+    {
+        constexpr int alg_input_index = 1;
+        OP_REQUIRES_OK(
+            ctx,
+            GetAlg<AlgEnumType>(ctx, alg_input_index, &algorithm_));
+
+        constexpr int delta_input_idx = 2;
+        OP_REQUIRES_OK(
+            ctx,
+            GetScalar(ctx->input(delta_input_idx), delta_input_idx, &delta_));
+
+        // Like for the CPU and CUDA devices, only Philox is supported for now
+        OP_REQUIRES(
+            ctx,
+            algorithm_ == RNG_ALG_PHILOX,
+            errors::InvalidArgument("Unsupported algorithm id: ", algorithm_));
+
+        constexpr int state_input_index = 0;
+        constexpr bool exclusive_lock = false;
+        constexpr bool is_variant = false;
+        OP_REQUIRES_OK(
+            ctx,
+            ctx->GetInputTensorFromVariable(
+                state_input_index,
+                exclusive_lock,
+                is_variant,
+                &state_tensor_));
+        constexpr int lock_indices[1] = {state_input_index};
+        state_var_lock_.LockShared(lock_indices);
+
+        OP_REQUIRES_OK(ctx, CheckPhiloxState(state_tensor_));
+    }
+
+    void Unlock() const { state_var_lock_.Unlock(); }
+    Algorithm GetAlgorithm() const { return algorithm_; }
+    DeltaType GetDelta() const { return delta_; }
+    const Tensor& GetStateTensor() const { return state_tensor_; }
+
+  private:
+    Algorithm algorithm_;
+    DeltaType delta_;
+    Tensor state_tensor_;
+    mutable VariableLock state_var_lock_;
+};
+
+template <typename AlgEnumType, typename DeltaType>
+class RngReadAndSkipShapeHelper : public ShapeHelper
+{
+  public:
+    std::vector<TensorShape> GetOutputShapes(
+        OpKernelContext* ctx,
+        const InitializationHelper* initialization_helper) const override
+    {
+        return {{RNG_MAX_COUNTER_SIZE + RNG_KEY_SIZE}};
+    }
+};
+
+template <typename AlgEnumType, typename DeltaType, bool read_old_value>
+class DmlRngSkipKernel : public DmlKernel
+{
+  public:
+    using InitHelper = RngSkipInitializationHelper<AlgEnumType, DeltaType>;
+
+    explicit DmlRngSkipKernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        const Tensor& state_tensor = init_helper->GetStateTensor();
+
+        TensorShape input_output_shape = {1, 1, 1, state_tensor.NumElements()};
+
+        DmlTensorInfo input_output;
+        input_output.kernel_index = 0;
+        input_output.desc = DmlTensorDesc::Create(
+            state_tensor.dtype(),
+            input_output_shape,
+            input_output_shape);
+
+        DmlKernelTensors tensors;
+        tensors.inputs = {input_output};
+        tensors.outputs = {input_output};
+
+        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto scope = dml::Graph(ctx->GetDmlDevice());
+        auto input = dml::InputTensor(scope, 0, inputs[0]);
+        input = dml::Reinterpret(
+            input,
+            DML_TENSOR_DATA_TYPE_UINT32,
+            {1, 1, 1, static_cast<uint32_t>(state_tensor.NumElements()) * 2},
+            {});
+
+        constexpr uint32_t split_axis = 3;
+        auto split_inputs = dml::Split(
+            input,
+            split_axis,
+            {1, 1, 1, 1, input.GetOutputDesc().sizes[3] - 4});
+
+        const int64_t count = init_helper->GetDelta() * 256;
+
+        auto dml_data_type = input.GetOutputDesc().dataType;
+
+        auto count_lo = dml::FillValueConstant(
+            scope,
+            {1, 1, 1, 1},
+            dml_data_type,
+            dml::ScalarUnion(static_cast<uint32_t>(count), dml_data_type));
+
+        auto count_hi = dml::FillValueConstant(
+            scope,
+            {1, 1, 1, 1},
+            dml_data_type,
+            dml::ScalarUnion(
+                static_cast<uint32_t>(count >> 32),
+                dml_data_type));
+
+        split_inputs[0] += count_lo;
+        count_hi = dml::If(split_inputs[0] < count_lo, count_hi + 1, count_hi);
+
+        split_inputs[1] += count_hi;
+
+        auto split_input_1_lower = split_inputs[1] < count_hi;
+
+        split_inputs[2] =
+            dml::If(split_input_1_lower, split_inputs[2] + 1, split_inputs[2]);
+
+        auto zero = dml::ZeroTensor(
+            scope,
+            dml_data_type,
+            split_inputs[2].GetOutputDesc().sizes);
+
+        split_inputs[3] = dml::If(
+            split_input_1_lower && split_inputs[2] == zero,
+            split_inputs[3] + 1,
+            split_inputs[3]);
+
+        auto result = dml::Join(split_inputs, split_axis);
+
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
+    }
+
+    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
+    {
+        auto init_helper = ctx->GetInitializationHelper<InitHelper>();
+        const Tensor& state_input = init_helper->GetStateTensor();
+
+        // We compute the new state in-place, which saves us from doing an
+        // output -> input copy at the end
+        D3D12BufferRegion input_output_buffers[] = {
+            ctx->GetDmlDeviceContext()->GetBufferForTensor(state_input),
+        };
+
+        // Create bindings
+        auto input_bindings = dml_util::GetBufferBindings(input_output_buffers);
+        auto output_bindings =
+            dml_util::GetBufferBindings(input_output_buffers);
+
+        // For RngReadAndSkip, we copy the old value to the output before we
+        // start computing
+        if (read_old_value)
+        {
+            Tensor& output = ctx->GetOutputTensor(0);
+
+            ctx->GetOpKernelContext()->device()->CopyTensorInSameDevice(
+                &state_input,
+                &output);
+        }
+
+        auto gpu_event_or_status =
+            DmlKernel::Compute(ctx, input_bindings, output_bindings);
+
+        init_helper->Unlock();
+        return gpu_event_or_status;
+    }
+};
+
 void RegisterStatelessRandomUniform()
 {
     using K = KernelDefinition<
@@ -828,6 +1083,38 @@ void RegisterTruncatedNormal()
         TF_FLOAT>::Register();
 }
 
+void RegisterRngSkip()
+{
+    using K = KernelDefinition<
+        ops::RngSkip,
+        DmlKernelWrapper<
+            DmlRngSkipKernel<int64_t, int64_t, false>,
+            NoOutputShapeHelper,
+            DmlKernelCachePolicy::Never>>::
+        WithHostMemoryArguments<
+            ops::RngSkip::Argument::resource,
+            ops::RngSkip::Argument::algorithm,
+            ops::RngSkip::Argument::delta>;
+
+    K::Register();
+}
+
+void RegisterRngReadAndSkip()
+{
+    using K = KernelDefinition<
+        ops::RngReadAndSkip,
+        DmlKernelWrapper<
+            DmlRngSkipKernel<int32_t, uint64_t, true>,
+            RngReadAndSkipShapeHelper<int32_t, uint64_t>,
+            DmlKernelCachePolicy::Never>>::
+        WithHostMemoryArguments<
+            ops::RngReadAndSkip::Argument::resource,
+            ops::RngReadAndSkip::Argument::alg,
+            ops::RngReadAndSkip::Argument::delta>;
+
+    K::Register();
+}
+
 void RegisterKernels_Random()
 {
     RegisterStatelessRandomUniform();
@@ -836,6 +1123,8 @@ void RegisterKernels_Random()
     RegisterRandomUniformInt();
     RegisterRandomStandardNormal();
     RegisterTruncatedNormal();
+    RegisterRngSkip();
+    RegisterRngReadAndSkip();
 }
 
 } // namespace tfdml
