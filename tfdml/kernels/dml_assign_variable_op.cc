@@ -79,13 +79,6 @@ class DmlAssign : public OpKernel
 
     void Compute(OpKernelContext* ctx)
     {
-        OP_REQUIRES(
-            ctx,
-            ctx->AssignRefVariableSupported(),
-            errors::InvalidArgument(
-                "AssignRefVariable is not yet supported for pluggable devices "
-                "in this version of TensorFlow."));
-
         constexpr int input_ref_index = 0;
         constexpr int output_ref_index = 0;
         constexpr int value_index = 1;

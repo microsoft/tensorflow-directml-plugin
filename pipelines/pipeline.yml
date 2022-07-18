@@ -55,12 +55,12 @@ parameters:
 - name: testTensorflowPackages
   displayName: TensorFlow Packages To Test Against
   type: object
-  default: [tensorflow, tensorflow-cpu]
+  default: [tf-nightly, tf-nightly-cpu]
 
 - name: testTensorflowVersion
   displayName: TensorFlow Package Version
   type: string
-  default: 2.9.1
+  default: 2.10.0.dev20220713
 
 - name: testKerasPackage
   displayName: TensorFlow Package Version
