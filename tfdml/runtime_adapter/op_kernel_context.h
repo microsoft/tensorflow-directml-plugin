@@ -42,17 +42,6 @@ void TF_ZerosLikeVariantDeclaration(
         TF_Tensor* out),
     TF_Status* status);
 
-void TF_AssignRefVariableDeclaration(
-    TF_OpKernelContext* ctx,
-    int input_ref_index,
-    int output_ref_index,
-    int value_index,
-    bool use_locking,
-    bool validate_shape,
-    void (
-        *copyFunc)(TF_OpKernelContext* ctx, TF_Tensor* source, TF_Tensor* dest),
-    TF_Status* status);
-
 namespace tfdml
 {
 class Device;
@@ -126,11 +115,6 @@ class OpKernelContext
 
     bool AddNVariantSupported() const { return TF_AddNVariant != nullptr; }
 
-    bool AssignRefVariableSupported() const
-    {
-        return TF_AssignRefVariable != nullptr;
-    }
-
     bool ZerosLikeVariantSupported() const
     {
         return TF_ZerosLikeVariant != nullptr;
@@ -141,7 +125,6 @@ class OpKernelContext
     Status status_;
     Device* device_;
     OpKernel* const op_kernel_;
-    static decltype(TF_AssignRefVariableDeclaration)* TF_AssignRefVariable;
     static decltype(TF_AddNVariantDeclaration)* TF_AddNVariant;
     static decltype(TF_ZerosLikeVariantDeclaration)* TF_ZerosLikeVariant;
 };
