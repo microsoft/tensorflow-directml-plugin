@@ -40,7 +40,7 @@ jobs:
       targetType: filePath
       filePath: pipelines/create_test_matrix.ps1
       arguments: >
-        -AccessToken "$(accessToken)"
+        -AccessToken "$(AccessToken)"
         -AgentPoolNames ${{join(', ', parameters.agentPool)}}
         -Artifacts ${{join(', ', parameters.artifacts)}}
         -TensorflowPackages ${{join(', ', parameters.tensorflowPackages)}}
