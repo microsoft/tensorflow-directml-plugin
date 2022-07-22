@@ -852,7 +852,7 @@ void RegisterEuclideanNorm()
             ops::EuclideanNorm,
             DML_REDUCE_FUNCTION_L2,
             TF_INT64>,
-           ops::EuclideanNorm::Attribute::T,
+        ops::EuclideanNorm::Attribute::T,
         TF_FLOAT,
         TF_HALF>();
 }
