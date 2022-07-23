@@ -1,7 +1,8 @@
 name: C++ Code Check
 on: [pull_request]
 jobs:
-  formatting-check:
+  cpp-code-check:
+    name: Check C++ Code Formatting
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2

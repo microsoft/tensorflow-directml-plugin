@@ -1,7 +1,8 @@
 name: Python Code Check
 on: [push, pull_request]
 jobs:
-  format:
+  python-code-check:
+    name: Check Python Code Formatting And Lint
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
