@@ -27,7 +27,7 @@ from tensorflow.python.platform import test
 class ArgMaxTest(test.TestCase):
     """ArgMaxTest"""
 
-    def _test_arg( # pylint:disable=too-many-arguments
+    def _test_arg(  # pylint:disable=too-many-arguments
         self,
         method,
         input_value,
@@ -48,7 +48,7 @@ class ArgMaxTest(test.TestCase):
                 with self.assertRaisesOpError(expected_err_re):
                     self.evaluate(ans)
 
-    def _test_both_arg( # pylint:disable=too-many-arguments
+    def _test_both_arg(  # pylint:disable=too-many-arguments
         self, method, input_value, axis, expected_values, expected_err_re=None
     ):
         self._test_arg(

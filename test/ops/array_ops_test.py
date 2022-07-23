@@ -57,6 +57,7 @@ from tensorflow.python.platform import test as test_lib
 @test_util.run_all_in_graph_and_eager_modes
 class BatchMatrixTransposeTest(test_util.TensorFlowTestCase):
     """BatchMatrixTransposeTest"""
+
     def test_non_batch_matrix(self):
         """test_non_batch_matrix"""
         matrix = [[1, 2, 3], [4, 5, 6]]  # Shape (2, 3)
@@ -154,6 +155,7 @@ class BatchMatrixTransposeTest(test_util.TensorFlowTestCase):
 
 class BooleanMaskTest(test_util.TensorFlowTestCase):
     """BooleanMaskTest"""
+
     def setUp(self):
         self.rng = np.random.RandomState(42)
 

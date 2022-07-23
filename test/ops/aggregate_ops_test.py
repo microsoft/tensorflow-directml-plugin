@@ -29,6 +29,7 @@ from tensorflow.python.platform import test
 
 class AddNTest(test_util.TensorFlowTestCase):
     """AddNTest"""
+
     # AddN special-cases adding the first M inputs to make (N - M) divisible by 8,
     # after which it adds the remaining (N - M) tensors 8 at a time in a loop.
     # Test N in [1, 10] so we check each special-case from 1 to 9 and one
@@ -100,6 +101,7 @@ class AddNTest(test_util.TensorFlowTestCase):
     @test_util.run_deprecated_v1
     def test_variant(self):
         """test_variant"""
+
         def create_constant_variant(value):
             return constant_op.constant(
                 tensor_pb2.TensorProto(
