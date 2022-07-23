@@ -1,8 +1,7 @@
-name: clang-format Check
+name: C++ Code Check
 on: [pull_request]
 jobs:
   formatting-check:
-    name: Check C++ Formatting
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
