@@ -1,3 +1,4 @@
 black
 pylint
+tf-nightly-cpu==2.10.0.dev20220713
 vswhere ; sys_platform == 'win32'

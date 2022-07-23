@@ -25,7 +25,7 @@ from pathlib import Path
 # know how to find the MSVC tools, but the Ninja generators assume the user
 # is running within a VS developer command prompt (i.e. has executed vcvarsall.bat).
 if os.name == "nt":
-    import vswhere
+    import vswhere # pylint:disable=import-error
 
 
 def _run_or_show(step_name, command_line, show):
