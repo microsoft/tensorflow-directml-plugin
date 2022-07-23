@@ -1,0 +1,3 @@
+black
+pylint
+vswhere ; sys_platform == 'win32'

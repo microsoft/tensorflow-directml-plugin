@@ -23,17 +23,20 @@ from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import test_util
 from tensorflow.python.platform import test
 
-class L2LossTest(test.TestCase):
 
-  @test_util.run_in_graph_and_eager_modes
-  def testL2Loss(self):
-    with self.cached_session():
-      data = np.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5])
-      expected_result = np.sum(np.square(data)) / 2
-      for dtype in (dtypes.float16, dtypes.float32,):
-        result = tf.nn.l2_loss(constant_op.constant(data, dtype=dtype))
-        self.assertAllCloseAccordingToType(result, expected_result)
+class L2LossTest(test.TestCase):
+    @test_util.run_in_graph_and_eager_modes
+    def testL2Loss(self):
+        with self.cached_session():
+            data = np.array([-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5])
+            expected_result = np.sum(np.square(data)) / 2
+            for dtype in (
+                dtypes.float16,
+                dtypes.float32,
+            ):
+                result = tf.nn.l2_loss(constant_op.constant(data, dtype=dtype))
+                self.assertAllCloseAccordingToType(result, expected_result)
 
 
 if __name__ == "__main__":
-  test.main()
+    test.main()

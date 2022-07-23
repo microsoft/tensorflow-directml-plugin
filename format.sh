@@ -7,4 +7,10 @@ for f in $(find . -path ./build -prune -o -path ./third_party -prune -o -name '*
     fi
 done
 
+black .
+pylint build.py
+pylint generate_op_defs_core.py
+pylint test
+pylint tfdml
+
 echo "Done!"

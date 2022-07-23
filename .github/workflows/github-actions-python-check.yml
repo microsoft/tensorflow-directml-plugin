@@ -1,0 +1,10 @@
+name: Lint Python Code
+on: [push, pull_request]
+jobs:
+  format:
+    name: Check Python Code Formatting
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: psf/black@stable
+    - run: pylint $(git ls-files '*.py')

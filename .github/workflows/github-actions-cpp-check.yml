@@ -2,7 +2,7 @@ name: clang-format Check
 on: [pull_request]
 jobs:
   formatting-check:
-    name: Formatting Check
+    name: Check C++ Formatting
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
