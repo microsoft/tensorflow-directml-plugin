@@ -7,11 +7,7 @@ for f in $(find . -path ./build -prune -o -path ./third_party -prune -o -name '*
     fi
 done
 
-black build.py
-black generate_op_defs_core.py
-black test/plugin
-black tfdml
-
+black .
 pylint build.py
 pylint generate_op_defs_core.py
 pylint test/plugin
