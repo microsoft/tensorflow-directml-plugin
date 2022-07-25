@@ -9,6 +9,16 @@ trigger: none
 # Do not trigger on PRs.
 pr: none
 
+# Build nightly at 5 AM UTC (10 PM PDT)
+schedules:
+- cron: "0 5 * * *"
+  displayName: Nightly Run
+  branches:
+    include:
+    - main
+    - release/*
+  always: false
+
 parameters:
 - name: releaseBuild
   displayName: Release Build
