@@ -174,14 +174,14 @@ class _TestGroup:
         if summary["tests_failed_count"] > 0:
             print()
             print("Failed Tests:")
-            i = 0
+            fail_count = 0
             for test in summary["tests"]:
                 if test["result"] == "failed":
-                    print(f"{i}: {test['name']}")
+                    print(f"{fail_count}: {test['name']}")
                     if len(test["cases_failed"]) > 0:
-                        for j in range(0, len(test["cases_failed"])):
-                            print(f"{i}.{j}: {test['cases_failed'][j]}")
-                    i += 1
+                        for failure, failure_index in enumerate(test["cases_failed"]):
+                            print(f"{fail_count}.{failure_index}: {failure}")
+                    fail_count += 1
 
         print("=" * 80)
         print()

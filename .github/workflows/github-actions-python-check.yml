@@ -7,11 +7,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: pip install -r requirements.txt
-    - run: "black build.py --check --diff --verbose"
-    - run: "black generate_op_defs_core.py --check --diff --verbose"
-    - run: "black test/plugin --check --diff --verbose"
-    - run: "black tfdml --check --diff --verbose"
-    - run: pylint build.py
-    - run: pylint generate_op_defs_core.py
-    - run: pylint test/plugin
+    - run: "black . --check --diff --verbose"
+    - run: pylint *.py
+    - run: pylint test
     - run: pylint tfdml

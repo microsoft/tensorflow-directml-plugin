@@ -1,3 +1,5 @@
 [MASTER]
 max-line-length=88
 ignored-modules=tensorflow
+ignore-paths=(test/ops/|build/)
+good-names=tensorflow-directml-plugin
