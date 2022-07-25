@@ -33,4 +33,15 @@ jobs:
       - name: Set CXX Location
         run: export CXX=/usr/bin/clang++-8
       - name: Build
+        run: echo "*****************"
+        run: echo "*****************"
+        run: echo "*****************"
+        run: echo "*****************"
+        run: echo "*****************"
+        run: echo $PATH
+        run: echo "*****************"
+        run: echo "*****************"
+        run: echo "*****************"
+        run: echo "*****************"
+        run: cmake --version
         run: python build.py --config release
