@@ -23,18 +23,17 @@ from tensorflow.python.ops import math_ops
 from tensorflow.python.framework import ops
 from tensorflow.python.platform import test
 
-
 class DeepcopyTest(test.TestCase):
-    @test_util.run_in_graph_and_eager_modes
-    def testDeepcopy(self):
-        with self.cached_session():
-            for type in [np.float32, np.int64]:
-                x = np.array([[0, -1, 2, -3, 4], [-5, 6, -7, 8, -9]]).astype(type)
-                x = ops.convert_to_tensor(x)
-                y = gen_array_ops.DeepCopy(x=x)
-                x = math_ops.abs(x)
-                self.assertNotAllEqual(x, y)
 
+  @test_util.run_in_graph_and_eager_modes
+  def testDeepcopy(self):
+    with self.cached_session():
+        for type in [np.float32, np.int64]:
+            x = np.array([[0, -1, 2, -3, 4], [-5, 6, -7, 8, -9]]).astype(type)
+            x = ops.convert_to_tensor(x)
+            y = gen_array_ops.DeepCopy(x=x)
+            x = math_ops.abs(x)
+            self.assertNotAllEqual(x, y)
 
 if __name__ == "__main__":
-    test.main()
+  test.main()

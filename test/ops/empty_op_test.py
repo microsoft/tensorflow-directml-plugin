@@ -24,15 +24,17 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.platform import test
 from tensorflow.python.framework import dtypes
 
-
 class EmptyTest(test.TestCase):
+
     @test_util.run_in_graph_and_eager_modes
     def testEmpty(self):
+        
         def empty_like(x, init=None):
             x = ops.convert_to_tensor(x)
             return gen_array_ops.empty(array_ops.shape(x), x.dtype, init=init)
 
-        for dtype in [dtypes.float32, dtypes.float64, dtypes.int32, dtypes.int64]:
+        for dtype in [
+            dtypes.float32, dtypes.float64, dtypes.int32, dtypes.int64]:
             with self.cached_session(use_gpu=True):
                 test_shapes = [(), (1,), (2, 3), (0, 2), (2, 3, 5), (2, 0, 5)]
                 for shape in test_shapes:
@@ -46,11 +48,12 @@ class EmptyTest(test.TestCase):
                     val = empty_like(array_ops.zeros(shape, dtype))
                     self.assertEqual(val.shape, shape)
                     self.assertDTypeEqual(val, dtype)
-                    val = empty_like(array_ops.zeros(shape, dtype), init=True)
+                    val = empty_like(
+                        array_ops.zeros(shape, dtype), init=True)
                     self.assertEqual(val.shape, shape)
                     self.assertDTypeEqual(val, dtype)
                     self.assertAllEqual(val, np.zeros(shape, dtype.as_numpy_dtype))
 
 
 if __name__ == "__main__":
-    test.main()
+  test.main()

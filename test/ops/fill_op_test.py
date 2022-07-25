@@ -19,24 +19,26 @@ from tensorflow.python.framework import test_util
 from tensorflow.python.ops import array_ops
 from tensorflow.python.platform import test
 
-
 class FillTest(test.TestCase):
-    @test_util.run_in_graph_and_eager_modes
-    def testFill(self):
-        with self.cached_session():
-            fill = array_ops.fill([2, 3], 1.0)
-            self.assertAllEqual([[1, 1, 1], [1, 1, 1]], fill)
 
-    def testFillBadShape(self):
-        with self.cached_session():
-            with self.assertRaisesOpError(r"dims must be a vector, got shape \[2,2\]"):
-                array_ops.fill([[2, 3], [2, 3]], 1.0)
+  @test_util.run_in_graph_and_eager_modes
+  def testFill(self):
+    with self.cached_session():
+      fill = array_ops.fill([2, 3], 1.0)
+      self.assertAllEqual([[1, 1, 1], [1, 1, 1]], fill)
 
-    def testFillBadValue(self):
-        with self.cached_session():
-            with self.assertRaisesOpError(r"value must be a scalar, got shape \[2\]"):
-                array_ops.fill([2, 3], [1.0, 2.0])
+  def testFillBadShape(self):
+    with self.cached_session():
+      with self.assertRaisesOpError(
+          r"dims must be a vector, got shape \[2,2\]"):
+        array_ops.fill([[2, 3], [2, 3]], 1.0)
+
+  def testFillBadValue(self):
+    with self.cached_session():
+      with self.assertRaisesOpError(
+          r"value must be a scalar, got shape \[2\]"):
+        array_ops.fill([2, 3], [1.0, 2.0])
 
 
 if __name__ == "__main__":
-    test.main()
+  test.main()

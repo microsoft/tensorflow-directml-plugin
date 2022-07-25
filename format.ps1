@@ -45,10 +45,14 @@ foreach ($Item in Get-ChildItem $PSScriptRoot)
     }
 }
 
-black .
+black build.py
+black generate_op_defs_core.py
+black test/plugin
+black tfdml
+
 pylint build.py
 pylint generate_op_defs_core.py
-pylint test
+pylint test/plugin
 pylint tfdml
 
 Write-Output "Done!"
