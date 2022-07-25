@@ -30,10 +30,9 @@ jobs:
           conda create --name build python=3.7 -y
           conda activate build
           pip install wheel
-      - name: Set CXX Location
-        run: export CXX=/usr/bin/clang++-8
       - name: Build
         run: |
+          export CXX=/usr/bin/clang++-8
           eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
           conda activate build
           python build.py --config release
