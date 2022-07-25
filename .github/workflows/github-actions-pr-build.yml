@@ -26,7 +26,6 @@ jobs:
           echo "******************"
           echo "******************"
           echo "******************"
-          which ninja-build
           which ninja
       - name: Install Miniconda
         run: |
