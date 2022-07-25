@@ -1,0 +1,16 @@
+name: Pull Request Build
+on:
+  pull_request:
+    branches: [main, release/*]
+  push:
+    branches: [user/pavignol/test1234]
+jobs:
+  Build manylinux:
+    runs-on: ubuntu-latest
+    container:
+      image: tensorflow/tensorflow:2.5.0-custom-op-ubuntu16
+    steps:
+      - name: Set CXX Location
+        run: export CXX=/usr/bin/clang++-8
+      - name: Build
+        run: python build.py --config release
