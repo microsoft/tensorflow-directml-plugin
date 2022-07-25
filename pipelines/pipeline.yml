@@ -6,7 +6,6 @@ name: $(Date:yyMMdd-HHmm)$(Rev:.r).$(SourceBranchName)
 # No CI trigger; run on a schedule only.
 trigger: none
 
-# Do not trigger on PRs.
 pr:
 - main
 - releases/*
