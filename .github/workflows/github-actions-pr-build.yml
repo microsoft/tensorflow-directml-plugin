@@ -17,16 +17,11 @@ jobs:
           wget --output-document="/tmp/cmake.sh" https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.sh
           mkdir "/tmp/cmake"
           bash "/tmp/cmake.sh" --skip-license --prefix="/tmp/cmake"
-          export PATH="/tmp/cmake:${PATH}"
+          export PATH="/tmp/cmake/bin:${PATH}"
       - name: Install Ninja
         run: |
           apt update
           apt install ninja-build -y
-          echo "******************"
-          echo "******************"
-          echo "******************"
-          echo "******************"
-          which ninja
       - name: Install Miniconda
         run: |
           wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh --directory-prefix /tmp
