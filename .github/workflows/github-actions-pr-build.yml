@@ -16,7 +16,7 @@ jobs:
           wget --output-document="/tmp/cmake.sh" https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.sh
           mkdir "/tmp/cmake"
           bash "/tmp/cmake.sh" --skip-license --prefix="/tmp/cmake"
-          ln -s /tmp/cmake/bin/cmake /usr/bin/cmake
+          export PATH="${/tmp/cmake}:${PATH}"
       - name: Install Miniconda
         run: |
           wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh /tmp/miniconda3/Miniconda3-latest-Linux-x86_64.sh
