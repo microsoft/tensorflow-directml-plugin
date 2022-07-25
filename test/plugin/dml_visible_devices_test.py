@@ -29,6 +29,7 @@ flags.DEFINE_string(
 
 class VisibleDevicesTest(absltest.TestCase):
     """Tests the visibility of DML devices"""
+
     def test(self):
         """Tests the visibility of DML devices"""
         os.environ["DML_VISIBLE_DEVICES"] = flags.FLAGS.dml_visible_devices
