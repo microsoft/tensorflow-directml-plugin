@@ -18,6 +18,10 @@ jobs:
           mkdir "/tmp/cmake"
           bash "/tmp/cmake.sh" --skip-license --prefix="/tmp/cmake"
           export PATH="/tmp/cmake:${PATH}"
+      - name: Install Ninja
+        run: |
+          sudo apt update
+          sudo apt install ninja-build -y
       - name: Install Miniconda
         run: |
           wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh --directory-prefix /tmp
