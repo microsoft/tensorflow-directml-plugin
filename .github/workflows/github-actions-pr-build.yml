@@ -28,27 +28,11 @@ jobs:
           bash /tmp/Miniconda3-latest-Linux-x86_64.sh -b -p /tmp/miniconda3
           eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
           conda create --name build python=3.7 -y
-          conda init
-          conda activate build
+          source /tmp/miniconda3/bin/activate build
+          pip install wheel
       - name: Set CXX Location
         run: export CXX=/usr/bin/clang++-8
       - name: Build
         run: |
-          echo "*****************"
-          echo "*****************"
-          echo "*****************"
-          echo "*****************"
-          which ninja
-          echo "*****************"
-          echo "*****************"
-          echo "*****************"
-          echo "*****************"
-          echo "*****************"
-          echo "*****************"
-          echo $PATH
-          echo "*****************"
-          echo "*****************"
-          echo "*****************"
-          echo "*****************"
-          cmake --version
+          source /tmp/miniconda3/bin/activate build
           python build.py --config release
