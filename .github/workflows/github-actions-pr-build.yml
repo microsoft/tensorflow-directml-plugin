@@ -11,6 +11,23 @@ jobs:
     container:
       image: tensorflow/tensorflow:2.5.0-custom-op-ubuntu16
     steps:
+      - name: Install cmake
+        run: |
+          wget --output-document="/tmp/cmake.sh" https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.sh
+          mkdir "/tmp/cmake"
+          bash "/tmp/cmake.sh" --skip-license --prefix="/tmp/cmake"
+          ln -s /tmp/cmake/bin/cmake /usr/bin/cmake
+        displayName: Install CMake
+        workingDirectory: $(Build.StagingDirectory)
+        target: manylinux
+      - name: Install Miniconda
+        run: |
+          wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh /tmp/miniconda3/Miniconda3-latest-Linux-x86_64.sh
+          bash Miniconda3-latest-Linux-x86_64.sh -b -p /tmp/miniconda3
+          eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
+          conda create --name build python=3.7 -y
+          conda init
+          conda activate build
       - name: Set CXX Location
         run: export CXX=/usr/bin/clang++-8
       - name: Build
