@@ -19,8 +19,8 @@ jobs:
           export PATH="/tmp/cmake:${PATH}"
       - name: Install Miniconda
         run: |
-          wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh /tmp/miniconda3/Miniconda3-latest-Linux-x86_64.sh
-          bash Miniconda3-latest-Linux-x86_64.sh -b -p /tmp/miniconda3
+          wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh --directory-prefix /tmp
+          bash /tmp/Miniconda3-latest-Linux-x86_64.sh -b -p /tmp/miniconda3
           eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
           conda create --name build python=3.7 -y
           conda init
