@@ -425,7 +425,7 @@ class OpKernelConstruction
 
         for (int32_t i = 0; i < list_size; ++i)
         {
-            (*value)[i] = vals[i];
+            (*value)[i] = std::string(vals[i], lengths[i]);
         }
 
         return status;
