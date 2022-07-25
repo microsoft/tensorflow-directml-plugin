@@ -11,6 +11,7 @@ pr:
 - releases/*
 - user/pavignol/test123
 
+parameters:
 - name: buildArtifacts
   displayName: Build Artifacts
   type: object
