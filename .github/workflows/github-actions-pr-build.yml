@@ -5,7 +5,8 @@ on:
   push:
     branches: [user/pavignol/test1234]
 jobs:
-  Build manylinux:
+  build-manylinux:
+    name: Build x64-linux-release-cp37
     runs-on: ubuntu-latest
     container:
       image: tensorflow/tensorflow:2.5.0-custom-op-ubuntu16
