@@ -13,8 +13,10 @@ parameters:
   default: false
 - name: enableTelemetry
   type: boolean
+  default: false
 - name: telemetryProviderGroupGuid
   type: string
+  default: ''
 
 jobs:
 - job:
