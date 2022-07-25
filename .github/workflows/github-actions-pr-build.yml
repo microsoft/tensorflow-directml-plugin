@@ -35,5 +35,5 @@ jobs:
         run: export CXX=/usr/bin/clang++-8
       - name: Build
         run: |
-          source /tmp/miniconda3/bin/activate build
+          conda activate build
           python build.py --config release
