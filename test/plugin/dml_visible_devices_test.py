@@ -15,8 +15,11 @@
 # limitations under the License.
 # ==============================================================================
 
-import absl.testing.absltest as absltest
+"""Tests the DML device creation and visibility"""
+
 import os
+import tensorflow as tf
+from absl.testing import absltest
 from absl import flags
 
 flags.DEFINE_string(
@@ -25,19 +28,19 @@ flags.DEFINE_string(
 
 
 class VisibleDevicesTest(absltest.TestCase):
+    """Tests the visibility of DML devices"""
     def test(self):
+        """Tests the visibility of DML devices"""
         os.environ["DML_VISIBLE_DEVICES"] = flags.FLAGS.dml_visible_devices
 
         # See https://docs.microsoft.com/en-us/windows/ai/directml/gpu-faq
         # The value should be a comma-separated list of device IDs.
         # Any IDs appearing after -1 are invalid.
         valid_id_count = 0
-        for id in flags.FLAGS.dml_visible_devices.split(","):
-            if id == "-1":
+        for device_id in flags.FLAGS.dml_visible_devices.split(","):
+            if device_id == "-1":
                 break
             valid_id_count += 1
-
-        import tensorflow as tf
 
         gpu_devices = tf.config.list_physical_devices("GPU")
         dml_devices = list(
@@ -48,8 +51,8 @@ class VisibleDevicesTest(absltest.TestCase):
             )
         )
 
-        # We can't guarantee the machine running this test has multiple devices/adapters,
-        # but it must have at least one.
+        # We can't guarantee the machine running this test has multiple
+        # devices/adapters, but it must have at least one.
         if valid_id_count == 0:
             self.assertEmpty(dml_devices)
         else:
