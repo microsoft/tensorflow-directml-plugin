@@ -3,6 +3,7 @@ on:
   pull_request:
     types: [opened, synchronize, edited, reopened]
     branches: [main, release/*]
+
 concurrency:
   group: python-check-${{ github.ref }}
   cancel-in-progress: true
