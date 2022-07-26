@@ -631,6 +631,9 @@ class DmlReduceKernel : public DmlKernel
         DML_TENSOR_DATA_TYPE dml_input_data_type =
             GetDmlDataTypeFromTfDataType(ctx->GetInputDataType(0));
 
+        DML_TENSOR_DATA_TYPE dml_output_data_type =
+            GetDmlDataTypeFromTfDataType(ctx->GetOutputDataType(0));
+
         auto input_descs = GetDmlTensorDescs(tensors.inputs);
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto result = dml::InputTensor(scope, 0, input_descs[0]);
@@ -644,19 +647,14 @@ class DmlReduceKernel : public DmlKernel
             result = dml::Reduce(result, reduce_function, reduce_axes);
             result = dml::Cast(result, dml_input_data_type);
         }
+        else if (is_arg_function_)
+        {
+            result = dml::Reduce(result, reduce_function, reduce_axes, dml_output_data_type);
+        }
         else
         {
             result = dml::Reduce(result, reduce_function, reduce_axes);
         }
-
-        // // Arg functions never return negative indices, so even though TF only
-        // // supports int64_t, we can safely use uint32 with strides instead of
-        // // int32_t with strides TFDML #24881131
-        // if (!is_arg_function_ &&
-        //     Is64BitSignedIntegerType(ctx->GetOutputDataType(0)))
-        // {
-        //     result = dml::ConvertInt32ToInt64(result);
-        // }
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {result});

@@ -169,24 +169,6 @@ class DmlBinaryWithZeroKernel : public DmlKernel
 
         Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
-
-    // StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
-    // {
-    //     // Currently, 64-bit integers in DML are emulated using 32-bit integers
-    //     // using striding to emulate a larger type. Because we can't guarantee
-    //     // that our output tensor's memory is zero'd, we need to do so manually
-    //     // prior to running running gather.
-    //     Tensor output = ctx->GetOutputTensor(0);
-
-    //     // TFDML #24881131
-    //     if (Is64BitUnsignedIntegerType(output.dtype()))
-    //     {
-    //         ctx->GetDmlDeviceContext()->ZeroBuffer(
-    //             ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
-    //     }
-
-    //     return DmlKernel::Compute(ctx);
-    // }
 };
 
 template <typename ExpressionFunctor, uint32_t max_dim_count>
@@ -222,24 +204,6 @@ class DmlCompositeBinaryKernel : public DmlKernel
 
         Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
-
-    // StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
-    // {
-    //     // Currently, 64-bit integers in DML are emulated using 32-bit integers
-    //     // using striding to emulate a larger type. Because we can't guarantee
-    //     // that our output tensor's memory is zero'd, we need to do so manually
-    //     // prior to running running gather.
-    //     Tensor output = ctx->GetOutputTensor(0);
-
-    //     // TFDML #24881131
-    //     if (Is64BitUnsignedIntegerType(output.dtype()))
-    //     {
-    //         ctx->GetDmlDeviceContext()->ZeroBuffer(
-    //             ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
-    //     }
-
-    //     return DmlKernel::Compute(ctx);
-    // }
 };
 
 template <DML_OPERATOR_TYPE op_type, typename DML_OPERATOR_SPECIFIC_DESC>
@@ -334,24 +298,6 @@ class DmlCompositeUnaryKernel : public DmlKernel
 
         Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
-
-    // StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override
-    // {
-    //     // Currently, 64-bit integers in DML are emulated using 32-bit integers
-    //     // using striding to emulate a larger type. Because we can't guarantee
-    //     // that our output tensor's memory is zero'd, we need to do so manually
-    //     // prior to running running gather.
-    //     Tensor output = ctx->GetOutputTensor(0);
-
-    //     // TFDML #24881131
-    //     if (Is64BitUnsignedIntegerType(output.dtype()))
-    //     {
-    //         ctx->GetDmlDeviceContext()->ZeroBuffer(
-    //             ctx->GetDmlDeviceContext()->GetBufferForTensor(output));
-    //     }
-
-    //     return DmlKernel::Compute(ctx);
-    // }
 };
 
 class DmlClipByValueKernel : public DmlKernel
@@ -580,16 +526,8 @@ class DmlBitwiseNotKernel : public DmlKernel
         auto num_elements =
             static_cast<uint32_t>(ctx->GetInputTensorShape(0).num_elements());
 
-        // DML doesn't support 64-bit integer types, but we can reinterpret
-        // the tensor as twice as many 32-bit elements. Sign doesn't matter.
-        // TFDML #24881131
         auto dtype = ctx->GetInputDataType(0);
         assert(dtype == ctx->GetOutputDataType(0));
-        // if (Is64BitIntegerType(dtype))
-        // {
-        //     num_elements *= 2;
-        //     dtype = TF_UINT32;
-        // }
 
         std::array<uint32_t, 4> sizes = {1, 1, 1, num_elements};
 
@@ -694,39 +632,6 @@ class DmlBitCountKernel : public DmlKernel
         tensors.inputs = {in};
         tensors.outputs = {out};
 
-        // // TFDML #24881131
-        // if (Is64BitIntegerType(ctx->GetInputDataType(0)))
-        // {
-        //     // DML doesn't support 64-bit integer types, but we can reinterpret
-        //     // the input tensor as twice as many 32-bit elements. Sign doesn't
-        //     // matter. This is followed by a sum of the two separate counts, so
-        //     // make the shape 2D so that we can reduce each adjacent pair of
-        //     // counts.
-        //     dml::TensorDesc::Dimensions double_sizes = {1, 1, num_elements, 2};
-
-        //     auto scope = dml::Graph(ctx->GetDmlDevice());
-        //     auto in_64_bit = dml::InputTensor(scope, 0, in_desc);
-        //     auto in_32_bit = dml::Reinterpret(
-        //         in_64_bit,
-        //         DML_TENSOR_DATA_TYPE_UINT32,
-        //         double_sizes,
-        //         dml::NullOpt);
-
-        //     // Reduce doesn't support UINT8, so output UINT32 bit counts and
-        //     // cast down. This may be faster than doing the arithmetic in UINT8
-        //     // anyway.
-        //     auto bit_count =
-        //         dml::BitCount(in_32_bit, DML_TENSOR_DATA_TYPE_UINT32);
-        //     bit_count = dml::Reduce(bit_count, DML_REDUCE_FUNCTION_SUM, {3});
-        //     bit_count = dml::Cast(bit_count, DML_TENSOR_DATA_TYPE_UINT8);
-
-        //     ComPtr<IDMLCompiledOperator> compiled_op =
-        //         scope.Compile(DML_EXECUTION_FLAG_NONE, {bit_count});
-
-        //     Initialize(ctx, std::move(tensors), compiled_op.Get());
-        // }
-        // else
-        // {
         DML_ELEMENT_WISE_BIT_COUNT_OPERATOR_DESC desc = {};
         desc.InputTensor = &in_desc;
         desc.OutputTensor = &out_desc;
@@ -736,7 +641,6 @@ class DmlBitCountKernel : public DmlKernel
             &desc};
 
         Initialize(ctx, std::move(tensors), op_desc);
-        // }
     }
 };
 
