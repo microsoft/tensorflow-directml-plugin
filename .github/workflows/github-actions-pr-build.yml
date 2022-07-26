@@ -64,11 +64,11 @@ jobs:
           Write-Output "**************"
           Write-Output "**************"
           Write-Output "**************"
+          Start-Process $DownloadPath -ArgumentList '/NoRegistry=1', '/InstallationType=JustMe', '/RegisterPython=0', '/S', "/D=$InstallDir" -Wait
           ls $InstallDir
           ls $InstallDir/shell
           ls $InstallDir/shell/condabin
           ls $InstallDir/shell/condabin/conda-hook.ps1
-          Start-Process $DownloadPath -ArgumentList '/NoRegistry=1', '/InstallationType=JustMe', '/RegisterPython=0', '/S', "/D=$InstallDir" -Wait
           & "$InstallDir/shell/condabin/conda-hook.ps1"
           conda create --name build python=3.7 -y
           conda activate build
