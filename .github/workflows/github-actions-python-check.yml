@@ -1,6 +1,7 @@
 name: Python Code Check
 on:
   pull_request:
+    types: [opened, synchronize, edited, reopened]
     branches: [main, release/*]
 jobs:
   python-code-check:

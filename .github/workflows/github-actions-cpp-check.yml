@@ -1,6 +1,7 @@
 name: C++ Code Check
 on:
   pull_request:
+    types: [opened, synchronize, edited, reopened]
     branches: [main, release/*]
 jobs:
   cpp-code-check:

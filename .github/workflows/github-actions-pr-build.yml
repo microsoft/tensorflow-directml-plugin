@@ -3,8 +3,6 @@ on:
   pull_request:
     types: [opened, synchronize, edited, reopened]
     branches: [main, release/*]
-  push:
-    branches: [user/pavignol/test1234]
 jobs:
   build-manylinux:
     name: Build x64-linux-release-cp37
