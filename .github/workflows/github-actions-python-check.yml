@@ -3,6 +3,9 @@ on:
   pull_request:
     types: [opened, synchronize, edited, reopened]
     branches: [main, release/*]
+concurrency:
+  group: python-check-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   python-code-check:
     name: Check Python Code Formatting And Lint

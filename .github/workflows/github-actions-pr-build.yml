@@ -3,6 +3,9 @@ on:
   pull_request:
     types: [opened, synchronize, edited, reopened]
     branches: [main, release/*]
+concurrency:
+  group: pr-build-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   build-manylinux:
     name: Build x64-linux-release-cp37
