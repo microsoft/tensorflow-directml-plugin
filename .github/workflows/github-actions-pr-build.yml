@@ -49,27 +49,20 @@ jobs:
           (New-Object System.Net.WebClient).DownloadFile($Url, $DownloadPath)
           Expand-Archive $DownloadPath -DestinationPath cmake
           "$env:TEMP/cmake-3.22.1-windows-x86_64/bin" >> $env:GITHUB_PATH
-      - name: Install Miniconda
+      - name: Download Miniconda
         shell: pwsh
         run: |
           $Url = 'https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe'
           $DownloadPath = "$env:TEMP/miniconda.exe"
           (New-Object System.Net.WebClient).DownloadFile($Url, $DownloadPath)
-          $InstallDir = "$env:TEMP/miniconda3"
-          Write-Host "**************"
-          Write-Host "**************"
-          Write-Host "**************"
-          Write-Host "**************"
-          Write-Output "**************"
-          Write-Output "**************"
-          Write-Output "**************"
-          Write-Output "**************"
-          Start-Process $DownloadPath -ArgumentList '/NoRegistry=1', '/InstallationType=JustMe', '/RegisterPython=0', '/S', "/D=$InstallDir" -Wait
-          ls $InstallDir
-          ls $InstallDir/shell
-          ls $InstallDir/shell/condabin
-          ls $InstallDir/shell/condabin/conda-hook.ps1
-          & "$InstallDir/shell/condabin/conda-hook.ps1"
+      - name: Install Miniconda
+        shell: cmd
+        run: |
+          %TEMP%\miniconda.exe /NoRegistry=1 /InstallationType=JustMe /RegisterPython=0 /S /D=%TEMP%\miniconda3
+      - name: Create Miniconda Environment
+        shell: pwsh
+        run: |
+          & "$env:TEMP/miniconda3/shell/condabin/conda-hook.ps1"
           conda create --name build python=3.7 -y
           conda activate build
           pip install wheel vswhere
