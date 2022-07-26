@@ -57,7 +57,7 @@ jobs:
           (New-Object System.Net.WebClient).DownloadFile($Url, $DownloadPath)
           $InstallDir = "$env:TEMP/miniconda3"
           Start-Process $DownloadPath -ArgumentList '/NoRegistry=1', '/InstallationType=JustMe', '/RegisterPython=0', '/S', "/D=$InstallDir" -Wait
-          & "$InstallDir/shell/condabin/conda-hook.ps1"
+          Invoke-Expression "$InstallDir/shell/condabin/conda-hook.ps1"
           conda create --name build python=$(vars.pyVersionMajorDotMinor) -y
           $ActivateCmd = "$InstallDir/shell/condabin/conda-hook.ps1; conda activate build"
           Invoke-Expression "$InstallDir/shell/condabin/conda-hook.ps1; conda activate build"
