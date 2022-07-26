@@ -1,0 +1,15 @@
+name: Python Code Check
+on:
+  pull_request:
+    branches: [main, release/*]
+jobs:
+  python-code-check:
+    name: Check Python Code Formatting And Lint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - run: pip install -r requirements.txt
+    - run: "black . --check --diff --verbose"
+    - run: pylint *.py
+    - run: pylint test
+    - run: pylint tfdml

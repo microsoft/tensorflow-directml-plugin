@@ -1,10 +1,10 @@
-name: clang-format Check
+name: C++ Code Check
 on:
   pull_request:
     branches: [main, release/*]
 jobs:
-  formatting-check:
-    name: Formatting Check
+  cpp-code-check:
+    name: Check C++ Code Formatting
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2

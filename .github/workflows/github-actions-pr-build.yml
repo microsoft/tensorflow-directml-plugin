@@ -1,6 +1,7 @@
 name: Pull Request Build
 on:
   pull_request:
+    types: [opened, synchronize, edited, reopened]
     branches: [main, release/*]
   push:
     branches: [user/pavignol/test1234]
