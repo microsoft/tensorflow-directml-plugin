@@ -1,5 +1,11 @@
 name: C++ Code Check
-on: [pull_request]
+on:
+  pull_request:
+    types: [opened, synchronize, edited, reopened]
+    branches: [main, release/*]
+concurrency:
+  group: cpp-check-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   cpp-code-check:
     name: Check C++ Code Formatting
