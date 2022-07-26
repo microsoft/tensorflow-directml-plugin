@@ -3,7 +3,7 @@
     "groups": [
         {
             "name": "ops",
-            "timeout_seconds": 7200,
+            "timeout_seconds": 5400,
             "tests": [
                 {
                     "file": "ops/aggregate_ops_test.py"

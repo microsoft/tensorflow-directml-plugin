@@ -28,66 +28,80 @@ be redirected as follows:
 python generate_op_defs_core.py > tfdml/runtime_adapter/op_defs_core.h
 """
 
+import argparse
+import os
 from tensorflow.python.client import pywrap_tf_session as c_api
 from tensorflow.core.framework import op_def_pb2
 from tensorflow.python.util import compat
-import argparse
-import os
 
-def append_args(arg_metadata, arg_list):
+
+def _append_args(arg_metadata, arg_list):
     for arg in arg_list:
         if len(getattr(arg, "number_attr")) > 0:
-            arg_metadata.append(f'        ArgumentDesc{{"{arg.name}", ArgumentDesc::TensorCount::SequenceAttrInt, "{arg.number_attr}"}}')
+            arg_metadata.append(
+                f'        ArgumentDesc{{"{arg.name}", '
+                f'ArgumentDesc::TensorCount::SequenceAttrInt, "{arg.number_attr}"}}'
+            )
         elif len(getattr(arg, "type_list_attr")) > 0:
-            arg_metadata.append(f'        ArgumentDesc{{"{arg.name}", ArgumentDesc::TensorCount::SequenceAttrList, "{arg.type_list_attr}"}}')
+            arg_metadata.append(
+                f'        ArgumentDesc{{"{arg.name}", '
+                f'ArgumentDesc::TensorCount::SequenceAttrList, "{arg.type_list_attr}"}}'
+            )
         else:
-            arg_metadata.append(f'        ArgumentDesc{{"{arg.name}", ArgumentDesc::TensorCount::Single}}')
+            arg_metadata.append(
+                f'        ArgumentDesc{{"{arg.name}", '
+                f"ArgumentDesc::TensorCount::Single}}"
+            )
 
-def append_attr(attr_metadata, attr):
+
+def _append_attr(attr_metadata, attr):
     # Convert string to enum type (e.g. list(int) -> AttributeType::ListInt)
-    enum_value = "AttributeType::" + attr.type.title().replace("(","").replace(")","")
+    enum_value = "AttributeType::" + attr.type.title().replace("(", "").replace(")", "")
     attr_metadata.append(f'        AttributeDesc{{"{attr.name}", {enum_value}}}')
 
-def generate_op_struct(op):
-    # Op names may have characters that make illegal C++ identifiers (e.g. the "Namespace>TestStringOutput" op).
-    # The struct can be named anything, so long as it's unique, since it stores the original op name as a field.
-    struct_name = op.name.replace(">","_")
+
+def _generate_op_struct(operator):
+    # Op names may have characters that make illegal C++ identifiers (e.g. the
+    # "Namespace>TestStringOutput" op). The struct can be named anything, so long as
+    # it's unique, since it stores the original op name as a field.
+    struct_name = operator.name.replace(">", "_")
 
     arg_names = []
-    for arg in op.input_arg:
-        arg_names.append(f'        {arg.name}')
-    for arg in op.output_arg:
-        arg_names.append(f'        {arg.name}')
-    arg_names = ',\n'.join(arg_names)
+    for arg in operator.input_arg:
+        arg_names.append(f"        {arg.name}")
+    for arg in operator.output_arg:
+        arg_names.append(f"        {arg.name}")
+    arg_names = ",\n".join(arg_names)
 
     arg_metadata = []
-    append_args(arg_metadata, op.input_arg)
-    append_args(arg_metadata, op.output_arg)
-    arg_metadata = ',\n'.join(arg_metadata)
+    _append_args(arg_metadata, operator.input_arg)
+    _append_args(arg_metadata, operator.output_arg)
+    arg_metadata = ",\n".join(arg_metadata)
 
     attr_names = []
-    for attr in op.attr:
-        # Modify attribute names that match reserved C++ keywords for the purpose of the enum
-        attr_name_cpp = attr.name.replace("template","template_")
-        attr_names.append(f'        {attr_name_cpp}')
-    attr_names = ',\n'.join(attr_names)
+    for attr in operator.attr:
+        # Modify attribute names that match reserved C++ keywords for the purpose of the
+        # enum
+        attr_name_cpp = attr.name.replace("template", "template_")
+        attr_names.append(f"        {attr_name_cpp}")
+    attr_names = ",\n".join(attr_names)
 
     attr_metadata = []
-    for attr in op.attr:
-        append_attr(attr_metadata, attr)
-    attr_metadata = ',\n'.join(attr_metadata)
+    for attr in operator.attr:
+        _append_attr(attr_metadata, attr)
+    attr_metadata = ",\n".join(attr_metadata)
 
     return f"""struct {struct_name}
 {{
-    static constexpr const char* name = "{op.name}";
+    static constexpr const char* name = "{operator.name}";
     
     enum class Argument
     {{
 {arg_names}
     }};
 
-    static constexpr uint32_t input_arg_count = {len(op.input_arg)};
-    static constexpr uint32_t output_arg_count = {len(op.output_arg)};
+    static constexpr uint32_t input_arg_count = {len(operator.input_arg)};
+    static constexpr uint32_t output_arg_count = {len(operator.output_arg)};
     static constexpr std::array<ArgumentDesc, input_arg_count + output_arg_count> argument_descs
     {{
 {arg_metadata}
@@ -98,24 +112,33 @@ def generate_op_struct(op):
 {attr_names}
     }};
 
-    static constexpr std::array<AttributeDesc, {len(op.attr)}> attribute_descs
+    static constexpr std::array<AttributeDesc, {len(operator.attr)}> attribute_descs
     {{
 {attr_metadata}
     }};
 }};
 """
 
-def generate_op_struct_def(op):
-    # Op names may have characters that make illegal C++ identifiers (e.g. the "Namespace>TestStringOutput" op).
-    # The struct can be named anything, so long as it's unique, since it stores the original op name as a field.
-    struct_name = op.name.replace(">","_")
+
+def _generate_op_struct_def(operator):
+    # Op names may have characters that make illegal C++ identifiers (e.g. the
+    # "Namespace>TestStringOutput" op). The struct can be named anything, so long as
+    # it's unique, since it stores the original op name as a field.
+    struct_name = operator.name.replace(">", "_")
     return f"""
 constexpr std::array<ArgumentDesc, {struct_name}::input_arg_count + {struct_name}::output_arg_count> {struct_name}::argument_descs;
-constexpr std::array<AttributeDesc, {len(op.attr)}> {struct_name}::attribute_descs;"""
+constexpr std::array<AttributeDesc, {len(operator.attr)}> {struct_name}::attribute_descs;
+"""
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--op_name", "-n", default="", help="Name of single op to generate (testing only)")
+    parser.add_argument(
+        "--op_name",
+        "-n",
+        default="",
+        help="Name of single op to generate (testing only)",
+    )
     args = parser.parse_args()
 
     buf = c_api.TF_GetAllOpList()
@@ -127,13 +150,14 @@ if __name__ == "__main__":
     header_path = f"{dir_path}/tfdml/runtime_adapter/op_defs_core.h"
     impl_path = f"{dir_path}/tfdml/runtime_adapter/op_defs_core.cc"
 
-    with open(header_path, 'w') as f:
-        f.write('''/* Copyright (c) Microsoft Corporation.
+    with open(header_path, "w", encoding="utf-8") as f:
+        f.write(
+            """/* Copyright (c) Microsoft Corporation.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
- 
+
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
@@ -152,23 +176,25 @@ namespace tfdml
 {
 namespace ops
 {
-''')
+"""
+        )
 
-    with open(header_path, 'a') as f:
-        for op in op_list.op:
-            if not args.op_name or (args.op_name == op.name):
-                f.write(generate_op_struct(op) + "\n")
+    with open(header_path, "a", encoding="utf-8") as f:
+        for header_op in op_list.op:
+            if not args.op_name or (args.op_name == header_op.name):
+                f.write(_generate_op_struct(header_op) + "\n")
 
         f.write("} // namespace tfdml\n")
         f.write("} // namespace ops\n")
 
-    with open(impl_path, 'w') as f:
-        f.write('''/* Copyright (c) Microsoft Corporation.
+    with open(impl_path, "w", encoding="utf-8") as f:
+        f.write(
+            """/* Copyright (c) Microsoft Corporation.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
- 
+
     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
@@ -188,12 +214,13 @@ namespace tfdml
 {
 namespace ops
 {
-''')
+"""
+        )
 
-    with open(impl_path, 'a') as f:
-        for op in op_list.op:
-            if not args.op_name or (args.op_name == op.name):
-                f.write(generate_op_struct_def(op) + "\n")
+    with open(impl_path, "a", encoding="utf-8") as f:
+        for impl_op in op_list.op:
+            if not args.op_name or (args.op_name == impl_op.name):
+                f.write(_generate_op_struct_def(impl_op) + "\n")
 
         f.write("} // namespace tfdml\n")
         f.write("} // namespace ops\n")

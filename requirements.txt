@@ -1,0 +1,5 @@
+black==22.6.0
+pylint==2.14.5
+tensorboard_plugin_profile==2.8.0
+tf-nightly-cpu==2.10.0.dev20220713
+vswhere==1.4.0 ; sys_platform == 'win32'

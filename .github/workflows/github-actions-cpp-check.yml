@@ -1,0 +1,13 @@
+name: C++ Code Check
+on: [pull_request]
+jobs:
+  cpp-code-check:
+    name: Check C++ Code Formatting
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run clang-format style check for C/C++/Protobuf programs.
+      uses: jidicula/clang-format-action@v4.6.2
+      with:
+        clang-format-version: '13'
+        exclude-regex: ^(\./build/|\./third_party/).*$

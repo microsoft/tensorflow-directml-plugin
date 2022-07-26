@@ -47,29 +47,6 @@ static void* GetTensorFlowHandle()
     return tf_handle;
 }
 
-static decltype(TF_AssignRefVariableDeclaration)* GetAssignRefVariableSymbol()
-{
-    void* tf_handle = GetTensorFlowHandle();
-
-    if (!tf_handle)
-    {
-        return nullptr;
-    }
-
-    Status status;
-    void* symbol = TF_GetSymbolFromLibrary(
-        tf_handle,
-        "TF_AssignRefVariable",
-        status.raw());
-
-    if (!status.ok())
-    {
-        return nullptr;
-    }
-
-    return reinterpret_cast<decltype(TF_AssignRefVariableDeclaration)*>(symbol);
-}
-
 static decltype(TF_AddNVariantDeclaration)* GetAddNVariantSymbol()
 {
     void* tf_handle = GetTensorFlowHandle();
@@ -111,9 +88,6 @@ static decltype(TF_ZerosLikeVariantDeclaration)* GetZerosLikeVariantSymbol()
 
     return reinterpret_cast<decltype(TF_ZerosLikeVariantDeclaration)*>(symbol);
 }
-
-decltype(TF_AssignRefVariableDeclaration)*
-    OpKernelContext::TF_AssignRefVariable = GetAssignRefVariableSymbol();
 
 decltype(TF_AddNVariantDeclaration)* OpKernelContext::TF_AddNVariant =
     GetAddNVariantSymbol();
@@ -335,12 +309,11 @@ Status OpKernelContext::AssignVariable(
 {
     Status status;
 
-    // TODO: Use validate_shape when TF_AssignVariable supports it
-    // https://github.com/tensorflow/tensorflow/pull/55678
     TF_AssignVariable(
         context_,
         var_index,
         value_index,
+        validate_shape,
         CopyTensorInSameDevice,
         status.raw());
 
