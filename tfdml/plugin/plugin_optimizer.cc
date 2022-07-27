@@ -17,6 +17,7 @@ limitations under the License.
 #include "tensorflow/c/tf_status.h"
 #include "tensorflow/core/framework/graph.pb.h"
 #include "tfdml/optimizer/data_format_ops_converter.h"
+#include "tfdml/optimizer/device_placement_logger.h"
 #include "tfdml/optimizer/optimizer_runner.h"
 #include "tfdml/optimizer/proto_buffer_helpers.h"
 #include "tfdml/optimizer/remapper.h"
@@ -33,6 +34,9 @@ static void* CreateOptimizer()
         new DataFormatOpsConverter(),
         new TransposeRemover(),
         new Remapper(),
+#ifdef DIRECTML_ENABLE_TELEMETRY
+        new DevicePlacementLogger(),
+#endif
     };
 }
 
@@ -92,6 +96,8 @@ void DeleteOptimizer(void* optimizers)
     {
         delete optimizer;
     }
+
+    delete cast_optimizers;
 }
 
 } // namespace tfdml

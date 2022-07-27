@@ -14,6 +14,9 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tfdml/optimizer/utils.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
+#include "tfdml/optimizer/device_name_utils.h"
 
 namespace tfdml
 {
@@ -34,6 +37,28 @@ tensorflow::DataType GetDataTypeFromAttr(
         return tensorflow::DT_INVALID;
     }
     return attr.type();
+}
+
+bool IsOnDml(const tensorflow::NodeDef& node_def)
+{
+    const std::string& device_name = node_def.device();
+    std::string device;
+    std::string task;
+    return DeviceNameUtils::SplitDeviceName(device_name, &task, &device) &&
+           absl::StrContains(
+               absl::AsciiStrToLower(device),
+               absl::AsciiStrToLower("GPU"));
+}
+
+bool IsOnCpu(const tensorflow::NodeDef& node_def)
+{
+    const std::string& device_name = node_def.device();
+    std::string device;
+    std::string task;
+    return DeviceNameUtils::SplitDeviceName(device_name, &task, &device) &&
+           absl::StrContains(
+               absl::AsciiStrToLower(device),
+               absl::AsciiStrToLower("GPU"));
 }
 
 } // end namespace tfdml

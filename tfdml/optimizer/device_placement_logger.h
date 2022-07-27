@@ -1,4 +1,4 @@
-/* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
+/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,25 +13,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/core/framework/graph.pb.h"
+#pragma once
+
+#include "tfdml/optimizer/graph_optimizer.h"
+#include "tfdml/runtime_adapter/status.h"
 
 namespace tensorflow
 {
-class NodeDef;
+class GraphDef;
 }
 
 namespace tfdml
 {
-
-// // Utilities for manipulating node name and input strings.
-
-// Returns the data type in attribute `attr_name` of `node`. If that attribute
-// doesn't exist, returns DT_INVALID.
-tensorflow::DataType GetDataTypeFromAttr(
-    const tensorflow::NodeDef& node,
-    const std::string& type_attr);
-
-bool IsOnDml(const tensorflow::NodeDef& node_def);
-bool IsOnCpu(const tensorflow::NodeDef& node_def);
-
-} // end namespace tfdml
+class DevicePlacementLogger : public GraphOptimizer
+{
+  public:
+    ~DevicePlacementLogger() override = default;
+    Status Optimize(const GrapplerItem& item, tensorflow::GraphDef* output)
+        override;
+};
+} // namespace tfdml

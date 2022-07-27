@@ -513,3 +513,19 @@ void DmlTracing::LogDeviceCreationTelemetry(
         TraceLoggingUInt32(priority, "priority"));
 #endif
 }
+
+void DmlTracing::LogGraphDevicePlacement(
+    const char* kernel_name,
+    const char* device_type)
+{
+#ifdef DIRECTML_ENABLE_TELEMETRY
+    TraceLoggingWrite(
+        g_providerHandle,
+        "DevicePlacementInGraph",
+        TraceLoggingBool(true, "UTCReplace_AppSessionGuid"),
+        TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
+        TraceLoggingKeyword(MICROSOFT_KEYWORD_MEASURES),
+        TraceLoggingString(kernel_name, "kernelName"),
+        TraceLoggingString(device_type, "deviceType"));
+#endif
+}

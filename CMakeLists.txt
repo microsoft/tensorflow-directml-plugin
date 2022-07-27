@@ -354,6 +354,7 @@ add_library(
     STATIC
     tfdml/optimizer/data_format_ops_converter.cc
     tfdml/optimizer/device_name_utils.cc
+    tfdml/optimizer/device_placement_logger.cc
     tfdml/optimizer/device_type.cc
     tfdml/optimizer/graph_optimizer.cc
     tfdml/optimizer/graph_properties.cc

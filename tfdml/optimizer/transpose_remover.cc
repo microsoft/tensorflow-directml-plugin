@@ -24,21 +24,11 @@ limitations under the License.
 #include "tfdml/optimizer/op_types.h"
 #include "tfdml/optimizer/perm_utils.h"
 #include "tfdml/optimizer/tensor_proto_util.h"
+#include "tfdml/optimizer/utils.h"
 #include "tfdml/runtime_adapter/macros.h"
 
 namespace tfdml
 {
-
-static bool IsOnDml(const tensorflow::NodeDef& node_def)
-{
-    const std::string& device_name = node_def.device();
-    std::string device;
-    std::string task;
-    return DeviceNameUtils::SplitDeviceName(device_name, &task, &device) &&
-           absl::StrContains(
-               absl::AsciiStrToLower(device),
-               absl::AsciiStrToLower("GPU"));
-}
 
 static bool IsLayoutTranspose(
     const MutableNodeView* transpose_node,

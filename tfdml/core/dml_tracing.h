@@ -147,4 +147,8 @@ class DmlTracing
     void LogDeviceCreationTelemetry(
         const LUID& adapter_luid,
         uint32_t priority);
+
+    void LogGraphDevicePlacement(
+        const char* kernel_name,
+        const char* device_type);
 };
