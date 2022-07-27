@@ -33,7 +33,9 @@ jobs:
 #-------------------------------------------------------------------------------------------------------------------
 - job: createTestMatrix
   displayName: Create Test Matrix
-  pool: ${{parameters.agentPool}}
+  pool:
+    name: ${{parameters.agentPool}}
+    demands: AP.TfArtifacts
   steps:
   - task: PowerShell@2
     inputs:
