@@ -129,15 +129,6 @@ inline Microsoft::WRL::ComPtr<IDMLDevice> CreateDmlDevice(
 TF_DataType GetTfDataTypeFromDmlDataType(DML_TENSOR_DATA_TYPE type);
 DML_TENSOR_DATA_TYPE GetDmlDataTypeFromTfDataType(TF_DataType type);
 
-// TFDML #24881131
-bool Is64BitIntegerType(TF_DataType type);
-
-// TFDML #24881131
-bool Is64BitSignedIntegerType(TF_DataType type);
-
-// TFDML #24881131
-bool Is64BitUnsignedIntegerType(TF_DataType type);
-
 // Converts a TF TensorShape into an array of uint32_t, and validates that the
 // shape is representable as uint32_t. This is useful because shapes in TF are
 // logically represented as int64, whereas DML requires uint32.
@@ -172,10 +163,6 @@ DmlTensorLayout GetDmlTensorLayout(TensorFormat format, uint32_t rank);
 
 // Converts a TF-style TensorFormat into the equivalent DirectMLX enum value.
 dml::TensorPolicy GetDmlXTensorPolicy(TensorFormat format);
-
-// Retrieves a tensor policy that produces padded output striding as required
-// for int64 emulation.
-dml::TensorPolicy GetEmulatedInt64TensorPolicy();
 
 dml::TensorStrides ComputePackedStrides(const dml::Span<const uint32_t>& sizes);
 

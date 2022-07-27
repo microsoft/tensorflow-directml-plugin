@@ -81,12 +81,6 @@ class DmlAddNKernel : public DmlKernel
                 result += dml::InputTensor(scope, i, inputs[i]);
             }
 
-            // TFDML #24881131
-            if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0)))
-            {
-                result = dml::ConvertInt32ToInt64(result);
-            }
-
             Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
                 scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
 
@@ -162,12 +156,6 @@ class DmlBinaryAddVariantKernel : public DmlKernel
         const auto a = dml::InputTensor(scope, 0, inputs[0]);
         const auto b = dml::InputTensor(scope, 1, inputs[1]);
         auto result = a + b;
-
-        // TFDML #24881131
-        if (Is64BitSignedIntegerType(init_helper->dtype))
-        {
-            result = dml::ConvertInt32ToInt64(result);
-        }
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {result});

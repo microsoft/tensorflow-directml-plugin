@@ -861,9 +861,6 @@ class DmlStridedSliceKernel : public DmlKernel
         const DML_TENSOR_DATA_TYPE dtype_dml =
             GetDmlDataTypeFromTfDataType(dtype_tf);
 
-        // TODO #24881131: 64-bit data support should be revisited
-        // TFDML #24881131
-        uint64_t end_padding_in_bytes = 0;
         dml::TensorDesc::Dimensions output_strides(
             simple_slice->output_sizes.size());
         uint32_t stride = 1;
@@ -871,18 +868,6 @@ class DmlStridedSliceKernel : public DmlKernel
         {
             output_strides[i] = stride;
             stride *= simple_slice->output_sizes[i];
-        }
-        if (Is64BitIntegerType(dtype_tf))
-        {
-            for (auto& stride : simple_slice->input_strides)
-            {
-                stride *= 2;
-            }
-            for (int i = simple_slice->output_sizes.size() - 1; i >= 0; i--)
-            {
-                output_strides[i] *= 2;
-            }
-            end_padding_in_bytes = sizeof(uint32_t);
         }
 
         DmlTensorInfo input;
@@ -892,7 +877,7 @@ class DmlStridedSliceKernel : public DmlKernel
             simple_slice->input_sizes,
             simple_slice->input_strides,
             0,
-            end_padding_in_bytes};
+            0};
 
         DmlTensorInfo output;
         output.kernel_index = 0;
@@ -901,7 +886,7 @@ class DmlStridedSliceKernel : public DmlKernel
             simple_slice->output_sizes,
             output_strides,
             0,
-            end_padding_in_bytes};
+            0};
 
         DmlKernelTensors tensors;
         tensors.inputs = {input};
@@ -922,12 +907,6 @@ class DmlStridedSliceKernel : public DmlKernel
                 simple_slice->window_offset,
                 simple_slice->window_sizes,
                 simple_slice->window_strides);
-        }
-
-        // TFDML #24881131
-        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0)))
-        {
-            result = dml::ConvertInt32ToInt64(result);
         }
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
@@ -958,9 +937,6 @@ class DmlStridedSliceGradKernel : public DmlKernel
         const DML_TENSOR_DATA_TYPE dtype_dml =
             GetDmlDataTypeFromTfDataType(dtype_tf);
 
-        // TODO #24881131: 64-bit data support should be revisited
-        // TFDML #24881131
-        uint64_t end_padding_in_bytes = 0;
         dml::TensorDesc::Dimensions output_strides(
             simple_slice->output_sizes.size());
         uint32_t stride = 1;
@@ -968,18 +944,6 @@ class DmlStridedSliceGradKernel : public DmlKernel
         {
             output_strides[i] = stride;
             stride *= simple_slice->output_sizes[i];
-        }
-        if (Is64BitIntegerType(dtype_tf))
-        {
-            for (auto& stride : simple_slice->input_strides)
-            {
-                stride *= 2;
-            }
-            for (int i = simple_slice->output_sizes.size() - 1; i >= 0; i--)
-            {
-                output_strides[i] *= 2;
-            }
-            end_padding_in_bytes = sizeof(uint32_t);
         }
 
         DmlTensorInfo input;
@@ -989,7 +953,7 @@ class DmlStridedSliceGradKernel : public DmlKernel
             simple_slice->output_sizes,
             output_strides,
             0,
-            end_padding_in_bytes};
+            0};
 
         DmlTensorInfo output;
         output.kernel_index = 0;
@@ -998,7 +962,7 @@ class DmlStridedSliceGradKernel : public DmlKernel
             simple_slice->input_sizes,
             simple_slice->input_strides,
             0,
-            end_padding_in_bytes};
+            0};
 
         DmlKernelTensors tensors;
         tensors.inputs = {input};
@@ -1020,12 +984,6 @@ class DmlStridedSliceGradKernel : public DmlKernel
                 simple_slice->window_offset,
                 simple_slice->window_sizes,
                 simple_slice->window_strides);
-        }
-
-        // TFDML #24881131
-        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0)))
-        {
-            result = dml::ConvertInt32ToInt64(result);
         }
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
@@ -1297,12 +1255,6 @@ class DmlStridedSliceAssignKernel : public DmlKernel
                 sliced_indices,
                 updates_tensor,
                 3);
-        }
-
-        // TFDML #24881131
-        if (Is64BitSignedIntegerType(ctx->GetInputDataType(4)))
-        {
-            result = dml::ConvertInt32ToInt64(result);
         }
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =

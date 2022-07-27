@@ -151,10 +151,6 @@ class DmlRollKernel : public DmlKernel
 
         const TensorShape& input_shape = ctx->GetInputTensorShape(0);
 
-        const bool is_int64 =
-            Is64BitSignedIntegerType(ctx->GetOutputDataType(0));
-        bool first_int64_reinterpret = is_int64;
-
         // Iteratively roll each axis of the tensor by using Gather
         for (int axis = 0; axis < shift_mod_sum.size(); ++axis)
         {
@@ -183,25 +179,7 @@ class DmlRollKernel : public DmlKernel
             dml::TensorDesc::Dimensions new_sizes =
                 {1, before_dim_size, axis_dim_size, after_dim_size};
 
-            // Because of the int64 stride hack, the first int64 reinterpret
-            // needs to take the strides into account since we didn't override
-            // the result with a non-strided gather yet TFDML #24881131
-            if (first_int64_reinterpret)
-            {
-                first_int64_reinterpret = false;
-                dml::TensorStrides strides = {
-                    0,
-                    axis_dim_size * after_dim_size * 2,
-                    after_dim_size * 2,
-                    2,
-                };
-
-                result = dml::Reinterpret(result, new_sizes, strides);
-            }
-            else
-            {
-                result = dml::Reinterpret(result, new_sizes, {});
-            }
+            result = dml::Reinterpret(result, new_sizes, {});
 
             auto indices = dml::FillValueSequence(
                 scope,
@@ -234,12 +212,6 @@ class DmlRollKernel : public DmlKernel
             constexpr uint32_t dml_axis = 2;
             constexpr uint32_t index_dimensions = 1;
             result = dml::Gather(result, indices, dml_axis, index_dimensions);
-        }
-
-        // TFDML #24881131
-        if (is_int64)
-        {
-            result = dml::ConvertInt32ToInt64(result);
         }
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =

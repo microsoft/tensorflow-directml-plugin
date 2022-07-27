@@ -167,7 +167,6 @@ struct ScatterUpdateOperation
         dml::Expression indices,
         dml::Expression updates,
         uint32_t scatter_axis,
-        bool int64_indices,
         bool scalar_updates)
     {
         return dml::ScatterElements(params, indices, updates, scatter_axis);
@@ -242,7 +241,6 @@ struct ScatterBinaryOperation
         dml::Expression indices,
         dml::Expression updates,
         uint32_t scatter_axis,
-        bool int64_indices,
         bool scalar_updates)
     {
         auto params_sizes = params.GetOutputDesc().sizes;
@@ -270,11 +268,10 @@ struct ScatterBinaryOperation
             broadcasted_sizes,
             dml::TensorDesc::Dimensions({0, 0, 1, 0}));
 
-        uint32_t indices_stride_multiplier = int64_indices ? 2 : 1;
         auto broadcasted_indices = dml::Reinterpret(
             indices,
             broadcasted_sizes,
-            dml::TensorDesc::Dimensions({0, indices_stride_multiplier, 0, 0}));
+            dml::TensorDesc::Dimensions({0, 1, 0, 0}));
 
         dml::Expression broadcasted_updates =
             scalar_updates
@@ -395,25 +392,13 @@ class DmlScatterUpdateKernel : public DmlKernel
         const uint32_t scatter_axis =
             params.GetOutputDesc().sizes.size() - flat_params_shape.dims();
 
-        // TODO: Remove the Is64BitIntegerType hack when DML has a more solid
-        // solution for 64 bit datatypes
-        // TFDML #24881131
         auto result = ScatterOp()(
             scope,
             params,
             indices,
             updates,
             scatter_axis,
-            Is64BitIntegerType(ctx->GetInputDataType(1)),
             scalar_updates);
-
-        // TODO: Remove the Is64BitSignedIntegerType hack when DML has a more
-        // solid solution for 64 bit datatypes
-        // TFDML #24881131
-        if (Is64BitSignedIntegerType(params_tensor.dtype()))
-        {
-            result = dml::ConvertInt32ToInt64(result);
-        }
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {result});

@@ -75,8 +75,6 @@ class CastOpTest(test.TestCase):
       ]
     for from_type in type_list:
       for to_type in type_list:
-         # TFDML #24881131
-        if to_type==np.int64: continue
         self._test(x.astype(from_type), to_type, use_gpu)
 
     self._test(x.astype(np.bool_), np.float32, use_gpu)
