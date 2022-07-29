@@ -12,6 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Set Up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
     - run: pip install -r requirements.txt
     - run: "black . --check --diff --verbose"
     - run: pylint *.py
