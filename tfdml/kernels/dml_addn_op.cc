@@ -390,13 +390,6 @@ class DmlAddNVariantKernel : public OpKernel
 
     void Compute(OpKernelContext* ctx)
     {
-        OP_REQUIRES(
-            ctx,
-            ctx->ZerosLikeVariantSupported(),
-            errors::InvalidArgument("AddN with the variant data type is not "
-                                    "yet supported for pluggable devices in "
-                                    "this version of TensorFlow."));
-
         OP_REQUIRES_OK(ctx, ctx->AddNVariant(BinaryAddVariant));
     }
 };

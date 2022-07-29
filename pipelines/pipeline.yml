@@ -70,7 +70,7 @@ parameters:
 - name: testTensorflowVersion
   displayName: TensorFlow Package Version
   type: string
-  default: 2.10.0.dev20220713
+  default: 2.10.0.dev20220728
 
 - name: testKerasPackage
   displayName: TensorFlow Package Version
