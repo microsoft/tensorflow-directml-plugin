@@ -321,7 +321,6 @@ void RegisterConcat()
     using K = typename KernelDefinition<Op, DmlConcatWrapper<AxisArgName>>::
         template WithHostMemoryArguments<AxisArg>;
 
-    // TODO: add uint64 support (TF2 #36692608)
     RegisterWithTypes<
         K,
         Op::Attribute::T,
@@ -329,6 +328,7 @@ void RegisterConcat()
         TF_HALF,
         TF_BOOL,
         TF_UINT8,
+        TF_UINT64,
         TF_INT64>();
 }
 
