@@ -6,7 +6,7 @@ include(FetchContent)
 FetchContent_Declare(
     abseil
     GIT_REPOSITORY https://github.com/abseil/abseil-cpp
-    GIT_TAG 215105818dfde3174fe799600bb0f3cae233d0bf
+    GIT_TAG 273292d1cfc0a94a65082ee350509af1d113344d
 )
 
 # Google Protobuf
@@ -19,20 +19,21 @@ FetchContent_Declare(
 set(protobuf_BUILD_TESTS OFF)
 
 # TensorFlow python package
-# To update the package version to a nightly build, go to https://pypi.org/project/tf-nightly-cpu/#files and copy the
-# URLs and SHA256 hashes for the cp37 versions. To update the package version to a stable build instead, go to
-# https://pypi.org/project/tensorflow-cpu/#files instead.
 if(WIN32)
+    # To update the package version to a nightly build, go to https://pypi.org/project/tf-nightly-intel/#files and copy the
+    # URLs and SHA256 hashes for the cp37 versions.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/29/69/a2f81eff9f5c28e4c063c8a7449f2136a343536dc385a8dcb2299a7d9bfa/tf_nightly_cpu-2.10.0.dev20220713-cp37-cp37m-win_amd64.whl
-        URL_HASH SHA256=da3cecb63cf8a51212548cf8e96f17b6a41096e763e33c734e6645933bad2482
+        URL https://files.pythonhosted.org/packages/81/95/d4cb742c278bbf84f9361faa5de846d6ac05c1f88327bc98d22f1c25994e/tf_nightly_intel-2.10.0.dev20220728-cp37-cp37m-win_amd64.whl
+        URL_HASH SHA256=4f33660b3dbf0b22f069c27e332e3fa00a6d22b0fd5e5fd4015c8185bf3e9227
     )
 else()
+    # To update the package version to a nightly build, go to https://pypi.org/project/tf-nightly-cpu/#files and copy the
+    # URLs and SHA256 hashes for the cp37 versions.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/c9/e0/9465646f11027ccbe7ad64c1de1c105297c3358269b04e745fee294ac799/tf_nightly_cpu-2.10.0.dev20220713-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-        URL_HASH SHA256=6ae8c937a76511eb358bba9c06a15e7c7ab9f9eb3b6302ae560a0ce676bd4bbe
+        URL https://files.pythonhosted.org/packages/09/19/fec07df7f1a2a58e43993883cf78433e467b708783375ab3ef777da78876/tf_nightly_cpu-2.10.0.dev20220728-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+        URL_HASH SHA256=06d0e9cbd8b41eb45b120822a765c584ecf6d8e7f6b888469fa9e87643d4c479
     )
 endif()
 
