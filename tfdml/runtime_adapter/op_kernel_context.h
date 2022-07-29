@@ -23,25 +23,6 @@ limitations under the License.
 
 struct TF_OpKernelContext;
 
-// TODO: Remove the following declarations once we depend on an API header that
-// declares them
-void TF_AddNVariantDeclaration(
-    TF_OpKernelContext* ctx,
-    void (*binary_add_func)(
-        TF_OpKernelContext* ctx,
-        TF_Tensor* a,
-        TF_Tensor* b,
-        TF_Tensor* out),
-    TF_Status* status);
-
-void TF_ZerosLikeVariantDeclaration(
-    TF_OpKernelContext* ctx,
-    void (*zeros_like_func)(
-        TF_OpKernelContext* ctx,
-        TF_Tensor* input,
-        TF_Tensor* out),
-    TF_Status* status);
-
 namespace tfdml
 {
 class Device;
@@ -113,19 +94,10 @@ class OpKernelContext
         Tensor* tensor);
     TF_OpKernelContext* raw() const;
 
-    bool AddNVariantSupported() const { return TF_AddNVariant != nullptr; }
-
-    bool ZerosLikeVariantSupported() const
-    {
-        return TF_ZerosLikeVariant != nullptr;
-    }
-
   private:
     TF_OpKernelContext* const context_;
     Status status_;
     Device* device_;
     OpKernel* const op_kernel_;
-    static decltype(TF_AddNVariantDeclaration)* TF_AddNVariant;
-    static decltype(TF_ZerosLikeVariantDeclaration)* TF_ZerosLikeVariant;
 };
 } // namespace tfdml

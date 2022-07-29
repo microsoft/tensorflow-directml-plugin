@@ -326,9 +326,6 @@ class TestGeneratorMethods(keras_parameterized.TestCase):
   @keras_parameterized.run_all_keras_modes
   @data_utils.dont_use_multiprocessing_pool
   def test_generator_dynamic_shapes(self):
-    # TODO: Enable once DML supports ZerosLike Variant
-    self.skipTest("DML doesn't support ZerosLike with the Variant datatype yet")
-
     x = [
         'I think juice is great',
         'unknown is the best language since slicedbread',

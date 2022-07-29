@@ -39,10 +39,9 @@ with open("TFDML_WHEEL_VERSION", "r", encoding="utf-8") as f:
 _PLUGIN_LIB_PATH = "tensorflow-plugins"
 _MY_PLUGIN_PATH = "tensorflow-directml-plugin"
 
-# The plugin should be compatible with any version of TF >= 2.10.0.dev20220713;
-# however, this cannot be expressed as a dependency since there are different
-# package names: tensorflow, tensorflow-cpu, tf-nightly, etc.
-REQUIRED_PACKAGES = []
+REQUIRED_PACKAGES = [
+    "tf-nightly-cpu >= 2.10.0.dev20220728",
+]
 
 if sys.byteorder == "little":
     # grpcio does not build correctly on big-endian machines due to lack of

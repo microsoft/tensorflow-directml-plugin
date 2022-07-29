@@ -19,7 +19,7 @@ parameters:
   default: [tf-nightly, tf-nightly-cpu]
 - name: tensorflowVersion
   type: string
-  default: 2.10.0.dev20220713
+  default: 2.10.0.dev20220728
 - name: kerasPackage
   type: string
   default: keras==2.9.0
@@ -33,7 +33,9 @@ jobs:
 #-------------------------------------------------------------------------------------------------------------------
 - job: createTestMatrix
   displayName: Create Test Matrix
-  pool: ${{parameters.agentPool}}
+  pool:
+    name: ${{parameters.agentPool}}
+    demands: AP.TfArtifacts
   steps:
   - task: PowerShell@2
     inputs:
