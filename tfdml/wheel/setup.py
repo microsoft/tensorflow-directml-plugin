@@ -30,7 +30,6 @@ DOCLINES = __doc__.split("\n")
 # This version string is semver compatible, but incompatible with pip.
 # For pip, we will remove all '-' characters from this string, and use the
 # result for pip.
-# Also update tfdml/tfdml.bzl
 _VERSION = "0.0.0"
 with open("TFDML_WHEEL_VERSION", "r", encoding="utf-8") as f:
     _VERSION = f.read()
@@ -42,7 +41,9 @@ _MY_PLUGIN_PATH = "tensorflow-directml-plugin"
 # The plugin should be compatible with any version of TF >= 2.10.0.dev20220713;
 # however, this cannot be expressed as a dependency since there are different
 # package names: tensorflow, tensorflow-cpu, tf-nightly, etc.
-REQUIRED_PACKAGES = []
+REQUIRED_PACKAGES = [
+    "tf-nightly-cpu >= 2.10.0.dev20220713",
+]
 
 if sys.byteorder == "little":
     # grpcio does not build correctly on big-endian machines due to lack of
