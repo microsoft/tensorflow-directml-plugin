@@ -47,54 +47,6 @@ static void* GetTensorFlowHandle()
     return tf_handle;
 }
 
-static decltype(TF_AddNVariantDeclaration)* GetAddNVariantSymbol()
-{
-    void* tf_handle = GetTensorFlowHandle();
-
-    if (!tf_handle)
-    {
-        return nullptr;
-    }
-
-    Status status;
-    void* symbol =
-        TF_GetSymbolFromLibrary(tf_handle, "TF_AddNVariant", status.raw());
-
-    if (!status.ok())
-    {
-        return nullptr;
-    }
-
-    return reinterpret_cast<decltype(TF_AddNVariantDeclaration)*>(symbol);
-}
-
-static decltype(TF_ZerosLikeVariantDeclaration)* GetZerosLikeVariantSymbol()
-{
-    void* tf_handle = GetTensorFlowHandle();
-
-    if (!tf_handle)
-    {
-        return nullptr;
-    }
-
-    Status status;
-    void* symbol =
-        TF_GetSymbolFromLibrary(tf_handle, "TF_ZerosLikeVariant", status.raw());
-
-    if (!status.ok())
-    {
-        return nullptr;
-    }
-
-    return reinterpret_cast<decltype(TF_ZerosLikeVariantDeclaration)*>(symbol);
-}
-
-decltype(TF_AddNVariantDeclaration)* OpKernelContext::TF_AddNVariant =
-    GetAddNVariantSymbol();
-
-decltype(TF_ZerosLikeVariantDeclaration)* OpKernelContext::TF_ZerosLikeVariant =
-    GetZerosLikeVariantSymbol();
-
 OpKernelContext::OpKernelContext(
     TF_OpKernelContext* context,
     OpKernel* op_kernel)

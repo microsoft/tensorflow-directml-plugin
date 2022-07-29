@@ -6,7 +6,7 @@ include(FetchContent)
 FetchContent_Declare(
     abseil
     GIT_REPOSITORY https://github.com/abseil/abseil-cpp
-    GIT_TAG 215105818dfde3174fe799600bb0f3cae233d0bf
+    GIT_TAG 273292d1cfc0a94a65082ee350509af1d113344d
 )
 
 # Google Protobuf
@@ -19,16 +19,17 @@ FetchContent_Declare(
 set(protobuf_BUILD_TESTS OFF)
 
 # TensorFlow python package
-# To update the package version to a nightly build, go to https://pypi.org/project/tf-nightly-cpu/#files and copy the
-# URLs and SHA256 hashes for the cp37 versions. To update the package version to a stable build instead, go to
-# https://pypi.org/project/tensorflow-cpu/#files instead.
 if(WIN32)
+    # To update the package version to a nightly build, go to https://pypi.org/project/tf-nightly-intel/#files and copy the
+    # URLs and SHA256 hashes for the cp37 versions.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/78/36/473aedc66e8c1c4854e28d5cb42d53832acf07d5b8ece4055056ba41977d/tf_nightly_cpu-2.10.0.dev20220728-cp37-cp37m-win_amd64.whl
-        URL_HASH SHA256=9ff0110b304141e304da665b71364e294cf8aa454d0ebee400e1ecda95cb2fd2
+        URL https://files.pythonhosted.org/packages/81/95/d4cb742c278bbf84f9361faa5de846d6ac05c1f88327bc98d22f1c25994e/tf_nightly_intel-2.10.0.dev20220728-cp37-cp37m-win_amd64.whl
+        URL_HASH SHA256=4f33660b3dbf0b22f069c27e332e3fa00a6d22b0fd5e5fd4015c8185bf3e9227
     )
 else()
+    # To update the package version to a nightly build, go to https://pypi.org/project/tf-nightly-cpu/#files and copy the
+    # URLs and SHA256 hashes for the cp37 versions.
     FetchContent_Declare(
         tensorflow_whl
         URL https://files.pythonhosted.org/packages/09/19/fec07df7f1a2a58e43993883cf78433e467b708783375ab3ef777da78876/tf_nightly_cpu-2.10.0.dev20220728-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
