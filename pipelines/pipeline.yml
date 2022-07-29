@@ -65,7 +65,7 @@ parameters:
 - name: testTensorflowPackages
   displayName: TensorFlow Packages To Test Against
   type: object
-  default: [tf-nightly, tf-nightly-cpu]
+  default: [tf-nightly-cpu]
 
 - name: testTensorflowVersion
   displayName: TensorFlow Package Version
