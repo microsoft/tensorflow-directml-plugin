@@ -649,7 +649,11 @@ class DmlReduceKernel : public DmlKernel
         }
         else if (is_arg_function_)
         {
-            result = dml::Reduce(result, reduce_function, reduce_axes, dml_output_data_type);
+            result = dml::Reduce(
+                result,
+                reduce_function,
+                reduce_axes,
+                dml_output_data_type);
         }
         else
         {

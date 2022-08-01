@@ -219,7 +219,7 @@ class DmlOneHotKernel : public DmlKernel
         {
             indices = dml::Cast(indices, DML_TENSOR_DATA_TYPE_UINT32);
         }
-        
+
         // TFDML #40634243
         indices = dml::Cast(indices, DML_TENSOR_DATA_TYPE_UINT32);
 

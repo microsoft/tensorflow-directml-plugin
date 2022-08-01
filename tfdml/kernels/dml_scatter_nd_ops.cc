@@ -530,12 +530,7 @@ class DmlScatterNdBinaryKernel : public DmlKernel
         auto updates = dml::InputTensor(graph, 2, inputs[2]);
         auto strides = dml::InputTensor(graph, 3, inputs[3]);
 
-        auto result = BinaryOp()(
-            graph,
-            input,
-            indices,
-            updates,
-            strides);
+        auto result = BinaryOp()(graph, input, indices, updates, strides);
 
         const uint32_t buffer_size =
             indices_last_dim * DataTypeSize(indices_dtype);
