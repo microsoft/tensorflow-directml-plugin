@@ -29,8 +29,7 @@ from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
-import tensorflow as tf
-tf.debugging.set_log_device_placement(True)
+
 
 class ConcatOpTest(test.TestCase):
 

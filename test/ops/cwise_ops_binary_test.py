@@ -854,7 +854,7 @@ class BinaryOpTest(test.TestCase):
   def testPowNegativeExponentGpu(self):
     if not test_util.is_gpu_available():
       self.skipTest("Requires GPU")
-    self.skipTest("DML doesn't support negative int64 numbers for pow.")
+    self.skipTest("DML doesn't support int64 numbers for pow.")
     # Negative integer powers return zero on GPUs for abs(LHS) > 1. Negative
     # integer powers for 1 and -1 will return the correct result.
     x = np.array([2, 3, 1, -1, -1]).astype(np.int64)
