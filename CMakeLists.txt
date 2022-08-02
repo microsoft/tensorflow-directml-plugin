@@ -209,7 +209,7 @@ target_link_libraries(
 
 # Target comprising core TFDML plugin code.
 add_library(
-    core
+    core_whl
     STATIC
     tfdml/core/dml_adapter.cc
     tfdml/core/dml_adapter_impl.cc
@@ -245,11 +245,58 @@ add_library(
     tfdml/core/dml_util.cc
 )
 target_link_libraries(
-    core 
+    core_whl 
     PUBLIC 
     common_build_props
     Microsoft::DirectX-Headers
     tensorflow_whl::lib
+    directml::headers
+    pix_event_runtime::headers
+)
+
+# Target comprising core TFDML C API code.
+add_library(
+    core_c_api
+    STATIC
+    tfdml/core/dml_adapter.cc
+    tfdml/core/dml_adapter_impl.cc
+    tfdml/core/dml_bfc_allocator.cc
+    tfdml/core/dml_buffer.cc
+    tfdml/core/dml_buffer_region.cc
+    tfdml/core/dml_command_list.cc
+    tfdml/core/dml_command_queue.cc
+    tfdml/core/dml_descriptor_bfc_allocator.cc
+    tfdml/core/dml_descriptor_heap_allocator.cc
+    tfdml/core/dml_descriptor_pool.cc
+    tfdml/core/dml_device.cc
+    tfdml/core/dml_device_cache.cc
+    tfdml/core/dml_device_context.cc
+    tfdml/core/dml_device_state.cc
+    tfdml/core/dml_dso_loader.cc
+    tfdml/core/dml_error_handling.cc
+    tfdml/core/dml_event_queue.cc
+    tfdml/core/dml_execution_context.cc
+    tfdml/core/dml_guids.cc
+    tfdml/core/dml_heap_allocator.cc
+    tfdml/core/dml_kernel_context.cc
+    tfdml/core/dml_kernel_key.cc
+    tfdml/core/dml_kernel_manager.cc
+    tfdml/core/dml_kernel_wrapper.cc
+    tfdml/core/dml_operator_helper.cc
+    tfdml/core/dml_ops_common.cc
+    tfdml/core/dml_pooled_heap.cc
+    tfdml/core/dml_readback_heap.cc
+    tfdml/core/dml_tensor_desc.cc
+    tfdml/core/dml_tracing.cc
+    tfdml/core/dml_upload_heap.cc
+    tfdml/core/dml_util.cc
+)
+target_link_libraries(
+    core_c_api 
+    PUBLIC 
+    common_build_props
+    Microsoft::DirectX-Headers
+    tensorflow_c_api::lib
     directml::headers
     pix_event_runtime::headers
 )
@@ -340,7 +387,7 @@ target_link_libraries(
     kernels
     PUBLIC
     runtime_adapter
-    core
+    core_whl
 )
 target_precompile_headers(
     kernels 
@@ -375,7 +422,7 @@ target_link_libraries(
     optimizer
     PUBLIC
     runtime_adapter
-    core
+    core_whl
 )
 
 # Target to build the TF plugin module.
@@ -394,13 +441,34 @@ target_link_libraries(
     tfdml_plugin 
     PRIVATE
     common_build_props
-    core
+    core_whl
     kernels
     optimizer
     protobuf::libprotobuf
     runtime_adapter
 )
 set_target_properties(tfdml_plugin PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+
+# Target to build the TF plugin C API.
+add_library(
+    tfdml_plugin_c_api
+    SHARED
+    tfdml/plugin/plugin_device.cc
+    tfdml/plugin/plugin_kernel.cc
+    tfdml/plugin/plugin_optimizer.cc
+    tfdml/plugin/plugin_profiler.cc
+)
+target_link_libraries(
+    tfdml_plugin_c_api 
+    PRIVATE
+    common_build_props
+    core_c_api
+    kernels
+    optimizer
+    protobuf::libprotobuf
+    runtime_adapter
+)
+set_target_properties(tfdml_plugin_c_api PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 
 # The CMake project name and version determines the python wheel version. Save these
 # values to files so the setup.py script can read them.
@@ -428,6 +496,7 @@ add_custom_command(
         --build_dir ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS
         tfdml_plugin
+        tfdml_plugin_c_api
         tfdml/wheel/build_wheel.py
         tfdml/wheel/setup.py
         tfdml/wheel/README
