@@ -95,7 +95,7 @@ class DmlDiagKernel : public DmlKernel
         DmlTensorInfo output;
         output.kernel_index = 0;
         output.desc =
-            DmlTensorDesc(dtype_dml, output_sizes, output_strides, 0, 0);
+            DmlTensorDesc(dtype_dml, output_sizes, output_strides);
 
         DmlKernelTensors tensors;
         tensors.inputs = {input};
