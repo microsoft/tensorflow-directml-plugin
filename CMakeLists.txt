@@ -352,7 +352,6 @@ target_precompile_headers(
 add_library(
     optimizer
     STATIC
-    tfdml/optimizer/data_format_ops_converter.cc
     tfdml/optimizer/device_name_utils.cc
     tfdml/optimizer/device_type.cc
     tfdml/optimizer/graph_optimizer.cc
