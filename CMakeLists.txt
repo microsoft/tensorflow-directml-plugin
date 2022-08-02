@@ -151,7 +151,7 @@ set(TFDML_WHEEL_VERSION_SUFFIX "" CACHE STRING "Optional text to append to the P
 # total rewrites. Pay careful attention to license banners when modifying code in this
 # target. We may choose to further refactor these files over time to simplify layering.
 add_library(
-    runtime_adapter
+    runtime_adapter_whl
     STATIC
     tfdml/runtime_adapter/allocator.cc
     tfdml/runtime_adapter/allocator_retry.cc
@@ -182,11 +182,68 @@ add_library(
     tfdml/runtime_adapter/xplane_builder.cc
 )
 target_link_libraries(
-    runtime_adapter 
+    runtime_adapter_whl 
     PUBLIC
     common_build_props
     PRIVATE
     tensorflow_whl::lib
+    INTERFACE
+    absl::base
+    absl::config
+    absl::core_headers
+    absl::flat_hash_map
+    absl::flat_hash_set
+    absl::hash_function_defaults
+    absl::inlined_vector
+    absl::node_hash_map
+    absl::raw_hash_map
+    absl::raw_hash_set
+    absl::strings
+    absl::str_format
+    absl::synchronization
+    absl::time
+    absl::optional
+    absl::span
+    absl::variant
+)
+
+add_library(
+    runtime_adapter_c_api
+    STATIC
+    tfdml/runtime_adapter/allocator.cc
+    tfdml/runtime_adapter/allocator_retry.cc
+    tfdml/runtime_adapter/bcast.cc
+    tfdml/runtime_adapter/bfc_allocator.cc
+    tfdml/runtime_adapter/determinism.cc
+    tfdml/runtime_adapter/device.cc
+    tfdml/runtime_adapter/env.cc
+    tfdml/runtime_adapter/env_var.cc
+    tfdml/runtime_adapter/fused_eigen_output_kernels.cc
+    tfdml/runtime_adapter/guarded_philox_random.cc
+    tfdml/runtime_adapter/kernel_shape_util.cc
+    tfdml/runtime_adapter/mirror_pad_mode.cc
+    tfdml/runtime_adapter/numbers.cc
+    tfdml/runtime_adapter/op_defs_core.cc
+    tfdml/runtime_adapter/op_kernel_construction.cc
+    tfdml/runtime_adapter/op_kernel_context.cc
+    tfdml/runtime_adapter/padding.cc
+    tfdml/runtime_adapter/path.cc
+    tfdml/runtime_adapter/stateless_random_ops.cc
+    tfdml/runtime_adapter/status.cc
+    tfdml/runtime_adapter/tensor.cc
+    tfdml/runtime_adapter/tensor_format.cc
+    tfdml/runtime_adapter/tensor_shape.cc
+    tfdml/runtime_adapter/tensor_shape_utils.cc
+    tfdml/runtime_adapter/types.cc
+    tfdml/runtime_adapter/variable_lock.cc
+    tfdml/runtime_adapter/xplane_builder.cc
+)
+target_link_libraries(
+    runtime_adapter_c_api 
+    PUBLIC
+    common_build_props
+    PRIVATE
+    tensorflow_c_api::lib
     INTERFACE
     absl::base
     absl::config
@@ -303,7 +360,7 @@ target_link_libraries(
 
 # Target comprising all TFDML kernel implementations.
 add_library(
-    kernels
+    kernels_whl
     STATIC
     tfdml/kernels/dml_addn_op.cc
     tfdml/kernels/dml_assign_variable_op.cc
@@ -384,20 +441,114 @@ add_library(
     tfdml/kernels/dml_zeros_like_op.cc
 )
 target_link_libraries(
-    kernels
+    kernels_whl
     PUBLIC
-    runtime_adapter
+    runtime_adapter_whl
     core_whl
 )
 target_precompile_headers(
-    kernels 
+    kernels_whl 
+    PRIVATE 
+    tfdml/kernels/pch.h
+)
+
+# Target comprising all TFDML kernel implementations.
+add_library(
+    kernels_c_api
+    STATIC
+    tfdml/kernels/dml_addn_op.cc
+    tfdml/kernels/dml_assign_variable_op.cc
+    tfdml/kernels/dml_batch_norm_ops.cc
+    tfdml/kernels/dml_batch_to_space_op.cc
+    tfdml/kernels/dml_bias_add_op.cc
+    tfdml/kernels/dml_bitcast_op.cc
+    tfdml/kernels/dml_broadcast_to_op.cc
+    tfdml/kernels/dml_cast_op.cc
+    tfdml/kernels/dml_check_numerics_op.cc
+    tfdml/kernels/dml_concat_op.cc
+    tfdml/kernels/dml_conv_ops.cc
+    tfdml/kernels/dml_crop_and_resize_grad_boxes_op.cc
+    tfdml/kernels/dml_crop_and_resize_grad_image_op.cc
+    tfdml/kernels/dml_crop_and_resize_op.cc
+    tfdml/kernels/dml_cross_op.cc
+    tfdml/kernels/dml_cwise_ops.cc
+    tfdml/kernels/dml_data_format_dim_map.cc
+    tfdml/kernels/dml_data_format_vec_permute.cc
+    tfdml/kernels/dml_deepcopy_op.cc
+    tfdml/kernels/dml_diag_op.cc
+    tfdml/kernels/dml_diag_part_op.cc
+    tfdml/kernels/dml_dynamic_stitch_op.cc
+    tfdml/kernels/dml_empty_op.cc
+    tfdml/kernels/dml_extract_image_patches_op.cc
+    tfdml/kernels/dml_extract_patches_helpers.cc
+    tfdml/kernels/dml_extract_volume_patches_op.cc
+    tfdml/kernels/dml_fill_op.cc
+    tfdml/kernels/dml_gather_nd_op.cc
+    tfdml/kernels/dml_gather_op.cc
+    tfdml/kernels/dml_gru_ops.cc
+    tfdml/kernels/dml_image_ops.cc
+    tfdml/kernels/dml_inplace_ops.cc
+    tfdml/kernels/dml_l2loss_op.cc
+    tfdml/kernels/dml_lrn_ops.cc
+    tfdml/kernels/dml_lstm_ops.cc
+    tfdml/kernels/dml_matmul_op.cc
+    tfdml/kernels/dml_matrix_band_part_ops.cc
+    tfdml/kernels/dml_matrix_diag_helpers.cc
+    tfdml/kernels/dml_matrix_diag_ops.cc
+    tfdml/kernels/dml_matrix_diag_part_ops.cc
+    tfdml/kernels/dml_matrix_set_diag_ops.cc
+    tfdml/kernels/dml_mirror_pad_grad_op.cc
+    tfdml/kernels/dml_one_hot_op.cc
+    tfdml/kernels/dml_ones_like_op.cc
+    tfdml/kernels/dml_pack_op.cc
+    tfdml/kernels/dml_pad_op.cc
+    tfdml/kernels/dml_parallel_concat_ops.cc
+    tfdml/kernels/dml_pooling_ops.cc
+    tfdml/kernels/dml_random_ops.cc
+    tfdml/kernels/dml_range_op.cc
+    tfdml/kernels/dml_reduce_ops.cc
+    tfdml/kernels/dml_relu_ops.cc
+    tfdml/kernels/dml_resize_grad_ops.cc
+    tfdml/kernels/dml_resize_op.cc
+    tfdml/kernels/dml_reverse_op.cc
+    tfdml/kernels/dml_reverse_sequence_op.cc
+    tfdml/kernels/dml_roll_op.cc
+    tfdml/kernels/dml_scan_ops.cc
+    tfdml/kernels/dml_scatter_nd_ops.cc
+    tfdml/kernels/dml_scatter_ops.cc
+    tfdml/kernels/dml_select_op.cc
+    tfdml/kernels/dml_slice_op.cc
+    tfdml/kernels/dml_snapshot_op.cc
+    tfdml/kernels/dml_space_depth_ops.cc
+    tfdml/kernels/dml_space_to_batch_op.cc
+    tfdml/kernels/dml_sparse_xent_op.cc
+    tfdml/kernels/dml_split_op.cc
+    tfdml/kernels/dml_strided_slice_op.cc
+    tfdml/kernels/dml_swapping_ops.cc
+    tfdml/kernels/dml_tile_op.cc
+    tfdml/kernels/dml_topk_op.cc
+    tfdml/kernels/dml_training_ops.cc
+    tfdml/kernels/dml_transpose_op.cc
+    tfdml/kernels/dml_unpack_op.cc
+    tfdml/kernels/dml_where_op.cc
+    tfdml/kernels/dml_xent_op.cc
+    tfdml/kernels/dml_zeros_like_op.cc
+)
+target_link_libraries(
+    kernels_c_api
+    PUBLIC
+    runtime_adapter_c_api
+    core_c_api
+)
+target_precompile_headers(
+    kernels_c_api 
     PRIVATE 
     tfdml/kernels/pch.h
 )
 
 # Target comprising all TFDML grappler optimizations
 add_library(
-    optimizer
+    optimizer_whl
     STATIC
     tfdml/optimizer/data_format_ops_converter.cc
     tfdml/optimizer/device_name_utils.cc
@@ -419,10 +570,39 @@ add_library(
     tfdml/optimizer/utils.cc
 )
 target_link_libraries(
-    optimizer
+    optimizer_whl
     PUBLIC
-    runtime_adapter
+    runtime_adapter_whl
     core_whl
+)
+
+add_library(
+    optimizer_c_api
+    STATIC
+    tfdml/optimizer/data_format_ops_converter.cc
+    tfdml/optimizer/device_name_utils.cc
+    tfdml/optimizer/device_type.cc
+    tfdml/optimizer/graph_optimizer.cc
+    tfdml/optimizer/graph_properties.cc
+    tfdml/optimizer/graph_view.cc
+    tfdml/optimizer/grappler_item.cc
+    tfdml/optimizer/hash.cc
+    tfdml/optimizer/op_registry.cc
+    tfdml/optimizer/op_types.cc
+    tfdml/optimizer/optimizer_runner.cc
+    tfdml/optimizer/perm_utils.cc
+    tfdml/optimizer/proto_buffer_helpers.cc
+    tfdml/optimizer/remapper.cc
+    tfdml/optimizer/tensor_id.cc
+    tfdml/optimizer/tensor_proto_util.cc
+    tfdml/optimizer/transpose_remover.cc
+    tfdml/optimizer/utils.cc
+)
+target_link_libraries(
+    optimizer_c_api
+    PUBLIC
+    runtime_adapter_c_api
+    core_c_api
 )
 
 # Target to build the TF plugin module.
@@ -442,10 +622,10 @@ target_link_libraries(
     PRIVATE
     common_build_props
     core_whl
-    kernels
-    optimizer
+    kernels_whl
+    optimizer_whl
     protobuf::libprotobuf
-    runtime_adapter
+    runtime_adapter_whl
 )
 set_target_properties(tfdml_plugin PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 
@@ -463,10 +643,10 @@ target_link_libraries(
     PRIVATE
     common_build_props
     core_c_api
-    kernels
-    optimizer
+    kernels_c_api
+    optimizer_c_api
     protobuf::libprotobuf
-    runtime_adapter
+    runtime_adapter_c_api
 )
 set_target_properties(tfdml_plugin_c_api PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 
