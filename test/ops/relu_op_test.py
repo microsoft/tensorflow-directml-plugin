@@ -611,6 +611,7 @@ class CreluTest(test.TestCase):
       self._testCrelu(
           np.array([[-9, 7, -5, 3, -1], [1, -3, 5, -7, 9]]).astype(t))
 
+  #TODO: TFDML #40727997 Neg segfaults in WSL
   def testNumbersWithAxis0(self):
     tf_crelu = nn_ops.crelu(
         np.array([[-9, 7, -5, 3, -1], [1, -3, 5, -7, 9]]), axis=0)
@@ -618,6 +619,7 @@ class CreluTest(test.TestCase):
                          [0, 3, 0, 7, 0]])
     self.assertAllEqual(np_crelu, tf_crelu)
 
+  #TODO: TFDML #40727997 Neg segfaults in WSL
   def testNumbersWithAxis1(self):
     tf_crelu = nn_ops.crelu(
         np.array([[-9, 7, -5, 3, -1], [1, -3, 5, -7, 9]]), axis=1)

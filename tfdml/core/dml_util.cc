@@ -196,9 +196,11 @@ TF_DataType GetTfDataTypeFromDmlDataType(DML_TENSOR_DATA_TYPE type)
     {
     case DML_TENSOR_DATA_TYPE_FLOAT32: return TF_FLOAT;
     case DML_TENSOR_DATA_TYPE_FLOAT16: return TF_HALF;
-    case DML_TENSOR_DATA_TYPE_UINT32: return TF_UINT8;
+    case DML_TENSOR_DATA_TYPE_UINT64: return TF_UINT64;
+    case DML_TENSOR_DATA_TYPE_UINT32: return TF_UINT32;
     case DML_TENSOR_DATA_TYPE_UINT16: return TF_UINT16;
     case DML_TENSOR_DATA_TYPE_UINT8: return TF_UINT8;
+    case DML_TENSOR_DATA_TYPE_INT64: return TF_INT64;
     case DML_TENSOR_DATA_TYPE_INT32: return TF_INT32;
     case DML_TENSOR_DATA_TYPE_INT16: return TF_INT16;
     case DML_TENSOR_DATA_TYPE_INT8: return TF_INT8;
@@ -206,46 +208,12 @@ TF_DataType GetTfDataTypeFromDmlDataType(DML_TENSOR_DATA_TYPE type)
     }
 }
 
-// TFDML #24881131
-bool Is64BitIntegerType(TF_DataType type)
-{
-    switch (type)
-    {
-    case TF_UINT64:
-    case TF_INT64: return true;
-    default: return false;
-    }
-}
-
-// TFDML #24881131
-bool Is64BitSignedIntegerType(TF_DataType type)
-{
-    switch (type)
-    {
-    case TF_INT64: return true;
-    default: return false;
-    }
-}
-
-// TFDML #24881131
-bool Is64BitUnsignedIntegerType(TF_DataType type)
-{
-    switch (type)
-    {
-    case TF_UINT64: return true;
-    default: return false;
-    }
-}
-
-// TODO: 64-bit data support should be revisited once DML supports 64 bit
-// datatypes
-// TFDML #24881131
 DML_TENSOR_DATA_TYPE GetDmlDataTypeFromTfDataType(TF_DataType type)
 {
     switch (type)
     {
-    case TF_UINT64: return DML_TENSOR_DATA_TYPE_UINT32;
-    case TF_INT64: return DML_TENSOR_DATA_TYPE_INT32;
+    case TF_UINT64: return DML_TENSOR_DATA_TYPE_UINT64;
+    case TF_INT64: return DML_TENSOR_DATA_TYPE_INT64;
     case TF_FLOAT: return DML_TENSOR_DATA_TYPE_FLOAT32;
     case TF_HALF: return DML_TENSOR_DATA_TYPE_FLOAT16;
     case TF_UINT32: return DML_TENSOR_DATA_TYPE_UINT32;
@@ -360,36 +328,6 @@ dml::TensorPolicy GetDmlXTensorPolicy(TensorFormat format)
     case FORMAT_NCHW: return dml::TensorPolicy::Default();
     default: LogFatal("Unsupported tensor layout");
     }
-}
-
-dml::TensorPolicy GetEmulatedInt64TensorPolicy()
-{
-    return dml::TensorPolicy(
-        [](DML_TENSOR_DATA_TYPE dataType,
-           DML_TENSOR_FLAGS flags,
-           dml::Span<const uint32_t> sizes)
-        {
-            uint32_t dimension_count = static_cast<uint32_t>(sizes.size());
-
-            // Compute strides
-            dml::TensorDimensions strides(dimension_count);
-            uint32_t stride = 2; // double all strides
-            for (int i = static_cast<int>(dimension_count) - 1; i >= 0; i--)
-            {
-                strides[i] = stride;
-                stride *= sizes[i];
-            }
-
-            dml::TensorProperties props = {};
-            props.guaranteedBaseOffsetAlignment = 0;
-            props.strides = std::move(strides);
-            props.totalTensorSizeInBytes = DMLCalcBufferTensorSize(
-                dataType,
-                dimension_count,
-                sizes.data(),
-                props.strides->data());
-            return props;
-        });
 }
 
 dml::TensorStrides ComputePackedStrides(const dml::Span<const uint32_t>& sizes)

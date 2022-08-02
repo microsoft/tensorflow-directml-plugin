@@ -432,10 +432,8 @@ class ConcatOpTest(test.TestCase):
                                                     output_shape)
     self.assertLess(err, 1e-11)
 
-  # TODO: add back after uint64 support added (TF2 #36692608)
   @test_util.run_deprecated_v1
   def testIndexedSlicesConcatDim0Grad(self):
-    self.skipTest("DML doesn't support uint64")
     x_shapes = [[20, 7, 3], [10, 7, 3], [14, 7, 3]]
     output_shape = [4, 7, 3]
     x_vals = [
@@ -450,10 +448,8 @@ class ConcatOpTest(test.TestCase):
                                                     output_shape)
     self.assertLess(err, 1e-11)
 
-  # TODO: add back after uint64 support added (TF2 #36692608)
   @test_util.run_deprecated_v1
   def testIndexedSlicesConcatDim1Grad(self):
-    self.skipTest("DML doesn't support uint64")
     x_shapes = [[20, 7, 3], [20, 3, 3], [20, 1, 3]]
     output_shape = [4, 11, 3]
     x_vals = [
@@ -468,10 +464,8 @@ class ConcatOpTest(test.TestCase):
                                                     output_shape)
     self.assertLess(err, 1e-11)
 
-  # TODO: add back after uint64 support added (TF2 #36692608)
   @test_util.run_deprecated_v1
   def testIndexedSlicesConcatDim2Grad(self):
-    self.skipTest("DML doesn't support uint64")
     x_shapes = [[20, 7, 3], [20, 7, 1], [20, 7, 2]]
     output_shape = [4, 7, 6]
     x_vals = [
