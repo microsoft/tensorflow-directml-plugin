@@ -18,7 +18,6 @@
 """Tests the DML device creation and visibility"""
 
 import os
-import tensorflow as tf
 from absl.testing import absltest
 from absl import flags
 
@@ -34,6 +33,9 @@ class VisibleDevicesTest(absltest.TestCase):
         """Tests the visibility of DML devices"""
         os.environ["DML_VISIBLE_DEVICES"] = flags.FLAGS.dml_visible_devices
 
+        # Tensorflow needs to be imported after the environment variable is set
+        import tensorflow as tf # pylint:disable=import-outside-toplevel
+
         # See https://docs.microsoft.com/en-us/windows/ai/directml/gpu-faq
         # The value should be a comma-separated list of device IDs.
         # Any IDs appearing after -1 are invalid.
@@ -44,6 +46,7 @@ class VisibleDevicesTest(absltest.TestCase):
             valid_id_count += 1
 
         gpu_devices = tf.config.list_physical_devices("GPU")
+        print(gpu_devices)
         dml_devices = list(
             filter(
                 lambda x: tf.config.experimental.get_device_details(x)["device_name"]
