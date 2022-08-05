@@ -2,15 +2,6 @@
 # Licensed under the MIT License.
 
 parameters:
-- name: platform
-  type: string
-  values:
-  - windows
-  - linux
-- name: artifact
-  type: string
-- name: artifactUrl
-  type: string
 - name: agentPool
   type: string
   default: DirectML
@@ -33,6 +24,13 @@ parameters:
   type: string
   default: current
 
+variables:
+- name: platform
+  readonly: true
+- name: artifact
+  readonly: true
+- name: artifactUrl
+  readonly: true
 
 jobs:
 - job: test
@@ -52,25 +50,25 @@ jobs:
     inputs:
       targetType: inline
       script: |
-        Invoke-WebRequest -Uri ${{parameters.artifactUrl}} -OutFile ${{parameters.artifact}}.zip
-        Expand-Archive ${{parameters.artifact}}.zip -DestinationPath $(Build.ArtifactStagingDirectory)/${{parameters.artifact}}
+        Invoke-WebRequest -Uri $(artifactUrl) -OutFile $(artifact).zip
+        Expand-Archive $(artifact).zip -DestinationPath $(Build.ArtifactStagingDirectory)/$(artifact)
 
   - ${{each tensorflowPackage in parameters.tensorflowPackages}}:
-    - ${{if eq(parameters.platform, 'linux') }}:
+    - ${{if eq(variables.platform, 'linux') }}:
       - task: PowerShell@2
-        displayName: Setup ${{parameters.artifact}} (${{tensorflowPackage}})
+        displayName: Setup $(artifact) (${{tensorflowPackage}})
         name: test_env_linux_${{replace(tensorflowPackage, '-', '_')}}
         inputs:
           targetType: inline
           script: |
             $ScriptPath = "$(Build.SourcesDirectory)/pipelines/create_test_env.sh" -replace '\\','/'
             $ScriptPathWsl = wsl wslpath -a $ScriptPath
-            $TestArtifactPath = "$(Build.ArtifactStagingDirectory)/${{parameters.artifact}}" -replace '\\','/'
+            $TestArtifactPath = "$(Build.ArtifactStagingDirectory)/$(artifact)" -replace '\\','/'
             $TestArtifactPathWsl = wsl wslpath -a $TestArtifactPath
             wsl bash $ScriptPathWsl $TestArtifactPathWsl ${{tensorflowPackage}}==${{parameters.tensorflowVersion}} ${{parameters.kerasPackage}}
 
       - task: PowerShell@2
-        displayName: Test ${{parameters.artifact}} (${{tensorflowPackage}})
+        displayName: Test $(artifact) (${{tensorflowPackage}})
         inputs:
           targetType: inline
           script: |
@@ -78,31 +76,31 @@ jobs:
             $ScriptPathWsl = wsl wslpath -a $ScriptPath
 
             # Results are written to Linux filesystem ($ResultsDirLinux) and copied to Windows ($ResultsDirWin)
-            $ResultsDirLinux = "/tmp/tfdml_plugin_pipeline/results/$(agentName)/${{parameters.artifact}}/${{tensorflowPackage}}"
-            $ResultsDirWin = "$(System.ArtifactsDirectory)/results/$(agentName)/${{parameters.artifact}}/${{tensorflowPackage}}" -replace '\\','/'
+            $ResultsDirLinux = "/tmp/tfdml_plugin_pipeline/results/$(agentName)/$(artifact)/${{tensorflowPackage}}"
+            $ResultsDirWin = "$(System.ArtifactsDirectory)/results/$(agentName)/$(artifact)/${{tensorflowPackage}}" -replace '\\','/'
             $ResultsDirWinWsl = wsl wslpath -a $ResultsDirWin
             New-Item -ItemType Directory $ResultsDirWin -Force | Out-Null
 
             cmd /c "wsl $(test_env_linux_${{replace(tensorflowPackage, '-', '_')}}.activateCommand); python $ScriptPathWsl --run --parallel --summarize --redirect_output --results_dir $ResultsDirLinux --groups ${{join(' ', parameters.testGroups)}}"
             wsl cp -r $ResultsDirLinux/* $ResultsDirWinWsl
 
-    - ${{if eq(parameters.platform, 'windows') }}:
+    - ${{if eq(variables.platform, 'windows') }}:
       - task: PowerShell@2
-        displayName: Setup ${{parameters.artifact}} (${{tensorflowPackage}})
+        displayName: Setup $(artifact) (${{tensorflowPackage}})
         name: test_env_win_${{replace(tensorflowPackage, '-', '_')}}
         inputs:
           targetType: filePath
           filePath: pipelines/create_test_env.ps1
           arguments: >
-            -TestArtifactPath $(Build.ArtifactStagingDirectory)/${{parameters.artifact}}
+            -TestArtifactPath $(Build.ArtifactStagingDirectory)/$(artifact)
             -TensorFlowPackage ${{tensorflowPackage}}==${{parameters.tensorflowVersion}}
             -KerasPackage ${{parameters.kerasPackage}}
 
       - task: PowerShell@2
-        displayName: Test ${{parameters.artifact}} (${{tensorflowPackage}})
+        displayName: Test $(artifact) (${{tensorflowPackage}})
         inputs:
           targetType: inline
           script: |
             Invoke-Expression '$(test_env_win_${{replace(tensorflowPackage, '-', '_')}}.activateCommand)'
-            $ResultsDir = "$(System.ArtifactsDirectory)/results/$(agentName)/${{parameters.artifact}}/${{tensorflowPackage}}"
+            $ResultsDir = "$(System.ArtifactsDirectory)/results/$(agentName)/$(artifact)/${{tensorflowPackage}}"
             python $(Build.SourcesDirectory)/test/test.py --run --parallel --summarize --redirect_output --results_dir $ResultsDir --groups ${{join(' ', parameters.testGroups)}}
