@@ -44,10 +44,10 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ github.head_ref }}-${{ github.sha }}-x64-linux-release-cp37
-          path: build/tensorflow_directml_plugin-0.0.1-cp37-cp37-linux_x86_64.whl
+          path: tensorflow-directml-plugin/build/tensorflow_directml_plugin-0.0.1-cp37-cp37-linux_x86_64.whl
           retention-days: 1
       - name: Test
-        uses: Azure/pipelines@v1
+        uses: Azure/pipelines@v1.2
         with:
           azure-devops-project-url: https://dev.azure.com/microsoft/WindowsAI
           azure-pipeline-name: 'TF2 PR Test'
@@ -93,7 +93,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ github.head_ref }}-${{ github.sha }}-x64-win-release-cp37
-          path: build/tensorflow_directml_plugin-0.0.1-cp37-cp37-win_amd64.whl
+          path: tensorflow-directml-plugin/build/tensorflow_directml_plugin-0.0.1-cp37-cp37-win_amd64.whl
           retention-days: 1
       - name: Test
         uses: Azure/pipelines@v1.2
