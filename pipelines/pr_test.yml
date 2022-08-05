@@ -38,7 +38,7 @@ jobs:
   pool:
     name: ${{parameters.agentPool}}
     demands:
-    - AP.TfPullRequestPlatform -equals $(platform)
+    - AP.TfPullRequestPlatform -equals ${{variables.platform}}
   timeoutInMinutes: 30
   cancelTimeoutInMinutes: 1
   continueOnError: true
