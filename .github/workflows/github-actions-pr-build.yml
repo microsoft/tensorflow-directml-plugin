@@ -3,6 +3,8 @@ on:
   pull_request:
     types: [opened, synchronize, edited, reopened]
     branches: [main, release/*]
+  push:
+    branches: [user/pavignol/add-pr-test-pass]
 concurrency:
   group: pr-build-${{ github.ref }}
   cancel-in-progress: true
@@ -38,6 +40,19 @@ jobs:
           eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
           conda activate build
           python build.py --config release
+      - name : Upload Wheel
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.head_ref }}-${{ github.sha }}-x64-linux-release-cp37
+          path: build/tensorflow_directml_plugin-*-cp37-cp37-linux_x86_64.whl
+          retention-days: 1
+      - name: Test
+        uses: Azure/pipelines@v1
+        with:
+          azure-devops-project-url: https://dev.azure.com/microsoft/WindowsAI
+          azure-pipeline-name: 'TF2 PR Test'
+          azure-devops-token: ${{ secrets.AZURE_DEVOPS_TOKEN }}
+          azure-pipeline-variables: '{"platform": "linux", "artifact": "x64-linux-release-cp37", "artifactPath": "https://api.github.com/repos/microsoft/tensorflow-directml-plugin/actions/artifacts/${{ github.head_ref }}-${{ github.sha }}-x64-linux-release-cp37"}'
   build-windows-latest:
     name: Build x64-win-release-cp37
     runs-on: windows-latest
@@ -74,3 +89,16 @@ jobs:
           & "$env:TEMP/miniconda3/shell/condabin/conda-hook.ps1"
           conda activate build
           python build.py --config release
+      - name : Upload Wheel
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ github.head_ref }}-${{ github.sha }}-x64-win-release-cp37
+          path: build/tensorflow_directml_plugin-*-cp39-cp39-win_amd64.whl
+          retention-days: 1
+      - name: Test
+        uses: Azure/pipelines@v1
+        with:
+          azure-devops-project-url: https://dev.azure.com/microsoft/WindowsAI
+          azure-pipeline-name: 'TF2 PR Test'
+          azure-devops-token: ${{ secrets.AZURE_DEVOPS_TOKEN }}
+          azure-pipeline-variables: '{"platform": "windows", "artifact": "x64-win-release-cp37", "artifactPath": "https://api.github.com/repos/microsoft/tensorflow-directml-plugin/actions/artifacts/${{ github.head_ref }}-${{ github.sha }}-x64-win-release-cp37"}'

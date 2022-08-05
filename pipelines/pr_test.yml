@@ -1,0 +1,108 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
+parameters:
+- name: platform
+  type: string
+  values:
+  - windows
+  - linux
+- name: artifact
+  type: string
+- name: artifactUrl
+  type: string
+- name: agentPool
+  type: string
+  default: DirectML
+- name: testGroups
+  type: object
+  default: [ops, plugin]
+- name: resultsArtifactName
+  type: string
+  default: test
+- name: tensorflowPackages
+  type: object
+  default: [tf-nightly-cpu]
+- name: tensorflowVersion
+  type: string
+  default: 2.10.0.dev20220728
+- name: kerasPackage
+  type: string
+  default: keras==2.9.0
+- name: pluginBuildPipeline
+  type: string
+  default: current
+
+
+jobs:
+- job: test
+  displayName: Test
+  pool:
+    name: $(agentPool)
+    demands:
+    - AP.TfPullRequestPlatform -equals $(platform)
+  timeoutInMinutes: 30
+  cancelTimeoutInMinutes: 1
+  continueOnError: true
+  workspace:
+    clean: all
+  steps:
+  - task: PowerShell@2
+    displayName: Download Artifact
+    inputs:
+      targetType: inline
+      script: |
+        Invoke-WebRequest -Uri ${{parameters.artifactUrl}} -OutFile ${{parameters.artifact}}.zip
+        Expand-Archive ${{parameters.artifact}}.zip -DestinationPath $(Build.ArtifactStagingDirectory)/${{parameters.artifact}}
+
+  - ${{each tensorflowPackage in parameters.tensorflowPackages}}:
+    - ${{if eq(parameters.platform, 'linux') }}:
+      - task: PowerShell@2
+        displayName: Setup ${{parameters.artifact}} (${{tensorflowPackage}})
+        name: test_env_linux_${{replace(tensorflowPackage, '-', '_')}}
+        inputs:
+          targetType: inline
+          script: |
+            $ScriptPath = "$(Build.SourcesDirectory)/pipelines/create_test_env.sh" -replace '\\','/'
+            $ScriptPathWsl = wsl wslpath -a $ScriptPath
+            $TestArtifactPath = "$(Build.ArtifactStagingDirectory)/${{parameters.artifact}}" -replace '\\','/'
+            $TestArtifactPathWsl = wsl wslpath -a $TestArtifactPath
+            wsl bash $ScriptPathWsl $TestArtifactPathWsl ${{tensorflowPackage}}==${{parameters.tensorflowVersion}} ${{parameters.kerasPackage}}
+
+      - task: PowerShell@2
+        displayName: Test ${{parameters.artifact}} (${{tensorflowPackage}})
+        inputs:
+          targetType: inline
+          script: |
+            $ScriptPath = "$(Build.SourcesDirectory)/test/test.py" -replace '\\','/'
+            $ScriptPathWsl = wsl wslpath -a $ScriptPath
+
+            # Results are written to Linux filesystem ($ResultsDirLinux) and copied to Windows ($ResultsDirWin)
+            $ResultsDirLinux = "/tmp/tfdml_plugin_pipeline/results/$(agentName)/${{parameters.artifact}}/${{tensorflowPackage}}"
+            $ResultsDirWin = "$(System.ArtifactsDirectory)/results/$(agentName)/${{parameters.artifact}}/${{tensorflowPackage}}" -replace '\\','/'
+            $ResultsDirWinWsl = wsl wslpath -a $ResultsDirWin
+            New-Item -ItemType Directory $ResultsDirWin -Force | Out-Null
+
+            cmd /c "wsl $(test_env_linux_${{replace(tensorflowPackage, '-', '_')}}.activateCommand); python $ScriptPathWsl --run --parallel --summarize --redirect_output --results_dir $ResultsDirLinux --groups ${{join(' ', parameters.testGroups)}}"
+            wsl cp -r $ResultsDirLinux/* $ResultsDirWinWsl
+
+    - ${{if eq(parameters.platform, 'windows') }}:
+      - task: PowerShell@2
+        displayName: Setup ${{parameters.artifact}} (${{tensorflowPackage}})
+        name: test_env_win_${{replace(tensorflowPackage, '-', '_')}}
+        inputs:
+          targetType: filePath
+          filePath: pipelines/create_test_env.ps1
+          arguments: >
+            -TestArtifactPath $(Build.ArtifactStagingDirectory)/${{parameters.artifact}}
+            -TensorFlowPackage ${{tensorflowPackage}}==${{parameters.tensorflowVersion}}
+            -KerasPackage ${{parameters.kerasPackage}}
+
+      - task: PowerShell@2
+        displayName: Test ${{parameters.artifact}} (${{tensorflowPackage}})
+        inputs:
+          targetType: inline
+          script: |
+            Invoke-Expression '$(test_env_win_${{replace(tensorflowPackage, '-', '_')}}.activateCommand)'
+            $ResultsDir = "$(System.ArtifactsDirectory)/results/$(agentName)/${{parameters.artifact}}/${{tensorflowPackage}}"
+            python $(Build.SourcesDirectory)/test/test.py --run --parallel --summarize --redirect_output --results_dir $ResultsDir --groups ${{join(' ', parameters.testGroups)}}

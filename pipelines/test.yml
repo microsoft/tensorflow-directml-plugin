@@ -16,7 +16,7 @@ parameters:
   default: test
 - name: tensorflowPackages
   type: object
-  default: [tf-nightly, tf-nightly-cpu]
+  default: [tf-nightly-cpu]
 - name: tensorflowVersion
   type: string
   default: 2.10.0.dev20220728
