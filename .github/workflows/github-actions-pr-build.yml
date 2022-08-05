@@ -92,3 +92,4 @@ jobs:
           & "$env:TEMP/miniconda3/shell/condabin/conda-hook.ps1"
           conda activate build
           python build.py --config release
+
