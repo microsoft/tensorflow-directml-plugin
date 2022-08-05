@@ -26,13 +26,13 @@ parameters:
 
 variables:
 - name: platform
-  value: ''
+  value: 'a'
   readonly: true
 - name: artifact
-  value: ''
+  value: 'a'
   readonly: true
 - name: artifactUrl
-  value: ''
+  value: 'a'
   readonly: true
 
 jobs:
