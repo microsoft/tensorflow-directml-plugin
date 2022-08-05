@@ -34,7 +34,7 @@ class VisibleDevicesTest(absltest.TestCase):
         os.environ["DML_VISIBLE_DEVICES"] = flags.FLAGS.dml_visible_devices
 
         # Tensorflow needs to be imported after the environment variable is set
-        import tensorflow as tf # pylint:disable=import-outside-toplevel
+        import tensorflow as tf  # pylint:disable=import-outside-toplevel
 
         # See https://docs.microsoft.com/en-us/windows/ai/directml/gpu-faq
         # The value should be a comma-separated list of device IDs.
