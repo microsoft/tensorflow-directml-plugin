@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Install CMake
         run: |
+          printenv
           wget --output-document="/tmp/cmake.sh" https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.sh
           mkdir "/tmp/cmake"
           bash "/tmp/cmake.sh" --skip-license --prefix="/tmp/cmake"
