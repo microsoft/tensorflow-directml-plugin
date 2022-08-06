@@ -76,6 +76,7 @@ jobs:
     - script: |
         $(miniconda.activateCommand)
         export CXX=/usr/bin/clang++-8
+        export CC=/usr/bin/clang-8
         if ["${{parameters.enableTelemetry}}" = "True"]; then
           python build.py --config $(vars.configuration) --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}" --wheel_version_suffix "$(vars.wheelVersionSuffix)"
         else

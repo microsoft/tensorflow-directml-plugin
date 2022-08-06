@@ -97,6 +97,7 @@ def configure(args, source_dir):
     if args.ccache:
         os.environ["CCACHE_DIR"] = ".ccache"
         command_line.append("-DCMAKE_CXX_COMPILER_LAUNCHER=ccache")
+        command_line.append("-DCMAKE_CC_COMPILER_LAUNCHER=ccache")
 
     # Print details when fetching dependencies
     command_line.append("-DFETCHCONTENT_QUIET=OFF")
