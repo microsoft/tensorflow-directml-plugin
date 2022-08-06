@@ -16,14 +16,6 @@ jobs:
       image: tensorflow/tensorflow:2.5.0-custom-op-ubuntu16
     steps:
       - uses: actions/checkout@v2
-      - name: Cache Build Dependencies
-        id: cache-build-deps
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-build-deps
-        with:
-          path: build
-          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/dependencies.cmake') }}
       - name: Install CMake
         run: |
           wget --output-document="/tmp/cmake.sh" https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.sh
@@ -42,33 +34,44 @@ jobs:
           conda create --name build python=3.7 -y
           conda activate build
           pip install wheel
+      - name: Install CCache
+        run: |
+          apt install ccache -y
+      - name: Cache Build Outputs
+        id: cache-build-outputs
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-build-outputs
+        with:
+          path: build/.ccache
+          key: ${{ runner.os }}-${{ env.cache-name }}-x64-linux-release-cp37
       - name: Build
         run: |
           export CXX=/usr/bin/clang++-8
           eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
           conda activate build
-          python build.py --config release
+          python build.py --config release --ccache
   build-windows-latest:
     name: Build x64-win-release-cp37
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Cache Build Dependencies
-        id: cache-build-deps
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-build-deps
-        with:
-          path: build
-          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('**/dependencies.cmake') }}
       - name: Install CMake
         shell: pwsh
         run: |
           $Url = 'https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-windows-x86_64.zip'
           $DownloadPath = "$env:TEMP/cmake.zip"
           (New-Object System.Net.WebClient).DownloadFile($Url, $DownloadPath)
-          Expand-Archive $DownloadPath -DestinationPath cmake
-          "$env:TEMP/cmake-3.22.1-windows-x86_64/bin" >> $env:GITHUB_PATH
+          Expand-Archive $DownloadPath -DestinationPath $env:TEMP/cmake
+          "$env:TEMP/cmake/bin" >> $env:GITHUB_PATH
+      - name: Install CCache
+        shell: pwsh
+        run: |
+          $Url = 'https://github.com/ccache/ccache/releases/download/v4.6.1/ccache-4.6.1-windows-x86_64.zip'
+          $DownloadPath = "$env:TEMP/ccache.zip"
+          (New-Object System.Net.WebClient).DownloadFile($Url, $DownloadPath)
+          Expand-Archive $DownloadPath -DestinationPath $env:TEMP/ccache
+          "$env:TEMP/ccache/ccache-4.6.1-windows-x86_64" >> $env:GITHUB_PATH
       - name: Download Miniconda
         shell: pwsh
         run: |
@@ -86,10 +89,18 @@ jobs:
           conda create --name build python=3.7 -y
           conda activate build
           pip install wheel vswhere
+      - name: Cache Build Outputs
+        id: cache-build-outputs
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-build-outputs
+        with:
+          path: build/.ccache
+          key: ${{ runner.os }}-${{ env.cache-name }}-x64-win-release-cp37
       - name: Build
         shell: pwsh
         run: |
           & "$env:TEMP/miniconda3/shell/condabin/conda-hook.ps1"
           conda activate build
-          python build.py --config release
+          python build.py --config release --ccache
 

@@ -21,6 +21,8 @@ import argparse
 import subprocess
 from pathlib import Path
 
+from click import command
+
 # On Windows this script uses MSVC regardless of the generator. The VS generators
 # know how to find the MSVC tools, but the Ninja generators assume the user
 # is running within a VS developer command prompt (i.e. has executed vcvarsall.bat).
@@ -94,6 +96,10 @@ def configure(args, source_dir):
     command_line.append(f"-B {args.build_output}")
     command_line.append(f'-G "{args.generator}"')
 
+    if args.ccache:
+        os.environ["CCACHE_DIR"] = ".ccache"
+        command_line.append("-DCMAKE_CXX_COMPILER_LAUNCHER=ccache")
+
     # Print details when fetching dependencies
     command_line.append("-DFETCHCONTENT_QUIET=OFF")
 
@@ -160,6 +166,12 @@ def _main():
         default="cmake",
         help="Path to cmake executable. Defaults to cmake on PATH. If cmake isn't "
         "found it will be downloaded to the build folder.",
+    )
+
+    parser.add_argument(
+        "--ccache",
+        action="store_true",
+        help="Use ccache to reuse compilation steps.",
     )
 
     # This script only supports a few of the CMake generators, but users can
