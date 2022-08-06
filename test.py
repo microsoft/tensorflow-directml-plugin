@@ -16,7 +16,6 @@
 
 import numpy as np
 
-from tensorflow.python.framework import constant_op
 from tensorflow.python.framework import dtypes as dtypes_lib
 from tensorflow.python.framework import test_util
 from tensorflow.python.ops import gradient_checker_v2
@@ -25,15 +24,16 @@ from tensorflow.python.platform import test
 
 
 class HostToDeviceCopyTest(test.TestCase):
-    def testGradientsGradientTape(self):
-        np_x = (
-            np.arange(1, 3)
-            .reshape((1, 2))
-            .astype(dtypes_lib.float32.as_numpy_dtype)
-        )
+    """Tests the logic when copying from host to pluggable devices"""
+    def test_host_to_device_copy_windows_crash(self):
+        """
+        Tests a crash on windows when use_gpu==true, even when all GPU ops are
+        manually commented out
+        """
+        np_x = np.arange(1, 3).reshape((1, 2)).astype(dtypes_lib.float32.as_numpy_dtype)
 
-        def callback(x):
-            return math_ops.unsorted_segment_sum(x, np.array([0]), 3)
+        def callback(values):
+            return math_ops.unsorted_segment_sum(values, np.array([0]), 3)
 
         with test_util.use_gpu():
             # pylint: disable=cell-var-from-loop
