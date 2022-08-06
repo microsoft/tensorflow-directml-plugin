@@ -37,6 +37,12 @@ jobs:
       - name: Install CCache
         run: |
           apt install ccache -y
+      - name: Prepare CCache timestamp
+        id: ccache-timestamp
+        shell: cmake -P {0}
+        run: |
+          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+          message("::set-output name=timestamp::${current_date}")
       - name: Cache Build Outputs
         id: cache-build-outputs
         uses: actions/cache@v3
@@ -44,10 +50,12 @@ jobs:
           cache-name: cache-build-outputs
         with:
           path: build/.ccache
-          key: ${{ runner.os }}-${{ env.cache-name }}-x64-linux-release-cp37
+          key: ${{ runner.os }}-${{ env.cache-name }}-x64-win-release-cp37-${{ steps.ccache-timestamp.outputs.timestamp }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.cache-name }}-x64-win-release-cp37-
       - name: Build
         run: |
-          export CPLUS_INCLUDE_PATH="/usr/include/c++/8:${CPLUS_INCLUDE_PATH}"
+          export CPLUS_INCLUDE_PATH="/usr/include/c++/8"
           export CXX=/usr/bin/clang++-8
           export CC=/usr/bin/clang-8
           eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
@@ -91,6 +99,12 @@ jobs:
           conda create --name build python=3.7 -y
           conda activate build
           pip install wheel vswhere
+      - name: Prepare CCache timestamp
+        id: ccache-timestamp
+        shell: cmake -P {0}
+        run: |
+          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+          message("::set-output name=timestamp::${current_date}")
       - name: Cache Build Outputs
         id: cache-build-outputs
         uses: actions/cache@v3
@@ -98,7 +112,9 @@ jobs:
           cache-name: cache-build-outputs
         with:
           path: build/.ccache
-          key: ${{ runner.os }}-${{ env.cache-name }}-x64-win-release-cp37
+          key: ${{ runner.os }}-${{ env.cache-name }}-x64-win-release-cp37-${{ steps.ccache-timestamp.outputs.timestamp }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.cache-name }}-x64-win-release-cp37-
       - name: Build
         shell: pwsh
         run: |
