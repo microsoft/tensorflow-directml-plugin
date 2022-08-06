@@ -21,8 +21,6 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from click import command
-
 # On Windows this script uses MSVC regardless of the generator. The VS generators
 # know how to find the MSVC tools, but the Ninja generators assume the user
 # is running within a VS developer command prompt (i.e. has executed vcvarsall.bat).
