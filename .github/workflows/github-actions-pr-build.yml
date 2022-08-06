@@ -47,6 +47,7 @@ jobs:
           key: ${{ runner.os }}-${{ env.cache-name }}-x64-linux-release-cp37
       - name: Build
         run: |
+          export CPLUS_INCLUDE_PATH="/usr/include/c++/8:${CPLUS_INCLUDE_PATH}"
           export CXX=/usr/bin/clang++-8
           export CC=/usr/bin/clang-8
           eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
