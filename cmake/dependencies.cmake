@@ -54,8 +54,8 @@ FetchContent_Declare(
 # DirectMLX helper library
 FetchContent_Declare(
     directmlx
-    URL https://raw.githubusercontent.com/microsoft/DirectML/bb6e396d87bd7976d2acda380ddd7cec45eb4589/Libraries/DirectMLX.h
-    URL_HASH SHA256=06e6738e987d426ced141f232d4ce348b791539f5865c88f4188061e2aeaf3bd
+    URL https://raw.githubusercontent.com/microsoft/DirectML/c14fc8bd5344eb34ce6b21f76a2b4ef28eb5ecc5/Libraries/DirectMLX.h
+    URL_HASH SHA256=81bd6b556356b438e84ec681fe975e87d94b4363ee95caa2e2401a237fed0ee3
     DOWNLOAD_NO_EXTRACT TRUE
 )
 
