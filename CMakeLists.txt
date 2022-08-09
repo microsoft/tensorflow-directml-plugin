@@ -187,7 +187,7 @@ target_link_libraries(
     common_build_props
     PRIVATE
     tensorflow_whl::lib
-    INTERFACE
+    PUBLIC
     absl::base
     absl::config
     absl::core_headers
