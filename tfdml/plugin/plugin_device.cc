@@ -146,7 +146,7 @@ TF_Bool plugin_get_allocator_stats(
     SP_AllocatorStats* stats)
 {
     // TODO: Return allocator information
-    // #TFDML 40858257
+    // TFDML 40858257
     return false;
 }
 
