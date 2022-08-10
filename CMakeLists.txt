@@ -231,6 +231,7 @@ add_library(
     tfdml/core/dml_execution_context.cc
     tfdml/core/dml_guids.cc
     tfdml/core/dml_heap_allocator.cc
+    tfdml/core/dml_host_allocator.cc
     tfdml/core/dml_kernel_context.cc
     tfdml/core/dml_kernel_key.cc
     tfdml/core/dml_kernel_manager.cc

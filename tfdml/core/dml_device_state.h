@@ -33,6 +33,7 @@ class DmlUploadHeap;
 class DmlReadbackHeap;
 class DmlKernelManager;
 class GPUOptions;
+class DmlHostAllocator;
 
 // Holds device state that is shared across one or more DmlDevice instances.
 // Instances of these state objects are owned by the DML device factory.
@@ -56,6 +57,7 @@ struct DmlDeviceState
     std::unique_ptr<DmlEventQueue> event_queue;
     std::unique_ptr<D3D12HeapAllocator> heap_allocator;
     std::unique_ptr<DmlAllocator> dml_allocator;
+    std::unique_ptr<DmlHostAllocator> dml_host_allocator;
     std::unique_ptr<D3D12DescriptorHeapAllocator> descriptor_heap_allocator;
     std::unique_ptr<DmlDescriptorAllocator> descriptor_allocator;
     std::unique_ptr<DmlUploadHeap> upload_heap;

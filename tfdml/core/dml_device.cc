@@ -25,6 +25,7 @@ limitations under the License.
 #include "dml_readback_heap.h"
 #include "dml_tracing.h"
 #include "dml_upload_heap.h"
+#include "tfdml/core/dml_host_allocator.h"
 #include "tfdml/core/dml_util.h"
 #include "tfdml/runtime_adapter/allocator.h"
 #include "tfdml/runtime_adapter/tensor.h"
@@ -105,6 +106,11 @@ IDMLDevice* DmlDevice::GetDmlDevice() const { return state_->dml_device.Get(); }
 DmlAllocator* DmlDevice::GetAllocator() const
 {
     return state_->dml_allocator.get();
+}
+
+DmlHostAllocator* DmlDevice::GetHostAllocator() const
+{
+    return state_->dml_host_allocator.get();
 }
 
 DmlDescriptorAllocator* DmlDevice::GetDescriptorAllocator() const

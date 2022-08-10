@@ -33,6 +33,7 @@ class DmlUploadHeap;
 class DmlReadbackHeap;
 class DmlEventQueue;
 class DMLDeviceContext;
+class DmlHostAllocator;
 struct DmlDeviceState;
 
 class DmlDevice : public Device
@@ -43,6 +44,7 @@ class DmlDevice : public Device
     ID3D12Device* GetD3D12Device() const;
     IDMLDevice* GetDmlDevice() const;
     DmlAllocator* GetAllocator() const;
+    DmlHostAllocator* GetHostAllocator() const;
     DmlDescriptorAllocator* GetDescriptorAllocator() const;
     DmlKernelManager* GetKernelManager() const;
     DmlExecutionContext* GetExecutionContext() const;

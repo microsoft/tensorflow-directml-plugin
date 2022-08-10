@@ -20,6 +20,7 @@ limitations under the License.
 #include "dml_descriptor_bfc_allocator.h"
 #include "dml_device_context.h"
 #include "dml_event_queue.h"
+#include "dml_host_allocator.h"
 #include "dml_kernel_manager.h"
 #include "dml_readback_heap.h"
 #include "dml_upload_heap.h"
@@ -135,6 +136,8 @@ namespace tfdml
     auto dml_allocator =
         absl::make_unique<DmlAllocator>(heap_allocator.get(), "DmlAllocator");
 
+    auto dml_host_allocator = absl::make_unique<DmlHostAllocator>();
+
     auto descriptor_heap_allocator =
         absl::make_unique<D3D12DescriptorHeapAllocator>(
             d3d_device.Get(),
@@ -175,6 +178,7 @@ namespace tfdml
     state->event_queue = std::move(event_queue);
     state->heap_allocator = std::move(heap_allocator);
     state->dml_allocator = std::move(dml_allocator);
+    state->dml_host_allocator = std::move(dml_host_allocator);
     state->descriptor_heap_allocator = std::move(descriptor_heap_allocator);
     state->descriptor_allocator = std::move(descriptor_allocator);
     state->upload_heap = std::move(upload_heap);

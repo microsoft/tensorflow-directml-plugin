@@ -140,7 +140,8 @@ class D3D12HeapAllocator
     void ReleaseAllocationID(uint32_t id);
 
   private:
-    static constexpr uint64_t kAllocationIDBits = 24;
+    static constexpr uint64_t kHostBits = 1;
+    static constexpr uint64_t kAllocationIDBits = 23;
     static constexpr uint64_t kOffsetBits = 40;
 
     // This allocator encodes the allocation ID into the high bits of the
@@ -150,6 +151,7 @@ class D3D12HeapAllocator
     // it must be done using masks and shifts.
     struct TaggedPointer
     {
+        uint64_t is_host : kHostBits;
         uint64_t allocation_id : kAllocationIDBits;
         uint64_t offset : kOffsetBits;
     };
@@ -158,7 +160,7 @@ class D3D12HeapAllocator
         sizeof(TaggedPointer) == sizeof(void*),
         "DML requires a 64-bit architecture");
     static_assert(
-        kAllocationIDBits + kOffsetBits == sizeof(void*) * CHAR_BIT,
+        kAllocationIDBits + kOffsetBits + kHostBits == sizeof(void*) * CHAR_BIT,
         "DML requires a 64-bit architecture");
 
     static void* PackPointer(uint32_t allocation_id, uint64_t offset);

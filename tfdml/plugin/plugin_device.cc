@@ -33,6 +33,7 @@ limitations under the License.
 #include "tfdml/core/dml_device.h"
 #include "tfdml/core/dml_device_cache.h"
 #include "tfdml/core/dml_device_context.h"
+#include "tfdml/core/dml_host_allocator.h"
 #include "tfdml/core/dml_tracing.h"
 #include "tfdml/core/dml_util.h"
 #include "tfdml/runtime_adapter/stream.h"
@@ -124,21 +125,16 @@ void plugin_deallocate(const SP_Device* device, SP_DeviceMemoryBase* mem)
 
 void* plugin_host_memory_allocate(const SP_Device* device, uint64_t size)
 {
-#if _WIN32
-    void* ptr = _aligned_malloc(size, 64);
-#else
-    void* ptr = aligned_alloc(64, size);
-#endif
-    return ptr;
+    DmlDevice* dml_device = static_cast<DmlDevice*>(device->device_handle);
+    DmlHostAllocator* allocator = dml_device->GetHostAllocator();
+    return allocator->Alloc(size);
 }
 
 void plugin_host_memory_deallocate(const SP_Device* device, void* mem)
 {
-#if _WIN32
-    _aligned_free(mem);
-#else
-    free(mem);
-#endif
+    DmlDevice* dml_device = static_cast<DmlDevice*>(device->device_handle);
+    DmlHostAllocator* allocator = dml_device->GetHostAllocator();
+    return allocator->Free(mem);
 }
 
 TF_Bool plugin_get_allocator_stats(
@@ -320,33 +316,6 @@ void plugin_memcpy_dtoh(
 }
 
 // Enqueues a memcpy operation onto stream, with a device destination
-// location and a host memory source, with target size `size`.
-void plugin_memcpy_htod(
-    const SP_Device* device,
-    SP_Stream stream,
-    SP_DeviceMemoryBase* device_dst,
-    const void* host_src,
-    uint64_t size,
-    TF_Status* status)
-{
-    if (size == 0)
-    {
-        TF_SetStatus(status, TF_OK, "");
-        return;
-    }
-
-    DmlDevice* dml_device = static_cast<DmlDevice*>(device->device_handle);
-
-    Status copy_status = dml_device->GetDeviceContext()->CopyCPUMemoryToDevice(
-        dml_device,
-        host_src,
-        device_dst,
-        size);
-
-    TF_SetStatus(status, copy_status.code(), copy_status.error_message());
-}
-
-// Enqueues a memcpy operation onto stream, with a device destination
 // location and a device memory source, with target size `size`.
 void plugin_memcpy_dtod(
     const SP_Device* device,
@@ -368,6 +337,52 @@ void plugin_memcpy_dtod(
         ->CopyMemoryInSameDevice(dml_device, device_src, device_dst, size);
 
     TF_SetStatus(status, TF_OK, "");
+}
+
+// Enqueues a memcpy operation onto stream, with a device destination
+// location and a host memory source, with target size `size`.
+void plugin_memcpy_htod(
+    const SP_Device* device,
+    SP_Stream stream,
+    SP_DeviceMemoryBase* device_dst,
+    const void* src,
+    uint64_t size,
+    TF_Status* status)
+{
+    if (size == 0)
+    {
+        TF_SetStatus(status, TF_OK, "");
+        return;
+    }
+
+    DmlDevice* dml_device = static_cast<DmlDevice*>(device->device_handle);
+    uint64_t ptr_val = reinterpret_cast<uint64_t>(src);
+    bool is_host_src = ptr_val & ((uint64_t)1 << 63);
+
+    if (is_host_src)
+    {
+        DmlHostAllocator* allocator = dml_device->GetHostAllocator();
+        void* src_mem = allocator->GetMemory(src);
+
+        Status copy_status =
+            dml_device->GetDeviceContext()
+                ->CopyCPUMemoryToDevice(dml_device, src_mem, device_dst, size);
+
+        TF_SetStatus(status, copy_status.code(), copy_status.error_message());
+    }
+    else
+    {
+        SP_DeviceMemoryBase device_src = *device_dst;
+        device_src.opaque = reinterpret_cast<void*>(ptr_val);
+
+        plugin_memcpy_dtod(
+            device,
+            stream,
+            device_dst,
+            &device_src,
+            size,
+            status);
+    }
 }
 
 // Blocks the caller while a data segment of the given size is
