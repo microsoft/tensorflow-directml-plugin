@@ -6,7 +6,7 @@ include(FetchContent)
 FetchContent_Declare(
     abseil
     GIT_REPOSITORY https://github.com/abseil/abseil-cpp
-    GIT_TAG 273292d1cfc0a94a65082ee350509af1d113344d
+    GIT_TAG 20220623.0
 )
 
 # Google Protobuf
@@ -116,6 +116,15 @@ if(tensorflow_whl_pb_h_files)
 endif()
 file(REMOVE_RECURSE ${tensorflow_include_dir}/google/protobuf)
 
+# We delete all abseil files from the TensorFlow include directory in order to avoid accidental usage.
+# We don't want to depend on the TensorFlow abseil includes since it would mean that our binary would
+# always need to have the same abseil version.
+file(GLOB_RECURSE tensorflow_whl_absl_files ${tensorflow_include_dir}/absl/**/*.h)
+if(tensorflow_whl_absl_files)
+    file(REMOVE ${tensorflow_whl_absl_files})
+endif()
+file(REMOVE_RECURSE ${tensorflow_include_dir}/google/protobuf)
+
 # Target to add TensorFlow headers, generated .pb.h files, and runtime lib. The runtime lib
 # contains symbols for the plugin APIs and a few utilities (e.g. logging).
 add_library(tensorflow_whl_lib STATIC)
@@ -126,6 +135,7 @@ target_include_directories(
     $<TARGET_PROPERTY:libprotobuf,INCLUDE_DIRECTORIES>
     INTERFACE 
     ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
+    ${abseil_SOURCE_DIR}
 )
 target_link_libraries(
     tensorflow_whl_lib 
