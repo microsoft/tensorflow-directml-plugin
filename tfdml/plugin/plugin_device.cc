@@ -145,9 +145,9 @@ TF_Bool plugin_get_allocator_stats(
     const SP_Device* device,
     SP_AllocatorStats* stats)
 {
-    stats->struct_size = SP_ALLOCATORSTATS_STRUCT_SIZE;
-    stats->bytes_in_use = 123;
-    return true;
+    // TODO: Return allocator information
+    // #TFDML 40858257
+    return false;
 }
 
 TF_Bool plugin_device_memory_usage(
