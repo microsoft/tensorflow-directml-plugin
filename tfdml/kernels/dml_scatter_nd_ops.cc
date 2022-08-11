@@ -307,14 +307,6 @@ class DmlScatterNdUpdateKernel : public DmlKernel
             in_out_shape.dims(),
             indices_shape.dims());
 
-        // TODO: Remove the Is64BitSignedIntegerType hack when DML has a more
-        // solid solution for 64 bit datatypes
-        // TFDML #24881131
-        if (Is64BitSignedIntegerType(params_tensor.dtype()))
-        {
-            result = dml::ConvertInt32ToInt64(result);
-        }
-
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             graph.Compile(DML_EXECUTION_FLAG_NONE, {result});
 
@@ -380,16 +372,14 @@ struct ScatterNdBinaryOperation
         dml::Expression params,
         dml::Expression indices,
         dml::Expression updates,
-        dml::Expression strides,
-        bool int64_indices,
-        bool int64_data)
+        dml::Expression strides)
     {
         // First, compute the 1D version of the indices as if we were indexing
         // into a 1D array
         const auto broadcasted_strides = dml::Reinterpret(
             strides,
             indices.GetOutputDesc().sizes,
-            dml::TensorDesc::Dimensions({0, 0, 0, int64_indices ? 2u : 1u}));
+            dml::TensorDesc::Dimensions({0, 0, 0, 1u}));
 
         const auto global_indices = dml::Reduce(
             indices * broadcasted_strides,
@@ -446,12 +436,6 @@ struct ScatterNdBinaryOperation
             dml::Reduce(sparse_updates, reduce_function, {1});
 
         auto result = BinaryOperation()(params, reduced_updates);
-
-        // TFDML #24881131
-        if (int64_data)
-        {
-            result = dml::ConvertInt32ToInt64(result);
-        }
 
         return result;
     }
@@ -546,17 +530,7 @@ class DmlScatterNdBinaryKernel : public DmlKernel
         auto updates = dml::InputTensor(graph, 2, inputs[2]);
         auto strides = dml::InputTensor(graph, 3, inputs[3]);
 
-        // TODO: Remove the Is64BitSignedIntegerType hack when DML has a more
-        // solid solution for 64 bit datatypes
-        // TFDML #24881131
-        auto result = BinaryOp()(
-            graph,
-            input,
-            indices,
-            updates,
-            strides,
-            Is64BitIntegerType(indices_dtype),
-            Is64BitSignedIntegerType(params_tensor.dtype()));
+        auto result = BinaryOp()(graph, input, indices, updates, strides);
 
         const uint32_t buffer_size =
             indices_last_dim * DataTypeSize(indices_dtype);
@@ -823,14 +797,6 @@ class DmlScatterNdUnaryKernel : public DmlKernel
             updates,
             in_out_shape.dims(),
             indices_shape.dims());
-
-        // TODO: Remove the Is64BitSignedIntegerType hack when DML has a more
-        // solid solution for 64 bit datatypes
-        // TFDML #24881131
-        if (Is64BitSignedIntegerType(ctx->GetOutputDataType(0)))
-        {
-            result = dml::ConvertInt32ToInt64(result);
-        }
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             graph.Compile(DML_EXECUTION_FLAG_NONE, {result});

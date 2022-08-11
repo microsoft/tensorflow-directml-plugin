@@ -1,5 +1,7 @@
 # TensorFlow-DirectML-Plugin <!-- omit in toc -->
 
+[![Build Status](https://microsoft.visualstudio.com/WindowsAI/_apis/build/status/TensorFlow/v2/TF2%20Plugin%20Build?branchName=main)](https://microsoft.visualstudio.com/WindowsAI/_build/latest?definitionId=76376&branchName=main)
+
 [TensorFlow](https://www.tensorflow.org/) is an end-to-end open source platform for machine learning. This repository is an implementation of [TensorFlow's Pluggable Device API](https://blog.tensorflow.org/2021/06/pluggabledevice-device-plugins-for-TensorFlow.html) that leverages [DirectML](https://github.com/microsoft/DirectML) to provide cross-vendor hardware acceleration on Windows 10 and the Windows Subsystem for Linux (WSL). TensorFlow with DirectML enables training and inference of complex machine learning models on a wide range of DirectX 12-compatible hardware.
 
 ## Questions, Issues, and Feedback

@@ -187,7 +187,7 @@ target_link_libraries(
     common_build_props
     PRIVATE
     tensorflow_whl::lib
-    INTERFACE
+    PUBLIC
     absl::base
     absl::config
     absl::core_headers
@@ -579,7 +579,6 @@ target_link_libraries(
 add_library(
     optimizer_c_api
     STATIC
-    tfdml/optimizer/data_format_ops_converter.cc
     tfdml/optimizer/device_name_utils.cc
     tfdml/optimizer/device_type.cc
     tfdml/optimizer/graph_optimizer.cc
