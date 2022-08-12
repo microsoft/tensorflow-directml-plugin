@@ -498,13 +498,16 @@ add_custom_command(
     OUTPUT 
         ${framework_full_name}
     COMMAND
-        ${CMAKE_COMMAND}
-        -E tar "cfv" "${framework_full_name}" --format=zip -- $<TARGET_FILE:tfdml_plugin_framework> ../../LICENSE
+        ${CMAKE_COMMAND} -E copy $<TARGET_FILE:tfdml_plugin_framework> .
+    COMMAND
+        ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/LICENSE .
+    COMMAND
+        ${CMAKE_COMMAND} -E tar "cfv" "${framework_full_name}" --format=zip -- $<TARGET_FILE_NAME:tfdml_plugin_framework> LICENSE
     DEPENDS
         tfdml_plugin_framework
         LICENSE
     WORKING_DIRECTORY
-        ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>
+        ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT
         "Creating ${framework_full_name}"
 )
