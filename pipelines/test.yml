@@ -16,10 +16,10 @@ parameters:
   default: test
 - name: tensorflowPackages
   type: object
-  default: [tf-nightly, tf-nightly-cpu]
+  default: [tensorflow-cpu]
 - name: tensorflowVersion
   type: string
-  default: 2.10.0.dev20220728
+  default: 2.10.0rc0
 - name: kerasPackage
   type: string
   default: keras==2.9.0
