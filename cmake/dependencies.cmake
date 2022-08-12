@@ -138,6 +138,15 @@ if(tensorflow_whl_absl_files)
 endif()
 file(REMOVE_RECURSE ${tensorflow_include_dir}/google/protobuf)
 
+add_library(tensorflow_libs INTERFACE)
+target_link_libraries(
+    tensorflow_libs
+    INTERFACE
+    $<$<BOOL:${WIN32}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/python/_pywrap_tensorflow_internal.lib>
+    $<$<BOOL:${UNIX}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/python/_pywrap_tensorflow_internal.so>
+    $<$<BOOL:${UNIX}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/libtensorflow_framework.so.2>
+)
+
 add_library(tensorflow_protos STATIC)
 target_link_libraries(tensorflow_protos INTERFACE libprotobuf)
 target_include_directories(

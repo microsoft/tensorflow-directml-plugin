@@ -183,10 +183,9 @@ add_library(
 )
 target_link_libraries(
     runtime_adapter 
-    PUBLIC
+    PRIVATE
     tensorflow_protos
     common_build_props
-    PUBLIC
     absl::base
     absl::config
     absl::core_headers
@@ -209,6 +208,7 @@ target_include_directories(
     runtime_adapter
     PRIVATE
     ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
+    ${abseil_SOURCE_DIR}
 )
 
 # Target comprising core TFDML plugin code.
@@ -257,7 +257,7 @@ target_include_directories(
 )
 target_link_libraries(
     core 
-    PUBLIC 
+    PRIVATE
     tensorflow_protos
     common_build_props
     Microsoft::DirectX-Headers
@@ -351,12 +351,19 @@ target_include_directories(
     kernels
     PRIVATE
     ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
+    ${abseil_SOURCE_DIR}
+    $<TARGET_PROPERTY:libprotobuf,INCLUDE_DIRECTORIES>
 )
 target_link_libraries(
     kernels
-    PUBLIC
+    PRIVATE
+    common_build_props
     runtime_adapter
     core
+    tensorflow_protos
+    Microsoft::DirectX-Headers
+    directml_redist::headers
+    directmlx::headers
 )
 target_precompile_headers(
     kernels 
@@ -390,12 +397,15 @@ target_include_directories(
     optimizer
     PRIVATE
     ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
+    ${abseil_SOURCE_DIR}
 )
 target_link_libraries(
     optimizer
-    PUBLIC
+    PRIVATE
+    common_build_props
     runtime_adapter
     core
+    tensorflow_protos
 )
 
 # Target to build the TF plugin module.
@@ -414,6 +424,7 @@ target_include_directories(
     tfdml_plugin
     PRIVATE
     ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
+    ${abseil_SOURCE_DIR}
 )
 target_link_libraries(
     tfdml_plugin 
@@ -423,9 +434,10 @@ target_link_libraries(
     kernels
     optimizer
     runtime_adapter
-    $<$<BOOL:${WIN32}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/python/_pywrap_tensorflow_internal.lib>
-    $<$<BOOL:${UNIX}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/python/_pywrap_tensorflow_internal.so>
-    $<$<BOOL:${UNIX}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/libtensorflow_framework.so.2>
+    tensorflow_protos
+    Microsoft::DirectX-Headers
+    directml::headers
+    tensorflow_libs
 )
 set_target_properties(tfdml_plugin PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 
@@ -450,9 +462,8 @@ target_link_libraries(
     kernels
     optimizer
     runtime_adapter
-    $<$<BOOL:${WIN32}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/python/_pywrap_tensorflow_internal.lib>
-    $<$<BOOL:${UNIX}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/python/_pywrap_tensorflow_internal.so>
-    $<$<BOOL:${UNIX}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/libtensorflow_framework.so.2>
+    Microsoft::DirectX-Headers
+    tensorflow_libs
 )
 set_target_properties(tfdml_plugin_framework PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 
