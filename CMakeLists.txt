@@ -453,6 +453,7 @@ target_include_directories(
     tfdml_plugin_framework
     PRIVATE
     ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
+    ${abseil_SOURCE_DIR}
 )
 target_link_libraries(
     tfdml_plugin_framework 
@@ -462,7 +463,9 @@ target_link_libraries(
     kernels
     optimizer
     runtime_adapter
+    tensorflow_protos
     Microsoft::DirectX-Headers
+    directml::headers
     tensorflow_libs
 )
 set_target_properties(tfdml_plugin_framework PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
