@@ -27,6 +27,12 @@ if(WIN32)
         URL https://files.pythonhosted.org/packages/81/95/d4cb742c278bbf84f9361faa5de846d6ac05c1f88327bc98d22f1c25994e/tf_nightly_intel-2.10.0.dev20220728-cp37-cp37m-win_amd64.whl
         URL_HASH SHA256=4f33660b3dbf0b22f069c27e332e3fa00a6d22b0fd5e5fd4015c8185bf3e9227
     )
+
+    FetchContent_Declare(
+        tensorflow_framework
+        URL https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-2.9.1.zip
+        URL_HASH SHA256=56fa7e84c984144311563b405bd0e565568f3cbe2c15ac4713e9c8174a02b00f
+    )
 else()
     # To update the package version to a nightly build, go to https://pypi.org/project/tf-nightly-cpu/#files and copy the
     # URLs and SHA256 hashes for the cp37 versions.
@@ -34,6 +40,12 @@ else()
         tensorflow_whl
         URL https://files.pythonhosted.org/packages/09/19/fec07df7f1a2a58e43993883cf78433e467b708783375ab3ef777da78876/tf_nightly_cpu-2.10.0.dev20220728-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
         URL_HASH SHA256=06d0e9cbd8b41eb45b120822a765c584ecf6d8e7f6b888469fa9e87643d4c479
+    )
+
+    FetchContent_Declare(
+        tensorflow_framework
+        URL https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-2.9.1.tar.gz
+        URL_HASH SHA256=7f510d2546e3db5e10b1d119463689003d587842892ad3c95bca51cf82820173
     )
 endif()
 
@@ -71,6 +83,7 @@ FetchContent_MakeAvailable(
     abseil
     protobuf
     tensorflow_whl
+    tensorflow_framework
     directx_headers
     directml_redist 
     directmlx
@@ -125,27 +138,15 @@ if(tensorflow_whl_absl_files)
 endif()
 file(REMOVE_RECURSE ${tensorflow_include_dir}/google/protobuf)
 
-# Target to add TensorFlow headers, generated .pb.h files, and runtime lib. The runtime lib
-# contains symbols for the plugin APIs and a few utilities (e.g. logging).
-add_library(tensorflow_whl_lib STATIC)
+add_library(tensorflow_protos STATIC)
+target_link_libraries(tensorflow_protos INTERFACE libprotobuf)
 target_include_directories(
-    tensorflow_whl_lib 
+    tensorflow_protos
+    PRIVATE
+    $<TARGET_PROPERTY:libprotobuf,INCLUDE_DIRECTORIES>
     PUBLIC
     ${tensorflow_generated_protobuf_dir}
-    $<TARGET_PROPERTY:libprotobuf,INCLUDE_DIRECTORIES>
-    INTERFACE 
-    ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
-    ${abseil_SOURCE_DIR}
 )
-target_link_libraries(
-    tensorflow_whl_lib 
-    INTERFACE 
-    $<$<BOOL:${WIN32}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/python/_pywrap_tensorflow_internal.lib>
-    $<$<BOOL:${UNIX}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/python/_pywrap_tensorflow_internal.so>
-    $<$<BOOL:${UNIX}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/libtensorflow_framework.so.2>
-    libprotobuf
-)
-add_library(tensorflow_whl::lib ALIAS tensorflow_whl_lib)
 
 # Introduces a command to generate C++ code for a .proto file in the TF wheel.
 function(tf_proto_cpp proto_path)
@@ -169,7 +170,7 @@ function(tf_proto_cpp proto_path)
             "Generating C++ code for ${proto_path}"
     )
 
-    target_sources(tensorflow_whl_lib PRIVATE ${proto_generated_h} ${proto_generated_cc})
+    target_sources(tensorflow_protos PRIVATE ${proto_generated_h} ${proto_generated_cc})
 endfunction()
 
 # Generate the necessary .proto files in the TF wheel (performed at build time).

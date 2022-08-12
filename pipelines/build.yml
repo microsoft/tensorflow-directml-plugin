@@ -81,7 +81,17 @@ jobs:
         else
           python build.py --config $(vars.configuration) --build_output $(buildOutPath) --wheel_version_suffix "$(vars.wheelVersionSuffix)"
         fi
-      displayName: Build
+      displayName: Build Wheel
+      target: manylinux
+    - script: |
+        $(miniconda.activateCommand)
+        export CXX=/usr/bin/clang++-8
+        if ["${{parameters.enableTelemetry}}" = "True"]; then
+          python build.py --config $(vars.configuration) --target tfdml_plugin_framework_zip --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}"
+        else
+          python build.py --config $(vars.configuration) --target tfdml_plugin_framework_zip --build_output $(buildOutPath)
+        fi
+      displayName: Build C Library
       target: manylinux
     # Rename instead of using auditwheel repair since libd3d12.so will not register as manylinux compliant
     - powershell: |
@@ -100,10 +110,20 @@ jobs:
         } else {
           python build.py --config $(vars.configuration) --build_output $(buildOutPath) --wheel_version_suffix "$(vars.wheelVersionSuffix)"
         }
-      displayName: Build
+      displayName: Build Wheel
+    - powershell: |
+        Invoke-Expression '$(miniconda.activateCommand)'
+
+        if ("${{parameters.enableTelemetry}}" -eq "True") {
+          python build.py --config $(vars.configuration) --target tfdml_plugin_framework_zip --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}"
+        } else {
+          python build.py --config $(vars.configuration) --target tfdml_plugin_framework_zip --build_output $(buildOutPath)
+        }
+      displayName: Build C Library
   - powershell: |
       New-Item -Force -ItemType Directory "$(buildPubPath)"
       Copy-Item -Recurse "$(buildOutPath)/*.whl" "$(buildPubPath)"
+      Copy-Item -Recurse "$(buildOutPath)/*.zip" "$(buildPubPath)"
       Copy-Item -Recurse "$(Build.SourcesDirectory)/test" "$(buildPubPath)"
     displayName: Stage Artifacts
   - task: PublishBuildArtifacts@1

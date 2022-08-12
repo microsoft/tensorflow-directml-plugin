@@ -32,12 +32,18 @@ jobs:
           conda create --name build python=3.7 -y
           conda activate build
           pip install wheel
-      - name: Build
+      - name: Build Wheel
         run: |
           export CXX=/usr/bin/clang++-8
           eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
           conda activate build
           python build.py --config release
+      - name: Build C Library
+        run: |
+          export CXX=/usr/bin/clang++-8
+          eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
+          conda activate build
+          python build.py --config release --target tfdml_plugin_framework_zip
   build-windows-latest:
     name: Build x64-win-release-cp37
     runs-on: windows-latest
@@ -68,9 +74,15 @@ jobs:
           conda create --name build python=3.7 -y
           conda activate build
           pip install wheel vswhere
-      - name: Build
+      - name: Build Wheel
         shell: pwsh
         run: |
           & "$env:TEMP/miniconda3/shell/condabin/conda-hook.ps1"
           conda activate build
           python build.py --config release
+      - name: Build C Library
+        shell: pwsh
+        run: |
+          & "$env:TEMP/miniconda3/shell/condabin/conda-hook.ps1"
+          conda activate build
+          python build.py --config release --target tfdml_plugin_framework_zip

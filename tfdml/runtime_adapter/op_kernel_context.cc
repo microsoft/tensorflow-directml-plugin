@@ -305,15 +305,15 @@ Status OpKernelContext::AssignRefVariable(
     bool validate_shape)
 {
     Status status;
-    TF_AssignRefVariable(
-        context_,
-        input_ref_index,
-        output_ref_index,
-        value_index,
-        use_locking,
-        validate_shape,
-        CopyTensorInSameDevice,
-        status.raw());
+    // TF_AssignRefVariable(
+    //     context_,
+    //     input_ref_index,
+    //     output_ref_index,
+    //     value_index,
+    //     use_locking,
+    //     validate_shape,
+    //     CopyTensorInSameDevice,
+    //     status.raw());
     return status;
 }
 
@@ -324,7 +324,7 @@ Status OpKernelContext::AddNVariant(void (*binary_add_func)(
     TF_Tensor* out))
 {
     Status status;
-    TF_AddNVariant(context_, binary_add_func, status.raw());
+    // TF_AddNVariant(context_, binary_add_func, status.raw());
     return status;
 }
 
@@ -334,7 +334,7 @@ Status OpKernelContext::ZerosLikeVariant(void (*zeros_like_func)(
     TF_Tensor* out))
 {
     Status status;
-    TF_ZerosLikeVariant(context_, zeros_like_func, status.raw());
+    // TF_ZerosLikeVariant(context_, zeros_like_func, status.raw());
     return status;
 }
 

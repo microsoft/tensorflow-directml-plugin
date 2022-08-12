@@ -184,9 +184,8 @@ add_library(
 target_link_libraries(
     runtime_adapter 
     PUBLIC
+    tensorflow_protos
     common_build_props
-    PRIVATE
-    tensorflow_whl::lib
     PUBLIC
     absl::base
     absl::config
@@ -205,6 +204,11 @@ target_link_libraries(
     absl::optional
     absl::span
     absl::variant
+)
+target_include_directories(
+    runtime_adapter
+    PRIVATE
+    ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
 )
 
 # Target comprising core TFDML plugin code.
@@ -244,12 +248,19 @@ add_library(
     tfdml/core/dml_upload_heap.cc
     tfdml/core/dml_util.cc
 )
+target_include_directories(
+    core
+    PRIVATE
+    ${abseil_SOURCE_DIR}
+    ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
+    $<TARGET_PROPERTY:libprotobuf,INCLUDE_DIRECTORIES>
+)
 target_link_libraries(
     core 
     PUBLIC 
+    tensorflow_protos
     common_build_props
     Microsoft::DirectX-Headers
-    tensorflow_whl::lib
     directml::headers
     pix_event_runtime::headers
 )
@@ -336,6 +347,11 @@ add_library(
     tfdml/kernels/dml_xent_op.cc
     tfdml/kernels/dml_zeros_like_op.cc
 )
+target_include_directories(
+    kernels
+    PRIVATE
+    ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
+)
 target_link_libraries(
     kernels
     PUBLIC
@@ -370,6 +386,11 @@ add_library(
     tfdml/optimizer/transpose_remover.cc
     tfdml/optimizer/utils.cc
 )
+target_include_directories(
+    optimizer
+    PRIVATE
+    ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
+)
 target_link_libraries(
     optimizer
     PUBLIC
@@ -389,6 +410,11 @@ add_library(
     tfdml/plugin/plugin_optimizer.cc
     tfdml/plugin/plugin_profiler.cc
 )
+target_include_directories(
+    tfdml_plugin
+    PRIVATE
+    ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
+)
 target_link_libraries(
     tfdml_plugin 
     PRIVATE
@@ -396,10 +422,39 @@ target_link_libraries(
     core
     kernels
     optimizer
-    protobuf::libprotobuf
     runtime_adapter
+    $<$<BOOL:${WIN32}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/python/_pywrap_tensorflow_internal.lib>
+    $<$<BOOL:${UNIX}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/python/_pywrap_tensorflow_internal.so>
+    $<$<BOOL:${UNIX}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/libtensorflow_framework.so.2>
 )
 set_target_properties(tfdml_plugin PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+
+add_library(
+    tfdml_plugin_framework
+    SHARED
+    tfdml/plugin/plugin_device.cc
+    tfdml/plugin/plugin_kernel.cc
+    tfdml/plugin/plugin_optimizer.cc
+    tfdml/plugin/plugin_profiler.cc
+)
+target_include_directories(
+    tfdml_plugin_framework
+    PRIVATE
+    ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
+)
+target_link_libraries(
+    tfdml_plugin_framework 
+    PRIVATE
+    common_build_props
+    core
+    kernels
+    optimizer
+    runtime_adapter
+    $<$<BOOL:${WIN32}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/python/_pywrap_tensorflow_internal.lib>
+    $<$<BOOL:${UNIX}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/python/_pywrap_tensorflow_internal.so>
+    $<$<BOOL:${UNIX}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/libtensorflow_framework.so.2>
+)
+set_target_properties(tfdml_plugin_framework PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 
 # The CMake project name and version determines the python wheel version. Save these
 # values to files so the setup.py script can read them.
@@ -437,3 +492,20 @@ add_custom_command(
         "Creating ${pkg_full_name}"
 )
 add_custom_target(tfdml_plugin_wheel ALL DEPENDS ${pkg_full_name})
+
+set(framework_full_name "${CMAKE_PROJECT_NAME}-${pkg_version}-${pkg_platform}.zip")
+add_custom_command(
+    OUTPUT 
+        ${framework_full_name}
+    COMMAND
+        ${CMAKE_COMMAND}
+        -E tar "cfv" "${framework_full_name}" --format=zip -- $<TARGET_FILE:tfdml_plugin_framework> ../../LICENSE
+    DEPENDS
+        tfdml_plugin_framework
+        LICENSE
+    WORKING_DIRECTORY
+        ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>
+    COMMENT
+        "Creating ${framework_full_name}"
+)
+add_custom_target(tfdml_plugin_framework_zip ALL DEPENDS ${framework_full_name})
