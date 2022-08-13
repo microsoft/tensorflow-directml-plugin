@@ -27,6 +27,10 @@ if(NOT MSVC)
     add_compile_options(-Wno-unknown-warning-option)
 endif()
 
+cmake_policy(SET CMP0063 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0063 NEW)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+
 # Import dependencies and their targets.
 include(cmake/dependencies.cmake)
 
@@ -409,9 +413,6 @@ target_link_libraries(
 )
 
 # Target to build the TF plugin module.
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH "$\{ORIGIN\}/directml")
 add_library(
     tfdml_plugin
     SHARED
@@ -437,9 +438,15 @@ target_link_libraries(
     tensorflow_protos
     Microsoft::DirectX-Headers
     directml::headers
-    tensorflow_libs
+    tensorflow_python_libs
 )
-set_target_properties(tfdml_plugin PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+set_target_properties(
+    tfdml_plugin
+    PROPERTIES
+    SKIP_BUILD_RPATH FALSE
+    BUILD_WITH_INSTALL_RPATH TRUE
+    INSTALL_RPATH "$\{ORIGIN\}/directml"
+)
 
 add_library(
     tfdml_plugin_framework
@@ -466,9 +473,16 @@ target_link_libraries(
     tensorflow_protos
     Microsoft::DirectX-Headers
     directml::headers
-    tensorflow_libs
+    tensorflow_framework_libs
+    libprotobuf
 )
-set_target_properties(tfdml_plugin_framework PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
+set_target_properties(
+    tfdml_plugin_framework
+    PROPERTIES
+    SKIP_BUILD_RPATH FALSE
+    BUILD_WITH_INSTALL_RPATH TRUE
+    INSTALL_RPATH "$\{ORIGIN\}/directml"
+)
 
 # The CMake project name and version determines the python wheel version. Save these
 # values to files so the setup.py script can read them.
@@ -484,6 +498,34 @@ set(pkg_full_name "${pkg_name}-${pkg_version}-${pkg_py}-${pkg_py}-${pkg_platform
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/TFDML_WHEEL_NAME ${CMAKE_PROJECT_NAME})
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/TFDML_WHEEL_VERSION ${pkg_version})
+
+enable_testing()
+
+add_executable(
+    c_api_tests
+    test/c/c_api_tests.cc
+)
+target_link_libraries(
+    c_api_tests
+    PRIVATE
+    tfdml_plugin_framework
+    tensorflow_framework_libs
+    GTest::gtest_main
+    ${CMAKE_DL_LIBS}
+)
+target_include_directories(
+    c_api_tests
+    PRIVATE
+    ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
+    ${abseil_SOURCE_DIR}
+)
+set_target_properties(
+    c_api_tests
+    PROPERTIES
+    SKIP_BUILD_RPATH FALSE
+    BUILD_WITH_INSTALL_RPATH TRUE
+    INSTALL_RPATH "$\{ORIGIN\}"
+)
 
 add_custom_command(
     OUTPUT 
@@ -516,7 +558,9 @@ add_custom_command(
     COMMAND
         ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/LICENSE .
     COMMAND
-        ${CMAKE_COMMAND} -E tar "cfv" "${framework_full_name}" --format=zip -- $<TARGET_FILE_NAME:tfdml_plugin_framework> LICENSE
+        ${CMAKE_COMMAND} -E tar "cfv" "${framework_full_name}" --format=zip --
+        $<TARGET_FILE_NAME:tfdml_plugin_framework>
+        LICENSE
     DEPENDS
         tfdml_plugin_framework
         LICENSE
@@ -526,3 +570,42 @@ add_custom_command(
         "Creating ${framework_full_name}"
 )
 add_custom_target(tfdml_plugin_framework_zip ALL DEPENDS ${framework_full_name})
+
+set(c_api_tests_full_name "${CMAKE_PROJECT_NAME}-${pkg_version}-${pkg_platform}-c-api-tests.zip")
+add_custom_command(
+    OUTPUT 
+        ${c_api_tests_full_name}
+    COMMAND
+        ${CMAKE_COMMAND} -E copy
+        $<TARGET_FILE:tfdml_plugin_framework>
+        $<TARGET_FILE:c_api_tests>
+        $<$<BOOL:${UNIX}>:${tensorflow_framework_SOURCE_DIR}/lib/libtensorflow.so.2>
+        $<$<BOOL:${UNIX}>:${tensorflow_framework_SOURCE_DIR}/lib/libtensorflow_framework.so.2>
+        $<$<BOOL:${WIN32}>:${tensorflow_framework_SOURCE_DIR}/lib/tensorflow.dll>
+        .
+    COMMAND
+        ${CMAKE_COMMAND} -E copy_directory ${bert_model_SOURCE_DIR} ./bert_model
+    COMMAND
+        ${CMAKE_COMMAND} -E copy_directory ${mobilenet_v2_model_SOURCE_DIR} ./mobilenet_v2_model
+    COMMAND
+        ${CMAKE_COMMAND} -E copy_directory ${squeezenet_model_SOURCE_DIR} ./squeezenet_model
+    COMMAND
+        ${CMAKE_COMMAND} -E tar "cfv" "${c_api_tests_full_name}" --format=zip --
+        $<TARGET_FILE_NAME:tfdml_plugin_framework>
+        $<TARGET_FILE_NAME:c_api_tests>
+        $<$<BOOL:${UNIX}>:libtensorflow.so.2>
+        $<$<BOOL:${UNIX}>:libtensorflow_framework.so.2>
+        $<$<BOOL:${WIN32}>:tensorflow.dll>
+        bert_model
+        mobilenet_v2_model
+        squeezenet_model
+    DEPENDS
+        c_api_tests
+        tfdml_plugin_framework
+        tensorflow_framework_libs
+    WORKING_DIRECTORY
+        ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT
+        "Creating ${c_api_tests_full_name}"
+)
+add_custom_target(c_api_tests_zip ALL DEPENDS ${c_api_tests_full_name})

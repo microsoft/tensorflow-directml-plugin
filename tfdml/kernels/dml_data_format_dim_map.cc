@@ -243,6 +243,172 @@ class DmlDataFormaDimMapKernel : public DmlKernel
     }
 };
 
+// TODO: Remove once TensorFlow core implements host for DEVICE_DEFAULT
+// https://github.com/tensorflow/tensorflow/pull/55558
+class DmlDataFormatDimMapHostOp : public OpKernel
+{
+  public:
+    explicit DmlDataFormatDimMapHostOp(
+        OpKernelConstruction* ctx,
+        std::shared_ptr<const NodeDef> node_def)
+        : OpKernel(std::move(node_def))
+    {
+        OP_REQUIRES_OK(ctx, ctx->GetAttr("src_format", &src_format_));
+        OP_REQUIRES_OK(ctx, ctx->GetAttr("dst_format", &dst_format_));
+
+        TF_Graph* graph = TF_NewGraph();
+        auto graph_cleanup =
+            absl::MakeCleanup([graph] { TF_DeleteGraph(graph); });
+
+        // Initialize the placeholder that sets the input for the
+        // DataFormatVecPermute op on the CPU
+        TF_OperationDescription* placeholder_desc =
+            TF_NewOperation(graph, "Placeholder", "data_format");
+        TF_SetDevice(placeholder_desc, "/device:CPU");
+
+        TF_DataType dtype;
+        OP_REQUIRES_OK(ctx, ctx->GetAttr("T", &dtype));
+        TF_SetAttrType(placeholder_desc, "dtype", dtype);
+
+        Status status;
+        placeholder_op_ = TF_FinishOperation(placeholder_desc, status.raw());
+        OP_REQUIRES_OK(ctx, status);
+
+        // Initialize the DataFormatDimMap op on the CPU
+        TF_OperationDescription* data_format_dim_map_desc = TF_NewOperation(
+            graph,
+            "DataFormatDimMap",
+            "DmlDataFormatDimMapHost");
+        TF_SetDevice(data_format_dim_map_desc, "/device:CPU");
+        TF_AddInput(data_format_dim_map_desc, TF_Output{placeholder_op_, 0});
+        TF_SetAttrType(data_format_dim_map_desc, "T", dtype);
+        TF_SetAttrString(
+            data_format_dim_map_desc,
+            "src_format",
+            src_format_.c_str(),
+            src_format_.length());
+        TF_SetAttrString(
+            data_format_dim_map_desc,
+            "dst_format",
+            dst_format_.c_str(),
+            dst_format_.length());
+
+        data_format_dim_map_op_ =
+            TF_FinishOperation(data_format_dim_map_desc, status.raw());
+        OP_REQUIRES_OK(ctx, status);
+
+        // Create a new session that will be executed on the CPU
+        TF_SessionOptions* opts = TF_NewSessionOptions();
+        auto session_opts_cleanup =
+            absl::MakeCleanup([opts] { TF_DeleteSessionOptions(opts); });
+
+        sess_ = TF_NewSession(graph, opts, status.raw());
+        OP_REQUIRES_OK(ctx, status);
+    }
+
+    ~DmlDataFormatDimMapHostOp() override
+    {
+        if (sess_)
+        {
+            Status status;
+            TF_DeleteSession(sess_, status.raw());
+            TF_CHECK_OK(status);
+        }
+    }
+
+    void Compute(OpKernelContext* ctx)
+    {
+        Tensor input_tensor = ctx->input(0);
+        TF_Output feeds[] = {TF_Output{placeholder_op_, 0}};
+        TF_Tensor* feedValues[] = {input_tensor.raw()};
+        TF_Output fetches[] = {TF_Output{data_format_dim_map_op_, 0}};
+        TF_Tensor* fetchValues[] = {nullptr};
+
+        Status status;
+        TF_SessionRun(
+            sess_,
+            nullptr,
+            feeds,
+            feedValues,
+            1,
+            fetches,
+            fetchValues,
+            1,
+            nullptr,
+            0,
+            nullptr,
+            status.raw());
+        OP_REQUIRES_OK(ctx, status);
+
+        Tensor output_tensor(fetchValues[0]);
+        OP_REQUIRES_OK(ctx, ctx->set_output(0, output_tensor));
+    }
+
+  private:
+    TF_Operation* placeholder_op_ = nullptr;
+    TF_Operation* data_format_dim_map_op_ = nullptr;
+    TF_Session* sess_ = nullptr;
+    std::string src_format_;
+    std::string dst_format_;
+};
+
+namespace ops
+{
+struct DmlDataFormatDimMapHost
+{
+    static constexpr const char* name = "DmlDataFormatDimMapHost";
+
+    enum class Argument
+    {
+        x,
+        y
+    };
+
+    static constexpr uint32_t input_arg_count = 1;
+    static constexpr uint32_t output_arg_count = 1;
+    static constexpr std::
+        array<ArgumentDesc, input_arg_count + output_arg_count>
+            argument_descs{
+                ArgumentDesc{"x", ArgumentDesc::TensorCount::Single},
+                ArgumentDesc{"y", ArgumentDesc::TensorCount::Single}};
+
+    enum class Attribute
+    {
+        T,
+        src_format,
+        dst_format
+    };
+
+    static constexpr std::array<AttributeDesc, 3> attribute_descs{
+        AttributeDesc{"T", AttributeType::Type},
+        AttributeDesc{"src_format", AttributeType::String},
+        AttributeDesc{"dst_format", AttributeType::String}};
+};
+
+constexpr std::array<
+    ArgumentDesc,
+    DmlDataFormatDimMapHost::input_arg_count +
+        DmlDataFormatDimMapHost::output_arg_count>
+    DmlDataFormatDimMapHost::argument_descs;
+constexpr std::array<AttributeDesc, 3> DmlDataFormatDimMapHost::attribute_descs;
+
+} // namespace ops
+
+void DataFormatDimMapShapeInferenceFn(
+    TF_ShapeInferenceContext* ctx,
+    TF_Status* status)
+{
+    TF_ShapeHandle* handle = TF_NewShapeHandle();
+    auto handle_cleanup =
+        absl::MakeCleanup([handle] { TF_DeleteShapeHandle(handle); });
+
+    TF_ShapeInferenceContextGetInput(ctx, 0, handle, status);
+    CHECK(TF_GetCode(status) == TF_OK);
+
+    TF_ShapeInferenceContextSetOutput(ctx, 0, handle, status);
+    CHECK(TF_GetCode(status) == TF_OK);
+}
+
 void RegisterKernels_DataFormatDimMap()
 {
     using K = KernelDefinition<
@@ -254,6 +420,37 @@ void RegisterKernels_DataFormatDimMap()
     RegisterWithTypes<
         K,
         ops::DataFormatDimMap::Attribute::T,
+        TF_INT32,
+        TF_INT64>();
+
+    // TODO: Remove once TensorFlow core implements host for DEVICE_DEFAULT
+    // https://github.com/tensorflow/tensorflow/pull/55558
+    TF_OpDefinitionBuilder* builder =
+        TF_NewOpDefinitionBuilder("DmlDataFormatDimMapHost");
+    TF_OpDefinitionBuilderAddInput(builder, "x: T");
+    TF_OpDefinitionBuilderAddOutput(builder, "y: T");
+    TF_OpDefinitionBuilderAddAttr(builder, "T: {int32, int64} = DT_INT32");
+    TF_OpDefinitionBuilderAddAttr(builder, "src_format: string = 'NHWC'");
+    TF_OpDefinitionBuilderAddAttr(builder, "dst_format: string = 'NCHW'");
+
+    TF_OpDefinitionBuilderSetShapeInferenceFunction(
+        builder,
+        DataFormatDimMapShapeInferenceFn);
+
+    Status status;
+    TF_RegisterOpDefinition(builder, status.raw());
+    CHECK(status.ok());
+
+    using HostK = KernelDefinition<
+        ops::DmlDataFormatDimMapHost,
+        DmlDataFormatDimMapHostOp>::
+        WithHostMemoryArguments<
+            ops::DmlDataFormatDimMapHost::Argument::x,
+            ops::DmlDataFormatDimMapHost::Argument::y>;
+
+    RegisterWithTypes<
+        HostK,
+        ops::DmlDataFormatDimMapHost::Attribute::T,
         TF_INT32,
         TF_INT64>();
 }

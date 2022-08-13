@@ -188,9 +188,9 @@ def _main():
     parser.add_argument(
         "--target",
         "-t",
-        choices=("tfdml_plugin_wheel", "tfdml_plugin_framework_zip"),
+        choices=("tfdml_plugin_wheel", "tfdml_plugin_framework_zip", "c_api_tests_zip"),
         default="tfdml_plugin_wheel",
-        help="CMake target to build."
+        help="CMake target to build.",
     )
 
     parser.add_argument(

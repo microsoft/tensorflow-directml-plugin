@@ -78,6 +78,33 @@ FetchContent_Declare(
     URL_HASH SHA256=ee0af78308ea90c31b0c2a0c8814d2bef994e4cbfb5ae6c5b98b50c7fd98e1bc
 )
 
+# GoogleTest Library
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG release-1.12.1
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    bert_model
+    URL https://storage.googleapis.com/tfhub-modules/tensorflow/bert_en_uncased_L-12_H-768_A-12/4.tar.gz
+    URL_HASH SHA256=926390b70198b6f4ff836f17805ebcf1a43199c575496f4fe1369f48503335de
+)
+
+FetchContent_Declare(
+    mobilenet_v2_model
+    URL http://download.tensorflow.org/models/object_detection/tf2/20210210/centernet_mobilenetv2fpn_512x512_coco17_od.tar.gz
+    URL_HASH SHA256=6268e2d166133161ec51cfa7877324f1e3a953375230a73c68bafcc068506ba4
+)
+
+FetchContent_Declare(
+    squeezenet_model
+    URL https://github.com/oracle/graphpipe/raw/master/docs/models/squeezenet.pb
+    URL_HASH SHA256=5922a640a9e23978e9aef1bef16aaa89cc801bc3a30f4766a8c8fd4e1c6d81bc
+    DOWNLOAD_NO_EXTRACT TRUE
+)
+
 # Download and extract dependencies.
 FetchContent_MakeAvailable(
     abseil
@@ -88,6 +115,10 @@ FetchContent_MakeAvailable(
     directml_redist 
     directmlx
     pix_event_runtime
+    googletest
+    bert_model
+    mobilenet_v2_model
+    squeezenet_model
 )
 
 # The DirectX-Headers target assumes dependent targets include headers with the directx prefix 
@@ -138,13 +169,22 @@ if(tensorflow_whl_absl_files)
 endif()
 file(REMOVE_RECURSE ${tensorflow_include_dir}/google/protobuf)
 
-add_library(tensorflow_libs INTERFACE)
+add_library(tensorflow_python_libs INTERFACE)
 target_link_libraries(
-    tensorflow_libs
+    tensorflow_python_libs
     INTERFACE
     $<$<BOOL:${WIN32}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/python/_pywrap_tensorflow_internal.lib>
     $<$<BOOL:${UNIX}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/python/_pywrap_tensorflow_internal.so>
     $<$<BOOL:${UNIX}>:${tensorflow_whl_SOURCE_DIR}/tensorflow/libtensorflow_framework.so.2>
+)
+
+add_library(tensorflow_framework_libs INTERFACE)
+target_link_libraries(
+    tensorflow_framework_libs
+    INTERFACE
+    $<$<BOOL:${WIN32}>:${tensorflow_framework_SOURCE_DIR}/lib/tensorflow.lib>
+    $<$<BOOL:${UNIX}>:${tensorflow_framework_SOURCE_DIR}/lib/libtensorflow.so>
+    $<$<BOOL:${UNIX}>:${tensorflow_framework_SOURCE_DIR}/lib/libtensorflow_framework.so>
 )
 
 add_library(tensorflow_protos STATIC)

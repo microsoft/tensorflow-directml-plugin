@@ -20,6 +20,7 @@ limitations under the License.
 #include "tfdml/optimizer/proto_buffer_helpers.h"
 #include "tfdml/optimizer/remapper.h"
 #include "tfdml/optimizer/transpose_remover.h"
+#include "tfdml/runtime_adapter/macros.h"
 
 namespace tfdml
 {
@@ -96,8 +97,11 @@ void DeleteOptimizer(void* optimizers)
 #pragma warning(push)
 #pragma warning(disable : 4273)
 
-void TF_InitGraph(TP_OptimizerRegistrationParams* params, TF_Status* status)
+TFDML_EXPORT void TF_InitGraph(
+    TP_OptimizerRegistrationParams* params,
+    TF_Status* status)
 {
+    printf("LALALALA\n");
     params->struct_size = TP_OPTIMIZER_REGISTRATION_PARAMS_STRUCT_SIZE;
     params->device_type = "GPU";
     params->optimizer_configs->struct_size = TP_OPTIMIZER_CONFIGS_STRUCT_SIZE;
