@@ -101,7 +101,6 @@ TFDML_EXPORT void TF_InitGraph(
     TP_OptimizerRegistrationParams* params,
     TF_Status* status)
 {
-    printf("LALALALA\n");
     params->struct_size = TP_OPTIMIZER_REGISTRATION_PARAMS_STRUCT_SIZE;
     params->device_type = "GPU";
     params->optimizer_configs->struct_size = TP_OPTIMIZER_CONFIGS_STRUCT_SIZE;

@@ -571,6 +571,11 @@ add_custom_command(
 )
 add_custom_target(tfdml_plugin_framework_zip ALL DEPENDS ${framework_full_name})
 
+# Get the DirectML SHA
+file(READ "${directml_redist_SOURCE_DIR}/include/DirectMLConfig.h" DIRECTML_CONFIG)
+string(REGEX MATCH "#define DIRECTML_SOURCE_VERSION \"([abcdef0-9]+)\"" REGEX_MATCH ${DIRECTML_CONFIG})
+set(DIRECTML_SHA ${CMAKE_MATCH_1})
+
 set(c_api_tests_full_name "${CMAKE_PROJECT_NAME}-${pkg_version}-${pkg_platform}-c-api-tests.zip")
 add_custom_command(
     OUTPUT 
@@ -584,9 +589,29 @@ add_custom_command(
         $<$<BOOL:${WIN32}>:${tensorflow_framework_SOURCE_DIR}/lib/tensorflow.dll>
         .
     COMMAND
-        ${CMAKE_COMMAND} -E copy_directory ${bert_model_SOURCE_DIR} ./bert_model
+        ${CMAKE_COMMAND} -E make_directory ./directml
     COMMAND
-        ${CMAKE_COMMAND} -E copy_directory ${mobilenet_v2_model_SOURCE_DIR} ./mobilenet_v2_model
+        ${CMAKE_COMMAND} -E copy
+        $<$<BOOL:${UNIX}>:${directml_redist_SOURCE_DIR}/bin/x64-linux/libdirectml.so>
+        $<$<BOOL:${UNIX}>:./directml/libdirectml.${DIRECTML_SHA}.so>
+        $<$<BOOL:${WIN32}>:${directml_redist_SOURCE_DIR}/bin/x64-win/DirectML.dll>
+        $<$<BOOL:${WIN32}>:./directml/DirectML.${DIRECTML_SHA}.dll>
+    COMMAND
+        ${CMAKE_COMMAND} -E copy ${directml_redist_SOURCE_DIR}/LICENSE.txt ./directml/DirectML_LICENSE.txt
+    COMMAND
+        ${CMAKE_COMMAND} -E copy ${directml_redist_SOURCE_DIR}/ThirdPartyNotices.txt ./directml/DirectML_ThirdPartyNotices.txt
+    COMMAND
+        $<$<BOOL:${WIN32}>:${CMAKE_COMMAND}> $<$<BOOL:${WIN32}>:-E> $<$<BOOL:${WIN32}>:copy>
+        $<$<BOOL:${WIN32}>:${pix_event_runtime_SOURCE_DIR}/bin/x64/WinPixEventRuntime.dll>
+        $<$<BOOL:${WIN32}>:./directml>
+    COMMAND
+        $<$<BOOL:${WIN32}>:${CMAKE_COMMAND}> $<$<BOOL:${WIN32}>:-E> $<$<BOOL:${WIN32}>:copy>
+        $<$<BOOL:${WIN32}>:${pix_event_runtime_SOURCE_DIR}/license.txt>
+        $<$<BOOL:${WIN32}>:./directml/WinPixEventRuntime_LICENSE.txt>
+    COMMAND
+        $<$<BOOL:${WIN32}>:${CMAKE_COMMAND}> $<$<BOOL:${WIN32}>:-E> $<$<BOOL:${WIN32}>:copy>
+        $<$<BOOL:${WIN32}>:${pix_event_runtime_SOURCE_DIR}/ThirdPartyNotices.txt>
+        $<$<BOOL:${WIN32}>:./directml/WinPixEventRuntime_ThirdPartyNotices.txt>
     COMMAND
         ${CMAKE_COMMAND} -E copy_directory ${squeezenet_model_SOURCE_DIR} ./squeezenet_model
     COMMAND
@@ -596,8 +621,6 @@ add_custom_command(
         $<$<BOOL:${UNIX}>:libtensorflow.so.2>
         $<$<BOOL:${UNIX}>:libtensorflow_framework.so.2>
         $<$<BOOL:${WIN32}>:tensorflow.dll>
-        bert_model
-        mobilenet_v2_model
         squeezenet_model
     DEPENDS
         c_api_tests

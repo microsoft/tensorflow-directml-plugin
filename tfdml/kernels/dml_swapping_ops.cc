@@ -161,11 +161,8 @@ static void RegisterKernels_CopyFromHostToGpu()
 
 void RegisterKernels_Swapping()
 {
-/*
-    printf("LOLOLOLO\n");
     RegisterKernels_CopyFromGpuToHost();
     RegisterKernels_CopyFromHostToGpu();
-*/
 }
 
 } // namespace tfdml

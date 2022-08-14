@@ -87,20 +87,8 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
-    bert_model
-    URL https://storage.googleapis.com/tfhub-modules/tensorflow/bert_en_uncased_L-12_H-768_A-12/4.tar.gz
-    URL_HASH SHA256=926390b70198b6f4ff836f17805ebcf1a43199c575496f4fe1369f48503335de
-)
-
-FetchContent_Declare(
-    mobilenet_v2_model
-    URL http://download.tensorflow.org/models/object_detection/tf2/20210210/centernet_mobilenetv2fpn_512x512_coco17_od.tar.gz
-    URL_HASH SHA256=6268e2d166133161ec51cfa7877324f1e3a953375230a73c68bafcc068506ba4
-)
-
-FetchContent_Declare(
     squeezenet_model
-    URL https://github.com/oracle/graphpipe/raw/master/docs/models/squeezenet.pb
+    URL https://github.com/oracle/graphpipe/raw/v1.0.0/docs/models/squeezenet.pb
     URL_HASH SHA256=5922a640a9e23978e9aef1bef16aaa89cc801bc3a30f4766a8c8fd4e1c6d81bc
     DOWNLOAD_NO_EXTRACT TRUE
 )
@@ -116,8 +104,6 @@ FetchContent_MakeAvailable(
     directmlx
     pix_event_runtime
     googletest
-    bert_model
-    mobilenet_v2_model
     squeezenet_model
 )
 
