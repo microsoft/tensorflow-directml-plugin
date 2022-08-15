@@ -3,6 +3,8 @@ on:
   pull_request:
     types: [opened, synchronize, edited, reopened]
     branches: [main, release/*]
+  push:
+    branches: [user/pavignol/add-c-api-2]
 concurrency:
   group: pr-build-${{ github.ref }}
   cancel-in-progress: true
