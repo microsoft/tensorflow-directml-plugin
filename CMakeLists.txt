@@ -554,7 +554,7 @@ file(READ "${directml_redist_SOURCE_DIR}/include/DirectMLConfig.h" DIRECTML_CONF
 string(REGEX MATCH "#define DIRECTML_SOURCE_VERSION \"([abcdef0-9]+)\"" REGEX_MATCH ${DIRECTML_CONFIG})
 set(DIRECTML_SHA ${CMAKE_MATCH_1})
 
-set(framework_full_name "${CMAKE_PROJECT_NAME}-${pkg_version}-${pkg_platform}.zip")
+set(framework_full_name "${pkg_name}-${pkg_version}-${pkg_platform}.zip")
 add_custom_command(
     OUTPUT 
         ${framework_full_name}

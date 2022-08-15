@@ -4,6 +4,7 @@
         {
             "name": "ops",
             "timeout_seconds": 5400,
+            "is_python_test": true,
             "tests": [
                 {
                     "file": "ops/aggregate_ops_test.py"
@@ -282,11 +283,13 @@
         },
         {
             "name": "models",
+            "is_python_test": true,
             "tests": []
         },
         {
             "name": "plugin",
             "timeout_seconds": 300,
+            "is_python_test": true,
             "tests": [
                 {
                     "file": "plugin/profiler_test.py"
@@ -314,6 +317,18 @@
                         "--dml_visible_devices",
                         "0"
                     ]
+                }
+            ]
+        },
+        {
+            "name": "C API",
+            "timeout_seconds": 300,
+            "is_python_test": false,
+            "tests": [
+                {
+                    "name": "c_api_tests",
+                    "file": "../build/tensorflow_directml_plugin_c_api_tests/c_api_tests",
+                    "cwd": "build/tensorflow_directml_plugin_c_api_tests"
                 }
             ]
         }

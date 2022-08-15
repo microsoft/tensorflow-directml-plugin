@@ -41,8 +41,10 @@ def _test_runner(test, timeout_seconds, start_time, redirect_output):
 
 
 class _TestGroup:
-    def __init__(self, name, tests, timeout_seconds, results_dir):
+    # pylint:disable=too-many-arguments
+    def __init__(self, name, tests, is_python_test, timeout_seconds, results_dir):
         self.name = name
+        self.is_python_test = is_python_test
         self.timeout_seconds = timeout_seconds
         self.tests = tests
         self.run_results_file_path = Path(results_dir) / f"run.{name}.json"
@@ -187,23 +189,37 @@ class _TestGroup:
         print()
 
 
+# pylint:disable=too-many-instance-attributes
 class _Test:
     """Represents a single test file that is part of a test group"""
 
+    # pylint:disable=too-many-arguments
     def __init__(
         self,
+        is_python_test,
+        cwd,
         test_file_path,
         name,
         args,
         results_dir,
     ):
+        self.is_python_test = is_python_test
+        self.cwd = cwd
         self.name = name
         self.args = args
         self.results_dir = results_dir
         self.run_results_file_path = Path(results_dir) / f"run.{name}.json"
         self.results_file_path = Path(results_dir) / f"test.{name}.xml"
-        self.args.append(f"--xml_output_file {self.results_file_path}")
-        self.command_line = f"python {test_file_path} {' '.join(self.args)}"
+
+        if is_python_test:
+            self.args.append(f"--xml_output_file={self.results_file_path}")
+        else:
+            self.args.append(f"--gtest_output=xml:{self.results_file_path}")
+
+        if is_python_test:
+            self.command_line = f"python {test_file_path} {' '.join(self.args)}"
+        else:
+            self.command_line = f"{test_file_path} {' '.join(self.args)}"
 
     def show(self):
         """Prints the command lines that would be executed without executing anything"""
@@ -229,6 +245,7 @@ class _Test:
             try:
                 process_result = subprocess.run(
                     self.command_line,
+                    cwd=self.cwd,
                     timeout=timeout_seconds,
                     stdin=subprocess.DEVNULL if redirect_output else None,
                     stdout=subprocess.PIPE if redirect_output else None,
@@ -361,7 +378,12 @@ def _parse_test_groups(
         for json_test in json_test_group["tests"]:
             test_disabled = _get_optional_json_property(json_test, "disabled", False)
             test = _parse_test(
-                tests_json_path, json_test, test_names, test_group_name, results_dir
+                json_test_group["is_python_test"],
+                tests_json_path,
+                json_test,
+                test_names,
+                test_group_name,
+                results_dir,
             )
 
             if (not test_disabled or run_disabled) and fnmatch.fnmatch(
@@ -373,6 +395,7 @@ def _parse_test_groups(
             _TestGroup(
                 test_group_name,
                 test_group_tests,
+                json_test_group["is_python_test"],
                 _get_optional_json_property(json_test_group, "timeout_seconds", 300),
                 results_dir,
             )
@@ -381,7 +404,10 @@ def _parse_test_groups(
     return test_groups
 
 
-def _parse_test(tests_json_path, json_test, test_names, test_group_name, results_dir):
+# pylint:disable=too-many-arguments
+def _parse_test(
+    is_python_test, tests_json_path, json_test, test_names, test_group_name, results_dir
+):
     test_file = Path(tests_json_path).parent / json_test["file"]
     test_base_name = _get_optional_json_property(
         json_test, "name", Path(test_file).stem
@@ -402,7 +428,14 @@ def _parse_test(tests_json_path, json_test, test_names, test_group_name, results
         )
     test_names.add(test_full_name)
 
-    return _Test(test_file, test_full_name, test_args, results_dir)
+    return _Test(
+        is_python_test,
+        json_test.get("cwd"),
+        test_file,
+        test_full_name,
+        test_args,
+        results_dir,
+    )
 
 
 def _main():
