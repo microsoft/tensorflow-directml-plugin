@@ -27,7 +27,10 @@ limitations under the License.
 #elif defined(_MSC_VER)
 // Non-GCC equivalents
 #define TFDML_ATTRIBUTE_NORETURN __declspec(noreturn)
-#define TFDML_EXPORT __declspec(dllexport)
+
+// The TensorFlow C API doesn't add the __declspec(dllexport) to the plugin
+// function declarations, so we have to export them through "tfdml.def" instead
+#define TFDML_EXPORT
 #else
 // Non-GCC equivalents
 #define TFDML_ATTRIBUTE_NORETURN
