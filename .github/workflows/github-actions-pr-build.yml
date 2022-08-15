@@ -38,12 +38,18 @@ jobs:
           eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
           conda activate build
           python build.py --config release
-      - name: Build C Library
+      - name: Build C API Library
         run: |
           export CXX=/usr/bin/clang++-8
           eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
           conda activate build
           python build.py --config release --target tfdml_plugin_framework_zip
+      - name: Build C API Tests
+        run: |
+          export CXX=/usr/bin/clang++-8
+          eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
+          conda activate build
+          python build.py --config release --target c_api_tests_zip
   build-windows-latest:
     name: Build x64-win-release-cp37
     runs-on: windows-latest
@@ -80,9 +86,6 @@ jobs:
           & "$env:TEMP/miniconda3/shell/condabin/conda-hook.ps1"
           conda activate build
           python build.py --config release
-      - name: Build C Library
-        shell: pwsh
-        run: |
-          & "$env:TEMP/miniconda3/shell/condabin/conda-hook.ps1"
-          conda activate build
-          python build.py --config release --target tfdml_plugin_framework_zip
+
+# TODO: Add the C Library and C Tests steps on Windows once the TensorFlow C API exports all the necessary symbols
+# TF #40927951

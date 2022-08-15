@@ -60,7 +60,7 @@ parameters:
 - name: testGroups
   displayName: Test Groups
   type: object
-  default: [ops, plugin]
+  default: [ops, plugin, c_api]
 
 - name: testTensorflowPackages
   displayName: TensorFlow Packages To Test Against

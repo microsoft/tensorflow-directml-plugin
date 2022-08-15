@@ -321,7 +321,7 @@
             ]
         },
         {
-            "name": "C API",
+            "name": "c_api",
             "timeout_seconds": 300,
             "is_python_test": false,
             "tests": [
