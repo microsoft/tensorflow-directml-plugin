@@ -257,7 +257,6 @@ target_include_directories(
     PRIVATE
     ${abseil_SOURCE_DIR}
     ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
-    $<TARGET_PROPERTY:libprotobuf,INCLUDE_DIRECTORIES>
 )
 target_link_libraries(
     core 
@@ -356,7 +355,6 @@ target_include_directories(
     PRIVATE
     ${tensorflow_whl_SOURCE_DIR}/tensorflow/include
     ${abseil_SOURCE_DIR}
-    $<TARGET_PROPERTY:libprotobuf,INCLUDE_DIRECTORIES>
 )
 target_link_libraries(
     kernels
