@@ -328,7 +328,10 @@
                 {
                     "name": "c_api_tests",
                     "file": "../build/tensorflow_directml_plugin_c_api_tests/c_api_tests",
-                    "cwd": "build/tensorflow_directml_plugin_c_api_tests"
+                    "cwd": "build/tensorflow_directml_plugin_c_api_tests",
+                    "disabled_platforms": [
+                        "nt"
+                    ]
                 }
             ]
         }

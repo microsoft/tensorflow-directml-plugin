@@ -386,8 +386,10 @@ def _parse_test_groups(
                 results_dir,
             )
 
-            if (not test_disabled or run_disabled) and fnmatch.fnmatch(
-                test.name, test_filter
+            if (
+                (not test_disabled or run_disabled)
+                and os.name not in json_test.get("disabled_platforms", [])
+                and fnmatch.fnmatch(test.name, test_filter)
             ):
                 test_group_tests.append(test)
 
