@@ -66,7 +66,7 @@ static TF_Buffer* ReadBufferFromFile(const char* file_path)
     return buffer;
 }
 
-TEST(CApiTests, TestFrozenModel)
+TEST(CApiTests, SqueezeNetModelTest)
 {
     TF_Status* status = TF_NewStatus();
     auto status_cleanup =
@@ -199,7 +199,7 @@ TEST(CApiTests, TestFrozenModel)
     ASSERT_EQ(output_dtype, TF_FLOAT);
 }
 
-TEST(CApiTests, TestAddV2)
+TEST(CApiTests, AddV2Test)
 {
     auto graph = TF_NewGraph();
     auto graph_cleanup = absl::MakeCleanup([graph] { TF_DeleteGraph(graph); });
