@@ -16,7 +16,7 @@ FetchContent_Declare(
     GIT_TAG v3.19.3
     SOURCE_SUBDIR cmake
 )
-set(protobuf_BUILD_TESTS OFF)
+set(protobuf_BUILD_TESTS OFF CACHE BOOL "Build protobuf tests")
 
 # TensorFlow python package
 if(WIN32)
