@@ -549,6 +549,11 @@ add_custom_command(
 )
 add_custom_target(tfdml_plugin_wheel ALL DEPENDS ${pkg_full_name})
 
+# Get the DirectML SHA
+file(READ "${directml_redist_SOURCE_DIR}/include/DirectMLConfig.h" DIRECTML_CONFIG)
+string(REGEX MATCH "#define DIRECTML_SOURCE_VERSION \"([abcdef0-9]+)\"" REGEX_MATCH ${DIRECTML_CONFIG})
+set(DIRECTML_SHA ${CMAKE_MATCH_1})
+
 set(framework_full_name "${CMAKE_PROJECT_NAME}-${pkg_version}-${pkg_platform}.zip")
 add_custom_command(
     OUTPUT 
@@ -557,37 +562,6 @@ add_custom_command(
         ${CMAKE_COMMAND} -E copy $<TARGET_FILE:tfdml_plugin_framework> .
     COMMAND
         ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/LICENSE .
-    COMMAND
-        ${CMAKE_COMMAND} -E tar "cfv" "${framework_full_name}" --format=zip --
-        $<TARGET_FILE_NAME:tfdml_plugin_framework>
-        LICENSE
-    DEPENDS
-        tfdml_plugin_framework
-        LICENSE
-    WORKING_DIRECTORY
-        ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT
-        "Creating ${framework_full_name}"
-)
-add_custom_target(tfdml_plugin_framework_zip ALL DEPENDS ${framework_full_name})
-
-# Get the DirectML SHA
-file(READ "${directml_redist_SOURCE_DIR}/include/DirectMLConfig.h" DIRECTML_CONFIG)
-string(REGEX MATCH "#define DIRECTML_SOURCE_VERSION \"([abcdef0-9]+)\"" REGEX_MATCH ${DIRECTML_CONFIG})
-set(DIRECTML_SHA ${CMAKE_MATCH_1})
-
-set(c_api_tests_full_name "${CMAKE_PROJECT_NAME}-${pkg_version}-${pkg_platform}-c-api-tests.zip")
-add_custom_command(
-    OUTPUT 
-        ${c_api_tests_full_name}
-    COMMAND
-        ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:tfdml_plugin_framework>
-        $<TARGET_FILE:c_api_tests>
-        $<$<BOOL:${UNIX}>:${tensorflow_framework_SOURCE_DIR}/lib/libtensorflow.so.2>
-        $<$<BOOL:${UNIX}>:${tensorflow_framework_SOURCE_DIR}/lib/libtensorflow_framework.so.2>
-        $<$<BOOL:${WIN32}>:${tensorflow_framework_SOURCE_DIR}/lib/tensorflow.dll>
-        .
     COMMAND
         ${CMAKE_COMMAND} -E make_directory ./directml
     COMMAND
@@ -613,6 +587,49 @@ add_custom_command(
         $<$<BOOL:${WIN32}>:${pix_event_runtime_SOURCE_DIR}/ThirdPartyNotices.txt>
         $<$<BOOL:${WIN32}>:./directml/WinPixEventRuntime_ThirdPartyNotices.txt>
     COMMAND
+        ${CMAKE_COMMAND} -E tar "cfv" "${framework_full_name}" --format=zip --
+        $<TARGET_FILE_NAME:tfdml_plugin_framework>
+        LICENSE
+        directml/DirectML_LICENSE.txt
+        directml/DirectML_ThirdPartyNotices.txt
+        $<$<BOOL:${UNIX}>:directml/libdirectml.${DIRECTML_SHA}.so>
+        $<$<BOOL:${WIN32}>:directml/DirectML.${DIRECTML_SHA}.dll>
+        $<$<BOOL:${WIN32}>:directml/WinPixEventRuntime.dll>
+    DEPENDS
+        tfdml_plugin_framework
+        LICENSE
+    WORKING_DIRECTORY
+        ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT
+        "Creating ${framework_full_name}"
+)
+add_custom_target(tfdml_plugin_framework_zip ALL DEPENDS ${framework_full_name})
+
+set(c_api_tests_full_name "${CMAKE_PROJECT_NAME}-${pkg_version}-${pkg_platform}-c-api-tests.zip")
+add_custom_command(
+    OUTPUT 
+        ${c_api_tests_full_name}
+    COMMAND
+        ${CMAKE_COMMAND} -E copy
+        $<TARGET_FILE:tfdml_plugin_framework>
+        $<TARGET_FILE:c_api_tests>
+        $<$<BOOL:${UNIX}>:${tensorflow_framework_SOURCE_DIR}/lib/libtensorflow.so.2>
+        $<$<BOOL:${UNIX}>:${tensorflow_framework_SOURCE_DIR}/lib/libtensorflow_framework.so.2>
+        $<$<BOOL:${WIN32}>:${tensorflow_framework_SOURCE_DIR}/lib/tensorflow.dll>
+        .
+    COMMAND
+        ${CMAKE_COMMAND} -E make_directory ./directml
+    COMMAND
+        ${CMAKE_COMMAND} -E copy
+        $<$<BOOL:${UNIX}>:${directml_redist_SOURCE_DIR}/bin/x64-linux/libdirectml.so>
+        $<$<BOOL:${UNIX}>:./directml/libdirectml.${DIRECTML_SHA}.so>
+        $<$<BOOL:${WIN32}>:${directml_redist_SOURCE_DIR}/bin/x64-win/DirectML.dll>
+        $<$<BOOL:${WIN32}>:./directml/DirectML.${DIRECTML_SHA}.dll>
+    COMMAND
+        $<$<BOOL:${WIN32}>:${CMAKE_COMMAND}> $<$<BOOL:${WIN32}>:-E> $<$<BOOL:${WIN32}>:copy>
+        $<$<BOOL:${WIN32}>:${pix_event_runtime_SOURCE_DIR}/bin/x64/WinPixEventRuntime.dll>
+        $<$<BOOL:${WIN32}>:./directml>
+    COMMAND
         ${CMAKE_COMMAND} -E copy_directory ${squeezenet_model_SOURCE_DIR} ./squeezenet_model
     COMMAND
         ${CMAKE_COMMAND} -E tar "cfv" "${c_api_tests_full_name}" --format=zip --
@@ -620,8 +637,11 @@ add_custom_command(
         $<TARGET_FILE_NAME:c_api_tests>
         $<$<BOOL:${UNIX}>:libtensorflow.so.2>
         $<$<BOOL:${UNIX}>:libtensorflow_framework.so.2>
+        $<$<BOOL:${UNIX}>:directml/libdirectml.${DIRECTML_SHA}.so>
         $<$<BOOL:${WIN32}>:tensorflow.dll>
-        squeezenet_model
+        $<$<BOOL:${WIN32}>:directml/DirectML.${DIRECTML_SHA}.dll>
+        $<$<BOOL:${WIN32}>:directml/WinPixEventRuntime.dll>
+        squeezenet_model/squeezenet.pb
     DEPENDS
         c_api_tests
         tfdml_plugin_framework

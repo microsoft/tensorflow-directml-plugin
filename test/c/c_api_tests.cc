@@ -16,6 +16,7 @@ limitations under the License.
 #include "absl/cleanup/cleanup.h"
 #include "tensorflow/c/c_api.h"
 #include "tensorflow/c/c_api_experimental.h"
+#include <cstring>
 #include <fstream>
 #include <gtest/gtest.h>
 #include <numeric>
@@ -65,8 +66,7 @@ static TF_Buffer* ReadBufferFromFile(const char* file_path)
     return buffer;
 }
 
-// Demonstrate some basic assertions.
-TEST(CApiTests, TestSqueezeNet)
+TEST(CApiTests, TestFrozenModel)
 {
     TF_Status* status = TF_NewStatus();
     auto status_cleanup =
@@ -197,4 +197,148 @@ TEST(CApiTests, TestSqueezeNet)
 
     TF_DataType output_dtype = TF_TensorType(output_tensor);
     ASSERT_EQ(output_dtype, TF_FLOAT);
+}
+
+TEST(CApiTests, TestAddV2)
+{
+    auto graph = TF_NewGraph();
+    auto graph_cleanup = absl::MakeCleanup([graph] { TF_DeleteGraph(graph); });
+
+    // Create the placeholder for the first input
+    TF_OperationDescription* placeholder1_desc =
+        TF_NewOperation(graph, "Placeholder", "input1");
+    TF_SetDevice(placeholder1_desc, "/device:GPU:0");
+    TF_SetAttrType(placeholder1_desc, "dtype", TF_FLOAT);
+
+    std::array<int64_t, 2> dims = {2, 3};
+    TF_SetAttrShape(placeholder1_desc, "shape", dims.data(), dims.size());
+
+    auto status = TF_NewStatus();
+    auto status_cleanup =
+        absl::MakeCleanup([status] { TF_DeleteStatus(status); });
+
+    auto placeholder1_op = TF_FinishOperation(placeholder1_desc, status);
+    ASSERT_EQ(TF_GetCode(status), TF_OK);
+
+    // Create the placeholder for the second input
+    TF_OperationDescription* placeholder2_desc =
+        TF_NewOperation(graph, "Placeholder", "input2");
+    TF_SetDevice(placeholder2_desc, "/device:GPU:0");
+    TF_SetAttrType(placeholder2_desc, "dtype", TF_FLOAT);
+    TF_SetAttrShape(placeholder2_desc, "shape", dims.data(), dims.size());
+    auto placeholder2_op = TF_FinishOperation(placeholder1_desc, status);
+    ASSERT_EQ(TF_GetCode(status), TF_OK);
+
+    std::array<TF_Output, 2> inputs = {
+        TF_Output{placeholder1_op, 0},
+        TF_Output{placeholder2_op, 0},
+    };
+
+    // Create the AddV2 operation
+    auto add_desc = TF_NewOperation(graph, "AddV2", "add");
+    TF_SetDevice(add_desc, "/device:GPU:0");
+    TF_AddInput(add_desc, inputs[0]);
+    TF_AddInput(add_desc, inputs[1]);
+    auto add_op = TF_FinishOperation(add_desc, status);
+    ASSERT_EQ(TF_GetCode(status), TF_OK);
+
+    // Create the first input tensor
+    std::array<float, 6> input1_vals = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+    float* input1_vals_raw = new float[6];
+    std::memcpy(
+        input1_vals_raw,
+        input1_vals.data(),
+        sizeof(float) * input1_vals.size());
+    auto input1_tensor = TF_NewTensor(
+        TF_FLOAT,
+        dims.data(),
+        dims.size(),
+        input1_vals_raw,
+        input1_vals.size() * sizeof(float),
+        [](void* data, size_t len, void* arg)
+        { delete[] static_cast<float*>(data); },
+        nullptr);
+    ASSERT_NE(input1_tensor, nullptr);
+    auto input1_tensor_cleanup =
+        absl::MakeCleanup([input1_tensor] { TF_DeleteTensor(input1_tensor); });
+
+    // Create the second input tensor
+    std::array<float, 6> input2_vals = {7.0f, 8.0f, 9.0f, 10.0f, 11.0f, 12.0f};
+    float* input2_vals_raw = new float[6];
+    std::memcpy(
+        input2_vals_raw,
+        input2_vals.data(),
+        sizeof(float) * input2_vals.size());
+    auto input2_tensor = TF_NewTensor(
+        TF_FLOAT,
+        dims.data(),
+        dims.size(),
+        input2_vals_raw,
+        input2_vals.size() * sizeof(float),
+        [](void* data, size_t len, void* arg)
+        { delete[] static_cast<float*>(data); },
+        nullptr);
+    ASSERT_NE(input2_tensor, nullptr);
+    auto input2_tensor_cleanup =
+        absl::MakeCleanup([input2_tensor] { TF_DeleteTensor(input2_tensor); });
+
+    std::array<TF_Tensor*, 2> input_tensors{input1_tensor, input2_tensor};
+    TF_Output output{add_op, 0};
+
+    // Build the session
+    auto session_options = TF_NewSessionOptions();
+    auto session_options_cleanup = absl::MakeCleanup(
+        [session_options] { TF_DeleteSessionOptions(session_options); });
+
+    auto session = TF_NewSession(graph, session_options, status);
+    ASSERT_EQ(TF_GetCode(status), TF_OK);
+
+    TF_Tensor* output_tensor = nullptr;
+    auto output_tensor_cleanup =
+        absl::MakeCleanup([output_tensor] { TF_DeleteTensor(output_tensor); });
+
+    // Run the session
+    TF_SessionRun(
+        session,
+        nullptr,
+        inputs.data(),
+        input_tensors.data(),
+        2,
+        &output,
+        &output_tensor,
+        1,
+        nullptr,
+        0,
+        nullptr,
+        status);
+    ASSERT_EQ(TF_GetCode(status), TF_OK);
+    ASSERT_NE(output_tensor, nullptr);
+
+    // Make sure that the data type of the output is the same as the data type
+    // of the inputs
+    TF_DataType output_dtype = TF_TensorType(output_tensor);
+    ASSERT_EQ(output_dtype, TF_FLOAT);
+
+    // Make sure that the number of dimensions matches
+    int num_output_dims = TF_NumDims(output_tensor);
+    ASSERT_EQ(num_output_dims, dims.size());
+
+    // Make sure that the dimension sizes match
+    for (int i = 0; i < num_output_dims; ++i)
+    {
+        int64_t output_dim = TF_Dim(output_tensor, i);
+        ASSERT_EQ(output_dim, dims[i]);
+    }
+
+    // Make sure that the number of elements match
+    int64_t output_elem_count = TF_TensorElementCount(output_tensor);
+    ASSERT_EQ(output_elem_count, 6);
+
+    // Finally, make sure that all elements add up
+    float* output_tensor_data =
+        static_cast<float*>(TF_TensorData(output_tensor));
+    for (int64_t i = 0; i < output_elem_count; ++i)
+    {
+        ASSERT_EQ(output_tensor_data[i], input1_vals[i] + input2_vals[i]);
+    }
 }
