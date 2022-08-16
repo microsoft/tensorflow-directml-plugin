@@ -152,6 +152,9 @@ jobs:
               $ScriptPath = "$(Build.SourcesDirectory)/test/test.py" -replace '\\','/'
               $ScriptPathWsl = wsl wslpath -a $ScriptPath
 
+              # Extract the C Library API tests to the build folder
+              Expand-Archive tensorflow_directml_plugin-*-c-api-tests.zip -Destination $(Build.SourcesDirectory)/build
+
               # Results are written to Linux filesystem ($ResultsDirLinux) and copied to Windows ($ResultsDirWin)
               $ResultsDirLinux = "/tmp/tfdml_plugin_pipeline/results/$(agentName)/${{artifact}}/${{tensorflowPackage}}"
               $ResultsDirWin = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}/${{tensorflowPackage}}" -replace '\\','/'
@@ -180,6 +183,11 @@ jobs:
           inputs:
             targetType: inline
             script: |
+              # Extract the C Library API tests to the build folder
+              # TODO: Make available on Windows once the TensorFlow C API exports all the necessary symbols
+              # TF #40927951
+              # Expand-Archive tensorflow_directml_plugin-*-c-api-tests.zip -Destination $(Build.SourcesDirectory)/build
+
               Invoke-Expression '$(test_env_win_${{replace(tensorflowPackage, '-', '_')}}.activateCommand)'
               $ResultsDir = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}/${{tensorflowPackage}}"
               python $(Build.SourcesDirectory)/test/test.py --run --parallel --summarize --redirect_output --results_dir $ResultsDir --groups ${{join(' ', parameters.testGroups)}}

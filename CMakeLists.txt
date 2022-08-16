@@ -608,7 +608,7 @@ if(NOT WIN32)
     )
     add_custom_target(tfdml_plugin_framework_zip ALL DEPENDS ${framework_full_name})
 
-    set(c_api_tests_full_name "${CMAKE_PROJECT_NAME}-${pkg_version}-${pkg_platform}-c-api-tests.zip")
+    set(c_api_tests_full_name "${pkg_name}-${pkg_version}-${pkg_platform}-c-api-tests.zip")
     add_custom_command(
         OUTPUT 
             ${c_api_tests_full_name}
