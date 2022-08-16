@@ -16,6 +16,7 @@ limitations under the License.
 #include "absl/cleanup/cleanup.h"
 #include "tensorflow/c/c_api.h"
 #include "tensorflow/c/c_api_experimental.h"
+#include <array>
 #include <cstring>
 #include <fstream>
 #include <gtest/gtest.h>
@@ -66,17 +67,45 @@ static TF_Buffer* ReadBufferFromFile(const char* file_path)
     return buffer;
 }
 
-TEST(CApiTests, SqueezeNetModelTest)
+class CApiTests : public ::testing::Test
+{
+  protected:
+    static void SetUpTestSuite()
+    {
+        TF_Status* status = TF_NewStatus();
+        auto status_cleanup =
+            absl::MakeCleanup([status] { TF_DeleteStatus(status); });
+
+        // Load the TFDML binary, which will automatically register all
+        // supported
+        // kernel implementations and create a "GPU" device
+#if _WIN32
+        tfdml_lib_ =
+            TF_LoadPluggableDeviceLibrary("tfdml_plugin_framework.dll", status);
+#else
+        tfdml_lib_ =
+            TF_LoadPluggableDeviceLibrary("tfdml_plugin_framework.so", status);
+#endif
+
+        ASSERT_EQ(TF_GetCode(status), TF_OK);
+    }
+
+    static void TearDownTestSuite()
+    {
+        TF_DeletePluggableDeviceLibraryHandle(tfdml_lib_);
+    }
+
+  private:
+    static TF_Library* tfdml_lib_;
+};
+
+TF_Library* CApiTests::tfdml_lib_ = nullptr;
+
+TEST_F(CApiTests, SqueezeNetModelTest)
 {
     TF_Status* status = TF_NewStatus();
     auto status_cleanup =
         absl::MakeCleanup([status] { TF_DeleteStatus(status); });
-
-    // Load the TFDML binary, which will automatically register all supported
-    // kernel implementations and create a "GPU" device
-    const TF_Library* tfdml_lib =
-        TF_LoadPluggableDeviceLibrary("libtfdml_plugin_framework.so", status);
-    ASSERT_EQ(TF_GetCode(status), TF_OK);
 
     // Read the frozen graph from the file
     TF_Buffer* buffer = ReadBufferFromFile("squeezenet_model/squeezenet.pb");
@@ -114,11 +143,11 @@ TEST(CApiTests, SqueezeNetModelTest)
     ASSERT_EQ(input_dims[0], -1);
     input_dims[0] = 1;
 
-    int num_input_elements = std::accumulate(
+    int64_t num_input_elements = std::accumulate(
         input_dims.begin(),
         input_dims.end(),
-        1,
-        std::multiplies<int>());
+        1LLU,
+        std::multiplies<int64_t>());
 
     TF_DataType input_dtype = TF_OperationOutputType(input_op);
     ASSERT_EQ(input_dtype, TF_FLOAT);
@@ -199,7 +228,7 @@ TEST(CApiTests, SqueezeNetModelTest)
     ASSERT_EQ(output_dtype, TF_FLOAT);
 }
 
-TEST(CApiTests, AddV2Test)
+TEST_F(CApiTests, AddV2Test)
 {
     auto graph = TF_NewGraph();
     auto graph_cleanup = absl::MakeCleanup([graph] { TF_DeleteGraph(graph); });
@@ -226,7 +255,7 @@ TEST(CApiTests, AddV2Test)
     TF_SetDevice(placeholder2_desc, "/device:GPU:0");
     TF_SetAttrType(placeholder2_desc, "dtype", TF_FLOAT);
     TF_SetAttrShape(placeholder2_desc, "shape", dims.data(), dims.size());
-    auto placeholder2_op = TF_FinishOperation(placeholder1_desc, status);
+    auto placeholder2_op = TF_FinishOperation(placeholder2_desc, status);
     ASSERT_EQ(TF_GetCode(status), TF_OK);
 
     std::array<TF_Output, 2> inputs = {
