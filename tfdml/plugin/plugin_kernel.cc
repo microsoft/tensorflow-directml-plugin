@@ -83,6 +83,7 @@ void RegisterKernels_SpaceToBatch();
 void RegisterKernels_SparseXent();
 void RegisterKernels_Split();
 void RegisterKernels_StridedSlice();
+void RegisterKernels_StridedSliceCpu();
 void RegisterKernels_Swapping();
 void RegisterKernels_Tile();
 void RegisterKernels_TopK();
@@ -164,6 +165,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_SparseXent();
     tfdml::RegisterKernels_Split();
     tfdml::RegisterKernels_StridedSlice();
+    tfdml::RegisterKernels_StridedSliceCpu();
     tfdml::RegisterKernels_Swapping();
     tfdml::RegisterKernels_Tile();
     tfdml::RegisterKernels_TopK();

@@ -241,5 +241,6 @@ constexpr inline TF_DataType DataTypeToEnum<std::complex<double>>()
 std::string DataTypeString(TF_DataType dtype);
 int DataTypeSize(TF_DataType dtype);
 bool DataTypeIsInteger(TF_DataType dt);
+bool DataTypeCanUseMemcpy(TF_DataType dtype);
 
 } // namespace tfdml

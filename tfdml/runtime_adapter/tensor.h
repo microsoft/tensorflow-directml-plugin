@@ -66,6 +66,12 @@ class Tensor
     template <typename T, size_t NDIMS>
     typename TTypes<T, NDIMS>::ConstTensor tensor() const;
 
+    template <typename T, size_t NDIMS>
+    typename TTypes<T, NDIMS>::Tensor bit_casted_tensor();
+
+    template <typename T, size_t NDIMS>
+    typename TTypes<T, NDIMS>::ConstTensor bit_casted_tensor() const;
+
     template <typename T>
     T* base()
     {
@@ -109,6 +115,7 @@ class Tensor
     }
 
     bool IsSameSize(const Tensor& other) const;
+    Tensor Slice(int64_t start, int64_t limit) const;
 
   private:
     static TF_Tensor* shallow_copy(const Tensor& other);
@@ -131,6 +138,24 @@ typename TTypes<T, NDIMS>::ConstTensor Tensor::tensor() const
 {
     CHECK(IsAligned());
     CHECK(dtype() == DataTypeToEnum<T>());
+    return typename TTypes<T, NDIMS>::ConstTensor(
+        base<const T>(),
+        shape().AsEigenDSizes<NDIMS>());
+}
+
+template <typename T, size_t NDIMS>
+typename TTypes<T, NDIMS>::Tensor Tensor::bit_casted_tensor()
+{
+    CHECK(IsAligned());
+    return typename TTypes<T, NDIMS>::Tensor(
+        base<T>(),
+        shape().AsEigenDSizes<NDIMS>());
+}
+
+template <typename T, size_t NDIMS>
+typename TTypes<T, NDIMS>::ConstTensor Tensor::bit_casted_tensor() const
+{
+    CHECK(IsAligned());
     return typename TTypes<T, NDIMS>::ConstTensor(
         base<const T>(),
         shape().AsEigenDSizes<NDIMS>());

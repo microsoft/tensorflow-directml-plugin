@@ -99,4 +99,32 @@ bool DataTypeIsInteger(TF_DataType dtype)
     default: return false;
     }
 }
+
+bool DataTypeCanUseMemcpy(TF_DataType dtype)
+{
+    switch (dtype)
+    {
+    case TF_FLOAT:
+    case TF_DOUBLE:
+    case TF_INT32:
+    case TF_UINT32:
+    case TF_UINT8:
+    case TF_UINT16:
+    case TF_INT16:
+    case TF_INT8:
+    case TF_COMPLEX64:
+    case TF_COMPLEX128:
+    case TF_INT64:
+    case TF_UINT64:
+    case TF_BOOL:
+    case TF_QINT8:
+    case TF_QUINT8:
+    case TF_QINT16:
+    case TF_QUINT16:
+    case TF_QINT32:
+    case TF_BFLOAT16:
+    case TF_HALF: return true;
+    default: return false;
+    }
+}
 } //  namespace tfdml
