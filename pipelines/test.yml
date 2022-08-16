@@ -139,7 +139,8 @@ jobs:
             script: |
               $ScriptPath = "$(Build.SourcesDirectory)/pipelines/create_test_env.sh" -replace '\\','/'
               $ScriptPathWsl = wsl wslpath -a $ScriptPath
-              $SourcesPathWsl = "$(Build.SourcesDirectory)" -replace '\\','/'
+              $SourcesPath = "$(Build.SourcesDirectory)" -replace '\\','/'
+              $SourcesPathWsl = wsl wslpath -a $SourcesPath
               $TestArtifactPath = "$(buildArtifactsPathRoot)/${{artifact}}" -replace '\\','/'
               $TestArtifactPathWsl = wsl wslpath -a $TestArtifactPath
               wsl bash $ScriptPathWsl $TestArtifactPathWsl ${{tensorflowPackage}}==${{parameters.tensorflowVersion}} ${{parameters.kerasPackage}} $SourcesPathWsl
