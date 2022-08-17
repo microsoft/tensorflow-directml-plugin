@@ -9,15 +9,15 @@ jobs:
   build-manylinux:
     strategy:
       matrix:
-        python_version: [3.7, 3.8, 3.9, 3.10]
+        python_version: ["3.7", "3.8", "3.9", "3.10"]
         include:
-          - python_version: 3.7
+          - python_version: "3.7"
             cp_version: cp37
-          - python_version: 3.8
+          - python_version: "3.8"
             cp_version: cp38
-          - python_version: 3.9
+          - python_version: "3.9"
             cp_version: cp39
-          - python_version: 3.10
+          - python_version: "3.10"
             cp_version: cp310
     name: Build x64-linux-release-${{ matrix.cp_version }}
     runs-on: ubuntu-latest
