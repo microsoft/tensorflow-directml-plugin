@@ -84,7 +84,7 @@ class CApiTests : public ::testing::Test
             TF_LoadPluggableDeviceLibrary("tfdml_plugin_framework.dll", status);
 #else
         tfdml_lib_ =
-            TF_LoadPluggableDeviceLibrary("tfdml_plugin_framework.so", status);
+            TF_LoadPluggableDeviceLibrary("libtfdml_plugin_framework.so", status);
 #endif
 
         ASSERT_EQ(TF_GetCode(status), TF_OK);
