@@ -44,6 +44,7 @@ jobs:
         run: |
           eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
           conda activate build
+          export TF_DIRECTML_ALLOW_WARP_ADAPTERS="true"
           python test/test.py --run --parallel
   build-windows-latest:
     name: Build x64-win-release-cp37
@@ -85,5 +86,6 @@ jobs:
         shell: pwsh
         run: |
           & "$env:TEMP/miniconda3/shell/condabin/conda-hook.ps1"
-          conad activate build
+          conda activate build
+          $env:TF_DIRECTML_ALLOW_WARP_ADAPTERS="true"
           python test/test.py --run --parallel
