@@ -72,7 +72,7 @@ class DmlAdapterImpl
 };
 
 // Retrieves a list of DML-compatible hardware adapters on the system.
-std::vector<DmlAdapterImpl> EnumerateAdapterImpls();
+std::vector<DmlAdapterImpl> EnumerateAdapterImpls(bool allow_warp_adapters);
 
 // Parse 'visible_device_list' into a list of adapter indices. See
 // tensorflow/core/protobuf/config.proto for more information about the format

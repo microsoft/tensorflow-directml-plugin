@@ -69,7 +69,34 @@ const char* GetVendorName(VendorID id)
 
 std::vector<DmlAdapter> EnumerateAdapters()
 {
-    auto impls = EnumerateAdapterImpls();
+    bool allow_warp_adapters = false;
+    const char* allow_warp_adapters_string =
+        std::getenv("TF_DIRECTML_ALLOW_WARP_ADAPTERS");
+
+    if (allow_warp_adapters_string != nullptr)
+    {
+        if (strcmp("false", allow_warp_adapters_string) == 0)
+        {
+            allow_warp_adapters = false;
+        }
+        else if (strcmp("true", allow_warp_adapters_string) == 0)
+        {
+            allow_warp_adapters = true;
+        }
+        else
+        {
+            TF_Log(
+                TF_ERROR,
+                "The TF_DIRECTML_ALLOW_WARP_ADAPTERS environment variable "
+                "is "
+                "set but could not be parsed: \"%s\". Valid values are "
+                "\"true\" "
+                "or \"false\". Using default value of \"false\".",
+                allow_warp_adapters_string);
+        }
+    }
+
+    auto impls = EnumerateAdapterImpls(allow_warp_adapters);
 
     std::vector<DmlAdapter> adapters;
     adapters.reserve(impls.size());
