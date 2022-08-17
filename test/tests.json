@@ -213,6 +213,9 @@
                     "file": "ops/scatter_nd_ops_test.py"
                 },
                 {
+                    "file": "ops/segment_reduction_ops_test.py"
+                },
+                {
                     "file": "ops/slice_op_test.py"
                 },
                 {
