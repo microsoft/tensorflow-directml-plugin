@@ -197,7 +197,9 @@ jobs:
 - job: summarize
   displayName: Summarize Results
   dependsOn: test
-  pool: ${{parameters.agentPool}}
+  pool:
+    name: ${{parameters.agentPool}}
+    demands: AP.TfArtifacts
   timeoutInMinutes: 30
   condition: succeededOrFailed()
   continueOnError: true
