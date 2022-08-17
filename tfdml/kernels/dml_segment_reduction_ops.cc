@@ -20,6 +20,7 @@ limitations under the License.
 
 namespace tfdml
 {
+template <DML_REDUCE_FUNCTION reduce_function>
 class DmlUnsortedSegmentReductionKernel : public OpKernel
 {
   public:
@@ -28,14 +29,6 @@ class DmlUnsortedSegmentReductionKernel : public OpKernel
         std::shared_ptr<const NodeDef> node_def)
         : OpKernel(std::move(node_def))
     {
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("begin_mask", &begin_mask_));
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("end_mask", &end_mask_));
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("ellipsis_mask", &ellipsis_mask_));
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("new_axis_mask", &new_axis_mask_));
-        OP_REQUIRES_OK(
-            ctx,
-            ctx->GetAttr("shrink_axis_mask", &shrink_axis_mask_));
-
         TFE_ContextOptions* context_options = TFE_NewContextOptions();
         auto context_options_cleanup = absl::MakeCleanup(
             [context_options] { TFE_DeleteContextOptions(context_options); });
@@ -55,59 +48,97 @@ class DmlUnsortedSegmentReductionKernel : public OpKernel
 
     void Compute(OpKernelContext* ctx)
     {
+        const char* operator_type = nullptr;
+        switch (reduce_function)
+        {
+        case DML_REDUCE_FUNCTION_SUM:
+            operator_type = "UnsortedSegmentSum";
+            break;
+        case DML_REDUCE_FUNCTION_MAX:
+            operator_type = "UnsortedSegmentMax";
+            break;
+        case DML_REDUCE_FUNCTION_MIN:
+            operator_type = "UnsortedSegmentMin";
+            break;
+        case DML_REDUCE_FUNCTION_MULTIPLY:
+            operator_type = "UnsortedSegmentProd";
+            break;
+        default:
+            OP_REQUIRES(
+                ctx,
+                false,
+                errors::InvalidArgument(
+                    "Unsupported segment reduction function."));
+        }
+
         Status status;
-        TFE_Op* strided_slice_op =
-            TFE_NewOp(eager_context_, "StridedSlice", status.raw());
+        TFE_Op* unsorted_segment_op =
+            TFE_NewOp(eager_context_, operator_type, status.raw());
         OP_REQUIRES_OK(ctx, status);
-        auto strided_slice_op_cleanup = absl::MakeCleanup(
-            [strided_slice_op] { TFE_DeleteOp(strided_slice_op); });
+        auto unsorted_segment_op_cleanup = absl::MakeCleanup(
+            [unsorted_segment_op] { TFE_DeleteOp(unsorted_segment_op); });
 
-        TFE_OpSetAttrInt(strided_slice_op, "begin_mask", begin_mask_);
-        TFE_OpSetAttrInt(strided_slice_op, "end_mask", end_mask_);
-        TFE_OpSetAttrInt(strided_slice_op, "ellipsis_mask", ellipsis_mask_);
-        TFE_OpSetAttrInt(strided_slice_op, "new_axis_mask", new_axis_mask_);
-        TFE_OpSetAttrInt(
-            strided_slice_op,
-            "shrink_axis_mask",
-            shrink_axis_mask_);
-
-        TFE_OpSetDevice(strided_slice_op, "/device:CPU", status.raw());
+        TFE_OpSetDevice(unsorted_segment_op, "/device:CPU", status.raw());
         OP_REQUIRES_OK(ctx, status);
 
-        const Tensor& input_tensor = ctx->input(0);
-        TFE_TensorHandle* input_handle =
-            TFE_NewTensorHandle(input_tensor.raw(), status.raw());
+        // data_tensor is originally on the GPU, so copy it over to the CPU
+        // before executing the CPU operator
+        const Tensor& data_tensor = ctx->input(0);
+        Tensor data_tensor_cpu;
+        OP_REQUIRES_OK(
+            ctx,
+            ctx->allocate_temp(
+                data_tensor.dtype(),
+                data_tensor.shape(),
+                &data_tensor_cpu,
+                true));
+        OP_REQUIRES_OK(
+            ctx,
+            ctx->device()->CopyDeviceTensorToCPU(
+                &data_tensor,
+                &data_tensor_cpu));
+        TFE_TensorHandle* data_handle =
+            TFE_NewTensorHandle(data_tensor_cpu.raw(), status.raw());
         OP_REQUIRES_OK(ctx, status);
         auto input_handle_cleanup = absl::MakeCleanup(
-            [input_handle] { TFE_DeleteTensorHandle(input_handle); });
-        TFE_OpAddInput(strided_slice_op, input_handle, status.raw());
+            [data_handle] { TFE_DeleteTensorHandle(data_handle); });
+        TFE_OpAddInput(unsorted_segment_op, data_handle, status.raw());
         OP_REQUIRES_OK(ctx, status);
 
-        const Tensor& begin_tensor = ctx->input(1);
-        TFE_TensorHandle* begin_handle =
-            TFE_NewTensorHandle(begin_tensor.raw(), status.raw());
+        // segment_ids is originally on the GPU, so copy it over to the CPU
+        // before executing the CPU operator
+        const Tensor& segment_ids_tensor = ctx->input(1);
+        Tensor segment_ids_tensor_cpu;
+        OP_REQUIRES_OK(
+            ctx,
+            ctx->allocate_temp(
+                segment_ids_tensor.dtype(),
+                segment_ids_tensor.shape(),
+                &segment_ids_tensor_cpu,
+                true));
+        OP_REQUIRES_OK(
+            ctx,
+            ctx->device()->CopyDeviceTensorToCPU(
+                &segment_ids_tensor,
+                &segment_ids_tensor_cpu));
+        TFE_TensorHandle* segment_ids_handle =
+            TFE_NewTensorHandle(segment_ids_tensor_cpu.raw(), status.raw());
         OP_REQUIRES_OK(ctx, status);
-        auto begin_handle_cleanup = absl::MakeCleanup(
-            [begin_handle] { TFE_DeleteTensorHandle(begin_handle); });
-        TFE_OpAddInput(strided_slice_op, begin_handle, status.raw());
+        auto segment_ids_handle_cleanup =
+            absl::MakeCleanup([segment_ids_handle]
+                              { TFE_DeleteTensorHandle(segment_ids_handle); });
+        TFE_OpAddInput(unsorted_segment_op, segment_ids_handle, status.raw());
         OP_REQUIRES_OK(ctx, status);
 
-        const Tensor& end_tensor = ctx->input(2);
-        TFE_TensorHandle* end_handle =
-            TFE_NewTensorHandle(end_tensor.raw(), status.raw());
+        // num_segments is already on the CPU
+        const Tensor& num_segments_tensor = ctx->input(2);
+        TFE_TensorHandle* num_segments_handle =
+            TFE_NewTensorHandle(num_segments_tensor.raw(), status.raw());
         OP_REQUIRES_OK(ctx, status);
-        auto end_handle_cleanup = absl::MakeCleanup(
-            [end_handle] { TFE_DeleteTensorHandle(end_handle); });
-        TFE_OpAddInput(strided_slice_op, end_handle, status.raw());
-        OP_REQUIRES_OK(ctx, status);
-
-        const Tensor& strides_tensor = ctx->input(3);
-        TFE_TensorHandle* strides_handle =
-            TFE_NewTensorHandle(strides_tensor.raw(), status.raw());
-        OP_REQUIRES_OK(ctx, status);
-        auto strides_handle_cleanup = absl::MakeCleanup(
-            [strides_handle] { TFE_DeleteTensorHandle(strides_handle); });
-        TFE_OpAddInput(strided_slice_op, strides_handle, status.raw());
+        auto num_segments_handle_cleanup =
+            absl::MakeCleanup([num_segments_handle]
+                              { TFE_DeleteTensorHandle(num_segments_handle); });
+        TFE_OpAddInput(unsorted_segment_op, num_segments_handle, status.raw());
         OP_REQUIRES_OK(ctx, status);
 
         TFE_TensorHandle* output_handle = nullptr;
@@ -117,26 +148,28 @@ class DmlUnsortedSegmentReductionKernel : public OpKernel
 
         int num_retvals = 1;
         TFE_Execute(
-            strided_slice_op,
+            unsorted_segment_op,
             &output_handle,
             &num_retvals,
             status.raw());
         OP_REQUIRES_OK(ctx, status);
 
-        TF_Tensor* output =
-            TFE_TensorHandleResolve(output_handle, status.raw());
+        Tensor output_cpu =
+            Tensor(TFE_TensorHandleResolve(output_handle, status.raw()));
         OP_REQUIRES_OK(ctx, status);
 
-        OP_REQUIRES_OK(ctx, ctx->set_output(0, Tensor(output)));
+        // Copy the CPU output back to the device
+        auto status_or_tensor = ctx->allocate_output(0, output_cpu.shape());
+        OP_REQUIRES_OK(ctx, status_or_tensor.status());
+
+        Tensor& output = status_or_tensor.ValueOrDie();
+        OP_REQUIRES_OK(
+            ctx,
+            ctx->device()->CopyCPUTensorToDevice(&output_cpu, &output));
     }
 
   private:
     TFE_Context* eager_context_ = nullptr;
-    int32_t begin_mask_;
-    int32_t end_mask_;
-    int32_t ellipsis_mask_;
-    int32_t new_axis_mask_;
-    int32_t shrink_axis_mask_;
 };
 
 #define REGISTER_GPU_KERNEL_UNSORTEDSEGMENT(                                   \
@@ -165,7 +198,7 @@ void RegisterUnsortedSegmentSum()
 {
     using int32_kernel = KernelDefinition<
         ops::UnsortedSegmentSum,
-        DmlUnsortedSegmentReductionKernel>::
+        DmlUnsortedSegmentReductionKernel<DML_REDUCE_FUNCTION_SUM>>::
         WithHostMemoryArguments<
             ops::UnsortedSegmentSum::Argument::num_segments>::
             WithTypeConstraint<
@@ -174,7 +207,7 @@ void RegisterUnsortedSegmentSum()
 
     using int64_kernel = KernelDefinition<
         ops::UnsortedSegmentSum,
-        DmlUnsortedSegmentReductionKernel>::
+        DmlUnsortedSegmentReductionKernel<DML_REDUCE_FUNCTION_SUM>>::
         WithHostMemoryArguments<
             ops::UnsortedSegmentSum::Argument::num_segments>::
             WithTypeConstraint<
@@ -196,6 +229,117 @@ void RegisterUnsortedSegmentSum()
         TF_INT32>();
 }
 
-void RegisterKernels_SegmentReduction() { RegisterUnsortedSegmentSum(); }
+void RegisterUnsortedSegmentMax()
+{
+    using int32_kernel = KernelDefinition<
+        ops::UnsortedSegmentMax,
+        DmlUnsortedSegmentReductionKernel<DML_REDUCE_FUNCTION_MAX>>::
+        WithHostMemoryArguments<
+            ops::UnsortedSegmentMax::Argument::num_segments>::
+            WithTypeConstraint<
+                ops::UnsortedSegmentMax::Attribute::Tindices,
+                TF_INT32>;
+
+    using int64_kernel = KernelDefinition<
+        ops::UnsortedSegmentMax,
+        DmlUnsortedSegmentReductionKernel<DML_REDUCE_FUNCTION_MAX>>::
+        WithHostMemoryArguments<
+            ops::UnsortedSegmentMax::Argument::num_segments>::
+            WithTypeConstraint<
+                ops::UnsortedSegmentMax::Attribute::Tindices,
+                TF_INT64>;
+
+    RegisterWithTypes<
+        int32_kernel,
+        ops::UnsortedSegmentMax::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT32>();
+
+    RegisterWithTypes<
+        int64_kernel,
+        ops::UnsortedSegmentMax::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT32>();
+}
+
+void RegisterUnsortedSegmentMin()
+{
+    using int32_kernel = KernelDefinition<
+        ops::UnsortedSegmentMin,
+        DmlUnsortedSegmentReductionKernel<DML_REDUCE_FUNCTION_MIN>>::
+        WithHostMemoryArguments<
+            ops::UnsortedSegmentMin::Argument::num_segments>::
+            WithTypeConstraint<
+                ops::UnsortedSegmentMin::Attribute::Tindices,
+                TF_INT32>;
+
+    using int64_kernel = KernelDefinition<
+        ops::UnsortedSegmentMin,
+        DmlUnsortedSegmentReductionKernel<DML_REDUCE_FUNCTION_MIN>>::
+        WithHostMemoryArguments<
+            ops::UnsortedSegmentMin::Argument::num_segments>::
+            WithTypeConstraint<
+                ops::UnsortedSegmentMin::Attribute::Tindices,
+                TF_INT64>;
+
+    RegisterWithTypes<
+        int32_kernel,
+        ops::UnsortedSegmentMin::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT32>();
+
+    RegisterWithTypes<
+        int64_kernel,
+        ops::UnsortedSegmentMin::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT32>();
+}
+
+void RegisterUnsortedSegmentProd()
+{
+    using int32_kernel = KernelDefinition<
+        ops::UnsortedSegmentProd,
+        DmlUnsortedSegmentReductionKernel<DML_REDUCE_FUNCTION_MULTIPLY>>::
+        WithHostMemoryArguments<
+            ops::UnsortedSegmentProd::Argument::num_segments>::
+            WithTypeConstraint<
+                ops::UnsortedSegmentProd::Attribute::Tindices,
+                TF_INT32>;
+
+    using int64_kernel = KernelDefinition<
+        ops::UnsortedSegmentProd,
+        DmlUnsortedSegmentReductionKernel<DML_REDUCE_FUNCTION_MULTIPLY>>::
+        WithHostMemoryArguments<
+            ops::UnsortedSegmentProd::Argument::num_segments>::
+            WithTypeConstraint<
+                ops::UnsortedSegmentProd::Attribute::Tindices,
+                TF_INT64>;
+
+    RegisterWithTypes<
+        int32_kernel,
+        ops::UnsortedSegmentProd::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT32>();
+
+    RegisterWithTypes<
+        int64_kernel,
+        ops::UnsortedSegmentProd::Attribute::T,
+        TF_FLOAT,
+        TF_HALF,
+        TF_INT32>();
+}
+
+void RegisterKernels_SegmentReduction()
+{
+    RegisterUnsortedSegmentSum();
+    RegisterUnsortedSegmentMax();
+    RegisterUnsortedSegmentMin();
+    RegisterUnsortedSegmentProd();
+}
 
 } // namespace tfdml
