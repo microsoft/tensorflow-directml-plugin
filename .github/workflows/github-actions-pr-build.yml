@@ -3,6 +3,8 @@ on:
   pull_request:
     types: [opened, synchronize, edited, reopened]
     branches: [main, release/*]
+  push:
+    branches: [user/pavignol/add-warp-testing]
 concurrency:
   group: pr-build-${{ github.ref }}
   cancel-in-progress: true
@@ -37,7 +39,12 @@ jobs:
           export CXX=/usr/bin/clang++-8
           eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
           conda activate build
-          python build.py --config release
+          python build.py --config release --install
+      - name: Test
+        run: |
+          eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
+          conda activate build
+          python test/test.py --run --parallel
   build-windows-latest:
     name: Build x64-win-release-cp37
     runs-on: windows-latest
@@ -73,4 +80,10 @@ jobs:
         run: |
           & "$env:TEMP/miniconda3/shell/condabin/conda-hook.ps1"
           conda activate build
-          python build.py --config release
+          python build.py --config release --install
+      - name: Test
+        shell: pwsh
+        run: |
+          & "$env:TEMP/miniconda3/shell/condabin/conda-hook.ps1"
+          conad activate build
+          python test/test.py --run --parallel
