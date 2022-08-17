@@ -15,6 +15,7 @@ limitations under the License.
 ==============================================================================*/
 
 #include "absl/cleanup/cleanup.h"
+#include "tensorflow/c/eager/c_api.h"
 #include "tfdml/kernels/pch.h"
 #include "tfdml/runtime_adapter/guarded_philox_random.h"
 #include "tfdml/runtime_adapter/rng_alg.h"
@@ -604,25 +605,27 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
     {
         OP_REQUIRES_OK(ctx, ctx->GetAttr("seed", &seed_));
         OP_REQUIRES_OK(ctx, ctx->GetAttr("seed2", &seed2_));
+        OP_REQUIRES_OK(ctx, ctx->GetAttr("dtype", &dtype_));
 
-        TF_Graph* graph = TF_NewGraph();
-        auto graph_cleanup =
-            absl::MakeCleanup([graph] { TF_DeleteGraph(graph); });
-
-        // Initialize the placeholder that sets the shape for the random op on
-        // the CPU
-        TF_OperationDescription* shape_desc =
-            TF_NewOperation(graph, "Placeholder", "shape");
-        TF_SetDevice(shape_desc, "/device:CPU");
-
-        TF_DataType shape_tensor_dtype;
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("T", &shape_tensor_dtype));
-        TF_SetAttrType(shape_desc, "dtype", shape_tensor_dtype);
+        TFE_ContextOptions* context_options = TFE_NewContextOptions();
+        auto context_options_cleanup = absl::MakeCleanup(
+            [context_options] { TFE_DeleteContextOptions(context_options); });
 
         Status status;
-        shape_op_ = TF_FinishOperation(shape_desc, status.raw());
+        eager_context_ = TFE_NewContext(context_options, status.raw());
         OP_REQUIRES_OK(ctx, status);
+    }
 
+    ~DmlEmulatedPhiloxRandomKernel() override
+    {
+        if (eager_context_)
+        {
+            TFE_DeleteContext(eager_context_);
+        }
+    }
+
+    void Compute(OpKernelContext* ctx)
+    {
         const char* emulated_kernel_name;
         switch (emulated_kernel_type)
         {
@@ -634,90 +637,58 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
             break;
         }
 
-        TF_DataType output_dtype;
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("dtype", &output_dtype));
-
-        // Initialize the random op on the CPU
-        TF_OperationDescription* random_desc = TF_NewOperation(
-            graph,
-            emulated_kernel_name,
-            "DmlEmulatedPhiloxRandomKernel");
-        TF_SetDevice(random_desc, "/device:CPU");
-        TF_AddInput(random_desc, TF_Output{shape_op_, 0});
-        TF_SetAttrType(random_desc, "dtype", output_dtype);
-        TF_SetAttrType(random_desc, "T", shape_tensor_dtype);
-        TF_SetAttrInt(random_desc, "seed", seed_);
-        TF_SetAttrInt(random_desc, "seed2", seed2_);
-
-        random_op_ = TF_FinishOperation(random_desc, status.raw());
-        OP_REQUIRES_OK(ctx, status);
-
-        // Create a new session that will be executed on the CPU
-        TF_SessionOptions* opts = TF_NewSessionOptions();
-        auto session_opts_cleanup =
-            absl::MakeCleanup([opts] { TF_DeleteSessionOptions(opts); });
-
-        sess_ = TF_NewSession(graph, opts, status.raw());
-        OP_REQUIRES_OK(ctx, status);
-    }
-
-    ~DmlEmulatedPhiloxRandomKernel() override
-    {
-        if (sess_)
-        {
-            Status status;
-            TF_DeleteSession(sess_, status.raw());
-            TF_CHECK_OK(status);
-        }
-    }
-
-    void Compute(OpKernelContext* ctx)
-    {
-        Tensor shape_tensor = ctx->input(0);
-        const TensorShape& input_shape = shape_tensor.shape();
-
-        TF_Output feeds[] = {TF_Output{shape_op_, 0}};
-        TF_Tensor* feedValues[] = {shape_tensor.raw()};
-        TF_Output fetches[] = {TF_Output{random_op_, 0}};
-        TF_Tensor* fetchValues[] = {nullptr};
-
         Status status;
-        TF_SessionRun(
-            sess_,
-            nullptr,
-            feeds,
-            feedValues,
-            1,
-            fetches,
-            fetchValues,
-            1,
-            nullptr,
-            0,
-            nullptr,
-            status.raw());
+        TFE_Op* random_op =
+            TFE_NewOp(eager_context_, emulated_kernel_name, status.raw());
+        OP_REQUIRES_OK(ctx, status);
+        auto random_op_cleanup =
+            absl::MakeCleanup([random_op] { TFE_DeleteOp(random_op); });
+
+        TFE_OpSetAttrInt(random_op, "seed", seed_);
+        TFE_OpSetAttrInt(random_op, "seed2", seed2_);
+        TFE_OpSetAttrType(random_op, "dtype", dtype_);
+
+        TFE_OpSetDevice(random_op, "/device:CPU", status.raw());
         OP_REQUIRES_OK(ctx, status);
 
-        TensorShape output_shape;
-        OP_REQUIRES_OK(
-            ctx,
-            TensorShapeUtils::MakeShape(shape_tensor, &output_shape));
+        const Tensor& shape_tensor = ctx->input(0);
+        TFE_TensorHandle* shape_handle =
+            TFE_NewTensorHandle(shape_tensor.raw(), status.raw());
+        OP_REQUIRES_OK(ctx, status);
+        auto shape_handle_cleanup = absl::MakeCleanup(
+            [shape_handle] { TFE_DeleteTensorHandle(shape_handle); });
+        TFE_OpAddInput(random_op, shape_handle, status.raw());
+        OP_REQUIRES_OK(ctx, status);
 
+        TFE_TensorHandle* output_handle = nullptr;
+        OP_REQUIRES_OK(ctx, status);
+        auto output_handle_cleanup = absl::MakeCleanup(
+            [output_handle] { TFE_DeleteTensorHandle(output_handle); });
+
+        int num_retvals = 1;
+        TFE_Execute(random_op, &output_handle, &num_retvals, status.raw());
+        OP_REQUIRES_OK(ctx, status);
+
+        Tensor output_cpu =
+            Tensor(TFE_TensorHandleResolve(output_handle, status.raw()));
+        OP_REQUIRES_OK(ctx, status);
+
+        // Copy the CPU output back to the device
         StatusOr<Tensor> status_or_output =
-            ctx->allocate_output(0, output_shape);
+            ctx->allocate_output(0, output_cpu.shape());
         OP_REQUIRES_OK(ctx, status_or_output.status());
 
-        Tensor host_output(fetchValues[0]);
-        ctx->device()->CopyCPUTensorToDevice(
-            &host_output,
-            &status_or_output.ValueOrDie());
+        Tensor& output = status_or_output.ValueOrDie();
+        OP_REQUIRES_OK(
+            ctx,
+            ctx->device()->CopyCPUTensorToDevice(&output_cpu, &output));
     }
 
   private:
+    TFE_Context* eager_context_ = nullptr;
     int seed_;
     int seed2_;
-    TF_Operation* shape_op_ = nullptr;
-    TF_Operation* random_op_ = nullptr;
-    TF_Session* sess_ = nullptr;
+    TF_DataType dtype_;
 };
 
 template <typename T>
