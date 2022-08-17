@@ -248,11 +248,6 @@ std::vector<DmlAdapterImpl> EnumerateAdapterImpls(bool allow_warp_adapters)
                  IID_PPV_ARGS(&adapter)) != DXGI_ERROR_NOT_FOUND;
              adapter_index++)
         {
-            if (!IsSoftwareAdapter(adapter.Get()))
-            {
-                continue;
-            }
-
             // Since we enumerate by performance, we can ignore everything that
             // comes after the first software adapter, which includes the IDD
             // adapters. This is necessary for now because IDD adapters don't
@@ -400,11 +395,6 @@ std::vector<DmlAdapterImpl> EnumerateAdapterImpls(bool allow_warp_adapters)
         DML_CHECK_SUCCEEDED(adapter->GetProperty(
             DXCoreAdapterProperty::IsHardware,
             &is_hardware_adapter));
-
-        if (is_hardware_adapter)
-        {
-            continue;
-        }
 
         if (!allow_warp_adapters)
         {
