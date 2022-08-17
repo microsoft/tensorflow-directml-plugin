@@ -16,6 +16,7 @@
 
 import itertools
 
+import os
 import numpy as np
 
 from tensorflow.python.client import session
@@ -393,6 +394,10 @@ class UnsortedSegmentTest(SegmentReductionHelper):
 
   @test_util.run_in_graph_and_eager_modes
   def testGradientsGradientTape(self):
+    # TODO: Re-enable on Windows once the issue has been figured out and fixed
+    # https://github.com/tensorflow/tensorflow/issues/57095
+    if os.name == "nt":
+      self.skipTest("Segmentation fault on Windows during H2D copy")
     num_cols = 2
     indices_flat = np.array([0, 4, 0, -1, 3, -1, 4, 7, 7, 3])
     num_segments = max(indices_flat) + 3
