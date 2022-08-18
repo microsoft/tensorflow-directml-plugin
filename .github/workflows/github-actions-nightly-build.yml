@@ -48,9 +48,10 @@ jobs:
           export CXX=/usr/bin/clang++-8
           eval "$(/tmp/miniconda3/bin/conda shell.bash hook)"
           conda activate build
-          python build.py --config release
+          python build.py --config=release --telemetry --telemetry_provider_group_guid="${{ secrets.TELEMETRY_PROVIDER_GROUP_GUID }}"
       - uses: actions/upload-artifact@v3
         with:
+          name: tensorflow-directml-plugin-linux-x86-x64-${{ github.sha }}
           path: build/tensorflow_directml_plugin-*-${{ matrix.cp_version }}-${{ matrix.cp_version }}-linux_x86_64.whl
   build-windows-latest:
     strategy:
@@ -99,7 +100,8 @@ jobs:
         run: |
           & "$env:TEMP/miniconda3/shell/condabin/conda-hook.ps1"
           conda activate build
-          python build.py --config release
+          python build.py --config=release --telemetry --telemetry_provider_group_guid="${{ secrets.TELEMETRY_PROVIDER_GROUP_GUID }}"
       - uses: actions/upload-artifact@v3
         with:
+          name: tensorflow-directml-plugin-win-amd64-${{ github.sha }}
           path: build/tensorflow_directml_plugin-*-${{ matrix.cp_version }}-${{ matrix.cp_version }}-win_amd64.whl
