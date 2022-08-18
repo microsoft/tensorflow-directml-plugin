@@ -318,6 +318,7 @@ add_library(
     tfdml/kernels/dml_scan_ops.cc
     tfdml/kernels/dml_scatter_nd_ops.cc
     tfdml/kernels/dml_scatter_ops.cc
+    tfdml/kernels/dml_segment_reduction_ops.cc
     tfdml/kernels/dml_select_op.cc
     tfdml/kernels/dml_slice_op.cc
     tfdml/kernels/dml_snapshot_op.cc
