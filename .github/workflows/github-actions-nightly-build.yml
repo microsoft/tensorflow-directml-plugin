@@ -3,8 +3,6 @@ on:
   schedule:
     # Build nightly at 5 AM UTC (10 PM PDT)
     - cron:  "0 5 * * *"
-  push:
-    branches: [user/pavignol/add-github-actions-nightly-build]
 jobs:
   build-manylinux:
     strategy:
