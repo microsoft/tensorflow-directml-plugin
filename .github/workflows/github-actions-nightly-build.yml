@@ -55,7 +55,7 @@ jobs:
           python build.py --config=release --telemetry --telemetry_provider_group_guid="${{ secrets.TELEMETRY_PROVIDER_GROUP_GUID }}"
       - uses: actions/upload-artifact@v3
         with:
-          name: tensorflow-directml-plugin-linux-x86-x64-${{ github.sha }}
+          name: tensorflow_directml_plugin-${{ github.sha }}-${{ matrix.cp_version_prefix }}-${{ matrix.cp_version_suffix }}-linux_x86_64
           path: build/tensorflow_directml_plugin-*-${{ matrix.cp_version_prefix }}-${{ matrix.cp_version_suffix }}-linux_x86_64.whl
   build-windows-latest:
     strategy:
@@ -111,5 +111,5 @@ jobs:
           python build.py --config=release --telemetry --telemetry_provider_group_guid="${{ secrets.TELEMETRY_PROVIDER_GROUP_GUID }}"
       - uses: actions/upload-artifact@v3
         with:
-          name: tensorflow-directml-plugin-win-amd64-${{ github.sha }}
+          name: tensorflow_directml_plugin-${{ github.sha }}-${{ matrix.cp_version_prefix }}-${{ matrix.cp_version_suffix }}-win_amd64
           path: build/tensorflow_directml_plugin-*-${{ matrix.cp_version_prefix }}-${{ matrix.cp_version_suffix }}-win_amd64.whl
