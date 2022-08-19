@@ -108,12 +108,57 @@ void DmlKernelWrapperBase::Compute(OpKernelContext* ctx)
                 // If the tensor is nonempty, fill it with zero's
                 if (output_tensor.NumElements() != 0)
                 {
+                    Tensor cpu_tensor_before;
+                    OP_REQUIRES_OK(
+                        ctx,
+                        ctx->allocate_temp(
+                            output_tensor.dtype(),
+                            output_tensor.shape(),
+                            &cpu_tensor_before,
+                            true));
+
+                    for (int i = 0; i < cpu_tensor_before.NumElements(); ++i)
+                    {
+                        cpu_tensor_before.base<float>()[i] = 12345;
+                    }
+
+                    OP_REQUIRES_OK(
+                        ctx,
+                        ctx->device()->CopyCPUTensorToDevice(
+                            &cpu_tensor_before,
+                            &output_tensor));
+
                     DMLDeviceContext* device_context =
                         dml_device->GetDeviceContext();
 
                     D3D12BufferRegion buffer =
                         device_context->GetBufferForTensor(output_tensor);
-                    device_context->ZeroBuffer(buffer);
+                    auto abc = device_context->ZeroBuffer(buffer);
+                    printf("LALALALA\n");
+                    printf("LALALALA\n");
+                    printf("LALALALA\n");
+                    printf("LALALALA\n");
+                    printf("LALALALA\n");
+                    abc.WaitForSignal();
+
+                    Tensor cpu_tensor;
+                    OP_REQUIRES_OK(
+                        ctx,
+                        ctx->allocate_temp(
+                            output_tensor.dtype(),
+                            output_tensor.shape(),
+                            &cpu_tensor,
+                            true));
+                    OP_REQUIRES_OK(
+                        ctx,
+                        ctx->device()->CopyDeviceTensorToCPU(
+                            &output_tensor,
+                            &cpu_tensor));
+
+                    for (int i = 0; i < cpu_tensor.NumElements(); ++i)
+                    {
+                        printf("%f\n", cpu_tensor.base<float>()[i]);
+                    }
                 }
             }
             return;

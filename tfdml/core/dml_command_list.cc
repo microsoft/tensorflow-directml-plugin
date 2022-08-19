@@ -109,29 +109,6 @@ void DmlCommandList::FillBufferWithPattern(
         uint8_t bytes[16];
     } fillPattern = {};
 
-    assert(ABSL_ARRAYSIZE(fillPattern.bytes) == 16);
-    assert(
-        value.size() <=
-        ABSL_ARRAYSIZE(fillPattern.bytes)); // No element is expected larger
-                                            // than 128 bits (e.g. complex128).
-
-    if (!value.empty())
-    {
-        assert(
-            ABSL_ARRAYSIZE(fillPattern.bytes) % value.size() ==
-            0); // Should fit evenly into 16 bytes (e.g. uint8,
-                // float16, uint32, float64...).
-
-        // Repeat the value multiple times into the pattern buffer.
-        size_t valueIndex = 0;
-        for (uint8_t& p : fillPattern.bytes)
-        {
-            p = value[valueIndex++];
-            valueIndex = (valueIndex == value.size()) ? 0 : valueIndex;
-        }
-    }
-    // Else just leave fill pattern as zeroes.
-
     // The destination must be appropriately aligned and padded
     assert(dst_offset % sizeof(uint32_t) == 0);
     assert(dst_size_in_bytes % sizeof(uint32_t) == 0);
@@ -166,7 +143,11 @@ void DmlCommandList::FillBufferWithPattern(
         &uav_desc,
         descriptor_range_gpu.cpu_handle);
 
-    SetDescriptorHeap(descriptor_range_gpu.heap);
+    current_descriptor_heap_ = descriptor_range_gpu.heap;
+    ID3D12DescriptorHeap* descriptor_heaps[] = {descriptor_range_gpu.heap};
+    d3d_command_list_->SetDescriptorHeaps(
+        ABSL_ARRAYSIZE(descriptor_heaps),
+        descriptor_heaps);
 
     // Record a ClearUAV onto the command list.
     d3d_command_list_->ClearUnorderedAccessViewUint(
