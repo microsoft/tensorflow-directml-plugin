@@ -617,13 +617,6 @@ class DmlReduceKernel : public DmlKernel
             output_shape,
             output_shape);
 
-        // Coerce the output datatype to unsigned, for argmin/argmax
-        if (is_arg_function_ && DataTypeIsInteger(output.desc.GetTfDataType()))
-        {
-            output.desc.ForceUnsignedDataType();
-            zero_outputs_ = true;
-        }
-
         DmlKernelTensors tensors;
         tensors.inputs = {input};
         tensors.outputs = {output};
