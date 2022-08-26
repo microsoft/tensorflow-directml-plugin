@@ -139,10 +139,27 @@ DmlKernelContext::DmlKernelContext(
         }
         else
         {
-            auto status_or_tensor =
-                op_ctx_->allocate_output(i, output_shapes[i]);
+            absl::InlinedVector<int, 4> candidate_input_indices(
+                op_ctx_->num_inputs());
+            std::iota(
+                candidate_input_indices.begin(),
+                candidate_input_indices.end(),
+                0);
+
+            int forwarded_input_index = -1;
+            auto status_or_tensor = op_ctx_->forward_input_or_allocate_output(
+                candidate_input_indices,
+                i,
+                output_shapes[i],
+                &forwarded_input_index);
             OP_REQUIRES_OK(op_ctx_, status_or_tensor.status());
             output_tensors_.push_back(status_or_tensor.ConsumeValueOrDie());
+
+            // TODO: Remove this after testing is done
+            if (forwarded_input_index != -1)
+            {
+                printf("*********FORWARDED INPUT: %d\n", forwarded_input_index);
+            }
         }
     }
 }
