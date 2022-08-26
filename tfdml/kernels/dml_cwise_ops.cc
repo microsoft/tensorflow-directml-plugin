@@ -352,10 +352,12 @@ class DmlUnaryScaleBiasKernel : public DmlKernel
         auto inputs = GetDmlTensorDescs(tensors.inputs);
         auto outputs = GetDmlTensorDescs(tensors.outputs);
 
+        DML_SCALE_BIAS scale_bias{scale, bias};
+
         OPERATOR_DESC operator_desc = {
             &inputs[0],
             &outputs[0],
-            &DML_SCALE_BIAS{scale, bias},
+            &scale_bias,
         };
         DML_OPERATOR_DESC op_desc = {operator_type, &operator_desc};
         Initialize(ctx, std::move(tensors), op_desc);
