@@ -51,12 +51,13 @@ class DmlCastKernel : public DmlKernel
             DmlTensorDesc::Create(output_dtype, tensor_shape, tensor_shape);
 
         DmlKernelTensors tensors;
+        tensors.supports_in_place_execution = true;
         tensors.outputs = {output};
         tensors.inputs = {input};
 
         auto inputs = GetDmlTensorDescs(tensors.inputs);
         auto scope = dml::Graph(ctx->GetDmlDevice());
-        auto input_tensor = dml::InputTensor(scope, 0, inputs[0]);
+        auto result = dml::InputTensor(scope, 0, inputs[0]);
 
         // Bool is a special case since it doesn't behave the same as uint8. The
         // uint8 version simply drops the decimals, but bool converts anything
@@ -64,10 +65,10 @@ class DmlCastKernel : public DmlKernel
         if (output_dtype == TF_BOOL &&
             (input_dtype == TF_HALF || input_dtype == TF_FLOAT))
         {
-            input_tensor = dml::Ceil(dml::Abs(input_tensor));
+            result = dml::Ceil(dml::Abs(result));
         }
 
-        auto result = dml::Cast(input_tensor, dml_out_dtype);
+        result = dml::Cast(result, dml_out_dtype);
 
         if (output_dtype == TF_BOOL)
         {

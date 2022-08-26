@@ -107,6 +107,7 @@ static DmlKernelTensors CreateKernelTensors(
     const TensorShape& output_shape)
 {
     DmlKernelTensors tensors;
+    tensors.supports_in_place_execution = true;
 
     for (uint32_t i = 0; i < ctx->GetInputCount(); ++i)
     {
@@ -253,6 +254,7 @@ class DmlMaxActivationKernel : public DmlKernel
             dml_tensor_shape);
 
         DmlKernelTensors tensors;
+        tensors.supports_in_place_execution = true;
         tensors.inputs = {input};
         tensors.outputs = {output};
 
@@ -313,6 +315,7 @@ class DmlClipByValueKernel : public DmlKernel
         CHECK(ctx->GetOutputCount() == 1);
 
         DmlKernelParams params;
+        params.supports_in_place_execution = true;
 
         // Broadcast inputs to match output shape
         params.input_shape = ctx->GetOutputTensorShape(0);
@@ -358,6 +361,7 @@ class DmlSeluKernel : public DmlKernel
         CHECK(ctx->GetOutputCount() == 1);
 
         DmlKernelParams params;
+        params.supports_in_place_execution = true;
 
         // Broadcast inputs to match output shape
         params.input_shape = ctx->GetOutputTensorShape(0);
@@ -421,6 +425,7 @@ class DmlLeakyReluKernel : public DmlKernel
         CHECK(ctx->GetOutputCount() == 1);
 
         DmlKernelParams params;
+        params.supports_in_place_execution = true;
 
         // Broadcast inputs to match output shape
         params.input_shape = ctx->GetOutputTensorShape(0);
@@ -544,6 +549,7 @@ class DmlBitwiseNotKernel : public DmlKernel
         auto out_desc = out.desc.GetDmlDesc();
 
         DmlKernelTensors tensors;
+        tensors.supports_in_place_execution = true;
         tensors.inputs = {in};
         tensors.outputs = {out};
 
@@ -629,6 +635,7 @@ class DmlBitCountKernel : public DmlKernel
         auto out_desc = out.desc.GetDmlDesc();
 
         DmlKernelTensors tensors;
+        tensors.supports_in_place_execution = true;
         tensors.inputs = {in};
         tensors.outputs = {out};
 

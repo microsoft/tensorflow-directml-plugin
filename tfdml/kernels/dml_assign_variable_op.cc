@@ -197,6 +197,7 @@ class DmlUpdateVariableOpHelper : public DmlKernel
         rhs_info.desc = tensor_desc;
 
         DmlKernelTensors tensors = {};
+        tensors.supports_in_place_execution = true;
         tensors.inputs = {lhs_info, rhs_info};
         tensors.outputs = {lhs_info};
 

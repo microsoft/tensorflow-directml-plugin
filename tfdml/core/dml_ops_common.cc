@@ -138,6 +138,8 @@ static uint32_t GetDmlOutputTensorCount(
 {
     DmlKernelTensors tensor_descs;
     tensor_descs.output_refs_forwarding = params.output_refs_forwarding;
+    tensor_descs.supports_in_place_execution =
+        params.supports_in_place_execution;
 
     // The number of inputs/outputs the DML operator takes
     uint32_t dml_input_count = GetDmlInputTensorCount(ctx, params);
@@ -260,6 +262,7 @@ Status DmlKernel::Initialize(
     input_descs_ = std::move(tensor_descs.inputs);
     output_descs_ = std::move(tensor_descs.outputs);
     output_refs_forwarding_ = std::move(tensor_descs.output_refs_forwarding);
+    supports_in_place_execution_ = tensor_descs.supports_in_place_execution;
     init_helper_ = init_helper;
 
     DML_BINDING_PROPERTIES exec_binding_props =

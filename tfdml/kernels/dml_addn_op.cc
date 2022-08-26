@@ -34,6 +34,7 @@ class DmlAddNKernel : public DmlKernel
         TensorShape tensor_shape({ctx->GetOutputTensorShape(0).num_elements()});
 
         DmlKernelTensors tensors;
+        tensors.supports_in_place_execution = true;
 
         for (uint32_t i = 0; i < ctx->GetInputCount(); ++i)
         {
@@ -150,6 +151,7 @@ class DmlBinaryAddVariantKernel : public DmlKernel
         DmlKernelTensors tensors = {};
         tensors.inputs = {a_info, b_info};
         tensors.outputs = {a_info};
+        tensors.supports_in_place_execution = true;
 
         auto inputs = GetDmlTensorDescs(tensors.inputs);
         auto scope = dml::Graph(init_helper->dml_device->GetDmlDevice());
