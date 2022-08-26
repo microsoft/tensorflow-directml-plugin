@@ -220,7 +220,8 @@ void DmlKernel::Initialize(
         dml_device->CreateOperator(&op_desc, IID_PPV_ARGS(&op)));
 
     // For now, we don't set any flags
-    DML_EXECUTION_FLAGS execution_flags = DML_EXECUTION_FLAG_NONE;
+    DML_EXECUTION_FLAGS execution_flags =
+        DML_EXECUTION_FLAG_ALLOW_HALF_PRECISION_COMPUTATION;
 
     // Compile the operator
     ComPtr<IDMLCompiledOperator> compiled_op;

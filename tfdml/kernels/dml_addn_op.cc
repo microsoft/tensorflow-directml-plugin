@@ -34,7 +34,6 @@ class DmlAddNKernel : public DmlKernel
         TensorShape tensor_shape({ctx->GetOutputTensorShape(0).num_elements()});
 
         DmlKernelTensors tensors;
-        tensors.supports_in_place_execution = true;
 
         for (uint32_t i = 0; i < ctx->GetInputCount(); ++i)
         {
@@ -154,15 +153,17 @@ class DmlBinaryAddVariantKernel : public DmlKernel
         tensors.supports_in_place_execution = true;
 
         auto inputs = GetDmlTensorDescs(tensors.inputs);
-        auto scope = dml::Graph(init_helper->dml_device->GetDmlDevice());
-        const auto a = dml::InputTensor(scope, 0, inputs[0]);
-        const auto b = dml::InputTensor(scope, 1, inputs[1]);
-        auto result = a + b;
+        auto outputs = GetDmlTensorDescs(tensors.outputs);
 
-        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
-            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
-
-        Initialize(ctx, std::move(tensors), compiled_op.Get());
+        DML_ELEMENT_WISE_ADD_OPERATOR_DESC operator_desc = {
+            &inputs[0],
+            &outputs[0],
+        };
+        DML_OPERATOR_DESC op_desc = {
+            DML_OPERATOR_ELEMENT_WISE_ADD,
+            &operator_desc,
+        };
+        Initialize(ctx, std::move(tensors), op_desc);
     }
 
     StatusOr<DmlGpuEvent> Compute(

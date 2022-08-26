@@ -86,16 +86,18 @@ class DmlFillKernel : public DmlKernel
         params.kernel_input_indices = {1};
 
         DmlKernelTensors tensors = GetTensorInfos(ctx, params);
-
         auto inputs = GetDmlTensorDescs(tensors.inputs);
-        auto scope = dml::Graph(ctx->GetDmlDevice());
-        auto input_tensor = dml::InputTensor(scope, 0, inputs[0]);
-        auto result = dml::Identity(input_tensor);
+        auto outputs = GetDmlTensorDescs(tensors.outputs);
 
-        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
-            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+        DML_ELEMENT_WISE_IDENTITY_OPERATOR_DESC identity_desc = {};
+        identity_desc.InputTensor = &inputs[0];
+        identity_desc.OutputTensor = &outputs[0];
 
-        Initialize(ctx, std::move(tensors), compiled_op.Get());
+        DML_OPERATOR_DESC op_desc = {
+            DML_OPERATOR_ELEMENT_WISE_IDENTITY,
+            &identity_desc,
+        };
+        Initialize(ctx, std::move(tensors), op_desc);
     }
 };
 
