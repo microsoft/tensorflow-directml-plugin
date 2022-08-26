@@ -224,6 +224,7 @@ add_library(
     tfdml/core/dml_device.cc
     tfdml/core/dml_device_cache.cc
     tfdml/core/dml_device_context.cc
+    tfdml/core/dml_device_manager.cc
     tfdml/core/dml_device_state.cc
     tfdml/core/dml_dso_loader.cc
     tfdml/core/dml_error_handling.cc
@@ -239,6 +240,7 @@ add_library(
     tfdml/core/dml_ops_common.cc
     tfdml/core/dml_pooled_heap.cc
     tfdml/core/dml_readback_heap.cc
+    tfdml/core/dml_tagged_pointer.cc
     tfdml/core/dml_tensor_desc.cc
     tfdml/core/dml_tracing.cc
     tfdml/core/dml_upload_heap.cc

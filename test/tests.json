@@ -63,6 +63,9 @@
                     "file": "ops/conv3d_transpose_test.py"
                 },
                 {
+                    "file": "ops/cross_device_ops_test.py"
+                },
+                {
                     "file": "ops/cross_grad_test.py"
                 },
                 {
@@ -292,7 +295,7 @@
             "timeout_seconds": 300,
             "tests": [
                 {
-                    "file": "plugin/profiler_test.py"
+                    "file": "plugin/dml_multiple_devices_test.py"
                 },
                 {
                     "name": "dml_visible_devices_empty1",
@@ -317,6 +320,9 @@
                         "--dml_visible_devices",
                         "0"
                     ]
+                },
+                {
+                    "file": "plugin/profiler_test.py"
                 }
             ]
         }

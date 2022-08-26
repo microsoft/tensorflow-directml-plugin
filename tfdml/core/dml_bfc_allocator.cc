@@ -36,9 +36,9 @@ D3D12BufferRegion DmlAllocator::CreateBufferRegion(
     return heap_allocator_->CreateBufferRegion(ptr, size_in_bytes);
 }
 
-void* DmlAllocator::Alloc(size_t num_bytes)
+void* DmlAllocator::Alloc(uint32_t device_id, size_t num_bytes)
 {
-    void* p = heap_allocator_->Alloc(num_bytes);
+    void* p = heap_allocator_->Alloc(device_id, num_bytes);
     return p;
 }
 
