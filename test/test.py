@@ -287,7 +287,13 @@ class _Test:
         summary["cases_failed"] = []
 
         if Path(self.results_file_path).exists() and run_state != "timed_out":
-            root = ET.parse(self.results_file_path).getroot()
+            try:
+                root = ET.parse(self.results_file_path).getroot()
+            except ET.ParseError:
+                print(f"Error while parsing '{self.results_file_path}'")
+                summary["result"] = "failed"
+                return summary
+
             for test_suite in root.findall("testsuite"):
                 test_suite_name = test_suite.attrib["name"]
                 for test_case in test_suite.findall("testcase"):
