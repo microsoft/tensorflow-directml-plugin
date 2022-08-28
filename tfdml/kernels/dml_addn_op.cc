@@ -157,6 +157,7 @@ class DmlBinaryAddVariantKernel : public DmlKernel
 
         DML_ELEMENT_WISE_ADD_OPERATOR_DESC operator_desc = {
             &inputs[0],
+            &inputs[1],
             &outputs[0],
         };
         DML_OPERATOR_DESC op_desc = {
