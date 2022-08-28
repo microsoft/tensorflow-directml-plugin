@@ -30,8 +30,6 @@ from tensorflow.python.ops import nn_grad
 from tensorflow.python.ops import nn_impl
 from tensorflow.python.ops import nn_ops
 from tensorflow.python.platform import test
-import os
-input(os.getpid())
 
 class BatchNormalizationTest(test.TestCase):
 
