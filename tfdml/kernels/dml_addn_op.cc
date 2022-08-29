@@ -153,18 +153,15 @@ class DmlBinaryAddVariantKernel : public DmlKernel
         tensors.supports_in_place_execution = true;
 
         auto inputs = GetDmlTensorDescs(tensors.inputs);
-        auto outputs = GetDmlTensorDescs(tensors.outputs);
+        auto scope = dml::Graph(init_helper->dml_device->GetDmlDevice());
+        const auto a = dml::InputTensor(scope, 0, inputs[0]);
+        const auto b = dml::InputTensor(scope, 1, inputs[1]);
+        auto result = a + b;
 
-        DML_ELEMENT_WISE_ADD_OPERATOR_DESC operator_desc = {
-            &inputs[0],
-            &inputs[1],
-            &outputs[0],
-        };
-        DML_OPERATOR_DESC op_desc = {
-            DML_OPERATOR_ELEMENT_WISE_ADD,
-            &operator_desc,
-        };
-        Initialize(ctx, std::move(tensors), op_desc);
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 
     StatusOr<DmlGpuEvent> Compute(
