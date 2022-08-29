@@ -71,7 +71,7 @@ class ScanInitHelper : public InitializationHelper
     int64_t axis_;
 };
 
-template <typename Tidx, DML_OPERATOR_TYPE scan_op_type, typename SCAN_OP_DESC>
+template <typename Tidx, typename ScanFunctor>
 class DmlScanKernel : public DmlKernel
 {
   public:
@@ -134,18 +134,18 @@ class DmlScanKernel : public DmlKernel
         constexpr uint32_t dml_axis = 2;
 
         auto inputs = GetDmlTensorDescs(tensors.inputs);
-        auto outputs = GetDmlTensorDescs(tensors.outputs);
-
-        SCAN_OP_DESC scan_op_desc = {
-            &inputs[0],
-            &outputs[0],
+        auto scope = dml::Graph(ctx->GetDmlDevice());
+        const auto input_tensor = dml::InputTensor(scope, 0, inputs[0]);
+        auto result = ScanFunctor()(
+            input_tensor,
             dml_axis,
             axis_direction,
-            init_helper->IsExclusive(),
-        };
+            init_helper->IsExclusive());
 
-        DML_OPERATOR_DESC op_desc = {scan_op_type, &scan_op_desc};
-        Initialize(ctx, std::move(tensors), op_desc);
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
@@ -186,10 +186,7 @@ void RegisterCumsum()
     using int32_kernel = KernelDefinition<
         ops::Cumsum,
         DmlKernelWrapper<
-            DmlScanKernel<
-                int32_t,
-                DML_OPERATOR_CUMULATIVE_SUMMATION,
-                DML_CUMULATIVE_SUMMATION_OPERATOR_DESC>,
+            DmlScanKernel<int32_t, CumsumFunctor>,
             GetOutputShapeAsInputShapeHelper>>::
         WithTypeConstraint<ops::Cumsum::Attribute::Tidx, TF_INT32>::
             WithHostMemoryArguments<ops::Cumsum::Argument::axis>;
@@ -197,10 +194,7 @@ void RegisterCumsum()
     using int64_kernel = KernelDefinition<
         ops::Cumsum,
         DmlKernelWrapper<
-            DmlScanKernel<
-                int64_t,
-                DML_OPERATOR_CUMULATIVE_SUMMATION,
-                DML_CUMULATIVE_SUMMATION_OPERATOR_DESC>,
+            DmlScanKernel<int64_t, CumsumFunctor>,
             GetOutputShapeAsInputShapeHelper>>::
         WithTypeConstraint<ops::Cumsum::Attribute::Tidx, TF_INT64>::
             WithHostMemoryArguments<ops::Cumsum::Argument::axis>;
@@ -227,10 +221,7 @@ void RegisterCumprod()
     using int32_kernel = KernelDefinition<
         ops::Cumprod,
         DmlKernelWrapper<
-            DmlScanKernel<
-                int32_t,
-                DML_OPERATOR_CUMULATIVE_PRODUCT,
-                DML_CUMULATIVE_PRODUCT_OPERATOR_DESC>,
+            DmlScanKernel<int32_t, CumprodFunctor>,
             GetOutputShapeAsInputShapeHelper>>::
         WithTypeConstraint<ops::Cumprod::Attribute::Tidx, TF_INT32>::
             WithHostMemoryArguments<ops::Cumprod::Argument::axis>;
@@ -238,10 +229,7 @@ void RegisterCumprod()
     using int64_kernel = KernelDefinition<
         ops::Cumprod,
         DmlKernelWrapper<
-            DmlScanKernel<
-                int64_t,
-                DML_OPERATOR_CUMULATIVE_PRODUCT,
-                DML_CUMULATIVE_PRODUCT_OPERATOR_DESC>,
+            DmlScanKernel<int64_t, CumprodFunctor>,
             GetOutputShapeAsInputShapeHelper>>::
         WithTypeConstraint<ops::Cumprod::Attribute::Tidx, TF_INT64>::
             WithHostMemoryArguments<ops::Cumprod::Argument::axis>;
