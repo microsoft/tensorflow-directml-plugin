@@ -94,7 +94,7 @@ class DmlFillKernel : public DmlKernel
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
-        Initialize(ctx, std::move(tensors), op_desc);
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
