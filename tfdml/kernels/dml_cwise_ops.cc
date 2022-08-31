@@ -1171,7 +1171,9 @@ static void RegisterInv()
     REGISTER_DML_COMPOSITE_UNARY_STRUCT(
         InvInt64,
         ops::Inv,
-        dml::Recip(dml::Cast(x, DML_TENSOR_DATA_TYPE_FLOAT32)),
+        dml::Cast(
+            dml::Recip(dml::Cast(x, DML_TENSOR_DATA_TYPE_FLOAT32)),
+            DML_TENSOR_DATA_TYPE_INT64),
         false)
 
     RegisterWithTypes<K_InvInt64, ops::Inv::Attribute::T, TF_INT64>();
