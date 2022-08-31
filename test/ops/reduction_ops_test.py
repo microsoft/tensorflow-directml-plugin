@@ -16,7 +16,6 @@
 
 import itertools
 import numbers
-import re
 
 import numpy as np
 
