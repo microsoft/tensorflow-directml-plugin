@@ -1,56 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/c++,bazel,python,visualstudiocode
-# Edit at https://www.toptal.com/developers/gitignore?templates=c++,bazel,python,visualstudiocode
-
-### Bazel ###
-# gitignore template for Bazel build system
-# website: https://bazel.build/
-
-# Ignore all bazel-* symlinks. There is no full list since this can change
-# based on the name of the directory bazel is cloned into.
-/bazel-*
-
-# Configuration directory for the Bazel IntelliJ plugin.
-.ijwb/
-
-### C++ ###
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+# Created by https://www.toptal.com/developers/gitignore/api/c++,python,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=c++,python,visualstudiocode
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -212,7 +161,7 @@ Thumbs.db
 .history
 .ionide
 
-# End of https://www.toptal.com/developers/gitignore/api/c++,bazel,python,visualstudiocode
+# End of https://www.toptal.com/developers/gitignore/api/c++,python,visualstudiocode
 
 # Wheels
 *.whl
