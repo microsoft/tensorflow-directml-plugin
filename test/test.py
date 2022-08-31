@@ -324,9 +324,7 @@ class _Test:
 def _set_summary_result(summary, run_state):
     if run_state == "timed_out":
         summary["result"] = "timed_out"
-    elif run_state == "exited_abnormally":
-        summary["result"] = "failed"
-    elif summary["cases_failed_count"] > 0:
+    elif run_state == "exited_abnormally" or summary["cases_failed_count"] > 0:
         summary["result"] = "failed"
     elif summary["cases_passed_count"] > 0:
         summary["result"] = "passed"
