@@ -317,23 +317,23 @@ class _Test:
                         elif status == "skipped" or result == "suppressed":
                             summary["cases_skipped_count"] += 1
 
-        if run_state == "timed_out":
-            summary["result"] = "timed_out"
-        elif run_state == "exited_abnormally":
-            summary["result"] = "failed"
-        else:
-            summary["result"] = _get_summary_result(summary)
+        _set_summary_result(summary, run_state)
         return summary
 
 
-def _get_summary_result(summary):
-    if summary["cases_failed_count"] > 0:
-        return "failed"
-    if summary["cases_passed_count"] > 0:
-        return "passed"
-    if summary["cases_skipped_count"] > 0:
-        return "skipped"
-    return "unknown"
+def _set_summary_result(summary, run_state):
+    if run_state == "timed_out":
+        summary["result"] = "timed_out"
+    elif run_state == "exited_abnormally":
+        summary["result"] = "failed"
+    elif summary["cases_failed_count"] > 0:
+        summary["result"] = "failed"
+    elif summary["cases_passed_count"] > 0:
+        summary["result"] = "passed"
+    elif summary["cases_skipped_count"] > 0:
+        summary["result"] = "skipped"
+    else:
+        summary["result"] = "unknown"
 
 
 def _get_optional_json_property(json_object, property_name, default_value):
