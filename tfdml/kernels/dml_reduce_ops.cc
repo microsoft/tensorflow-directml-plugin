@@ -491,6 +491,17 @@ class DmlReduceKernel : public DmlKernel
             }
             break;
 
+            case DML_TENSOR_DATA_TYPE_UINT64: {
+                value.UInt64 =
+                    EmptyKernelReturnValue<uint64_t>(reduce_function);
+            }
+            break;
+
+            case DML_TENSOR_DATA_TYPE_INT64: {
+                value.Int64 = EmptyKernelReturnValue<int64_t>(reduce_function);
+            }
+            break;
+
             default: {
                 assert(false);
                 LogFatal("Unsupported datatype");
