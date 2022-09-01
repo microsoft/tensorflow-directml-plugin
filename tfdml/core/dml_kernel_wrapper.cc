@@ -209,7 +209,8 @@ void DmlKernelWrapperBase::Compute(OpKernelContext* ctx)
         ctx,
         init_helper,
         output_shapes,
-        kernel->GetOutputRefsForwarding());
+        kernel->GetOutputRefsForwarding(),
+        kernel->SupportsInPlaceExecution());
 
     // Check for errors triggered during the kernel context's constructor (e.g.
     // OOM when allocating the output buffers)

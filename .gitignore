@@ -153,6 +153,7 @@ Thumbs.db
 .vscode/*
 !.vscode/tasks.json
 !.vscode/extensions.json
+!.vscode/c_cpp_properties.json
 *.code-workspace
 
 ### VisualStudioCode Patch ###

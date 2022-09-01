@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/build/_deps/abseil-src",
+                "${workspaceFolder}/build/_deps/tensorflow_whl-src/tensorflow/include",
+                "${workspaceFolder}/build/_deps/directx_headers-src/include",
+                "${workspaceFolder}/build/_deps/directml_redist-src/include",
+                "${workspaceFolder}/build/_deps/directmlx-src",
+                "${workspaceFolder}/build/_deps/protobuf-src/src",
+                "${workspaceFolder}/build/_deps/tensorflow_whl-build/proto"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "DML_TARGET_VERSION=0x5000",
+                "DMLX_USE_ABSEIL"
+            ],
+            "cppStandard": "c++14"
+        }
+    ],
+    "version": 4
+}
