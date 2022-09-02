@@ -85,21 +85,26 @@ class RangeInitHelper : public InitializationHelper
                     "/",
                     limit));
         }
-        auto size_auto =
-            (std::is_integral<T>::value
-                 ? (Eigen::numext::abs(limit - start) +
-                    Eigen::numext::abs(delta) - T(1)) /
-                       Eigen::numext::abs(delta)
-                 : Eigen::numext::ceil(
-                       Eigen::numext::abs((limit - start) / delta)));
-        OP_REQUIRES(
-            ctx,
-            size_auto <= std::numeric_limits<int64_t>::max(),
-            errors::InvalidArgument(
-                "Requires ((limit - start) / delta) <= ",
-                std::numeric_limits<int64_t>::max()));
+        int64_t size;
+        if (std::is_integral<T>::value)
+        {
+            size = Eigen::divup(
+                Eigen::numext::abs(limit - start),
+                Eigen::numext::abs(delta));
+        }
+        else
+        {
+            auto size_auto = Eigen::numext::ceil(
+                Eigen::numext::abs((limit - start) / delta));
+            OP_REQUIRES(
+                ctx,
+                size_auto <= std::numeric_limits<int64_t>::max(),
+                errors::InvalidArgument(
+                    "Requires ((limit - start) / delta) <= ",
+                    std::numeric_limits<int64_t>::max()));
+            size = static_cast<int64_t>(size_auto);
+        }
 
-        int64_t size = static_cast<int64_t>(size_auto);
         OP_REQUIRES_OK(ctx, output_shape_.AddDimWithStatus(size));
 
         start_ = start;
