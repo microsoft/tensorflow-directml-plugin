@@ -32,6 +32,7 @@ void RegisterKernels_CropAndResizeGradBoxes();
 void RegisterKernels_CropAndResizeGradImage();
 void RegisterKernels_CropAndResize();
 void RegisterKernels_Cross();
+void RegisterKernels_CudnnRNN();
 void RegisterKernels_Cwise();
 void RegisterKernels_DataFormatDimMap();
 void RegisterKernels_DataFormatVecPermute();
@@ -113,6 +114,7 @@ void TF_InitKernel()
     tfdml::RegisterKernels_CropAndResizeGradImage();
     tfdml::RegisterKernels_CropAndResize();
     tfdml::RegisterKernels_Cross();
+    tfdml::RegisterKernels_CudnnRNN();
     tfdml::RegisterKernels_Cwise();
     tfdml::RegisterKernels_DataFormatDimMap();
     tfdml::RegisterKernels_DataFormatVecPermute();
