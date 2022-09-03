@@ -481,6 +481,17 @@ class ApproximateEqualInitHelper
         : ElementWiseInitHelper<kBinaryCwiseOpMaxDimCount>(ctx, attr),
           tolerance_(attr->tolerance)
     {
+        const Tensor& x_input = ctx->input(0);
+        const Tensor& y_input = ctx->input(1);
+        OP_REQUIRES(
+            ctx,
+            x_input.shape() == y_input.shape(),
+            errors::InvalidArgument(
+                "x and y must be of the same shape. ",
+                "x shape: ",
+                x_input.shape().DebugString(),
+                ". y shape: ",
+                y_input.shape().DebugString()));
     }
 
     float GetTolerance() const { return tolerance_; }
@@ -1004,8 +1015,21 @@ static void RegisterDiv()
         TF_HALF,
         TF_UINT8,
         TF_UINT16,
-        TF_INT16,
-        TF_INT64>();
+        TF_INT16>();
+
+    // TODO: Revisit this and consider having a native int64 alternative
+    // TFDML #41163316
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        DivInt64,
+        ops::Div,
+        dml::Cast(
+            dml::Cast(x, DML_TENSOR_DATA_TYPE_INT32) /
+                dml::Cast(y, DML_TENSOR_DATA_TYPE_INT32),
+            DML_TENSOR_DATA_TYPE_INT64),
+        8,
+        false)
+
+    RegisterWithTypes<K_DivInt64, ops::Div::Attribute::T, TF_INT64>();
 }
 
 static void RegisterDivNoNan()
@@ -1124,10 +1148,41 @@ static void RegisterFloorMod()
         TF_HALF,
         TF_INT8,
         TF_INT16,
-        TF_INT64,
         TF_UINT8,
         TF_UINT16,
-        TF_UINT32,
+        TF_UINT32>();
+
+    // TODO: Revisit this and consider having a native int64 alternative
+    // TFDML #41163316
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        FloorModInt64,
+        ops::FloorMod,
+        dml::Cast(
+            dml::ModulusFloor(
+                dml::Cast(x, DML_TENSOR_DATA_TYPE_INT32),
+                dml::Cast(y, DML_TENSOR_DATA_TYPE_INT32)),
+            DML_TENSOR_DATA_TYPE_INT64),
+        8,
+        false)
+
+    RegisterWithTypes<K_FloorModInt64, ops::FloorMod::Attribute::T, TF_INT64>();
+
+    // TODO: Revisit this and consider having a native int64 alternative
+    // TFDML #41163316
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        FloorModUInt64,
+        ops::FloorMod,
+        dml::Cast(
+            dml::ModulusFloor(
+                dml::Cast(x, DML_TENSOR_DATA_TYPE_UINT32),
+                dml::Cast(y, DML_TENSOR_DATA_TYPE_UINT32)),
+            DML_TENSOR_DATA_TYPE_UINT64),
+        8,
+        false)
+
+    RegisterWithTypes<
+        K_FloorModUInt64,
+        ops::FloorMod::Attribute::T,
         TF_UINT64>();
 }
 
@@ -1568,13 +1623,21 @@ static void RegisterPopulationCount()
 static void RegisterPow()
 {
     REGISTER_DML_COMPOSITE_BINARY_STRUCT(Pow, ops::Pow, dml::Pow(x, y), 8, true)
+    RegisterWithTypes<K_Pow, ops::Pow::Attribute::T, TF_FLOAT, TF_HALF>();
 
-    RegisterWithTypes<
-        K_Pow,
-        ops::Pow::Attribute::T,
-        TF_FLOAT,
-        TF_HALF,
-        TF_INT64>();
+    // TODO: Revisit this and consider having a native int64 alternative
+    // TFDML #41163316
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        PowInt64,
+        ops::Pow,
+        dml::Cast(
+            dml::Pow(
+                dml::Cast(x, DML_TENSOR_DATA_TYPE_INT32),
+                dml::Cast(y, DML_TENSOR_DATA_TYPE_INT32)),
+            DML_TENSOR_DATA_TYPE_INT64),
+        8,
+        false)
+    RegisterWithTypes<K_PowInt64, ops::Pow::Attribute::T, TF_INT64>();
 }
 
 static void RegisterRealDiv()
@@ -1911,7 +1974,20 @@ static void RegisterSquaredDifference()
         K_SquaredDifference,
         ops::SquaredDifference::Attribute::T,
         TF_FLOAT,
-        TF_HALF,
+        TF_HALF>();
+
+    // TODO: Revisit this and consider having a native int64 alternative
+    // TFDML #41163316
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        SquaredDifferenceInt64,
+        ops::SquaredDifference,
+        (x - y) * (x - y),
+        8,
+        false)
+
+    RegisterWithTypes<
+        K_SquaredDifferenceInt64,
+        ops::SquaredDifference::Attribute::T,
         TF_INT64>();
 }
 
@@ -1971,7 +2047,23 @@ static void RegisterTruncateDiv()
         ops::TruncateDiv::Attribute::T,
         TF_UINT8,
         TF_UINT16,
-        TF_INT16,
+        TF_INT16>();
+
+    // TODO: Revisit this and consider having a native int64 alternative
+    // TFDML #41163316
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        TruncateDivInt64,
+        ops::TruncateDiv,
+        dml::Cast(
+            dml::Cast(x, DML_TENSOR_DATA_TYPE_INT32) /
+                dml::Cast(y, DML_TENSOR_DATA_TYPE_INT32),
+            DML_TENSOR_DATA_TYPE_INT64),
+        8,
+        false)
+
+    RegisterWithTypes<
+        K_TruncateDivInt64,
+        ops::TruncateDiv::Attribute::T,
         TF_INT64>();
 }
 
@@ -1991,10 +2083,44 @@ static void RegisterTruncateMod()
         TF_HALF,
         TF_INT8,
         TF_INT16,
-        TF_INT64,
         TF_UINT8,
         TF_UINT16,
-        TF_UINT32,
+        TF_UINT32>();
+
+    // TODO: Revisit this and consider having a native int64 alternative
+    // TFDML #41163316
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        TruncateModInt64,
+        ops::TruncateMod,
+        dml::Cast(
+            dml::ModulusTruncate(
+                dml::Cast(x, DML_TENSOR_DATA_TYPE_INT32),
+                dml::Cast(y, DML_TENSOR_DATA_TYPE_INT32)),
+            DML_TENSOR_DATA_TYPE_INT64),
+        8,
+        true)
+
+    RegisterWithTypes<
+        K_TruncateModInt64,
+        ops::TruncateMod::Attribute::T,
+        TF_INT64>();
+
+    // TODO: Revisit this and consider having a native int64 alternative
+    // TFDML #41163316
+    REGISTER_DML_COMPOSITE_BINARY_STRUCT(
+        TruncateModUInt64,
+        ops::TruncateMod,
+        dml::Cast(
+            dml::ModulusTruncate(
+                dml::Cast(x, DML_TENSOR_DATA_TYPE_UINT32),
+                dml::Cast(y, DML_TENSOR_DATA_TYPE_UINT32)),
+            DML_TENSOR_DATA_TYPE_UINT64),
+        8,
+        true)
+
+    RegisterWithTypes<
+        K_TruncateModUInt64,
+        ops::TruncateMod::Attribute::T,
         TF_UINT64>();
 }
 
