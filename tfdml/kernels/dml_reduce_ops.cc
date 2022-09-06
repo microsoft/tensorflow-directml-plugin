@@ -491,6 +491,17 @@ class DmlReduceKernel : public DmlKernel
             }
             break;
 
+            case DML_TENSOR_DATA_TYPE_UINT64: {
+                value.UInt64 =
+                    EmptyKernelReturnValue<uint64_t>(reduce_function);
+            }
+            break;
+
+            case DML_TENSOR_DATA_TYPE_INT64: {
+                value.Int64 = EmptyKernelReturnValue<int64_t>(reduce_function);
+            }
+            break;
+
             default: {
                 assert(false);
                 LogFatal("Unsupported datatype");
@@ -617,13 +628,6 @@ class DmlReduceKernel : public DmlKernel
             output_shape,
             output_shape);
 
-        // Coerce the output datatype to unsigned, for argmin/argmax
-        if (is_arg_function_ && DataTypeIsInteger(output.desc.GetTfDataType()))
-        {
-            output.desc.ForceUnsignedDataType();
-            zero_outputs_ = true;
-        }
-
         DmlKernelTensors tensors;
         tensors.inputs = {input};
         tensors.outputs = {output};
@@ -649,11 +653,41 @@ class DmlReduceKernel : public DmlKernel
         }
         else if (is_arg_function_)
         {
+            // ARGMAX and ARGMIN in DML don't support outputs with less than 32
+            // bit precision
+            const bool is_low_precision_output =
+                dml_output_data_type == DML_TENSOR_DATA_TYPE_INT16 ||
+                dml_output_data_type == DML_TENSOR_DATA_TYPE_INT8;
+
+            auto casted_dml_output_data_type = dml_output_data_type;
+
+            if (is_low_precision_output)
+            {
+                casted_dml_output_data_type = DML_TENSOR_DATA_TYPE_INT32;
+            }
+            else
+            {
+                const bool is_low_precision_unsigned_output =
+                    dml_output_data_type == DML_TENSOR_DATA_TYPE_UINT16 ||
+                    dml_output_data_type == DML_TENSOR_DATA_TYPE_UINT8;
+
+                if (is_low_precision_unsigned_output)
+                {
+                    casted_dml_output_data_type = DML_TENSOR_DATA_TYPE_UINT32;
+                }
+            }
+
             result = dml::Reduce(
                 result,
                 reduce_function,
                 reduce_axes,
-                dml_output_data_type);
+                casted_dml_output_data_type);
+
+            // Cast back to the original TensorFlow low precision type
+            if (dml_output_data_type != casted_dml_output_data_type)
+            {
+                result = dml::Cast(result, dml_output_data_type);
+            }
         }
         else
         {

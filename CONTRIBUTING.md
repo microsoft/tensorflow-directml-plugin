@@ -38,29 +38,6 @@ clang-format <my_cc_file> --style=google > /tmp/my_cc_file.cc
 diff <my_cc_file> /tmp/my_cc_file.cc
 ```
 
-### Bazel coding style
-
-Changes to Bazel files should follow the official formatting guidelines enforced by buildifier. To run buildifier, simply run `bazel run //:buildifier` at the root of the repository.
-
-### Python coding style
-
-Changes to TensorFlow Python code should conform to
-[Google Python Style Guide](https://github.com/google/styleguide/blob/gh-pages/pyguide.md)
-
-Use `pylint` to check your Python changes. To install `pylint` and
-retrieve TensorFlow's custom style definition:
-
-```bash
-pip install pylint
-wget -O /tmp/pylintrc https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/tools/ci_build/pylintrc
-```
-
-To check a file with `pylint`:
-
-```bash
-pylint --rcfile=/tmp/pylintrc myfile.py
-```
-
 ### Formatting all files
 
 To automatically format all files in the repository and make sure that they conform to the guidelines, run `format.sh` on Ubuntu or `format.ps1` on Windows.

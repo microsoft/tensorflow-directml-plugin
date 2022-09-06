@@ -77,6 +77,7 @@ class DmlFillKernel : public DmlKernel
         CHECK(ctx->GetOutputCount() == 1);
 
         DmlKernelParams params;
+        params.supports_in_place_execution = true;
 
         // Broadcast inputs to match output shape
         params.input_shape = ctx->GetOutputTensorShape(0);
@@ -93,7 +94,6 @@ class DmlFillKernel : public DmlKernel
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
-
         Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };

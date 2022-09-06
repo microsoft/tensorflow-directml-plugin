@@ -107,7 +107,8 @@ DmlKernelContext::DmlKernelContext(
     OpKernelContext* op_ctx,
     const InitializationHelper* init_helper,
     absl::Span<const TensorShape> output_shapes,
-    absl::Span<const absl::optional<uint32_t>> output_refs_forwarding)
+    absl::Span<const absl::optional<uint32_t>> output_refs_forwarding,
+    bool supports_in_place_execution)
     : device_(device),
       op_ctx_(op_ctx),
       init_helper_(init_helper)
@@ -136,6 +137,22 @@ DmlKernelContext::DmlKernelContext(
                     is_variant,
                     &output_tensor));
             output_tensors_.push_back(std::move(output_tensor));
+        }
+        else if (supports_in_place_execution)
+        {
+            absl::InlinedVector<int, 4> candidate_input_indices(
+                op_ctx_->num_inputs());
+            std::iota(
+                candidate_input_indices.begin(),
+                candidate_input_indices.end(),
+                0);
+
+            auto status_or_tensor = op_ctx_->forward_input_or_allocate_output(
+                candidate_input_indices,
+                i,
+                output_shapes[i]);
+            OP_REQUIRES_OK(op_ctx_, status_or_tensor.status());
+            output_tensors_.push_back(status_or_tensor.ConsumeValueOrDie());
         }
         else
         {

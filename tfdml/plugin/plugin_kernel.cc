@@ -76,6 +76,7 @@ void RegisterKernels_Roll();
 void RegisterKernels_Scan();
 void RegisterKernels_Scatter();
 void RegisterKernels_ScatterNd();
+void RegisterKernels_SegmentReduction();
 void RegisterKernels_Select();
 void RegisterKernels_Slice();
 void RegisterKernels_Snapshot();
@@ -157,6 +158,7 @@ TFDML_EXPORT void TF_InitKernel()
     tfdml::RegisterKernels_Scan();
     tfdml::RegisterKernels_Scatter();
     tfdml::RegisterKernels_ScatterNd();
+    tfdml::RegisterKernels_SegmentReduction();
     tfdml::RegisterKernels_Select();
     tfdml::RegisterKernels_Slice();
     tfdml::RegisterKernels_Snapshot();

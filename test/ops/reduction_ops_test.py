@@ -30,6 +30,7 @@ from tensorflow.python.ops import gradient_checker
 from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.platform import test
+from dml_test_util import should_skip_test
 
 # The maximum input rank to test.
 _MAX_RANK = 5
@@ -375,6 +376,12 @@ class SumReductionTest(BaseReductionTest):
 
   @test_util.run_deprecated_v1
   def testDegenerate(self):
+    # TODO: Remove this skip once the resource zeroing bug has been fixed
+    # TFDML #41044841
+    if should_skip_test(".*UHD Graphics 630.*"):
+      self.skipTest("This test currently fails on some Intel devices because resources "
+                    "don't get completely zeroed out under certain conditions.")
+
     with self.session():
       for dtype in (dtypes.float16, dtypes.float32, dtypes.float64,
                     dtypes.complex64, dtypes.complex128):
@@ -559,6 +566,12 @@ class EuclideanNormReductionTest(BaseReductionTest):
 
   @test_util.run_deprecated_v1
   def testComplex128(self):
+    # TODO: Remove this skip once the resource zeroing bug has been fixed
+    # TFDML #41044841
+    if should_skip_test(".*UHD Graphics 630.*"):
+      self.skipTest("This test currently fails on some Intel devices because resources "
+                    "don't get completely zeroed out under certain conditions.")
+
     for rank in range(1, _MAX_RANK + 1):
       np_arr = self._makeIncremental((2,) * rank, dtypes.complex128)
       self._compareAllAxes(np_arr)

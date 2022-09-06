@@ -38,9 +38,9 @@ namespace tfdml
 class Tensor
 {
   public:
-    Tensor();
-    Tensor(TF_DataType data_type);
-    Tensor(TF_Tensor* tensor);
+    explicit Tensor();
+    explicit Tensor(TF_DataType data_type);
+    explicit Tensor(TF_Tensor* tensor);
     Tensor(const Tensor& other);
     Tensor(Tensor&& other);
     Tensor& operator=(const Tensor& other);

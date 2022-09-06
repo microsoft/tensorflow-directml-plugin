@@ -304,7 +304,13 @@ class _Test:
         summary["cases_failed"] = []
 
         if Path(self.results_file_path).exists() and run_state != "timed_out":
-            root = ET.parse(self.results_file_path).getroot()
+            try:
+                root = ET.parse(self.results_file_path).getroot()
+            except ET.ParseError:
+                print(f"Error while parsing '{self.results_file_path}'")
+                summary["result"] = "failed"
+                return summary
+
             for test_suite in root.findall("testsuite"):
                 test_suite_name = test_suite.attrib["name"]
                 for test_case in test_suite.findall("testcase"):
@@ -328,23 +334,21 @@ class _Test:
                         elif status == "skipped" or result == "suppressed":
                             summary["cases_skipped_count"] += 1
 
-        if run_state == "timed_out":
-            summary["result"] = "timed_out"
-        elif run_state == "exited_abnormally":
-            summary["result"] = "failed"
-        else:
-            summary["result"] = _get_summary_result(summary)
+        _set_summary_result(summary, run_state)
         return summary
 
 
-def _get_summary_result(summary):
-    if summary["cases_failed_count"] > 0:
-        return "failed"
-    if summary["cases_passed_count"] > 0:
-        return "passed"
-    if summary["cases_skipped_count"] > 0:
-        return "skipped"
-    return "unknown"
+def _set_summary_result(summary, run_state):
+    if run_state == "timed_out":
+        summary["result"] = "timed_out"
+    elif run_state == "exited_abnormally" or summary["cases_failed_count"] > 0:
+        summary["result"] = "failed"
+    elif summary["cases_passed_count"] > 0:
+        summary["result"] = "passed"
+    elif summary["cases_skipped_count"] > 0:
+        summary["result"] = "skipped"
+    else:
+        summary["result"] = "unknown"
 
 
 def _get_optional_json_property(json_object, property_name, default_value):
