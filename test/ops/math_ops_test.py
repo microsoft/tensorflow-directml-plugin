@@ -36,8 +36,6 @@ from tensorflow.python.ops import tensor_array_ops
 from tensorflow.python.ops import variables
 from tensorflow.python.ops.ragged import ragged_factory_ops
 from tensorflow.python.platform import googletest
-import os
-input(os.getpid())
 
 
 @test_util.run_all_in_graph_and_eager_modes
