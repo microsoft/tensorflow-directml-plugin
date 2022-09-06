@@ -30,8 +30,8 @@ if(WIN32)
 
     FetchContent_Declare(
         tensorflow_framework
-        URL https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-2.9.1.zip
-        URL_HASH SHA256=56fa7e84c984144311563b405bd0e565568f3cbe2c15ac4713e9c8174a02b00f
+        URL https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-2.10.0.zip
+        URL_HASH SHA256=4c5e6f9a7683583220716fecadea53ace233f31f59062e83585c4821f9968438
     )
 else()
     # To update the package version to a nightly build, go to https://pypi.org/project/tf-nightly-cpu/#files and copy the
@@ -44,8 +44,8 @@ else()
 
     FetchContent_Declare(
         tensorflow_framework
-        URL https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-2.9.1.tar.gz
-        URL_HASH SHA256=7f510d2546e3db5e10b1d119463689003d587842892ad3c95bca51cf82820173
+        URL https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-2.10.0.tar.gz
+        URL_HASH SHA256=141631c8bcebb469ba5fa7bc8032f0324df2a7dea469f842318bafe0322850ab
     )
 endif()
 
