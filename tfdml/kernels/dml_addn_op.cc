@@ -150,6 +150,7 @@ class DmlBinaryAddVariantKernel : public DmlKernel
         DmlKernelTensors tensors = {};
         tensors.inputs = {a_info, b_info};
         tensors.outputs = {a_info};
+        tensors.supports_in_place_execution = true;
 
         auto inputs = GetDmlTensorDescs(tensors.inputs);
         auto scope = dml::Graph(init_helper->dml_device->GetDmlDevice());
