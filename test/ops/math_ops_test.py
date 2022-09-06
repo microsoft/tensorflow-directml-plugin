@@ -602,6 +602,11 @@ class DivAndModTest(test_util.TensorFlowTestCase):
     divs = np.arange(-3, 0, .25).reshape(1, 12)
     return nums, divs
 
+  def floatTestDataFloorMod(self):
+    nums = np.arange(-10, 5, .25).reshape(60, 1)
+    divs = np.arange(-3, 0, .25).reshape(1, 12)
+    return nums, divs
+
   def numpySafeFloorDivInt(self, x, y):
     z = x // y
     # Numpy produces 0 for INT_MIN/-1, but we expect an overflow to INT_MIN
@@ -637,7 +642,7 @@ class DivAndModTest(test_util.TensorFlowTestCase):
       self.assertAllEqual(tf2_result, tf_result)
 
   def testFloorModFloat(self):
-    nums, divs = self.floatTestData()
+    nums, divs = self.floatTestDataFloorMod()
     for dtype in [np.float16, np.float32, np.float64]:
       x = nums.astype(dtype)
       y = divs.astype(dtype)
