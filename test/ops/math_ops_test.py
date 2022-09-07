@@ -603,9 +603,29 @@ class DivAndModTest(test_util.TensorFlowTestCase):
     return nums, divs
 
   def floatTestDataFloorMod(self):
-    nums = np.arange(-10, 5, .25).reshape(60, 1)
+    nums = np.arange(-10, 10, .25).reshape(80, 1)
+    nums = np.broadcast_to(nums, (80, 12)).flatten()
     divs = np.arange(-3, 0, .25).reshape(1, 12)
-    return nums, divs
+    divs = np.broadcast_to(divs, (80, 12)).flatten()
+
+    # Division in HLSL is allowed to have an error of 1 ULP, so it's possible that a
+    # division that should return an exact result (e.g. 6.0 / 2.0 == 3.0) actually
+    # returns an approximation (e.g. 6.0 / 2.0 == 2.99999). In most scenarios this is
+    # perfectly fine, but when using floor, it makes a huge difference and the end
+    # result will be way off (floor(2.99999) != floor(3.0)). For this reason, we cannot
+    # accurately test cases where x / y results in an integer.
+    nums_iter = np.nditer(nums, flags=["f_index"], op_flags=["readwrite"])
+    divs_iter = np.nditer(divs, flags=["f_index"], op_flags=["readwrite"])
+
+    while not nums_iter.finished:
+      if (nums_iter[0] / divs_iter[0]).is_integer():
+        nums_iter[0] = -10
+        divs_iter[0] = -3
+
+      nums_iter.iternext()
+      divs_iter.iternext()
+
+    return nums.reshape(80, 12), divs.reshape(80, 12)
 
   def numpySafeFloorDivInt(self, x, y):
     z = x // y
