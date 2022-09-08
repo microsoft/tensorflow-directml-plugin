@@ -124,7 +124,6 @@ void plugin_allocate(
     mem->struct_size = SP_DEVICE_MEMORY_BASE_STRUCT_SIZE;
     mem->opaque = allocator->Alloc(device->ordinal, size);
     mem->size = size;
-    mem->payload = 12345;
 }
 
 void plugin_deallocate(const SP_Device* device, SP_DeviceMemoryBase* mem)
