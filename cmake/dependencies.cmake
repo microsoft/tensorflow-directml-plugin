@@ -24,16 +24,16 @@ if(WIN32)
     # URLs and SHA256 hashes for the cp37 versions. For stable builds, go to https://pypi.org/project/tensorflow-intel/#files instead.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/b1/82/11e46a1d2f922e4613dbbc461988ad31d24612bc40156dfc2926ba5c306c/tensorflow_intel-2.10.0rc0-cp37-cp37m-win_amd64.whl
-        URL_HASH SHA256=a4efc4b5bc967ee567a3fb0fffde7c60aad5560ee3acdf11782819e409e244c1
+        URL https://files.pythonhosted.org/packages/4a/43/b6c853d9e9532b9dd04191383b76fe5ff7b7dfa40d2be2af98f40c7536ce/tensorflow_intel-2.10.0-cp37-cp37m-win_amd64.whl
+        URL_HASH SHA256=e6096b3a84bbc57eab88cc39ad7d6148e400a0da6a448f94d5e84c8cdbb521b5
     )
 else()
     # To update the package version to a nightly build, go to https://pypi.org/project/tf-nightly-cpu/#files and copy the
     # URLs and SHA256 hashes for the cp37 versions. For stable builds, go to https://pypi.org/project/tensorflow-cpu/#files instead.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/45/af/487d863182e13ae6cbbe80c9f0fa3369083755cb07ebe7eb7e99685a3fc7/tensorflow_cpu-2.10.0rc0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-        URL_HASH SHA256=91f79c0646f254947b215ecf60a908401e904ae5d7c297fe710a56c3ee387749
+        URL https://files.pythonhosted.org/packages/9b/4b/293733cd86f09760b14517f077f79bad16de4af11828273eda1722e9b03a/tensorflow_cpu-2.10.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+        URL_HASH SHA256=34477fdfa97045c854fde55381cc3eb7fa6c63f5958ccf30ae3a21513ee73031
     )
 endif()
 
