@@ -29,6 +29,7 @@ pip install $TensorFlowPackage
 pip install $KerasPackage
 pip install tensorboard_plugin_profile
 pip install $PluginPackage
+pip install portpicker
 pip list
 
 $ActivateCmd = "$InstallDir/shell/condabin/conda-hook.ps1; conda activate $TestEnvPath"
