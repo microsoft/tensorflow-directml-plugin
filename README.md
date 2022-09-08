@@ -17,12 +17,13 @@ You can also contact us directly at askdirectml@microsoft.com.
 
 TensorFlow DirectML Plugin is in early development and is not supported for production yet. For production scenarios, use [TensorFlow 1.15 with DirectML](https://github.com/microsoft/tensorflow-directml) instead.
 
-TensorFlow DirectML Plugin only works with the `tensorflow-cpu>=2.9` package, not `tensorflow`. To install the package, run the following commands:
+TensorFlow DirectML Plugin only works with the `tensorflow-cpu>=2.10` package, not `tensorflow` or `tensorflow-gpu`. To install the package, run the following commands:
 
 ```sh
-pip install tensorflow-cpu>=2.9
 pip install tensorflow-directml-plugin
 ```
+
+If `tensorflow-cpu` hasn't already been already installed, the latest stable version will automatically be installed.
 
 The following resources provide additional background on DirectML and TensorFlow:
 - [DirectML GitHub](https://github.com/microsoft/DirectML/)
