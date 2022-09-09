@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include "absl/cleanup/cleanup.h"
+#include "tensorflow/c/eager/c_api.h"
 #include "tfdml/kernels/pch.h"
 
 namespace tfdml
@@ -193,7 +195,89 @@ class DmlPackKernel : public DmlKernel
     }
 };
 
-void RegisterKernels_Pack()
+class DmlPackCpuKernel : public OpKernel
+{
+  public:
+    explicit DmlPackCpuKernel(
+        OpKernelConstruction* ctx,
+        std::shared_ptr<const NodeDef> node_def)
+        : OpKernel(std::move(node_def))
+    {
+        TFE_ContextOptions* context_options = TFE_NewContextOptions();
+        auto context_options_cleanup = absl::MakeCleanup(
+            [context_options] { TFE_DeleteContextOptions(context_options); });
+
+        Status status;
+        eager_context_ = TFE_NewContext(context_options, status.raw());
+        OP_REQUIRES_OK(ctx, status);
+    }
+
+    ~DmlPackCpuKernel() override
+    {
+        if (eager_context_)
+        {
+            TFE_DeleteContext(eager_context_);
+        }
+    }
+
+    void Compute(OpKernelContext* ctx)
+    {
+        Status status;
+        TFE_Op* pack_op = TFE_NewOp(eager_context_, "Pack", status.raw());
+        OP_REQUIRES_OK(ctx, status);
+        auto pack_op_cleanup =
+            absl::MakeCleanup([pack_op] { TFE_DeleteOp(pack_op); });
+
+        TFE_OpSetDevice(pack_op, "/device:CPU", status.raw());
+        OP_REQUIRES_OK(ctx, status);
+
+        std::vector<TFE_TensorHandle*> input_handles;
+        auto input_handles_cleanup = absl::MakeCleanup(
+            [&input_handles]
+            {
+                for (TFE_TensorHandle* input_handle : input_handles)
+                {
+                    TFE_DeleteTensorHandle(input_handle);
+                }
+            });
+
+        for (int i = 0; i < ctx->num_inputs(); ++i)
+        {
+            const Tensor& input_tensor = ctx->input(i);
+            TFE_TensorHandle* input_handle =
+                TFE_NewTensorHandle(input_tensor.raw(), status.raw());
+            OP_REQUIRES_OK(ctx, status);
+            input_handles.push_back(input_handle);
+        }
+
+        TFE_OpAddInputList(
+            pack_op,
+            input_handles.data(),
+            input_handles.size(),
+            status.raw());
+        OP_REQUIRES_OK(ctx, status);
+
+        TFE_TensorHandle* output_handle = nullptr;
+        OP_REQUIRES_OK(ctx, status);
+        auto output_handle_cleanup = absl::MakeCleanup(
+            [output_handle] { TFE_DeleteTensorHandle(output_handle); });
+
+        int num_retvals = 1;
+        TFE_Execute(pack_op, &output_handle, &num_retvals, status.raw());
+        OP_REQUIRES_OK(ctx, status);
+
+        TF_Tensor* output =
+            TFE_TensorHandleResolve(output_handle, status.raw());
+        OP_REQUIRES_OK(ctx, status);
+
+        OP_REQUIRES_OK(ctx, ctx->set_output(0, Tensor(output)));
+    }
+
+  private:
+    TFE_Context* eager_context_ = nullptr;
+};
+
+void RegisterPack()
 {
     using K = KernelDefinition<
         ops::Pack,
@@ -207,6 +291,20 @@ void RegisterKernels_Pack()
         TF_INT64,
         TF_INT16,
         TF_BOOL>();
+}
+
+void RegisterPackCpu()
+{
+    KernelDefinition<ops::Pack, DmlPackCpuKernel>::WithHostMemoryArguments<
+        ops::Pack::Argument::values,
+        ops::Pack::Argument::output>::
+        WithTypeConstraint<ops::Pack::Attribute::T, TF_INT32>::Register();
+}
+
+void RegisterKernels_Pack()
+{
+    RegisterPack();
+    RegisterPackCpu();
 }
 
 } // namespace tfdml
