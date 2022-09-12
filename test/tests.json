@@ -4,6 +4,7 @@
         {
             "name": "ops",
             "timeout_seconds": 5400,
+            "is_python_test": true,
             "tests": [
                 {
                     "file": "ops/aggregate_ops_test.py"
@@ -288,11 +289,13 @@
         },
         {
             "name": "models",
+            "is_python_test": true,
             "tests": []
         },
         {
             "name": "plugin",
             "timeout_seconds": 300,
+            "is_python_test": true,
             "tests": [
                 {
                     "file": "plugin/profiler_test.py"
@@ -319,6 +322,21 @@
                     "args": [
                         "--dml_visible_devices",
                         "0"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "c_api",
+            "timeout_seconds": 300,
+            "is_python_test": false,
+            "tests": [
+                {
+                    "name": "c_api_tests",
+                    "file": "../build/c_api_tests",
+                    "cwd": "build",
+                    "disabled_platforms": [
+                        "nt"
                     ]
                 }
             ]
