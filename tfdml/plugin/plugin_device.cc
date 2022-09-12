@@ -724,7 +724,9 @@ void plugin_destroy_platform_fns(SP_PlatformFns* const platform_fns) {}
 
 extern "C"
 {
-    void SE_InitPlugin(SE_PlatformRegistrationParams* params, TF_Status* status)
+    TFDML_EXPORT void SE_InitPlugin(
+        SE_PlatformRegistrationParams* params,
+        TF_Status* status)
     {
         params->platform->struct_size = SP_PLATFORM_STRUCT_SIZE;
         params->platform->name = "DML";

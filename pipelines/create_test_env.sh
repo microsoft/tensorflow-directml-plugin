@@ -6,6 +6,7 @@
 test_artifact_path=$1
 tensorflow_package=$2
 keras_package=$3
+sources_directory=$4
 
 # Windows agents use the agent artifacts directory for the conda installation, but
 # this is slow in WSL (filesystem networking overhead). Instead the agent will use
@@ -14,6 +15,10 @@ tmp_testing_root="/tmp/tfdml_plugin_pipeline"
 rm -rf "$tmp_testing_root"
 mkdir "$tmp_testing_root"
 cd $tmp_testing_root
+
+# Extract the C Library API tests to the build folder
+api_tests_zip=$(ls $test_artifact_path/tensorflow_directml_plugin-*-c-api-tests.zip)
+unzip $api_tests_zip -d $sources_directory/build
 
 install_dir="$tmp_testing_root/miniconda3"
 plugin_package=$(ls $test_artifact_path/tensorflow_directml_plugin*.whl)

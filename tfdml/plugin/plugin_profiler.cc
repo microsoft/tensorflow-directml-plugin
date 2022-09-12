@@ -13,6 +13,7 @@ limitations under the License.
 
 #include "tensorflow/c/experimental/pluggable_profiler/pluggable_profiler.h"
 #include "tfdml/core/dml_tracing.h"
+#include "tfdml/runtime_adapter/macros.h"
 
 void profiler_start(const TP_Profiler* profiler, TF_Status* status)
 {
@@ -67,7 +68,9 @@ void profiler_destroy_profiler_fns(TP_ProfilerFns* profiler_fns)
     // Nothing to do here
 }
 
-void TF_InitProfiler(TF_ProfilerRegistrationParams* params, TF_Status* status)
+TFDML_EXPORT void TF_InitProfiler(
+    TF_ProfilerRegistrationParams* params,
+    TF_Status* status)
 {
     params->profiler->struct_size = TP_PROFILER_STRUCT_SIZE;
     params->profiler_fns->struct_size = TP_PROFILER_FNS_STRUCT_SIZE;

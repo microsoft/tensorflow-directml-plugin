@@ -5,7 +5,8 @@ param
     [string]$ArtifactsDirectory = $env:SYSTEM_ARTIFACTSDIRECTORY,
     [Parameter(Mandatory)][string]$TestArtifactPath,
     [Parameter(Mandatory)][string]$TensorFlowPackage,
-    [Parameter(Mandatory)][string]$KerasPackage
+    [Parameter(Mandatory)][string]$KerasPackage,
+    [Parameter(Mandatory)][string]$SourcesDirectory
 )
 
 $ErrorActionPreference = 'Stop'
@@ -34,3 +35,9 @@ pip list
 
 $ActivateCmd = "$InstallDir/shell/condabin/conda-hook.ps1; conda activate $TestEnvPath"
 echo "##vso[task.setVariable variable=activateCommand;isOutput=true]$ActivateCmd"
+
+# Extract the C Library API tests to the build folder
+# TODO: Make available on Windows once the TensorFlow C API exports all the necessary symbols
+# TF #40927951
+# $ApiTestsZip = (Get-ChildItem "$TestArtifactPath/tensorflow_directml_plugin-*-c-api-tests.zip").FullName
+# Expand-Archive "$ApiTestsZip" -Destination "$SourcesDirectory/build"

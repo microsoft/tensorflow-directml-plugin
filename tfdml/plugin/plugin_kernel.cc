@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tensorflow/c/kernels.h"
+#include "tfdml/runtime_adapter/macros.h"
 
 namespace tfdml
 {
@@ -95,7 +96,7 @@ void RegisterKernels_Xent();
 void RegisterKernels_ZerosLike();
 } // namespace tfdml
 
-void TF_InitKernel()
+TFDML_EXPORT void TF_InitKernel()
 {
     // NOTE: we could add logic here to conditionally register kernels based on
     // D3D12 adapter capabilities (for example).
