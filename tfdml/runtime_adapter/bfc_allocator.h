@@ -15,6 +15,8 @@ limitations under the License.
 
 #pragma once
 
+#define NOMINMAX
+
 #include <array>
 #include <deque>
 #include <memory>
@@ -28,39 +30,20 @@ limitations under the License.
 #include "tfdml/runtime_adapter/allocator_retry.h"
 #include "tfdml/runtime_adapter/numbers.h"
 
+
+#ifdef _DEBUG
+// #define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+    #define DBG_NEW new
+// Replace _NORMAL_BLOCK with _CLIENT_BLOCK if you want the
+// allocations to be of _CLIENT_BLOCK type
+#else
+#define DBG_NEW new
+#endif
+
 namespace tfdml
 {
 
-#if defined(__clang__) && (!defined(SWIG))
-#define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))
-#else
-#define THREAD_ANNOTATION_ATTRIBUTE__(x) // no-op
-#endif
-
-#define LOCKABLE THREAD_ANNOTATION_ATTRIBUTE__(lockable)
-#define SCOPED_LOCKABLE THREAD_ANNOTATION_ATTRIBUTE__(scoped_lockable)
-
-#define EXCLUSIVE_LOCK_FUNCTION(...)                                           \
-    THREAD_ANNOTATION_ATTRIBUTE__(exclusive_lock_function(__VA_ARGS__))
-
-#define UNLOCK_FUNCTION(...)                                                   \
-    THREAD_ANNOTATION_ATTRIBUTE__(unlock_function(__VA_ARGS__))
-
-class LOCKABLE bfc_allocator_mutex : public std::mutex
-{
-};
-
-template <typename T>
-class SCOPED_LOCKABLE bfc_allocator_lock : public std::unique_lock<T>
-{
-  public:
-    explicit bfc_allocator_lock(T& mu) EXCLUSIVE_LOCK_FUNCTION(mu)
-        : std::unique_lock<T>(mu)
-    {
-    }
-
-    ~bfc_allocator_lock() UNLOCK_FUNCTION() {}
-};
+class MemoryDump;
 
 // A memory allocator that implements a 'best-fit with coalescing'
 // algorithm.  This is essentially a very simple version of Doug Lea's
@@ -73,15 +56,34 @@ class SCOPED_LOCKABLE bfc_allocator_lock : public std::unique_lock<T>
 class BFCAllocator : public Allocator
 {
   public:
-    // Takes ownership of sub_allocator.
+    struct Options
+    {
+        bool allow_growth = true;
+
+        // If true, the allocator may sleep for a period of time when it can't
+        // fulfill an allocation request, in the hopes that another thread will
+        // free up memory in the meantime.
+        //
+        // If false, the allocator will never sleep, even if
+        // AllocationAttributes::attr_retry_on_failure is true.
+        bool allow_retry_on_failure = true;
+
+        // Whether the allocator will deallocate free regions to avoid OOM due
+        // to memory fragmentation.
+        bool garbage_collection = false;
+
+        // Controls when a chunk should be split, if its size exceeds the
+        // requested allocation size.
+        double fragmentation_fraction = 0;
+
+        size_t max_allocation_size_bytes = static_cast<size_t>(-1);
+    };
     BFCAllocator(
-        SubAllocator* sub_allocator,
+        std::unique_ptr<SubAllocator> sub_allocator,
         size_t total_memory,
-        bool allow_growth,
         const std::string& name,
-        bool garbage_collection = false,
-        size_t min_alloc_size_exponent = 8,
-        size_t max_allocation_size = -1);
+        const Options& opts);
+
     ~BFCAllocator() override;
 
     std::string Name() override { return name_; }
@@ -108,9 +110,13 @@ class BFCAllocator : public Allocator
 
     absl::optional<AllocatorStats> GetStats() override;
 
-    void ClearStats() override;
+    bool ClearStats() override;
 
     void SetSafeFrontier(uint64_t count) override;
+
+    AllocatorMemoryType GetMemoryType() const override;
+
+    bool ShouldRecordOpName() const { return true; }
 
   private:
     struct Bin;
@@ -145,16 +151,33 @@ class BFCAllocator : public Allocator
     bool MergeTimestampedChunks(size_t required_bytes)
         EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
+    // Return the largest free chunk bytes from the largest bin in constant
+    // time. The free chunks are sorted by size (and then address) in a bin.
+    int64_t LargestFreeChunk() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+    // Add TraceMe (in memory allocation and deallocation) for memory stats
+    // profiling. The chunk_ptr is passed to get information such as address,
+    // chunk size and requested_size.
+    void AddTraceMe(absl::string_view traceme_name, const void* ptr)
+        EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
+    // Overloaded AddTraceMe function with chunk information.
+    void AddTraceMe(
+        absl::string_view traceme_name,
+        const void* chunk_ptr,
+        int64_t req_bytes,
+        int64_t alloc_bytes) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
     // A ChunkHandle is an index into the chunks_ vector in BFCAllocator
     // kInvalidChunkHandle means an invalid chunk
     typedef size_t ChunkHandle;
-    static const int kInvalidChunkHandle = -1;
+    static constexpr ChunkHandle kInvalidChunkHandle = SIZE_MAX;
 
     typedef int BinNum;
-    static const int kInvalidBinNum = -1;
+    static constexpr int kInvalidBinNum = -1;
     // The following means that the largest bin'd chunk size is 256 << 21 =
     // 512MB.
-    static const int kNumBins = 21;
+    static constexpr int kNumBins = 21;
 
     // A Chunk points to a piece of memory that's either entirely free or
     // entirely in use by one user memory allocation.
@@ -275,6 +298,9 @@ class BFCAllocator : public Allocator
         }
     };
 
+    static constexpr size_t kMinAllocationBits = 8;
+    static constexpr size_t kMinAllocationSize = 1 << kMinAllocationBits;
+
     // BFCAllocator allocates memory into a collection of disjoint
     // AllocationRegions.  Each AllocationRegion corresponds to one call to
     // SubAllocator::Alloc().  (Actually, if a subsequent call to
@@ -289,25 +315,16 @@ class BFCAllocator : public Allocator
     class AllocationRegion
     {
       public:
-        AllocationRegion(
-            void* ptr,
-            size_t memory_size,
-            size_t min_alloc_size_exponent)
-            : min_alloc_size_exponent_(min_alloc_size_exponent),
-              ptr_(ptr),
+        AllocationRegion(void* ptr, size_t memory_size)
+            : ptr_(ptr),
               memory_size_(memory_size),
               end_ptr_(
                   static_cast<void*>(static_cast<char*>(ptr_) + memory_size_))
         {
-            const size_t min_allocation_size = (1 << min_alloc_size_exponent);
-            assert(0 == memory_size % min_allocation_size);
+            assert(0 == memory_size % kMinAllocationSize);
             const size_t n_handles =
-                (memory_size + min_allocation_size - 1) / min_allocation_size;
-            handles_.reset(new ChunkHandle[n_handles]);
-            for (size_t i = 0; i < n_handles; i++)
-            {
-                handles_[i] = kInvalidChunkHandle;
-            }
+                (memory_size + kMinAllocationSize - 1) / kMinAllocationSize;
+            handles_.resize(n_handles, kInvalidChunkHandle);
         }
 
         AllocationRegion() = default;
@@ -321,6 +338,16 @@ class BFCAllocator : public Allocator
         void* ptr() const { return ptr_; }
         void* end_ptr() const { return end_ptr_; }
         size_t memory_size() const { return memory_size_; }
+        void extend(size_t size)
+        {
+            memory_size_ += size;
+            assert(0 == memory_size_ % kMinAllocationSize);
+
+            end_ptr_ = static_cast<void*>(static_cast<char*>(end_ptr_) + size);
+            const size_t n_handles =
+                (memory_size_ + kMinAllocationSize - 1) / kMinAllocationSize;
+            handles_.resize(n_handles, kInvalidChunkHandle);
+        }
         ChunkHandle get_handle(const void* p) const
         {
             return handles_[IndexFor(p)];
@@ -334,9 +361,6 @@ class BFCAllocator : public Allocator
       private:
         void Swap(AllocationRegion* other)
         {
-            std::swap(
-                min_alloc_size_exponent_,
-                other->min_alloc_size_exponent_);
             std::swap(ptr_, other->ptr_);
             std::swap(memory_size_, other->memory_size_);
             std::swap(end_ptr_, other->end_ptr_);
@@ -350,20 +374,18 @@ class BFCAllocator : public Allocator
             assert(p_int >= base_int);
             assert(p_int < base_int + memory_size_);
             return static_cast<size_t>(
-                ((p_int - base_int) >> min_alloc_size_exponent_));
+                ((p_int - base_int) >> kMinAllocationBits));
         }
-
-        size_t min_alloc_size_exponent_;
 
         // Metadata about the allocation region.
         void* ptr_ = nullptr;
         size_t memory_size_ = 0;
         void* end_ptr_ = nullptr;
 
-        // Array of size "memory_size / MinAllocationSize()".  It is
-        // indexed by (p-base) / MinAllocationSize(), contains ChunkHandle
+        // Array of size "memory_size / kMinAllocationSize".  It is
+        // indexed by (p-base) / kMinAllocationSize, contains ChunkHandle
         // for the memory allocation represented by "p"
-        std::unique_ptr<ChunkHandle[]> handles_;
+        std::vector<ChunkHandle> handles_;
 
         AllocationRegion(const AllocationRegion&) = delete;
         void operator=(const AllocationRegion&) = delete;
@@ -380,20 +402,55 @@ class BFCAllocator : public Allocator
         RegionManager() {}
         ~RegionManager() {}
 
-        void AddAllocationRegion(
-            void* ptr,
-            size_t memory_size,
-            size_t min_alloc_size_exponent)
+        void AddAllocationRegion(void* ptr, size_t memory_size)
         {
-            // Insert sorted by end_ptr
+            // Insert sorted by end_ptr.
             auto entry = std::upper_bound(
                 regions_.begin(),
                 regions_.end(),
                 ptr,
                 &Comparator);
-            regions_.insert(
-                entry,
-                AllocationRegion(ptr, memory_size, min_alloc_size_exponent));
+            regions_.insert(entry, AllocationRegion(ptr, memory_size));
+        }
+
+        // Adds an alloation region for the given ptr and size, potentially
+        // extending a region if ptr matches the end_ptr of an existing region.
+        // If a region is extended, returns a pointer to the extended region so
+        // that the BFC allocator can reason about chunkification.
+        AllocationRegion* AddOrExtendAllocationRegion(
+            void* ptr,
+            size_t memory_size)
+        {
+            // Insert sorted by end_ptr.
+            auto entry = std::upper_bound(
+                regions_.begin(),
+                regions_.end(),
+                ptr,
+                &Comparator);
+            // Check if can be coalesced with preceding region.
+            if (entry != regions_.begin())
+            {
+                auto preceding_region = entry - 1;
+                if (preceding_region->end_ptr() == ptr)
+                {
+                    TF_VLog(
+                        1,
+                        "Extending region %p of %s by %s bytes",
+                        preceding_region->ptr(),
+                        strings::HumanReadableNumBytes(
+                            preceding_region->memory_size())
+                            .c_str(),
+                        strings::HumanReadableNumBytes(memory_size).c_str());
+                    preceding_region->extend(memory_size);
+                    return &*preceding_region;
+                }
+            }
+            TF_VLog(
+                1,
+                "Inserting new region %p of %s",
+                strings::HumanReadableNumBytes(memory_size).c_str());
+            regions_.insert(entry, AllocationRegion(ptr, memory_size));
+            return nullptr;
         }
 
         std::vector<AllocationRegion>::iterator RemoveAllocationRegion(
@@ -441,7 +498,7 @@ class BFCAllocator : public Allocator
             {
                 return &(*entry);
             }
-            TF_Log(TF_FATAL, "Could not find Region for %#010x", p);
+            TF_Log(TF_FATAL, "Could not find Region for %p", p);
             return nullptr;
         }
 
@@ -449,8 +506,8 @@ class BFCAllocator : public Allocator
         std::vector<AllocationRegion> regions_;
     };
 
-    // Returns 'bytes' rounded up to the next highest MinAllocationSize().
-    size_t RoundedBytes(size_t bytes);
+    // Returns 'bytes' rounded up to the next highest kMinAllocationSize.
+    static size_t RoundedBytes(size_t bytes);
 
     // Try to add a new memory region that can satisfy an allocation of
     // 'rounded_bytes' bytes.  Returns true on success and false on
@@ -487,10 +544,6 @@ class BFCAllocator : public Allocator
     // contiguous in their allocation.
     void Merge(ChunkHandle h, ChunkHandle h2) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-    // Frees the memory represented by 'h', coalescing the chunk if
-    // possible.
-    void FreeAndMaybeCoalesce(ChunkHandle h) EXCLUSIVE_LOCKS_REQUIRED(lock_);
-
     // Adds the chunk 'h' to the proper free bin.
     void InsertFreeChunkIntoBin(ChunkHandle h) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
@@ -508,7 +561,8 @@ class BFCAllocator : public Allocator
     void DeleteChunk(ChunkHandle h) EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
     std::string RenderOccupancy() EXCLUSIVE_LOCKS_REQUIRED(lock_);
-    void DumpMemoryLog(size_t num_bytes) EXCLUSIVE_LOCKS_REQUIRED(lock_);
+    MemoryDump RecordMemoryMapInternal() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+    void MaybeWriteMemoryMap() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
     ChunkHandle AllocateChunk() EXCLUSIVE_LOCKS_REQUIRED(lock_);
     void DeallocateChunk(ChunkHandle h) EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -522,6 +576,10 @@ class BFCAllocator : public Allocator
     ChunkHandle TryToCoalesce(ChunkHandle h, bool ignore_freed_at)
         EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
+    // Fragmentation is calculated as the reverse ratio of the largest free
+    // chunk size over total free memory, and returns a value within [0, 1].
+    double GetFragmentation() EXCLUSIVE_LOCKS_REQUIRED(lock_);
+
     // Information about a Bin that is useful for debugging.
     struct BinDebugInfo
     {
@@ -531,8 +589,6 @@ class BFCAllocator : public Allocator
         size_t total_chunks_in_use = 0;
         size_t total_chunks_in_bin = 0;
     };
-
-    size_t MinAllocationSize() const { return (1 << min_alloc_size_exponent_); }
 
     // Computes and returns a BinDebugInfo for each Bin.
     std::array<BinDebugInfo, kNumBins> get_bin_debug_info()
@@ -573,17 +629,21 @@ class BFCAllocator : public Allocator
     {
         return reinterpret_cast<Bin*>(&(bins_space_[index * sizeof(Bin)]));
     }
-    size_t BinNumToSize(BinNum index) { return MinAllocationSize() << index; }
+    size_t BinNumToSize(BinNum index)
+    {
+        return static_cast<size_t>(256) << index;
+    }
     BinNum BinNumForSize(size_t bytes)
     {
-        uint64_t v = std::max<size_t>(bytes, MinAllocationSize()) >>
-                     min_alloc_size_exponent_;
+        uint64_t v = std::max<size_t>(bytes, 256) >> kMinAllocationBits;
         int b = std::min(kNumBins - 1, Log2FloorNonZero(v));
         return b;
     }
     Bin* BinForSize(size_t bytes) { return BinFromIndex(BinNumForSize(bytes)); }
 
     char bins_space_[sizeof(Bin) * kNumBins];
+
+    const Options opts_;
 
     // The size of the current region allocation.
     size_t curr_region_allocation_bytes_;
@@ -595,16 +655,12 @@ class BFCAllocator : public Allocator
     // of the available memory.
     bool started_backpedal_ = false;
 
-    // Whether the allocator will deallocate free regions to avoid OOM due to
-    // memory fragmentation.
-    bool garbage_collection_;
-
-    size_t min_alloc_size_exponent_;
-
-    // The largest single allocation size, in bytes, that is supported by the
-    // the SubAllocator (and therefore the largest allocation supported by this
-    // allocator)
-    size_t max_allocation_size_bytes_;
+    // Whether the allocator will coalesce adjacent sub allocator provided
+    // AllocationRegions. This may be disabled if discrete sub allocator
+    // regions can't be treated as contiguous (e.g. if the allocation refers to
+    // device visible memory which is not adjacent to the other region in the
+    // device's address space).
+    const bool coalesce_regions_;
 
     std::unique_ptr<SubAllocator> sub_allocator_;
     std::string name_;
@@ -613,7 +669,7 @@ class BFCAllocator : public Allocator
     std::atomic<uint64_t> safe_frontier_ = {0};
 
     // Structures mutable after construction
-    mutable bfc_allocator_mutex lock_;
+    mutable absl::Mutex lock_;
     RegionManager region_manager_ GUARDED_BY(lock_);
 
     std::vector<Chunk> chunks_ GUARDED_BY(lock_);

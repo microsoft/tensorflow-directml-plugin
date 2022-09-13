@@ -64,7 +64,7 @@ class DmlDescriptorAllocator : public BFCAllocator
     // We allocate our descriptor heaps in fixed-sized blocks of 64k
     // descriptors. This is more than sufficient to accommodate even the largest
     // of DML operators or graphs.
-    static constexpr uint64_t kMaxAllocationSizeInDescriptors = 65536;
+    static constexpr size_t kMaxAllocationSizeInDescriptors = 65536;
 
     // We can allocate as many descriptors as we want (across all allocations).
     static constexpr size_t kMaxTotalDescriptors = static_cast<size_t>(-1);
@@ -86,10 +86,12 @@ class DmlDescriptorAllocator : public BFCAllocator
         }
 
       public: // SubAllocator overrides
-        void* Alloc(size_t alignment, size_t num_bytes) override
+        void* Alloc(size_t alignment, size_t num_bytes, size_t* bytes_received)
+            override
         {
             void* p = impl_->Alloc(num_bytes);
             VisitAlloc(p, 0, num_bytes);
+            *bytes_received = num_bytes;
             return p;
         }
 
@@ -98,6 +100,8 @@ class DmlDescriptorAllocator : public BFCAllocator
             VisitFree(ptr, 0, num_bytes);
             impl_->Free(ptr, num_bytes);
         }
+
+        bool SupportsCoalescing() const override { return false; }
 
       private:
         D3D12DescriptorHeapAllocator* impl_;

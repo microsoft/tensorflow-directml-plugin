@@ -19,13 +19,22 @@ limitations under the License.
 #include "tfdml/runtime_adapter/op_kernel_construction.h"
 #include "tfdml/runtime_adapter/status.h"
 
+#ifdef _DEBUG
+// #define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+    #define DBG_NEW new
+    // Replace _NORMAL_BLOCK with _CLIENT_BLOCK if you want the
+    // allocations to be of _CLIENT_BLOCK type
+#else
+    #define DBG_NEW new
+#endif
+
 namespace tfdml
 {
 
 static std::mt19937_64* InitRngWithRandomSeed()
 {
     std::random_device device("/dev/urandom");
-    return new std::mt19937_64(device());
+    return DBG_NEW std::mt19937_64(device());
 }
 
 static uint64_t New64()

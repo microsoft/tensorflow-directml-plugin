@@ -18,6 +18,7 @@ limitations under the License.
 
 #include "tfdml/core/dml_common.h"
 #include "tfdml/core/dml_device.h"
+#include "tfdml/core/dml_gpu_event.h"
 #include "tfdml/core/dml_kernel_manager.h"
 #include "tfdml/core/dml_ops_common.h"
 #include "tfdml/runtime_adapter/op_kernel.h"

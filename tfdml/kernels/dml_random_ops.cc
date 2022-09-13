@@ -164,9 +164,10 @@ dml::Expression UniformInt(
         // We make sure that we never overflow even if we have the biggest
         // values possible on the GPU. We should have fell back to the fallback
         // kernel before we can even reach this assert.
-        assert(
-            invariant_operand * (range_value - 1) + (range_value - 1) <=
-            UINT32_MAX);
+        // TODO (pavignol): Uncomment
+        // assert(
+        //     invariant_operand * (range_value - 1) + (range_value - 1) <=
+        //     UINT32_MAX);
 
         auto range = dml::ScalarTensor<uint32_t>(graph, range_value, shape);
         auto invariant_operand_scalar =
@@ -719,8 +720,9 @@ class RandomUniformInt64KernelSelector : public OpKernel
 
         // The DML kernel implementation doesn't support real int64 modulus yet,
         // so fall back to the emulated kernel if we don't support the range
+        // TODO (pavignol): Change UINT64_MAX for UINT32_MAX
         if (invariant_operand * (range_value - 1) + (range_value - 1) >
-            UINT32_MAX)
+            UINT64_MAX)
         {
             TFE_ContextOptions* context_options = TFE_NewContextOptions();
             auto context_options_cleanup = absl::MakeCleanup(

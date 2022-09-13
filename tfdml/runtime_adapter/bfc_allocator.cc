@@ -24,28 +24,26 @@ limitations under the License.
 namespace tfdml
 {
 
+constexpr BFCAllocator::ChunkHandle BFCAllocator::kInvalidChunkHandle;
+
 BFCAllocator::BFCAllocator(
-    SubAllocator* sub_allocator,
+    std::unique_ptr<SubAllocator> sub_allocator,
     size_t total_memory,
-    bool allow_growth,
     const std::string& name,
-    bool garbage_collection,
-    size_t min_alloc_size_exponent,
-    size_t max_allocation_size)
-    : garbage_collection_(garbage_collection),
-      min_alloc_size_exponent_(min_alloc_size_exponent),
-      max_allocation_size_bytes_(max_allocation_size),
-      sub_allocator_(sub_allocator),
+    const Options& opts)
+    : opts_(opts),
+      coalesce_regions_(sub_allocator->SupportsCoalescing()),
+      sub_allocator_(std::move(sub_allocator)),
       name_(name),
       free_chunks_list_(kInvalidChunkHandle),
       next_allocation_id_(1)
 {
-    if (allow_growth)
+    if (opts.allow_growth)
     {
-        // 1MiB smallest initial allocation, unless total memory available
+        // 2MiB smallest initial allocation, unless total memory available
         // is less.
         curr_region_allocation_bytes_ =
-            RoundedBytes(std::min(total_memory, size_t{1048576}));
+            RoundedBytes(std::min(total_memory, size_t{2 << 20}));
     }
     else
     {
@@ -53,7 +51,7 @@ BFCAllocator::BFCAllocator(
     }
 
     curr_region_allocation_bytes_ =
-        std::min(curr_region_allocation_bytes_, max_allocation_size_bytes_);
+        std::min(curr_region_allocation_bytes_, opts.max_allocation_size_bytes);
 
     // Allocate the requested amount of memory.
     memory_limit_ = total_memory;
@@ -64,6 +62,7 @@ BFCAllocator::BFCAllocator(
     // We create bins to fit all possible ranges that cover the
     // memory_limit_ starting from allocations up to 256 bytes to
     // allocations up to (and including) the memory limit.
+    TF_VLog(1, "Creating new BFCAllocator named: %s", name.c_str());
     for (BinNum b = 0; b < kNumBins; b++)
     {
         size_t bin_size = BinNumToSize(b);
@@ -73,8 +72,7 @@ BFCAllocator::BFCAllocator(
             strings::HumanReadableNumBytes(bin_size).c_str());
         new (BinFromIndex(b)) Bin(this, bin_size);
         CHECK(BinForSize(bin_size) == BinFromIndex(b));
-        CHECK(
-            BinForSize(bin_size + MinAllocationSize() - 1) == BinFromIndex(b));
+        CHECK(BinForSize(bin_size + 255) == BinFromIndex(b));
         CHECK(BinForSize(bin_size * 2 - 1) == BinFromIndex(b));
         if (b + 1 < kNumBins)
         {
@@ -119,9 +117,9 @@ bool BFCAllocator::Extend(size_t alignment, size_t rounded_bytes)
 {
     size_t available_bytes = memory_limit_ - total_region_allocated_bytes_;
     // Rounds available_bytes down to the nearest multiple of
-    // MinAllocationSize().
+    // kMinAllocationSize.
     available_bytes =
-        (available_bytes / MinAllocationSize()) * MinAllocationSize();
+        (available_bytes / kMinAllocationSize) * kMinAllocationSize;
 
     // Do we have enough space to handle the client's request?
     // If not, fail immediately.
@@ -140,12 +138,14 @@ bool BFCAllocator::Extend(size_t alignment, size_t rounded_bytes)
         increased_allocation = true;
     }
 
-    curr_region_allocation_bytes_ =
-        std::min(curr_region_allocation_bytes_, max_allocation_size_bytes_);
+    curr_region_allocation_bytes_ = std::min(
+        curr_region_allocation_bytes_,
+        opts_.max_allocation_size_bytes);
 
     // Try allocating.
     size_t bytes = std::min(curr_region_allocation_bytes_, available_bytes);
-    void* mem_addr = sub_allocator_->Alloc(alignment, bytes);
+    size_t bytes_received;
+    void* mem_addr = sub_allocator_->Alloc(alignment, bytes, &bytes_received);
     if (mem_addr == nullptr && !started_backpedal_)
     {
         // Only backpedal once.
@@ -158,7 +158,7 @@ bool BFCAllocator::Extend(size_t alignment, size_t rounded_bytes)
         {
             bytes = RoundedBytes(bytes * kBackpedalFactor);
             if (bytes < rounded_bytes) break;
-            mem_addr = sub_allocator_->Alloc(alignment, bytes);
+            mem_addr = sub_allocator_->Alloc(alignment, bytes, &bytes_received);
         }
     }
 
@@ -172,8 +172,9 @@ bool BFCAllocator::Extend(size_t alignment, size_t rounded_bytes)
         // Increase the region size of the next required allocation.
         curr_region_allocation_bytes_ *= 2;
 
-        curr_region_allocation_bytes_ =
-            std::min(curr_region_allocation_bytes_, max_allocation_size_bytes_);
+        curr_region_allocation_bytes_ = std::min(
+            curr_region_allocation_bytes_,
+            opts_.max_allocation_size_bytes);
     }
 
     TF_VLog(
@@ -189,21 +190,28 @@ bool BFCAllocator::Extend(size_t alignment, size_t rounded_bytes)
 
     TF_VLog(
         1,
-        "Allocated memory at %#010x to %#010x",
+        "Allocated memory at %p to %p",
         mem_addr,
         static_cast<void*>(static_cast<char*>(mem_addr) + bytes));
 
-    region_manager_.AddAllocationRegion(
-        mem_addr,
-        bytes,
-        min_alloc_size_exponent_);
+    AllocationRegion* maybe_extended_region = nullptr;
+    if (coalesce_regions_)
+    {
+        maybe_extended_region = region_manager_.AddOrExtendAllocationRegion(
+            mem_addr,
+            bytes_received);
+    }
+    else
+    {
+        region_manager_.AddAllocationRegion(mem_addr, bytes_received);
+    }
 
     // Create one large chunk for the whole memory space that will
     // be chunked later.
     ChunkHandle h = AllocateChunk();
     BFCAllocator::Chunk* c = ChunkFromHandle(h);
     c->ptr = mem_addr;
-    c->size = bytes;
+    c->size = bytes_received;
     c->allocation_id = -1;
     c->prev = kInvalidChunkHandle;
     c->next = kInvalidChunkHandle;
@@ -211,8 +219,25 @@ bool BFCAllocator::Extend(size_t alignment, size_t rounded_bytes)
 
     region_manager_.set_handle(c->ptr, h);
 
-    // Insert the chunk into the right bin.
-    InsertFreeChunkIntoBin(h);
+    // If the region was extended, then there exists a previous chunk that
+    // should be linked to the new chunk.
+    if (maybe_extended_region != nullptr)
+    {
+        ChunkHandle prev =
+            maybe_extended_region->get_handle(maybe_extended_region->ptr());
+        BFCAllocator::Chunk* prev_chunk = ChunkFromHandle(prev);
+        // Find the last recorded chunk in the extended region.
+        while (prev_chunk->next != kInvalidChunkHandle)
+        {
+            prev = prev_chunk->next;
+            prev_chunk = ChunkFromHandle(prev);
+        }
+        c->prev = prev;
+        prev_chunk->next = h;
+    }
+
+    // Maybe merge adjacent chunks and insert the chunk into the right bin.
+    InsertFreeChunkIntoBin(TryToCoalesce(h, /*ignore_freed_at=*/false));
 
     return true;
 }
@@ -286,55 +311,52 @@ void* BFCAllocator::AllocateRaw(
     const AllocationAttributes& allocation_attr)
 {
     TF_VLog(1, "AllocateRaw %s %llu", Name().c_str(), num_bytes);
-    if (allocation_attr.no_retry_on_failure)
+    void* result = [&]
     {
-        // Return immediately upon the first failure if this is for allocating
-        // an optional scratch space.
-        uint64_t freed_by_count = 0;
-        if (allocation_attr.freed_by_func != nullptr)
+        if (!opts_.allow_retry_on_failure || !allocation_attr.retry_on_failure)
         {
-            freed_by_count = (*allocation_attr.freed_by_func)();
-        }
-        void* result =
-            AllocateRawInternal(unused_alignment, num_bytes, freed_by_count);
-        if (result == nullptr)
-        {
+            // If we have globally disabled retry-on-failure and fail to
+            // allocate an "important" alloc, we want to print a log, because
+            // the program may be about to fail due to OOM.
+            //
+            // Bit of a hack: We deem "important" allocs as those which are
+            // retryable. In TF, *non*-retryable allocations are usually those
+            // which we can tolerate failing.  For example, we allocate
+            // convolution scratch memory as non-retryable; if it fails, we'll
+            // just use a fallback algorithm that uses no scratch.
             static std::atomic<int32_t> log_counter{0};
-            int32_t counter_value = log_counter.load(std::memory_order_relaxed);
-            if (counter_value < 10)
+            constexpr int kMaxFailureLogs = 10;
+
+            uint64_t freed_by_count = 0;
+            if (allocation_attr.freed_by_func != nullptr)
             {
-                log_counter.store(counter_value + 1, std::memory_order_relaxed);
-                TF_Log(
-                    TF_WARNING,
-                    "Allocator (%s) ran out of memory trying to allocate %s "
-                    "with "
-                    "freed_by_count=%llu. The caller indicates that this is "
-                    "not a "
-                    "failure, but may mean that there could be performance "
-                    "gains if "
-                    "more memory were available.",
-                    Name().c_str(),
-                    strings::HumanReadableNumBytes(num_bytes).c_str(),
-                    freed_by_count);
+                freed_by_count = (*allocation_attr.freed_by_func)();
             }
+            void* res = AllocateRawInternal(
+                unused_alignment,
+                num_bytes,
+                freed_by_count);
+            return res;
         }
-        return result;
-    }
-    else
-    {
-        return AllocateRawInternalWithRetry(
-            unused_alignment,
-            num_bytes,
-            allocation_attr);
-    }
+        else
+        {
+            return AllocateRawInternalWithRetry(
+                unused_alignment,
+                num_bytes,
+                allocation_attr);
+        }
+    }();
+    TF_VLog(3, "AllocateRaw %s  %llu %p", Name().c_str(), num_bytes, result);
+    return result;
 }
 
+// static
 size_t BFCAllocator::RoundedBytes(size_t bytes)
 {
     size_t rounded_bytes =
-        (MinAllocationSize() *
-         ((bytes + MinAllocationSize() - 1) / MinAllocationSize()));
-    assert(size_t{0} == rounded_bytes % MinAllocationSize());
+        (kMinAllocationSize *
+         ((bytes + kMinAllocationSize - 1) / kMinAllocationSize));
+    assert(size_t{0} == rounded_bytes % kMinAllocationSize);
     return rounded_bytes;
 }
 
@@ -342,7 +364,7 @@ bool BFCAllocator::DeallocateFreeRegions(size_t rounded_bytes)
     EXCLUSIVE_LOCKS_REQUIRED(lock_)
 {
     // Do nothing if garbage collection is off.
-    if (!garbage_collection_)
+    if (!opts_.garbage_collection)
     {
         return false;
     }
@@ -367,7 +389,7 @@ bool BFCAllocator::DeallocateFreeRegions(size_t rounded_bytes)
 
         if (!any_use)
         {
-            TF_VLog(2, "Found free region with ptr = %#010x", region.ptr());
+            TF_VLog(2, "Found free region with ptr = %p", region.ptr());
             free_region_ptrs.insert(region.ptr());
             total_free_bytes += region.memory_size();
         }
@@ -421,7 +443,7 @@ void BFCAllocator::DeallocateRegions(
             continue;
         }
 
-        TF_VLog(2, "Deallocate region with ptr = %#010x", it->ptr());
+        TF_VLog(2, "Deallocate region with ptr = %p", it->ptr());
         // Remove all chunk registrations from Bins.
         ChunkHandle h = region_manager_.get_handle(it->ptr());
         while (h != kInvalidChunkHandle)
@@ -454,26 +476,26 @@ void* BFCAllocator::AllocateRawInternal(
         return nullptr;
     }
 
-    if (num_bytes > max_allocation_size_bytes_)
+    if (num_bytes > opts_.max_allocation_size_bytes)
     {
         TF_VLog(
             2,
             "requested allocation of %llu exceeds maximum supported allocation "
             "size of %llu",
             num_bytes,
-            max_allocation_size_bytes_);
+            opts_.max_allocation_size_bytes);
         return nullptr;
     }
 
-    // First, always allocate memory of at least MinAllocationSize()
-    // bytes, and always allocate multiples of MinAllocationSize() bytes
+    // First, always allocate memory of at least kMinAllocationSize
+    // bytes, and always allocate multiples of kMinAllocationSize bytes
     // so all memory addresses are nicely byte aligned.
     size_t rounded_bytes = RoundedBytes(num_bytes);
 
     // The BFC allocator tries to find the best fit first.
     BinNum bin_num = BinNumForSize(rounded_bytes);
 
-    bfc_allocator_lock<bfc_allocator_mutex> l(lock_);
+    absl::MutexLock l(&lock_);
     if (!timestamped_chunks_.empty())
     {
         // Merge timestamped chunks whose counts have become safe for general
@@ -526,21 +548,29 @@ void* BFCAllocator::AllocateRawInternal(
         }
     }
 
-    // We searched all bins for an existing free chunk to use and
-    // couldn't find one.  This means we must have run out of memory,
-    // Dump the memory log for analysis.
-    TF_VLog(
-        2,
-        "Allocator (%s) ran out of memory trying to allocate %s (rounded to "
-        "%llu).  Current allocation summary follows.",
-        Name().c_str(),
-        strings::HumanReadableNumBytes(num_bytes).c_str(),
-        rounded_bytes);
-
-    DumpMemoryLog(rounded_bytes);
-
-    TF_VLog(2, RenderOccupancy().c_str());
     return nullptr;
+}
+
+int64_t BFCAllocator::LargestFreeChunk()
+{
+    for (int i = kNumBins - 1; i >= 0; i--)
+    {
+        if (!BinFromIndex(i)->free_chunks.empty())
+        {
+            return ChunkFromHandle(*BinFromIndex(i)->free_chunks.rbegin())
+                ->size;
+        }
+    }
+    return 0;
+}
+
+double BFCAllocator::GetFragmentation()
+{
+    int64_t bytes_available =
+        total_region_allocated_bytes_ - stats_.bytes_in_use;
+    assert(bytes_available > 0);
+    return static_cast<double>(bytes_available - LargestFreeChunk()) /
+           bytes_available;
 }
 
 void* BFCAllocator::FindChunkPtr(
@@ -572,12 +602,18 @@ void* BFCAllocator::FindChunkPtr(
                 RemoveFreeChunkIterFromBin(&b->free_chunks, citer);
 
                 // If we can break the size of the chunk into two reasonably
-                // large pieces, do so.  In any case don't waste more than
-                // kMaxInternalFragmentation bytes on padding this alloc.
-                const int64_t kMaxInternalFragmentation = 128 << 20; // 128mb
+                // large pieces, do don't waste more than
+                // max_internal_fragmentation_bytes on padding. If this
+                // threshold is not set by the user, then use 128MB as the
+                // default.
+                const int64_t max_internal_fragmentation_bytes =
+                    (opts_.fragmentation_fraction > 0.0)
+                        ? opts_.fragmentation_fraction * memory_limit_
+                        : 128 << 20;
+
                 if (chunk->size >= rounded_bytes * 2 ||
                     static_cast<int64_t>(chunk->size) - rounded_bytes >=
-                        kMaxInternalFragmentation)
+                        max_internal_fragmentation_bytes)
                 {
                     SplitChunk(h, rounded_bytes);
                     chunk = ChunkFromHandle(
@@ -594,15 +630,22 @@ void* BFCAllocator::FindChunkPtr(
                 // Update stats.
                 ++stats_.num_allocs;
                 stats_.bytes_in_use += chunk->size;
+                if (stats_.bytes_in_use > stats_.peak_bytes_in_use)
+                {
+                    TF_VLog(
+                        2,
+                        "New Peak memory usage of %lld bytes for %s",
+                        stats_.bytes_in_use,
+                        Name().c_str());
+                }
                 stats_.peak_bytes_in_use =
                     std::max(stats_.peak_bytes_in_use, stats_.bytes_in_use);
                 stats_.largest_alloc_size = std::max<std::size_t>(
                     stats_.largest_alloc_size,
                     chunk->size);
 
-                TF_VLog(4, "Returning: %#010x", chunk->ptr);
+                TF_VLog(4, "Returning: %p", chunk->ptr);
                 TF_VLog(4, "A: %s", RenderOccupancy().c_str());
-
                 return chunk->ptr;
             }
         }
@@ -669,16 +712,18 @@ void BFCAllocator::DeallocateRawInternal(void* ptr)
         TF_VLog(2, "tried to deallocate nullptr");
         return;
     }
-
-    bfc_allocator_lock<bfc_allocator_mutex> l(lock_);
+    absl::MutexLock l(&lock_);
 
     // Find the chunk from the ptr.
     BFCAllocator::ChunkHandle h = region_manager_.get_handle(ptr);
     CHECK(h != kInvalidChunkHandle);
+    // Record chunk information before it's freed.
+    Chunk* chunk = ChunkFromHandle(h);
+    void* chunk_ptr = chunk->ptr;
+    int64_t req_bytes = chunk->requested_size;
+    int64_t alloc_bytes = chunk->size;
 
     MarkFree(h);
-
-    // Consider coalescing it.
     InsertFreeChunkIntoBin(TryToCoalesce(h, false));
 
     TF_VLog(4, "F: %s", RenderOccupancy().c_str());
@@ -725,7 +770,7 @@ void BFCAllocator::DeleteChunk(ChunkHandle h)
 {
     // Delete h and cleanup all state
     Chunk* c = ChunkFromHandle(h);
-    TF_VLog(4, "Removing: %#010x", c->ptr);
+    //  VLOG(4) << "Removing: " << c->ptr;
     region_manager_.erase(c->ptr);
     DeallocateChunk(h);
 }
@@ -785,7 +830,7 @@ BFCAllocator::ChunkHandle BFCAllocator::TryToCoalesce(
         Chunk* n = ChunkFromHandle(c->next);
         if ((n->freed_at_count == 0) || ignore_freed_at)
         {
-            TF_VLog(4, "Merging c->next %#010x with c %#010x", n->ptr, c->ptr);
+            TF_VLog(4, "Merging c->next %p with c %p", n->ptr, c->ptr);
             RemoveFreeChunkFromBin(c->next);
             Merge(h, c->next);
         }
@@ -797,7 +842,7 @@ BFCAllocator::ChunkHandle BFCAllocator::TryToCoalesce(
         Chunk* n = ChunkFromHandle(c->prev);
         if ((n->freed_at_count == 0) || ignore_freed_at)
         {
-            TF_VLog(4, "Merging c %#010x into c->prev %#010x", c->ptr, n->ptr);
+            TF_VLog(4, "Merging c %p into c->prev %p", c->ptr, n->ptr);
             coalesced_chunk = c->prev;
             RemoveFreeChunkFromBin(c->prev);
             Merge(c->prev, h);
@@ -880,7 +925,7 @@ bool BFCAllocator::MergeTimestampedChunks(size_t required_bytes)
     // timestamped_chunks_ to to_merge.  If this is a standard merge
     // (required_bytes == 0) then merge them all, otherwise merge just until a
     // Chunk of the required size is produced.
-    for (int ci = 0; ci < to_merge.size(); ++ci)
+    for (int ci = 0, end = to_merge.size(); ci < end; ++ci)
     {
         void* ptr = to_merge[ci];
         // It's possible that the Chunk associated with this memory location got
@@ -924,7 +969,7 @@ bool BFCAllocator::TracksAllocationSizes() const { return true; }
 size_t BFCAllocator::RequestedSize(const void* ptr) const
 {
     CHECK(ptr);
-    bfc_allocator_lock<bfc_allocator_mutex> l(lock_);
+    absl::MutexLock l(&lock_);
     BFCAllocator::ChunkHandle h = region_manager_.get_handle(ptr);
     CHECK(h != kInvalidChunkHandle);
     const BFCAllocator::Chunk* c = ChunkFromHandle(h);
@@ -933,7 +978,7 @@ size_t BFCAllocator::RequestedSize(const void* ptr) const
 
 size_t BFCAllocator::AllocatedSize(const void* ptr) const
 {
-    bfc_allocator_lock<bfc_allocator_mutex> l(lock_);
+    absl::MutexLock l(&lock_);
     BFCAllocator::ChunkHandle h = region_manager_.get_handle(ptr);
     CHECK(h != kInvalidChunkHandle);
     const BFCAllocator::Chunk* c = ChunkFromHandle(h);
@@ -942,7 +987,7 @@ size_t BFCAllocator::AllocatedSize(const void* ptr) const
 
 int64_t BFCAllocator::AllocationId(const void* ptr) const
 {
-    bfc_allocator_lock<bfc_allocator_mutex> l(lock_);
+    absl::MutexLock l(&lock_);
     BFCAllocator::ChunkHandle h = region_manager_.get_handle(ptr);
     CHECK(h != kInvalidChunkHandle);
     const BFCAllocator::Chunk* c = ChunkFromHandle(h);
@@ -967,13 +1012,13 @@ void RenderRegion(
 
     size_t start_location =
         ((ptr_c - base_ptr_c + offset) * resolution) / total_render_size;
-    assert(start_location >= 0);
-    assert(start_location < resolution);
+    CHECK(start_location >= 0);
+    CHECK(start_location < resolution);
     size_t end_location =
         ((ptr_c + size - 1 - base_ptr_c + offset) * resolution) /
         total_render_size;
-    assert(end_location >= 0);
-    assert(end_location < resolution);
+    CHECK(end_location >= 0);
+    CHECK(end_location < resolution);
 
     for (size_t i = start_location; i <= end_location; ++i)
     {
@@ -1055,113 +1100,19 @@ std::string BFCAllocator::RenderOccupancy()
     return std::string(rendered, resolution);
 }
 
-void BFCAllocator::DumpMemoryLog(size_t num_bytes)
-{
-    const std::array<BinDebugInfo, kNumBins> bin_infos = get_bin_debug_info();
-    for (BinNum bin_num = 0; bin_num < kNumBins; bin_num++)
-    {
-        Bin* b = BinFromIndex(bin_num);
-        const BinDebugInfo& bin_info = bin_infos[bin_num];
-        CHECK(
-            b->free_chunks.size() ==
-            bin_info.total_chunks_in_bin - bin_info.total_chunks_in_use);
-
-        TF_Log(
-            TF_INFO,
-            "Bin (%llu): \tTotal Chunks: %llu, Chunks in use: %llu. %s "
-            "allocated "
-            "for chunks. %s in use in bin. %s client-requested in use in bin.",
-            b->bin_size,
-            bin_info.total_chunks_in_bin,
-            bin_info.total_chunks_in_use,
-            strings::HumanReadableNumBytes(bin_info.total_bytes_in_bin).c_str(),
-            strings::HumanReadableNumBytes(bin_info.total_bytes_in_use).c_str(),
-            strings::HumanReadableNumBytes(
-                bin_info.total_requested_bytes_in_use)
-                .c_str());
-    }
-
-    // Find the bin that we would have liked to allocate in, so we
-    // can get some further analysis about fragmentation.
-    Bin* b = BinForSize(num_bytes);
-
-    TF_Log(
-        TF_INFO,
-        "Bin for %s was %s, Chunk State: ",
-        strings::HumanReadableNumBytes(num_bytes).c_str(),
-        strings::HumanReadableNumBytes(b->bin_size).c_str());
-
-    for (ChunkHandle h : b->free_chunks)
-    {
-        Chunk* c = ChunkFromHandle(h);
-        TF_Log(TF_INFO, c->DebugString(this, true).c_str());
-    }
-
-    // Next show the chunks that are in use, and also summarize their
-    // number by size.
-    std::map<size_t, int> in_use_by_size;
-    for (const auto& region : region_manager_.regions())
-    {
-        TF_Log(TF_INFO, "Next region of size %llu", region.memory_size());
-        ChunkHandle h = region_manager_.get_handle(region.ptr());
-        while (h != kInvalidChunkHandle)
-        {
-            const Chunk* c = ChunkFromHandle(h);
-            if (c->in_use())
-            {
-                in_use_by_size[c->size]++;
-            }
-            TF_Log(
-                TF_INFO,
-                "%s at %#010x next %#010x of size %llu",
-                (c->in_use() ? "InUse" : "Free "),
-                c->ptr,
-                c->next,
-                c->size);
-
-            h = c->next;
-        }
-    }
-
-    TF_Log(TF_INFO, "     Summary of in-use Chunks by size: ");
-    size_t total_bytes = 0;
-    for (auto& it : in_use_by_size)
-    {
-        TF_Log(
-            TF_INFO,
-            "%d Chunks of size %llu totalling %s",
-            it.second,
-            it.first,
-            strings::HumanReadableNumBytes(it.first * it.second).c_str());
-        total_bytes += (it.first * it.second);
-    }
-    TF_Log(
-        TF_INFO,
-        "Sum Total of in-use chunks: %s",
-        strings::HumanReadableNumBytes(total_bytes).c_str());
-    TF_Log(
-        TF_INFO,
-        "total_region_allocated_bytes_: %llu memory_limit_: %llu available "
-        "bytes: %llu curr_region_allocation_bytes_: %llu",
-        total_region_allocated_bytes_,
-        memory_limit_,
-        (memory_limit_ - total_region_allocated_bytes_),
-        curr_region_allocation_bytes_);
-    TF_Log(TF_INFO, "Stats: \n%s", stats_.DebugString().c_str());
-}
-
 absl::optional<AllocatorStats> BFCAllocator::GetStats()
 {
-    bfc_allocator_lock<bfc_allocator_mutex> l(lock_);
+    absl::MutexLock l(&lock_);
     return stats_;
 }
 
-void BFCAllocator::ClearStats()
+bool BFCAllocator::ClearStats()
 {
-    bfc_allocator_lock<bfc_allocator_mutex> l(lock_);
+    absl::MutexLock l(&lock_);
     stats_.num_allocs = 0;
     stats_.peak_bytes_in_use = stats_.bytes_in_use;
     stats_.largest_alloc_size = 0;
+    return true;
 }
 
 std::array<BFCAllocator::BinDebugInfo, BFCAllocator::kNumBins> BFCAllocator::
@@ -1194,6 +1145,11 @@ std::array<BFCAllocator::BinDebugInfo, BFCAllocator::kNumBins> BFCAllocator::
         }
     }
     return bin_infos;
+}
+
+AllocatorMemoryType BFCAllocator::GetMemoryType() const
+{
+    return sub_allocator_->GetMemoryType();
 }
 
 } // namespace tfdml
