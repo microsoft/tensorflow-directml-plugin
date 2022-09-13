@@ -27,15 +27,6 @@ limitations under the License.
 
 #include "tfdml/runtime_adapter/wide_char.h"
 
-#ifdef _DEBUG
-// #define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-    #define DBG_NEW new
-    // Replace _NORMAL_BLOCK with _CLIENT_BLOCK if you want the
-    // allocations to be of _CLIENT_BLOCK type
-#else
-    #define DBG_NEW new
-#endif
-
 #pragma comment(lib, "Pathcch.lib") // For PathCchRemoveFileSpec
 #endif
 
@@ -225,43 +216,43 @@ namespace DmlCachedDsoLoader
 {
 StatusOr<void*> GetDirectMLDsoHandle()
 {
-    static auto result = DBG_NEW auto(DmlDsoLoader::GetDirectMLDsoHandle());
+    static auto result = new auto(DmlDsoLoader::GetDirectMLDsoHandle());
     return *result;
 }
 
 StatusOr<void*> GetDirectMLDebugDsoHandle()
 {
-    static auto result = DBG_NEW auto(DmlDsoLoader::GetDirectMLDebugDsoHandle());
+    static auto result = new auto(DmlDsoLoader::GetDirectMLDebugDsoHandle());
     return *result;
 }
 
 StatusOr<void*> GetD3d12DsoHandle()
 {
-    static auto result = DBG_NEW auto(DmlDsoLoader::GetD3d12DsoHandle());
+    static auto result = new auto(DmlDsoLoader::GetD3d12DsoHandle());
     return *result;
 }
 
 StatusOr<void*> GetDxgiDsoHandle()
 {
-    static auto result = DBG_NEW auto(DmlDsoLoader::GetDxgiDsoHandle());
+    static auto result = new auto(DmlDsoLoader::GetDxgiDsoHandle());
     return *result;
 }
 
 StatusOr<void*> GetDxCoreDsoHandle()
 {
-    static auto result = DBG_NEW auto(DmlDsoLoader::GetDxCoreDsoHandle());
+    static auto result = new auto(DmlDsoLoader::GetDxCoreDsoHandle());
     return *result;
 }
 
 StatusOr<void*> GetPixDsoHandle()
 {
-    static auto result = DBG_NEW auto(DmlDsoLoader::GetPixDsoHandle());
+    static auto result = new auto(DmlDsoLoader::GetPixDsoHandle());
     return *result;
 }
 
 StatusOr<void*> GetKernel32DsoHandle()
 {
-    static auto result = DBG_NEW auto(DmlDsoLoader::GetKernel32DsoHandle());
+    static auto result = new auto(DmlDsoLoader::GetKernel32DsoHandle());
     return *result;
 }
 

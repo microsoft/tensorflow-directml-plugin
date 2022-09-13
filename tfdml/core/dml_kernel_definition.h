@@ -30,19 +30,8 @@ limitations under the License.
 #include "tfdml/runtime_adapter/op_kernel_context.h"
 #include "tfdml/runtime_adapter/status.h"
 
-#ifdef _DEBUG
-// #define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-    #define DBG_NEW new
-    // Replace _NORMAL_BLOCK with _CLIENT_BLOCK if you want the
-    // allocations to be of _CLIENT_BLOCK type
-#else
-    #define DBG_NEW new
-#endif
-
 struct TF_OpKernelConstruction;
 struct TF_OpKernelContext;
-
-extern std::atomic<size_t> memory_usage;
 
 namespace tfdml
 {
@@ -199,15 +188,11 @@ class KernelDefinition<
 
     static void* CreateKernel(TF_OpKernelConstruction* raw_ctx)
     {
-        memory_usage += sizeof(Kernel);
-        printf("***********CreateKernel memory_usage: %llu\n", memory_usage);
-
         OpKernelConstruction ctx(raw_ctx);
         NodeDef node_def = NodeDef::Create<Op, HostArguments...>(ctx);
-        auto abc = DBG_NEW Kernel(
+        return new Kernel(
             &ctx,
             std::make_shared<const NodeDef>(std::move(node_def)));
-        return abc;
     }
 
     static void ComputeKernel(void* kernel, TF_OpKernelContext* raw_ctx)
@@ -223,8 +208,6 @@ class KernelDefinition<
 
     static void DeleteKernel(void* kernel)
     {
-        memory_usage -= sizeof(Kernel);
-        printf("***********DeleteKernel memory_usage: %llu\n", memory_usage);
         Kernel* concrete_kernel = static_cast<Kernel*>(kernel);
         delete concrete_kernel;
     }

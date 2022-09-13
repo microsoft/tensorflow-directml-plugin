@@ -137,14 +137,16 @@ dml::Expression UniformInt(
     T max_value,
     uint32_t element_count)
 {
-    using TUnsigned = std::make_unsigned<T>::type;
+    using TUnsigned = typename std::make_unsigned<T>::type;
 
     const dml::TensorDimensions shape = {1, 1, 1, element_count};
 
     // The generator always generates uint32_t value, so we need to generate
     // more or less depending on the desired output type
+    uint32_t generator_num_elements =
+        element_count * sizeof(TUnsigned) / sizeof(uint32_t);
     const dml::TensorDimensions generator_shape =
-        {1, 1, 1, element_count * sizeof(TUnsigned) / sizeof(uint32_t)};
+        {1, 1, 1, generator_num_elements};
 
     auto generator = dml::RandomGenerator(input_state, generator_shape, false);
 

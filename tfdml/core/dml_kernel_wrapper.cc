@@ -28,7 +28,7 @@ DmlKernelWrapperBase::DmlKernelWrapperBase(
     DmlKernelCachePolicy cache_policy,
     std::shared_ptr<const NodeDef> node_def)
     : OpKernel(std::move(node_def)),
-      cache_policy_(DmlKernelCachePolicy::Never)
+      cache_policy_(cache_policy)
 {
 }
 

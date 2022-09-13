@@ -15,19 +15,6 @@ limitations under the License.
 
 #include <stdio.h>
 
-// #define _CRTDBG_MAP_ALLOC
-// #include <crtdbg.h>
-// #include <stdlib.h>
-
-#ifdef _DEBUG
-// #define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-    #define DBG_NEW new
-// Replace _NORMAL_BLOCK with _CLIENT_BLOCK if you want the
-// allocations to be of _CLIENT_BLOCK type
-#else
-#define DBG_NEW new
-#endif
-
 #if !_WIN32
 #include <sys/sysinfo.h>
 #endif
@@ -51,8 +38,6 @@ limitations under the License.
 #include "tfdml/runtime_adapter/stream.h"
 
 using namespace tfdml;
-
-std::atomic<size_t> memory_usage = 0;
 
 void plugin_get_device_count(
     const SP_Platform* platform,
@@ -79,7 +64,7 @@ void plugin_create_device(
     params->device->struct_size = SP_DEVICE_STRUCT_SIZE;
 
     params->device->device_handle =
-        DBG_NEW DmlDevice(device_state, params->ordinal);
+        new DmlDevice(device_state, params->ordinal);
 
 #ifdef DIRECTML_ENABLE_TELEMETRY
     DmlTracing::Instance().LogDeviceCreationTelemetry(
@@ -176,7 +161,8 @@ TF_Bool plugin_device_memory_usage(
     uint64_t total_gpu_memory = adapter.GetTotalDedicatedMemory();
     total_gpu_memory += adapter.GetTotalSharedMemory();
 
-    *free = adapter.QueryAvailableLocalMemory();
+    *free = adapter.QueryAvailableLocalMemory() +
+            adapter.QueryAvailableNonLocalMemory();
     *total = total_gpu_memory;
 
     return true;
@@ -189,7 +175,7 @@ void plugin_create_stream(
     SP_Stream* stream,
     TF_Status* status)
 {
-    *stream = DBG_NEW SP_Stream_st(device->device_handle);
+    *stream = new SP_Stream_st(device->device_handle);
     TF_SetStatus(status, TF_OK, "");
 }
 
@@ -224,9 +210,7 @@ void plugin_create_event(
 
 // Destroy SE_Event and perform any platform-specific deallocation and
 // cleanup of an event.
-void plugin_destroy_event(const SP_Device* device, SP_Event event)
-{
-}
+void plugin_destroy_event(const SP_Device* device, SP_Event event) {}
 
 // Requests the current status of the event from the underlying platform.
 SE_EventStatus plugin_get_event_status(const SP_Device* device, SP_Event event)
@@ -264,9 +248,7 @@ void plugin_create_timer(
 }
 
 // Destroy timer and deallocates timer resources on the underlying platform.
-void plugin_destroy_timer(const SP_Device* device, SP_Timer timer)
-{
-}
+void plugin_destroy_timer(const SP_Device* device, SP_Timer timer) {}
 
 // Records a start event for an interval timer.
 void plugin_start_timer(
@@ -656,25 +638,13 @@ void plugin_destroy_stream_executor(
 {
 }
 
-void plugin_destroy_platform(SP_Platform* const platform)
-{
-}
-void plugin_destroy_platform_fns(SP_PlatformFns* const platform_fns)
-{
-}
+void plugin_destroy_platform(SP_Platform* const platform) {}
+void plugin_destroy_platform_fns(SP_PlatformFns* const platform_fns) {}
 
 extern "C"
 {
     void SE_InitPlugin(SE_PlatformRegistrationParams* params, TF_Status* status)
     {
-        // _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-        // _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
-        // _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDOUT);
-        // _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE);
-        // _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDOUT);
-        // _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
-        // _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDOUT);
-
         params->platform->struct_size = SP_PLATFORM_STRUCT_SIZE;
         params->platform->name = "DML";
         params->platform->type = "GPU";

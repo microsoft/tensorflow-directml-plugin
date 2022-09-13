@@ -336,10 +336,12 @@ void RegisterUnsortedSegmentProd()
 
 void RegisterKernels_SegmentReduction()
 {
-    RegisterUnsortedSegmentSum();
-    RegisterUnsortedSegmentMax();
-    RegisterUnsortedSegmentMin();
-    RegisterUnsortedSegmentProd();
+    /*
+        RegisterUnsortedSegmentSum();
+        RegisterUnsortedSegmentMax();
+        RegisterUnsortedSegmentMin();
+        RegisterUnsortedSegmentProd();
+    */
 }
 
 } // namespace tfdml

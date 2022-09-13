@@ -24,15 +24,6 @@ limitations under the License.
 #include "tfdml/core/dml_dso_loader.h"
 #include "tfdml/core/dml_util.h"
 
-#ifdef _DEBUG
-// #define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-    #define DBG_NEW new
-    // Replace _NORMAL_BLOCK with _CLIENT_BLOCK if you want the
-    // allocations to be of _CLIENT_BLOCK type
-#else
-    #define DBG_NEW new
-#endif
-
 using Microsoft::WRL::ComPtr;
 
 namespace tfdml
@@ -209,7 +200,7 @@ DmlDeviceCache& DmlDeviceCache::Instance()
     // intentionally leaked to avoid order-of-destruction issues during process
     // exit. This sounds unusual, but is done to explicitly match the behavior
     // of the CUDA device.
-    static DmlDeviceCache* instance = DBG_NEW DmlDeviceCache();
+    static DmlDeviceCache* instance = new DmlDeviceCache();
     return *instance;
 }
 
