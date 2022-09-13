@@ -36,18 +36,7 @@ class DmlUnsortedSegmentReductionKernel : public OpKernel
         Status status;
         eager_context_ = TFE_NewContext(context_options, status.raw());
         OP_REQUIRES_OK(ctx, status);
-    }
 
-    ~DmlUnsortedSegmentReductionKernel() override
-    {
-        if (eager_context_)
-        {
-            TFE_DeleteContext(eager_context_);
-        }
-    }
-
-    void Compute(OpKernelContext* ctx)
-    {
         const char* operator_type = nullptr;
         switch (reduce_function)
         {
@@ -71,84 +60,86 @@ class DmlUnsortedSegmentReductionKernel : public OpKernel
                     "Unsupported segment reduction function."));
         }
 
-        Status status;
-        TFE_Op* unsorted_segment_op =
+        unsorted_segment_op_ =
             TFE_NewOp(eager_context_, operator_type, status.raw());
         OP_REQUIRES_OK(ctx, status);
-        auto unsorted_segment_op_cleanup = absl::MakeCleanup(
-            [unsorted_segment_op] { TFE_DeleteOp(unsorted_segment_op); });
 
-        TFE_OpSetDevice(unsorted_segment_op, "/device:CPU", status.raw());
+        TFE_OpSetDevice(unsorted_segment_op_, "/device:CPU", status.raw());
         OP_REQUIRES_OK(ctx, status);
+    }
 
-        // data_tensor is originally on the GPU, so copy it over to the CPU
-        // before executing the CPU operator
-        const Tensor& data_tensor = ctx->input(0);
-        Tensor data_tensor_cpu;
-        OP_REQUIRES_OK(
-            ctx,
-            ctx->allocate_temp(
-                data_tensor.dtype(),
-                data_tensor.shape(),
-                &data_tensor_cpu,
-                true));
-        OP_REQUIRES_OK(
-            ctx,
-            ctx->device()->CopyDeviceTensorToCPU(
-                &data_tensor,
-                &data_tensor_cpu));
-        TFE_TensorHandle* data_handle =
-            TFE_NewTensorHandle(data_tensor_cpu.raw(), status.raw());
-        OP_REQUIRES_OK(ctx, status);
-        auto input_handle_cleanup = absl::MakeCleanup(
-            [data_handle] { TFE_DeleteTensorHandle(data_handle); });
-        TFE_OpAddInput(unsorted_segment_op, data_handle, status.raw());
-        OP_REQUIRES_OK(ctx, status);
+    ~DmlUnsortedSegmentReductionKernel() override
+    {
+        TFE_DeleteOp(unsorted_segment_op_);
+        TFE_DeleteContext(eager_context_);
+    }
 
-        // segment_ids is originally on the GPU, so copy it over to the CPU
-        // before executing the CPU operator
-        const Tensor& segment_ids_tensor = ctx->input(1);
-        Tensor segment_ids_tensor_cpu;
+    void Compute(OpKernelContext* ctx)
+    {
+        // data and segment_ids are originally on the GPU, so copy them over to
+        // the CPU before executing the CPU operator
+        absl::InlinedVector<Tensor, 3> dml_tensors = {
+            ctx->input(0),
+            ctx->input(1),
+        };
+        absl::InlinedVector<Tensor, 3> cpu_tensors;
+
+        for (int i = 0; i < dml_tensors.size(); ++i)
+        {
+            const Tensor& input_tensor = dml_tensors[i];
+            Tensor input_tensor_cpu;
+            OP_REQUIRES_OK(
+                ctx,
+                ctx->allocate_temp(
+                    input_tensor.dtype(),
+                    input_tensor.shape(),
+                    &input_tensor_cpu,
+                    true));
+
+            cpu_tensors.push_back(std::move(input_tensor_cpu));
+        }
+
         OP_REQUIRES_OK(
             ctx,
-            ctx->allocate_temp(
-                segment_ids_tensor.dtype(),
-                segment_ids_tensor.shape(),
-                &segment_ids_tensor_cpu,
-                true));
-        OP_REQUIRES_OK(
-            ctx,
-            ctx->device()->CopyDeviceTensorToCPU(
-                &segment_ids_tensor,
-                &segment_ids_tensor_cpu));
-        TFE_TensorHandle* segment_ids_handle =
-            TFE_NewTensorHandle(segment_ids_tensor_cpu.raw(), status.raw());
-        OP_REQUIRES_OK(ctx, status);
-        auto segment_ids_handle_cleanup =
-            absl::MakeCleanup([segment_ids_handle]
-                              { TFE_DeleteTensorHandle(segment_ids_handle); });
-        TFE_OpAddInput(unsorted_segment_op, segment_ids_handle, status.raw());
-        OP_REQUIRES_OK(ctx, status);
+            ctx->device()->CopyDeviceTensorsToCPU(
+                dml_tensors,
+                absl::Span<Tensor>(cpu_tensors)));
 
         // num_segments is already on the CPU
-        const Tensor& num_segments_tensor = ctx->input(2);
-        TFE_TensorHandle* num_segments_handle =
-            TFE_NewTensorHandle(num_segments_tensor.raw(), status.raw());
-        OP_REQUIRES_OK(ctx, status);
-        auto num_segments_handle_cleanup =
-            absl::MakeCleanup([num_segments_handle]
-                              { TFE_DeleteTensorHandle(num_segments_handle); });
-        TFE_OpAddInput(unsorted_segment_op, num_segments_handle, status.raw());
-        OP_REQUIRES_OK(ctx, status);
+        cpu_tensors.push_back(ctx->input(2));
+
+        absl::InlinedVector<TFE_TensorHandle*, 3> handles;
+        auto handles_cleanup = absl::MakeCleanup(
+            [&handles]
+            {
+                for (TFE_TensorHandle* handle : handles)
+                {
+                    TFE_DeleteTensorHandle(handle);
+                }
+            });
+
+        Status status;
+        for (const Tensor& cpu_tensor : cpu_tensors)
+        {
+            TFE_TensorHandle* handle =
+                TFE_NewTensorHandle(cpu_tensor.raw(), status.raw());
+            OP_REQUIRES_OK(ctx, status);
+            handles.push_back(handle);
+
+            TFE_OpAddInput(unsorted_segment_op_, handle, status.raw());
+            OP_REQUIRES_OK(ctx, status);
+        }
 
         TFE_TensorHandle* output_handle = nullptr;
+        TFE_TensorHandle** output_handle_ptr = &output_handle;
         OP_REQUIRES_OK(ctx, status);
-        auto output_handle_cleanup = absl::MakeCleanup(
-            [output_handle] { TFE_DeleteTensorHandle(output_handle); });
+        auto output_handle_cleanup =
+            absl::MakeCleanup([output_handle_ptr]
+                              { TFE_DeleteTensorHandle(*output_handle_ptr); });
 
         int num_retvals = 1;
         TFE_Execute(
-            unsorted_segment_op,
+            unsorted_segment_op_,
             &output_handle,
             &num_retvals,
             status.raw());
@@ -170,6 +161,7 @@ class DmlUnsortedSegmentReductionKernel : public OpKernel
 
   private:
     TFE_Context* eager_context_ = nullptr;
+    TFE_Op* unsorted_segment_op_ = nullptr;
 };
 
 #define REGISTER_GPU_KERNEL_UNSORTEDSEGMENT(                                   \
@@ -336,12 +328,10 @@ void RegisterUnsortedSegmentProd()
 
 void RegisterKernels_SegmentReduction()
 {
-    /*
-        RegisterUnsortedSegmentSum();
-        RegisterUnsortedSegmentMax();
-        RegisterUnsortedSegmentMin();
-        RegisterUnsortedSegmentProd();
-    */
+    RegisterUnsortedSegmentSum();
+    RegisterUnsortedSegmentMax();
+    RegisterUnsortedSegmentMin();
+    RegisterUnsortedSegmentProd();
 }
 
 } // namespace tfdml
