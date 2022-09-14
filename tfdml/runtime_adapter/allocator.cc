@@ -42,15 +42,6 @@ constexpr size_t Allocator::kAllocatorAlignment;
 
 Allocator::~Allocator() {}
 
-// If true, cpu allocator collects full stats.
-static bool cpu_allocator_collect_full_stats = false;
-
-void EnableCPUAllocatorFullStats(bool enable)
-{
-    cpu_allocator_collect_full_stats = enable;
-}
-bool CPUAllocatorFullStatsEnabled() { return cpu_allocator_collect_full_stats; }
-
 std::string AllocatorAttributes::DebugString() const
 {
     return absl::StrCat(
