@@ -42,7 +42,8 @@ namespace tfdml
 {
 
 /*static*/ std::unique_ptr<DmlDeviceState> DmlDeviceState::Create(
-    const DmlAdapter& adapter)
+    const DmlAdapter& adapter,
+    uint32_t adapter_index)
 {
     D3D_FEATURE_LEVEL feature_level = adapter.IsComputeOnly()
                                           ? D3D_FEATURE_LEVEL_1_0_CORE
@@ -139,7 +140,8 @@ namespace tfdml
         absl::make_unique<D3D12DescriptorHeapAllocator>(
             d3d_device.Get(),
             D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
-            D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+            D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE,
+            adapter_index);
 
     auto descriptor_allocator = absl::make_unique<DmlDescriptorAllocator>(
         descriptor_heap_allocator.get(),
