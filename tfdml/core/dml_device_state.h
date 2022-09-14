@@ -42,7 +42,9 @@ class GPUOptions;
 struct DmlDeviceState
 {
   public:
-    static std::unique_ptr<DmlDeviceState> Create(const DmlAdapter& adapter);
+    static std::unique_ptr<DmlDeviceState> Create(
+        const DmlAdapter& adapter,
+        uint32_t adapter_index);
 
     DmlDeviceState();
     ~DmlDeviceState();

@@ -81,9 +81,8 @@ class D3D12HeapAllocator
         const void* ptr,
         uint64_t size_in_bytes);
 
-    void* Alloc(uint64_t size_in_bytes);
+    void* Alloc(uint32_t device_id, uint64_t size_in_bytes);
     void Free(void* ptr, uint64_t size_in_bytes);
-
     bool TilingEnabled() const { return tiling_enabled_; };
 
   private:
@@ -140,30 +139,6 @@ class D3D12HeapAllocator
     void ReleaseAllocationID(uint32_t id);
 
   private:
-    static constexpr uint64_t kAllocationIDBits = 24;
-    static constexpr uint64_t kOffsetBits = 40;
-
-    // This allocator encodes the allocation ID into the high bits of the
-    // pointers it returns, while the low bits are used as an offset into the
-    // allocation. Note that since the layout of bitfields is
-    // implementation-defined, you can't just cast a void* into a TaggedPointer:
-    // it must be done using masks and shifts.
-    struct TaggedPointer
-    {
-        uint64_t allocation_id : kAllocationIDBits;
-        uint64_t offset : kOffsetBits;
-    };
-
-    static_assert(
-        sizeof(TaggedPointer) == sizeof(void*),
-        "DML requires a 64-bit architecture");
-    static_assert(
-        kAllocationIDBits + kOffsetBits == sizeof(void*) * CHAR_BIT,
-        "DML requires a 64-bit architecture");
-
-    static void* PackPointer(uint32_t allocation_id, uint64_t offset);
-    static TaggedPointer UnpackPointer(const void* ptr);
-
     absl::optional<Allocation> TryCreateTiledAllocation(uint64_t size_in_bytes);
     absl::optional<Allocation> TryCreateUntiledAllocation(
         uint64_t size_in_bytes);
