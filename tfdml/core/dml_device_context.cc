@@ -123,7 +123,8 @@ Status DMLDeviceContext::CopyDeviceTensorsToCPU(
 
     DmlGpuEvent copy_event;
 
-    for (int i = 0; i < device_tensors.size(); ++i) {
+    for (int i = 0; i < device_tensors.size(); ++i)
+    {
         const Tensor& device_tensor = device_tensors[i];
         Tensor& cpu_tensor = cpu_tensors[i];
 
@@ -136,8 +137,8 @@ Status DMLDeviceContext::CopyDeviceTensorsToCPU(
         D3D12BufferRegion src = GetBufferForTensor(device_tensor);
         void* dst_data = cpu_tensor.base<void>();
 
-        // Performs a blocking call to synchronize and read back data from the GPU
-        // into the destination buffer
+        // Performs a blocking call to synchronize and read back data from the
+        // GPU into the destination buffer
         auto byte_span =
             absl::Span<uint8_t>(static_cast<uint8_t*>(dst_data), total_bytes);
 
