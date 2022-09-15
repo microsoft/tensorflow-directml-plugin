@@ -153,7 +153,7 @@ class CrossDeviceOpsTestBase(test.TestCase, parameterized.TestCase):
       if not context.executing_eagerly():
         left, right = sess.run((left, right), options=run_options)
       for left_value, right_value in zip(left, right):
-        self.assertAllEqual(left_value, right_value)
+        self.assertAllClose(left_value, right_value)
 
   def _testReductionAndBroadcast(self, cross_device_ops, devices):
     if context.num_gpus() < sum(1 for d in devices if "GPU" in d.upper()):
