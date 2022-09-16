@@ -35,7 +35,8 @@ class D3D12DescriptorHeapAllocator
     D3D12DescriptorHeapAllocator(
         ID3D12Device* device,
         D3D12_DESCRIPTOR_HEAP_TYPE type,
-        D3D12_DESCRIPTOR_HEAP_FLAGS flags);
+        D3D12_DESCRIPTOR_HEAP_FLAGS flags,
+        uint32_t device_id);
 
     D3D12DescriptorHandles GetDescriptorHandles(const void* ptr) const;
 
@@ -75,30 +76,7 @@ class D3D12DescriptorHeapAllocator
     void ReleaseAllocationID(uint32_t id);
 
   private:
-    static constexpr uint64_t kAllocationIDBits = 24;
-    static constexpr uint64_t kOffsetBits = 40;
-
-    // This allocator encodes the allocation ID into the high bits of the
-    // pointers it returns, while the low bits are used as an offset into the
-    // allocation. Note that since the layout of bitfields is
-    // implementation-defined, you can't just cast a void* into a TaggedPointer:
-    // it must be done using masks and shifts.
-    struct TaggedPointer
-    {
-        uint64_t allocation_id : kAllocationIDBits;
-        uint64_t offset : kOffsetBits;
-    };
-
-    static_assert(
-        sizeof(TaggedPointer) == sizeof(void*),
-        "DML requires a 64-bit architecture");
-    static_assert(
-        kAllocationIDBits + kOffsetBits == sizeof(void*) * CHAR_BIT,
-        "DML requires a 64-bit architecture");
-
-    static void* PackPointer(uint32_t allocation_id, uint64_t offset);
-    static TaggedPointer UnpackPointer(const void* ptr);
-
+    const uint32_t device_id_;
     friend class D3D12BufferRegion;
 };
 
