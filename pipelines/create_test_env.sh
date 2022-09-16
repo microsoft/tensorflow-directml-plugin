@@ -37,6 +37,7 @@ pip install $tensorflow_package
 pip install $keras_package
 pip install tensorboard_plugin_profile
 pip install $plugin_package
+pip install portpicker
 pip list
 
 activate_cmd="source $install_dir/bin/activate $test_env_path"

@@ -25,6 +25,7 @@ limitations under the License.
 #include <iostream>
 #include <thread>
 
+#include "absl/cleanup/cleanup.h"
 #include "plugin_version.h"
 #include "tensorflow/c/experimental/stream_executor/stream_executor.h"
 #include "tensorflow/c/tf_status.h"
@@ -33,6 +34,8 @@ limitations under the License.
 #include "tfdml/core/dml_device.h"
 #include "tfdml/core/dml_device_cache.h"
 #include "tfdml/core/dml_device_context.h"
+#include "tfdml/core/dml_device_manager.h"
+#include "tfdml/core/dml_tagged_pointer.h"
 #include "tfdml/core/dml_tracing.h"
 #include "tfdml/core/dml_util.h"
 #include "tfdml/runtime_adapter/stream.h"
@@ -63,8 +66,19 @@ void plugin_create_device(
     params->device->hardware_name = device_state->adapter->Name().c_str();
     params->device->struct_size = SP_DEVICE_STRUCT_SIZE;
 
-    params->device->device_handle =
-        new DmlDevice(device_state, params->ordinal);
+    DmlDevice* dml_device = new DmlDevice(device_state, params->ordinal);
+    params->device->device_handle = dml_device;
+    Status insert_device_status =
+        DmlDeviceManager::Instance().InsertDevice(params->ordinal, dml_device);
+
+    if (!insert_device_status.ok())
+    {
+        TF_SetStatus(
+            status,
+            insert_device_status.code(),
+            insert_device_status.error_message());
+        return;
+    }
 
 #ifdef DIRECTML_ENABLE_TELEMETRY
     DmlTracing::Instance().LogDeviceCreationTelemetry(
@@ -108,7 +122,7 @@ void plugin_allocate(
     DmlAllocator* allocator = dml_device->GetAllocator();
 
     mem->struct_size = SP_DEVICE_MEMORY_BASE_STRUCT_SIZE;
-    mem->opaque = allocator->Alloc(size);
+    mem->opaque = allocator->Alloc(device->ordinal, size);
     mem->size = size;
 }
 
@@ -159,13 +173,15 @@ TF_Bool plugin_device_memory_usage(
     const DmlAdapter& adapter = device_cache.GetAdapter(device->ordinal);
 
     uint64_t total_gpu_memory = adapter.GetTotalDedicatedMemory();
+    total_gpu_memory += adapter.GetTotalSharedMemory();
 
     if (adapter.IsUmaAdapter())
     {
         total_gpu_memory += adapter.GetTotalSharedMemory();
     }
 
-    *free = adapter.QueryAvailableLocalMemory();
+    *free = adapter.QueryAvailableLocalMemory() +
+            adapter.QueryAvailableNonLocalMemory();
     *total = total_gpu_memory;
 
     return true;
@@ -362,10 +378,74 @@ void plugin_memcpy_dtod(
         return;
     }
 
-    DmlDevice* dml_device = static_cast<DmlDevice*>(device->device_handle);
+    TaggedPointer device_dst_tagged_pointer =
+        TaggedPointer::Unpack(device_dst->opaque);
+    TaggedPointer device_src_tagged_pointer =
+        TaggedPointer::Unpack(device_src->opaque);
 
-    dml_device->GetDeviceContext()
-        ->CopyMemoryInSameDevice(dml_device, device_src, device_dst, size);
+    DmlDevice* dml_device_dst = DmlDeviceManager::Instance().GetDevice(
+        device_dst_tagged_pointer.device_id);
+
+    if (device_dst_tagged_pointer.device_id ==
+        device_src_tagged_pointer.device_id)
+    {
+        dml_device_dst->GetDeviceContext()->CopyMemoryInSameDevice(
+            dml_device_dst,
+            device_src,
+            device_dst,
+            size);
+    }
+    else
+    {
+        // TODO: Remove this workaround once better support for cross-device
+        // copies exists
+        // https://github.com/tensorflow/tensorflow/issues/53446
+        DmlDevice* dml_device_src = DmlDeviceManager::Instance().GetDevice(
+            device_src_tagged_pointer.device_id);
+
+        // TODO: Investigate potential performance improvements (e.g. using
+        // D3D12_HEAP_FLAG_SHARED_CROSS_ADAPTER and avoiding the CPU entirely)
+        // If the memory is on different devices, first do a GPU->CPU copy and
+        // then a CPU->GPU copy
+        void* cpu_memory = plugin_host_memory_allocate(device, size);
+        auto cpu_memory_cleanup = absl::MakeCleanup(
+            [device, cpu_memory]
+            { plugin_host_memory_deallocate(device, cpu_memory); });
+
+        auto status_or_event =
+            dml_device_src->GetDeviceContext()->CopyDeviceMemoryToCPU(
+                dml_device_src,
+                device_src,
+                cpu_memory,
+                size);
+
+        if (!status_or_event.ok())
+        {
+            TF_SetStatus(
+                status,
+                status_or_event.status().code(),
+                status_or_event.status().error_message());
+            return;
+        }
+
+        status_or_event.ValueOrDie().WaitForSignal();
+
+        auto cpu_gpu_copy_status =
+            dml_device_dst->GetDeviceContext()->CopyCPUMemoryToDevice(
+                dml_device_dst,
+                cpu_memory,
+                device_dst,
+                size);
+
+        if (!cpu_gpu_copy_status.ok())
+        {
+            TF_SetStatus(
+                status,
+                cpu_gpu_copy_status.code(),
+                cpu_gpu_copy_status.error_message());
+            return;
+        }
+    }
 
     TF_SetStatus(status, TF_OK, "");
 }

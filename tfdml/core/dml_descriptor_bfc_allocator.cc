@@ -21,17 +21,26 @@ limitations under the License.
 namespace tfdml
 {
 
+static BFCAllocator::Options GetOptions(
+    uint64_t max_allocation_size_in_descriptors)
+{
+    BFCAllocator::Options options{};
+    options.allow_growth = true;
+    options.allow_retry_on_failure = true;
+    options.garbage_collection = false;
+    options.fragmentation_fraction = 0.0;
+    options.max_allocation_size_bytes = max_allocation_size_in_descriptors;
+    return options;
+}
+
 DmlDescriptorAllocator::DmlDescriptorAllocator(
     D3D12DescriptorHeapAllocator* heap_allocator,
     const std::string& name)
     : BFCAllocator(
-          new SubAllocatorWrapper(heap_allocator),
+          std::make_unique<SubAllocatorWrapper>(heap_allocator),
           kMaxTotalDescriptors,
-          kAllowGrowth,
           name,
-          kEnableGarbageCollection,
-          0,
-          kMaxAllocationSizeInDescriptors),
+          GetOptions(kMaxAllocationSizeInDescriptors)),
       heap_allocator_(heap_allocator)
 {
 }
