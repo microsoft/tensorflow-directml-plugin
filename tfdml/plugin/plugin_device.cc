@@ -173,13 +173,15 @@ TF_Bool plugin_device_memory_usage(
     const DmlAdapter& adapter = device_cache.GetAdapter(device->ordinal);
 
     uint64_t total_gpu_memory = adapter.GetTotalDedicatedMemory();
+    total_gpu_memory += adapter.GetTotalSharedMemory();
 
     if (adapter.IsUmaAdapter())
     {
         total_gpu_memory += adapter.GetTotalSharedMemory();
     }
 
-    *free = adapter.QueryAvailableLocalMemory();
+    *free = adapter.QueryAvailableLocalMemory() +
+            adapter.QueryAvailableNonLocalMemory();
     *total = total_gpu_memory;
 
     return true;
