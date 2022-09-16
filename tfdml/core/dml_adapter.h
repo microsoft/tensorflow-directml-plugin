@@ -109,6 +109,7 @@ class DmlAdapter
     uint64_t GetTotalDedicatedMemory() const;
     uint64_t GetTotalSharedMemory() const;
     uint64_t QueryAvailableLocalMemory() const;
+    uint64_t QueryAvailableNonLocalMemory() const;
     bool IsUmaAdapter() const;
 
   private:
