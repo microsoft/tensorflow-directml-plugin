@@ -52,6 +52,11 @@ uint64_t DmlAdapter::QueryAvailableLocalMemory() const
     return impl_->QueryAvailableLocalMemory();
 }
 
+uint64_t DmlAdapter::QueryAvailableNonLocalMemory() const
+{
+    return impl_->QueryAvailableNonLocalMemory();
+}
+
 bool DmlAdapter::IsUmaAdapter() const { return impl_->IsUmaAdapter(); }
 
 const char* GetVendorName(VendorID id)

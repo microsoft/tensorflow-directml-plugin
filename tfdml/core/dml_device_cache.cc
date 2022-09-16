@@ -235,7 +235,8 @@ const DmlDeviceState* DmlDeviceCache::GetOrCreateDeviceState(
             adapter_index,
             adapter.Name().c_str());
 
-        device_states_[adapter_index] = DmlDeviceState::Create(adapter);
+        device_states_[adapter_index] =
+            DmlDeviceState::Create(adapter, adapter_index);
     }
 
     return device_states_[adapter_index].get();
@@ -246,18 +247,18 @@ const DmlAdapter& DmlDeviceCache::GetAdapter(uint32_t adapter_index) const
     return adapters_[adapter_index];
 }
 
-DmlDeviceCache::DmlDeviceCache()
+DmlDeviceCache::DmlDeviceCache() : adapters_(FilterAdapters())
 {
-    std::vector<DmlAdapter> adapters = FilterAdapters();
+    device_states_.resize(adapters_.size());
 
     TF_Log(
         TF_INFO,
         "DirectML device enumeration: found %llu compatible adapters.",
-        adapters.size());
+        adapters_.size());
 
-    for (size_t i = 0; i < adapters.size(); ++i)
+    for (size_t i = 0; i < adapters_.size(); ++i)
     {
-        const auto& adapter = adapters[i];
+        const auto& adapter = adapters_[i];
         auto driver_ver = adapter.DriverVersion().parts;
 
         TF_VLog(1, "DirectML adapter %llu: %s", i, adapter.Name().c_str());
@@ -275,26 +276,6 @@ DmlDeviceCache::DmlDeviceCache()
             "    IsComputeOnly: %s",
             adapter.IsComputeOnly() ? "true" : "false");
     }
-
-    if (adapters.size() > 1)
-    {
-        TF_Log(
-            TF_WARNING,
-            "More than one physical devices were found, but "
-            "tensorflow-directml-plugin doesn't support multiple devices yet. "
-            "The first available device in order of performance was selected "
-            "by default. To select a different device, set the "
-            "DML_VISIBLE_DEVICES environment variable to its index (e.g. "
-            "DML_VISIBLE_DEVICES=1).");
-
-        adapters_ = {adapters[0]};
-    }
-    else
-    {
-        adapters_ = std::move(adapters);
-    }
-
-    device_states_.resize(adapters_.size());
 }
 
 } // namespace tfdml

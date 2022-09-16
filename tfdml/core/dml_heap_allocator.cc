@@ -17,6 +17,7 @@ limitations under the License.
 
 #include "dml_util.h"
 #include "tensorflow/c/logging.h"
+#include "tfdml/core/dml_tagged_pointer.h"
 #include "tfdml/runtime_adapter/env_var.h"
 #include "tfdml/runtime_adapter/numbers.h"
 #include "tfdml/runtime_adapter/status.h"
@@ -274,7 +275,7 @@ absl::optional<D3D12HeapAllocator::Allocation> D3D12HeapAllocator::
     return allocation;
 }
 
-void* D3D12HeapAllocator::Alloc(uint64_t size_in_bytes)
+void* D3D12HeapAllocator::Alloc(uint32_t device_id, uint64_t size_in_bytes)
 {
     if (size_in_bytes == 0)
     {
@@ -313,14 +314,14 @@ void* D3D12HeapAllocator::Alloc(uint64_t size_in_bytes)
     lock.unlock();
 
     const uint64_t offset = 0;
-    return PackPointer(*id, offset);
+    return TaggedPointer::Pack(device_id, *id, offset);
 }
 
 void D3D12HeapAllocator::Free(void* ptr, uint64_t size_in_bytes)
 {
     CHECK(ptr != nullptr);
 
-    TaggedPointer tagged_ptr = UnpackPointer(ptr);
+    TaggedPointer tagged_ptr = TaggedPointer::Unpack(ptr);
     CHECK(tagged_ptr.offset == 0);
 
     // We need to access (mutable) state after this point, so we need to lock
@@ -348,7 +349,7 @@ D3D12BufferRegion D3D12HeapAllocator::CreateBufferRegion(
 {
     CHECK(ptr != nullptr);
 
-    TaggedPointer tagged_ptr = UnpackPointer(ptr);
+    TaggedPointer tagged_ptr = TaggedPointer::Unpack(ptr);
 
     // We need to access (mutable) state after this point, so we need to lock
     std::unique_lock<std::mutex> lock(mutex_);
@@ -380,7 +381,8 @@ absl::optional<uint32_t> D3D12HeapAllocator::TryReserveAllocationID()
         return id;
     }
 
-    static constexpr uint32_t kMaxAllocationID = (1 << kAllocationIDBits) - 1;
+    static constexpr uint32_t kMaxAllocationID =
+        (1 << TaggedPointer::kAllocationIDBits) - 1;
     if (current_allocation_id_ == kMaxAllocationID)
     {
         // We've reached the maximum number of allocations!
@@ -398,34 +400,6 @@ void D3D12HeapAllocator::ReleaseAllocationID(uint32_t id)
 
     // Add it to the pool of free IDs
     free_allocation_ids_.push_back(id);
-}
-
-/*static*/ void* D3D12HeapAllocator::PackPointer(
-    uint32_t allocation_id,
-    uint64_t offset)
-{
-    assert(allocation_id < (1ull << kAllocationIDBits));
-    assert(offset < (1ull << kOffsetBits));
-
-    // Store the allocation ID in the upper bits of the pointer, and the offset
-    // in the lower bits
-    uint64_t ptr = ((uint64_t)allocation_id << kOffsetBits) | offset;
-
-    return reinterpret_cast<void*>(ptr);
-}
-
-/*static*/ D3D12HeapAllocator::TaggedPointer D3D12HeapAllocator::UnpackPointer(
-    const void* ptr)
-{
-    uint64_t ptr_val = reinterpret_cast<uint64_t>(ptr);
-
-    static constexpr uint64_t kOffsetMask = (1ull << kOffsetBits) - 1;
-
-    TaggedPointer tagged_ptr;
-    tagged_ptr.allocation_id = (ptr_val >> kOffsetBits);
-    tagged_ptr.offset = (ptr_val & kOffsetMask);
-
-    return tagged_ptr;
 }
 
 } // namespace tfdml
