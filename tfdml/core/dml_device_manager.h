@@ -15,29 +15,24 @@ limitations under the License.
 
 #pragma once
 
-#include "dml_buffer_region.h"
+#include "absl/container/inlined_vector.h"
+#include "tfdml/core/dml_device.h"
+#include "tfdml/core/dml_tagged_pointer.h"
 
 namespace tfdml
 {
-
-class D3D12HeapAllocator;
-
-// The framework "wraps" this allocator inside a BFC allocator and calls Alloc
-// when it determines that it needs to grow the allocated memory. Here,
-// DmlAllocator is basically a SubAllocator with additional functionalities like
-// CreateBufferRegion().
-class DmlAllocator
+class DmlDeviceManager
 {
   public:
-    DmlAllocator(D3D12HeapAllocator* heap_allocator, const std::string& name);
-    D3D12BufferRegion CreateBufferRegion(
-        const void* ptr,
-        uint64_t size_in_bytes);
-    void* Alloc(uint32_t device_id, size_t num_bytes);
-    void Free(void* ptr, size_t num_bytes);
+    static DmlDeviceManager& Instance();
+    Status InsertDevice(uint32_t device_id, DmlDevice* dml_device);
+    DmlDevice* GetDevice(uint32_t device_id) const;
 
   private:
-    D3D12HeapAllocator* heap_allocator_;
-};
+    static constexpr uint64_t kNumMaxDevices = TaggedPointer::kDeviceIDBits
+                                               << 1;
 
+    DmlDeviceManager() = default;
+    absl::InlinedVector<DmlDevice*, kNumMaxDevices> devices_;
+};
 } // namespace tfdml

@@ -220,9 +220,6 @@ class DmlOneHotKernel : public DmlKernel
             indices = dml::Cast(indices, DML_TENSOR_DATA_TYPE_UINT32);
         }
 
-        // TODO: TFDML #40634243 OneHot fails with INT64 indices
-        indices = dml::Cast(indices, DML_TENSOR_DATA_TYPE_UINT32);
-
         // TF provides the on/off values as separate tensors, but DML expects a
         // single two-element tensor with values [off, on].
         auto values = dml::Join({off_value, on_value}, 3);
