@@ -109,29 +109,102 @@ dml::Expression SignedAdd(dml::Expression a, dml::Expression b)
            dml::Reinterpret(b - b_div_2, a.GetOutputDesc().dataType);
 }
 
+// TODO: Remove this when int64/uint64 support division
+// TFDML #41163316
+dml::Expression SignedAdd64(
+    dml::Graph& graph,
+    dml::Expression a,
+    dml::Expression b)
+{
+    assert(a.GetOutputDesc().dataType == DML_TENSOR_DATA_TYPE_INT64);
+    assert(b.GetOutputDesc().dataType == DML_TENSOR_DATA_TYPE_UINT64);
+
+    // int64 doesn't support divisions yet, so do a BitShiftRight instead
+    auto b_div_2 =
+        b >> dml::ScalarTensor<uint64_t>(graph, 1, b.GetOutputDesc().sizes);
+    return a + dml::Reinterpret(b_div_2, a.GetOutputDesc().dataType) +
+           dml::Reinterpret(b - b_div_2, a.GetOutputDesc().dataType);
+}
+
 // Produces a uniform distribution of integers in the range [min_value,
 // max_value). See UniformDistribution<Generator, int32> from
 // random_distributions.h. Requires min_value < max_value.
+template <typename T>
 dml::Expression UniformInt(
     dml::Graph& graph,
     dml::Expression input_state,
-    int32_t min_value,
-    int32_t max_value,
+    T min_value,
+    T max_value,
     uint32_t element_count)
 {
-    dml::TensorDimensions shape = {1, 1, 1, element_count};
+    using TUnsigned = typename std::make_unsigned<T>::type;
 
-    auto generator = dml::RandomGenerator(input_state, shape, false);
+    const dml::TensorDimensions shape = {1, 1, 1, element_count};
+
+    // The generator always generates uint32_t value, so we need to generate
+    // more or less depending on the desired output type
+    uint32_t generator_num_elements =
+        element_count * sizeof(TUnsigned) / sizeof(uint32_t);
+    const dml::TensorDimensions generator_shape =
+        {1, 1, 1, generator_num_elements};
+
+    auto generator = dml::RandomGenerator(input_state, generator_shape, false);
+
     auto random_bits = generator.values;
-
     auto lo = dml::ScalarTensor(graph, min_value, shape);
 
-    uint32_t max_value_unsigned = static_cast<uint32_t>(max_value);
-    uint32_t min_value_unsigned = static_cast<uint32_t>(min_value);
-    uint32_t range_value = max_value_unsigned - min_value_unsigned;
-    auto range = dml::ScalarTensor(graph, range_value, shape);
+    TUnsigned max_value_unsigned = static_cast<TUnsigned>(max_value);
+    TUnsigned min_value_unsigned = static_cast<TUnsigned>(min_value);
+    TUnsigned range_value = max_value_unsigned - min_value_unsigned;
 
-    return SignedAdd(lo, random_bits % range);
+    dml::Expression mod_result;
+    if (std::is_same<T, int64_t>::value)
+    {
+        auto invariant_operand = (1 << 16) % range_value;
+        invariant_operand *= invariant_operand;
+
+        // We make sure that we never overflow even if we have the biggest
+        // values possible on the GPU. We should have fell back to the fallback
+        // kernel before we can even reach this assert.
+        assert(
+            invariant_operand * (range_value - 1) + (range_value - 1) <=
+            UINT32_MAX);
+
+        auto range = dml::ScalarTensor<uint32_t>(graph, range_value, shape);
+        auto invariant_operand_scalar =
+            dml::ScalarTensor<uint32_t>(graph, invariant_operand, shape);
+
+        random_bits = dml::Reinterpret(
+            random_bits,
+            TfTensorTypeTraits<TUnsigned>::dml_type,
+            shape,
+            {});
+
+        auto random_bits_low = dml::Reinterpret(
+            random_bits,
+            DML_TENSOR_DATA_TYPE_UINT32,
+            shape,
+            dml::TensorDimensions({1, 1, 1, 2}));
+
+        auto random_bits_high = dml::Reinterpret(
+            random_bits >> dml::ScalarTensor<uint64_t>(graph, 32, shape),
+            DML_TENSOR_DATA_TYPE_UINT32,
+            shape,
+            dml::TensorDimensions({1, 1, 1, 2}));
+
+        mod_result = (invariant_operand_scalar * (random_bits_high % range) +
+                      (random_bits_low % range)) %
+                     range;
+
+        mod_result = dml::Cast(mod_result, DML_TENSOR_DATA_TYPE_UINT64);
+
+        return SignedAdd64(graph, lo, mod_result);
+    }
+    else
+    {
+        auto range = dml::ScalarTensor(graph, range_value, shape);
+        return SignedAdd(lo, random_bits % range);
+    }
 }
 
 class StatelessRandomUniformInitHelper : public InitializationHelper
@@ -269,14 +342,14 @@ class DmlStatelessRandomUniformKernel : public DmlKernel
         state_info.desc =
             DmlTensorDesc::Create(TF_UINT32, state_sizes, state_sizes);
 
+        const auto out_dtype = ctx->GetOutputDataType(0);
+
         // Flatten output shape for DirectML.
         DmlTensorInfo output_info;
         output_info.kernel_index = 0;
         std::array<uint32_t, 4> output_sizes = {1, 1, 1, num_elements};
-        output_info.desc = DmlTensorDesc::Create(
-            ctx->GetOutputDataType(0),
-            output_sizes,
-            output_sizes);
+        output_info.desc =
+            DmlTensorDesc::Create(out_dtype, output_sizes, output_sizes);
 
         DmlKernelTensors tensors;
         tensors.inputs = {state_info};
@@ -287,19 +360,32 @@ class DmlStatelessRandomUniformKernel : public DmlKernel
         auto input_state = dml::InputTensor(scope, 0, inputs[0]);
 
         dml::Expression result;
-        if (ctx->GetOutputDataType(0) == TF_FLOAT)
+        if (out_dtype == TF_FLOAT)
         {
             result = UniformFloat(scope, input_state, num_elements);
         }
-        else if (ctx->GetOutputDataType(0) == TF_HALF)
+        else if (out_dtype == TF_HALF)
         {
             result = UniformHalf(scope, input_state, num_elements);
         }
+        else if (out_dtype == TF_INT32)
+        {
+            auto min_value = ctx->GetConstantInputTensor(2).base<int32_t>()[0];
+            auto max_value = ctx->GetConstantInputTensor(3).base<int32_t>()[0];
+
+            result = UniformInt(
+                scope,
+                input_state,
+                min_value,
+                max_value,
+                num_elements);
+        }
         else
         {
-            assert(ctx->GetOutputDataType(0) == TF_INT32);
-            int min_value = ctx->GetConstantInputTensor(2).base<int32_t>()[0];
-            int max_value = ctx->GetConstantInputTensor(3).base<int32_t>()[0];
+            assert(out_dtype == TF_INT64);
+            auto min_value = ctx->GetConstantInputTensor(2).base<int64_t>()[0];
+            auto max_value = ctx->GetConstantInputTensor(3).base<int64_t>()[0];
+
             result = UniformInt(
                 scope,
                 input_state,
@@ -504,14 +590,14 @@ class DmlRandomUniformKernel : public DmlKernel
         state_info.desc =
             DmlTensorDesc::Create(TF_UINT32, state_sizes, state_sizes);
 
+        const auto out_dtype = ctx->GetOutputDataType(0);
+
         // Flatten output shape for DirectML.
         DmlTensorInfo output_info;
         output_info.kernel_index = 0;
         std::array<uint32_t, 4> output_sizes = {1, 1, 1, num_output_elements_};
-        output_info.desc = DmlTensorDesc::Create(
-            ctx->GetOutputDataType(0),
-            output_sizes,
-            output_sizes);
+        output_info.desc =
+            DmlTensorDesc::Create(out_dtype, output_sizes, output_sizes);
 
         DmlKernelTensors tensors;
         tensors.inputs = {state_info};
@@ -522,19 +608,32 @@ class DmlRandomUniformKernel : public DmlKernel
         auto input_state = dml::InputTensor(scope, 0, inputs[0]);
 
         dml::Expression result;
-        if (ctx->GetOutputDataType(0) == TF_FLOAT)
+        if (out_dtype == TF_FLOAT)
         {
             result = UniformFloat(scope, input_state, num_output_elements_);
         }
-        else if (ctx->GetOutputDataType(0) == TF_HALF)
+        else if (out_dtype == TF_HALF)
         {
             result = UniformHalf(scope, input_state, num_output_elements_);
         }
+        else if (out_dtype == TF_INT32)
+        {
+            auto min_value = ctx->GetConstantInputTensor(1).base<int32_t>()[0];
+            auto max_value = ctx->GetConstantInputTensor(2).base<int32_t>()[0];
+
+            result = UniformInt(
+                scope,
+                input_state,
+                min_value,
+                max_value,
+                num_output_elements_);
+        }
         else
         {
-            assert(ctx->GetOutputDataType(0) == TF_INT32);
-            int min_value = ctx->GetConstantInputTensor(1).base<int32_t>()[0];
-            int max_value = ctx->GetConstantInputTensor(2).base<int32_t>()[0];
+            assert(out_dtype == TF_INT64);
+            auto min_value = ctx->GetConstantInputTensor(1).base<int64_t>()[0];
+            auto max_value = ctx->GetConstantInputTensor(2).base<int64_t>()[0];
+
             result = UniformInt(
                 scope,
                 input_state,
@@ -589,6 +688,136 @@ class DmlRandomUniformKernel : public DmlKernel
 
         return DmlKernel::Compute(ctx, input_bindings, output_bindings);
     }
+};
+
+template <typename DmlRandomKernelWrapperImpl, bool has_seed_attributes>
+class RandomUniformInt64KernelSelector : public OpKernel
+{
+  public:
+    explicit RandomUniformInt64KernelSelector(
+        OpKernelConstruction* ctx,
+        std::shared_ptr<const NodeDef> node_def)
+        : OpKernel(node_def),
+          dml_kernel_wrapper_(ctx, node_def)
+    {
+        if (has_seed_attributes)
+        {
+            OP_REQUIRES_OK(ctx, ctx->GetAttr("seed", &seed_));
+            OP_REQUIRES_OK(ctx, ctx->GetAttr("seed2", &seed2_));
+        }
+    }
+
+    void Compute(OpKernelContext* ctx)
+    {
+        const Tensor& min_value_tensor = ctx->input(1);
+        const Tensor& max_value_tensor = ctx->input(2);
+        int64_t min_value = min_value_tensor.base<int64_t>()[0];
+        int64_t max_value = max_value_tensor.base<int64_t>()[0];
+        uint64_t range_value =
+            static_cast<uint64_t>(max_value) - static_cast<uint64_t>(min_value);
+
+        auto invariant_operand = range_value == 0 ? 0 : (1 << 16) % range_value;
+        invariant_operand *= invariant_operand;
+
+        // The DML kernel implementation doesn't support real int64 modulus yet,
+        // so fall back to the emulated kernel if we don't support the range
+        if (invariant_operand * (range_value - 1) + (range_value - 1) >
+            UINT32_MAX)
+        {
+            TFE_ContextOptions* context_options = TFE_NewContextOptions();
+            auto context_options_cleanup = absl::MakeCleanup(
+                [context_options]
+                { TFE_DeleteContextOptions(context_options); });
+
+            Status status;
+            TFE_Context* eager_context =
+                TFE_NewContext(context_options, status.raw());
+            OP_REQUIRES_OK(ctx, status);
+
+            auto eager_context_cleanup = absl::MakeCleanup(
+                [eager_context] { TFE_DeleteContext(eager_context); });
+
+            TFE_Op* random_uniform_int_op =
+                TFE_NewOp(eager_context, "RandomUniformInt", status.raw());
+            OP_REQUIRES_OK(ctx, status);
+            auto random_uniform_int_op_cleanup =
+                absl::MakeCleanup([random_uniform_int_op]
+                                  { TFE_DeleteOp(random_uniform_int_op); });
+
+            TFE_OpSetDevice(random_uniform_int_op, "/device:CPU", status.raw());
+            OP_REQUIRES_OK(ctx, status);
+
+            if (has_seed_attributes)
+            {
+                TFE_OpSetAttrInt(random_uniform_int_op, "seed", seed_);
+                TFE_OpSetAttrInt(random_uniform_int_op, "seed2", seed2_);
+            }
+
+            absl::InlinedVector<TFE_TensorHandle*, 4> input_handles;
+            auto input_handles_cleanup = absl::MakeCleanup(
+                [&input_handles]
+                {
+                    for (TFE_TensorHandle* handle : input_handles)
+                    {
+                        TFE_DeleteTensorHandle(handle);
+                    }
+                });
+
+            for (int i = 0; i < ctx->num_inputs(); ++i)
+            {
+                const Tensor& shape_tensor = ctx->input(i);
+                TFE_TensorHandle* input_handle =
+                    TFE_NewTensorHandle(shape_tensor.raw(), status.raw());
+                OP_REQUIRES_OK(ctx, status);
+
+                input_handles.push_back(input_handle);
+
+                TFE_OpAddInput(
+                    random_uniform_int_op,
+                    input_handle,
+                    status.raw());
+                OP_REQUIRES_OK(ctx, status);
+            }
+
+            TFE_TensorHandle* output_handle = nullptr;
+            TFE_TensorHandle** output_handle_ptr = &output_handle;
+            OP_REQUIRES_OK(ctx, status);
+            auto output_handle_cleanup = absl::MakeCleanup(
+                [output_handle_ptr]
+                { TFE_DeleteTensorHandle(*output_handle_ptr); });
+
+            int num_retvals = 1;
+            TFE_Execute(
+                random_uniform_int_op,
+                &output_handle,
+                &num_retvals,
+                status.raw());
+            OP_REQUIRES_OK(ctx, status);
+
+            Tensor output_cpu =
+                Tensor(TFE_TensorHandleResolve(output_handle, status.raw()));
+            OP_REQUIRES_OK(ctx, status);
+
+            // Copy the CPU output back to the device
+            StatusOr<Tensor> status_or_output =
+                ctx->allocate_output(0, output_cpu.shape());
+            OP_REQUIRES_OK(ctx, status_or_output.status());
+
+            Tensor& output = status_or_output.ValueOrDie();
+            OP_REQUIRES_OK(
+                ctx,
+                ctx->device()->CopyCPUTensorToDevice(&output_cpu, &output));
+        }
+        else
+        {
+            return dml_kernel_wrapper_.Compute(ctx);
+        }
+    }
+
+  private:
+    DmlRandomKernelWrapperImpl dml_kernel_wrapper_;
+    int64_t seed_;
+    int64_t seed2_;
 };
 
 // ----------------------------------------------------------------------------
@@ -1068,7 +1297,7 @@ void RegisterStatelessRandomUniform()
 
 void RegisterStatelessRandomUniformInt()
 {
-    using K = KernelDefinition<
+    using int32_kernel = KernelDefinition<
         ops::StatelessRandomUniformInt,
         DmlKernelWrapper<
             DmlStatelessRandomUniformKernel,
@@ -1077,12 +1306,28 @@ void RegisterStatelessRandomUniformInt()
             ops::StatelessRandomUniformInt::Argument::shape,
             ops::StatelessRandomUniformInt::Argument::seed,
             ops::StatelessRandomUniformInt::Argument::minval,
-            ops::StatelessRandomUniformInt::Argument::maxval>;
+            ops::StatelessRandomUniformInt::Argument::maxval>::
+            WithTypeConstraint<
+                ops::StatelessRandomUniformInt::Attribute::dtype,
+                TF_INT32>;
+    int32_kernel::Register();
 
-    RegisterWithTypes<
-        K,
-        ops::StatelessRandomUniformInt::Attribute::dtype,
-        TF_INT32>();
+    using int64_kernel = KernelDefinition<
+        ops::StatelessRandomUniformInt,
+        RandomUniformInt64KernelSelector<
+            DmlKernelWrapper<
+                DmlStatelessRandomUniformKernel,
+                StatelessRandomUniformShapeHelper>,
+            false>>::
+        WithHostMemoryArguments<
+            ops::StatelessRandomUniformInt::Argument::shape,
+            ops::StatelessRandomUniformInt::Argument::seed,
+            ops::StatelessRandomUniformInt::Argument::minval,
+            ops::StatelessRandomUniformInt::Argument::maxval>::
+            WithTypeConstraint<
+                ops::StatelessRandomUniformInt::Attribute::dtype,
+                TF_INT64>;
+    int64_kernel::Register();
 }
 
 void RegisterRandomUniform()
@@ -1102,16 +1347,33 @@ void RegisterRandomUniform()
 
 void RegisterRandomUniformInt()
 {
-    using K = KernelDefinition<
+    using int32_kernel = KernelDefinition<
         ops::RandomUniformInt,
         DmlPhiloxWrapper<DmlRandomUniformKernel, RandomUniformShapeHelper>>::
         WithHostMemoryArguments<
             ops::RandomUniformInt::Argument::shape,
             ops::RandomUniformInt::Argument::minval,
             ops::RandomUniformInt::Argument::maxval>::
-            WithTypeConstraint<ops::RandomUniformInt::Attribute::T, TF_INT32>;
+            WithTypeConstraint<ops::RandomUniformInt::Attribute::T, TF_INT32>::
+                WithTypeConstraint<
+                    ops::RandomUniformInt::Attribute::Tout,
+                    TF_INT32>;
+    int32_kernel::Register();
 
-    RegisterWithTypes<K, ops::RandomUniformInt::Attribute::Tout, TF_INT32>();
+    using int64_kernel = KernelDefinition<
+        ops::RandomUniformInt,
+        RandomUniformInt64KernelSelector<
+            DmlPhiloxWrapper<DmlRandomUniformKernel, RandomUniformShapeHelper>,
+            true>>::
+        WithHostMemoryArguments<
+            ops::RandomUniformInt::Argument::shape,
+            ops::RandomUniformInt::Argument::minval,
+            ops::RandomUniformInt::Argument::maxval>::
+            WithTypeConstraint<ops::RandomUniformInt::Attribute::T, TF_INT32>::
+                WithTypeConstraint<
+                    ops::RandomUniformInt::Attribute::Tout,
+                    TF_INT64>;
+    int64_kernel::Register();
 }
 
 void RegisterRandomStandardNormal()

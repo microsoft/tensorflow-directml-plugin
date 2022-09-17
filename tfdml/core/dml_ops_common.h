@@ -366,6 +366,19 @@ struct TfTensorTypeTraits<int64_t>
     }
 };
 
+template <>
+struct TfTensorTypeTraits<uint64_t>
+{
+    static constexpr DML_TENSOR_DATA_TYPE dml_type =
+        DML_TENSOR_DATA_TYPE_UINT64;
+    static DML_SCALAR_UNION ToDmlScalar(uint64_t val)
+    {
+        DML_SCALAR_UNION scalar;
+        scalar.UInt64 = val;
+        return scalar;
+    }
+};
+
 } // namespace tfdml
 
 // Extends DirectMLX with tensorflow helpers
