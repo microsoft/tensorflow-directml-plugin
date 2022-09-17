@@ -15,32 +15,24 @@ limitations under the License.
 
 #pragma once
 
-#include "absl/types/span.h"
-#include "tfdml/runtime_adapter/status.h"
+#include "absl/container/inlined_vector.h"
+#include "tfdml/core/dml_device.h"
+#include "tfdml/core/dml_tagged_pointer.h"
 
 namespace tfdml
 {
-class Tensor;
-
-class Device
+class DmlDeviceManager
 {
   public:
-    virtual ~Device() = default;
+    static DmlDeviceManager& Instance();
+    Status InsertDevice(uint32_t device_id, DmlDevice* dml_device);
+    DmlDevice* GetDevice(uint32_t device_id) const;
 
-    virtual Status CopyCPUTensorToDevice(
-        const Tensor* cpu_tensor,
-        Tensor* device_tensor) = 0;
+  private:
+    static constexpr uint64_t kNumMaxDevices = TaggedPointer::kDeviceIDBits
+                                               << 1;
 
-    virtual Status CopyDeviceTensorToCPU(
-        const Tensor* device_tensor,
-        Tensor* cpu_tensor) = 0;
-
-    virtual Status CopyDeviceTensorsToCPU(
-        absl::Span<const Tensor> device_tensors,
-        absl::Span<Tensor> cpu_tensors) = 0;
-
-    virtual void CopyTensorInSameDevice(
-        const Tensor* input_tensor,
-        Tensor* output_tensor) = 0;
+    DmlDeviceManager() = default;
+    absl::InlinedVector<DmlDevice*, kNumMaxDevices> devices_;
 };
 } // namespace tfdml

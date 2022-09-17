@@ -15,35 +15,17 @@
 # limitations under the License.
 # ==============================================================================
 
-"""Tests the DML device creation and visibility"""
+"""Tests computation and copies across multiple DML devices"""
 
-import os
 from absl.testing import absltest
-from absl import flags
-
-flags.DEFINE_string(
-    "dml_visible_devices", "", "Value of DML_VISIBLE_DEVICES environment variable"
-)
+import tensorflow as tf
 
 
 class VisibleDevicesTest(absltest.TestCase):
-    """Tests the visibility of DML devices"""
+    """Tests computation and copies across multiple DML devices"""
 
     def test(self):
-        """Tests the visibility of DML devices"""
-        os.environ["DML_VISIBLE_DEVICES"] = flags.FLAGS.dml_visible_devices
-
-        # Tensorflow needs to be imported after the environment variable is set
-        import tensorflow as tf  # pylint:disable=import-outside-toplevel
-
-        # See https://docs.microsoft.com/en-us/windows/ai/directml/gpu-faq
-        # The value should be a comma-separated list of device IDs.
-        # Any IDs appearing after -1 are invalid.
-        valid_id_count = 0
-        for device_id in flags.FLAGS.dml_visible_devices.split(","):
-            if device_id == "-1":
-                break
-            valid_id_count += 1
+        """Tests computation and copies across multiple DML devices"""
 
         gpu_devices = tf.config.list_physical_devices("GPU")
         # pylint: disable=duplicate-code
@@ -56,12 +38,21 @@ class VisibleDevicesTest(absltest.TestCase):
         )
         # pylint: enable=duplicate-code
 
-        # We can't guarantee the machine running this test has multiple
-        # devices/adapters, but it must have at least one.
-        if valid_id_count == 0:
-            self.assertEmpty(dml_devices)
-        else:
-            self.assertBetween(len(dml_devices), 1, valid_id_count)
+        if len(dml_devices) < 2:
+            self.skipTest(
+                f"This test requires more than 1 DirectML GPU, but only "
+                f"{len(dml_devices)} devices were found."
+            )
+
+        with tf.device("GPU:0"):
+            device1_tensor = tf.constant(1, dtype=tf.float32)
+
+        with tf.device("GPU:1"):
+            device2_tensor = tf.constant(2, dtype=tf.float32)
+
+        actual = tf.math.add(device1_tensor, device2_tensor)
+        expected = tf.constant(3, dtype=tf.float32)
+        self.assertEqual(actual, expected)
 
 
 if __name__ == "__main__":
