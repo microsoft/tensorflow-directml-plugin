@@ -891,9 +891,11 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
         OP_REQUIRES_OK(ctx, status);
 
         TFE_TensorHandle* output_handle = nullptr;
+        TFE_TensorHandle** output_handle_ptr = &output_handle;
         OP_REQUIRES_OK(ctx, status);
-        auto output_handle_cleanup = absl::MakeCleanup(
-            [output_handle] { TFE_DeleteTensorHandle(output_handle); });
+        auto output_handle_cleanup =
+            absl::MakeCleanup([output_handle_ptr]
+                              { TFE_DeleteTensorHandle(*output_handle_ptr); });
 
         int num_retvals = 1;
         TFE_Execute(random_op, &output_handle, &num_retvals, status.raw());
