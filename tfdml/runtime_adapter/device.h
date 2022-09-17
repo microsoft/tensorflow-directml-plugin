@@ -15,6 +15,7 @@ limitations under the License.
 
 #pragma once
 
+#include "absl/types/span.h"
 #include "tfdml/runtime_adapter/status.h"
 
 namespace tfdml
@@ -33,6 +34,10 @@ class Device
     virtual Status CopyDeviceTensorToCPU(
         const Tensor* device_tensor,
         Tensor* cpu_tensor) = 0;
+
+    virtual Status CopyDeviceTensorsToCPU(
+        absl::Span<const Tensor> device_tensors,
+        absl::Span<Tensor> cpu_tensors) = 0;
 
     virtual void CopyTensorInSameDevice(
         const Tensor* input_tensor,
