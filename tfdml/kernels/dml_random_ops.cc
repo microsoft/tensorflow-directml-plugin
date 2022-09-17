@@ -18,6 +18,7 @@ limitations under the License.
 #include "tensorflow/c/eager/c_api.h"
 #include "tfdml/kernels/pch.h"
 #include "tfdml/runtime_adapter/guarded_philox_random.h"
+#include "tfdml/runtime_adapter/random_ops_util.h"
 #include "tfdml/runtime_adapter/rng_alg.h"
 #include "tfdml/runtime_adapter/stateless_random_ops.h"
 #include "tfdml/runtime_adapter/variable_lock.h"
@@ -1175,6 +1176,107 @@ class DmlRngSkipKernel : public DmlKernel
     }
 };
 
+class GetKeyCounterAlgOp : public OpKernel
+{
+  public:
+    explicit GetKeyCounterAlgOp(
+        OpKernelConstruction* ctx,
+        std::shared_ptr<const NodeDef> node_def)
+        : OpKernel(std::move(node_def))
+    {
+    }
+
+    void Compute(OpKernelContext* ctx)
+    {
+        const Tensor& seed_t = ctx->input(0);
+        OP_REQUIRES(
+            ctx,
+            seed_t.dims() == 1 && seed_t.dim_size(0) == 2,
+            errors::InvalidArgument(
+                "seed must have shape [2], not ",
+                seed_t.shape().DebugString()));
+        // Allocate outputs
+        auto status_or_key_output =
+            ctx->allocate_output(0, TensorShape({RNG_KEY_SIZE}));
+        OP_REQUIRES_OK(ctx, status_or_key_output.status());
+        Tensor key_output = status_or_key_output.ConsumeValueOrDie();
+
+        auto status_or_counter_output =
+            ctx->allocate_output(1, TensorShape({RNG_MAX_COUNTER_SIZE}));
+        OP_REQUIRES_OK(ctx, status_or_counter_output.status());
+        Tensor counter_output = status_or_counter_output.ConsumeValueOrDie();
+
+        auto status_or_alg_output = ctx->allocate_output(2, TensorShape({}));
+        OP_REQUIRES_OK(ctx, status_or_alg_output.status());
+        Tensor alg_output = status_or_alg_output.ConsumeValueOrDie();
+
+        random::PhiloxRandom::Key key;
+        random::PhiloxRandom::ResultType counter;
+        OP_REQUIRES_OK(ctx, GenerateKey(seed_t, &key, &counter));
+        WriteKeyToMem(key, key_output.base<uint64_t>());
+        WriteCounterToMem(counter, counter_output.base<uint64_t>());
+        alg_output.base<int>()[0] = RNG_ALG_PHILOX;
+    }
+};
+
+class GetKeyCounterOp : public OpKernel
+{
+  public:
+    explicit GetKeyCounterOp(
+        OpKernelConstruction* ctx,
+        std::shared_ptr<const NodeDef> node_def)
+        : OpKernel(std::move(node_def))
+    {
+    }
+
+    void Compute(OpKernelContext* ctx)
+    {
+        const Tensor& seed_t = ctx->input(0);
+        OP_REQUIRES(
+            ctx,
+            seed_t.dims() == 1 && seed_t.dim_size(0) == 2,
+            errors::InvalidArgument(
+                "seed must have shape [2], not ",
+                seed_t.shape().DebugString()));
+        // Allocate outputs
+        auto status_or_key_output =
+            ctx->allocate_output(0, TensorShape({RNG_KEY_SIZE}));
+        OP_REQUIRES_OK(ctx, status_or_key_output.status());
+        Tensor key_output = status_or_key_output.ConsumeValueOrDie();
+
+        auto status_or_counter_output =
+            ctx->allocate_output(1, TensorShape({RNG_MAX_COUNTER_SIZE}));
+        OP_REQUIRES_OK(ctx, status_or_counter_output.status());
+        Tensor counter_output = status_or_counter_output.ConsumeValueOrDie();
+
+        random::PhiloxRandom::Key key;
+        random::PhiloxRandom::ResultType counter;
+        OP_REQUIRES_OK(ctx, GenerateKey(seed_t, &key, &counter));
+        WriteKeyToMem(key, key_output.base<uint64_t>());
+        WriteCounterToMem(counter, counter_output.base<uint64_t>());
+    }
+};
+
+class GetAlgOp : public OpKernel
+{
+  public:
+    explicit GetAlgOp(
+        OpKernelConstruction* ctx,
+        std::shared_ptr<const NodeDef> node_def)
+        : OpKernel(std::move(node_def))
+    {
+    }
+
+    void Compute(OpKernelContext* ctx)
+    {
+        auto status_or_alg_output = ctx->allocate_output(0, TensorShape({}));
+        OP_REQUIRES_OK(ctx, status_or_alg_output.status());
+        Tensor alg_output = status_or_alg_output.ConsumeValueOrDie();
+
+        alg_output.base<int>()[0] = RNG_ALG_PHILOX;
+    }
+};
+
 void RegisterStatelessRandomUniform()
 {
     using K = KernelDefinition<
@@ -1348,6 +1450,40 @@ void RegisterRngReadAndSkip()
     K::Register();
 }
 
+void RegisterStatelessRandomGetKeyCounterAlg()
+{
+    using K = KernelDefinition<
+        ops::StatelessRandomGetKeyCounterAlg,
+        GetKeyCounterAlgOp>::
+        WithHostMemoryArguments<
+            ops::StatelessRandomGetKeyCounterAlg::Argument::seed,
+            ops::StatelessRandomGetKeyCounterAlg::Argument::key,
+            ops::StatelessRandomGetKeyCounterAlg::Argument::counter,
+            ops::StatelessRandomGetKeyCounterAlg::Argument::alg>;
+
+    K::Register();
+}
+
+void RegisterStatelessRandomGetKeyCounter()
+{
+    using K =
+        KernelDefinition<ops::StatelessRandomGetKeyCounter, GetKeyCounterOp>::
+            WithHostMemoryArguments<
+                ops::StatelessRandomGetKeyCounter::Argument::seed,
+                ops::StatelessRandomGetKeyCounter::Argument::key,
+                ops::StatelessRandomGetKeyCounter::Argument::counter>;
+
+    K::Register();
+}
+
+void RegisterGetAlgOp()
+{
+    using K = KernelDefinition<ops::StatelessRandomGetAlg, GetAlgOp>::
+        WithHostMemoryArguments<ops::StatelessRandomGetAlg::Argument::alg>;
+
+    K::Register();
+}
+
 void RegisterKernels_Random()
 {
     RegisterStatelessRandomUniform();
@@ -1358,6 +1494,9 @@ void RegisterKernels_Random()
     RegisterTruncatedNormal();
     RegisterRngSkip();
     RegisterRngReadAndSkip();
+    RegisterStatelessRandomGetKeyCounterAlg();
+    RegisterStatelessRandomGetKeyCounter();
+    RegisterGetAlgOp();
 }
 
 } // namespace tfdml

@@ -88,6 +88,8 @@ void DeleteOptimizer(void* optimizers)
     {
         delete optimizer;
     }
+
+    delete cast_optimizers;
 }
 
 } // namespace tfdml
