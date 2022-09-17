@@ -105,6 +105,50 @@ class DmlReluKernel : public DmlKernel
     }
 };
 
+class DmlReluIntKernel : public DmlKernel
+{
+  public:
+    using InitHelper = NoOpInitializationHelper;
+
+    explicit DmlReluIntKernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        CHECK(ctx->GetInputCount() == 1);
+        CHECK(ctx->GetOutputCount() == 1);
+
+        auto num_elements =
+            static_cast<uint32_t>(ctx->GetInputTensorShape(0).num_elements());
+        uint32_t tensor_sizes[4] = {1, 1, 1, num_elements};
+
+        auto data_type = GetDmlDataTypeFromTfDataType(ctx->GetInputDataType(0));
+        DmlTensorInfo tensor_info = {};
+        tensor_info.kernel_index = 0;
+        tensor_info.desc = DmlTensorDesc{data_type, tensor_sizes};
+
+        DmlKernelTensors tensors = {};
+        tensors.supports_in_place_execution = true;
+        tensors.inputs = {tensor_info};
+        tensors.outputs = {tensor_info};
+
+        auto inputs = GetDmlTensorDescs(tensors.inputs);
+
+        auto scope = dml::Graph(ctx->GetDmlDevice());
+        auto input = dml::InputTensor(scope, 0, inputs[0]);
+        auto zero = dml::ZeroTensor(
+            scope,
+            input.GetOutputDesc().dataType,
+            input.GetOutputDesc().sizes);
+
+        auto result = dml::If(input < zero, zero, input);
+
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
+    }
+};
+
 // Base CRTP class for linear unit (LU) grad ops: ReluGrad, SeluGrad, etc.
 template <typename Impl, typename TInitHelper = LuGradInitHelper<>>
 class DmlLUGradKernel : public DmlKernel
@@ -385,11 +429,33 @@ class DmlSeluGradKernel : public DmlLUGradKernel<DmlSeluGradKernel>
 
 void Relu()
 {
-    using K = KernelDefinition<
+    using float_kernel = KernelDefinition<
         ops::Relu,
         DmlKernelWrapper<DmlReluKernel, GetOutputShapeAsInputShapeHelper>>;
 
-    RegisterWithTypes<K, ops::Relu::Attribute::T, TF_FLOAT, TF_HALF>();
+    RegisterWithTypes<
+        float_kernel,
+        ops::Relu::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+
+    // TODO: Remove the specialized int implementation once DML supports all
+    // datatypes
+    // TFDML #41313814
+    using int64_kernel = KernelDefinition<
+        ops::Relu,
+        DmlKernelWrapper<DmlReluIntKernel, GetOutputShapeAsInputShapeHelper>>;
+
+    RegisterWithTypes<
+        int64_kernel,
+        ops::Relu::Attribute::T,
+        TF_INT8,
+        TF_INT16,
+        TF_INT64,
+        TF_UINT8,
+        TF_UINT16,
+        TF_UINT32,
+        TF_UINT64>();
 }
 
 void ReluGrad()
