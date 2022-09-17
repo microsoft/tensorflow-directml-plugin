@@ -33,7 +33,7 @@ class DmlAllocator
     D3D12BufferRegion CreateBufferRegion(
         const void* ptr,
         uint64_t size_in_bytes);
-    void* Alloc(size_t num_bytes);
+    void* Alloc(uint32_t device_id, size_t num_bytes);
     void Free(void* ptr, size_t num_bytes);
 
   private:

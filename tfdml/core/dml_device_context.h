@@ -76,6 +76,11 @@ class DMLDeviceContext
         const Tensor* device_tensor,
         Tensor* cpu_tensor);
 
+    Status CopyDeviceTensorsToCPU(
+        DmlDevice* device,
+        absl::Span<const Tensor> device_tensors,
+        absl::Span<Tensor> cpu_tensors);
+
     Status CopyCPUMemoryToDevice(
         DmlDevice* device,
         const void* cpu_memory,
