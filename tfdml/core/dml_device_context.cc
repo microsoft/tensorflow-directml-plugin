@@ -153,8 +153,14 @@ Status DMLDeviceContext::CopyDeviceTensorsToCPU(
         copy_event = status_or_event.ConsumeValueOrDie();
     }
 
-    TF_RETURN_IF_ERROR(device->Sync());
-    copy_event.WaitForSignal();
+    // If the fence is null, it means that all tensors were empty and we didn't
+    // actually copy anything
+    if (copy_event.fence)
+    {
+        TF_RETURN_IF_ERROR(device->Sync());
+        copy_event.WaitForSignal();
+    }
+
     return Status::OK();
 }
 
