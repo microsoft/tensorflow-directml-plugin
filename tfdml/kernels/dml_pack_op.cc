@@ -213,6 +213,10 @@ class DmlPackCpuKernel : public OpKernel
 
         pack_op_ = TFE_NewOp(eager_context_, "Pack", status.raw());
         OP_REQUIRES_OK(ctx, status);
+
+        int axis;
+        OP_REQUIRES_OK(ctx, ctx->GetAttr("axis", &axis));
+        TFE_OpSetAttrInt(pack_op_, "axis", axis);
     }
 
     ~DmlPackCpuKernel() override
