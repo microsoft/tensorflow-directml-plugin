@@ -118,6 +118,9 @@
                     "file": "ops/fill_op_test.py"
                 },
                 {
+                    "file": "ops/ftrl_test.py"
+                },
+                {
                     "file": "ops/gather_nd_op_test.py"
                 },
                 {
