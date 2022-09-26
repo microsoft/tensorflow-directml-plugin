@@ -7,6 +7,9 @@
             "is_python_test": true,
             "tests": [
                 {
+                    "file": "ops/adagrad_test.py"
+                },
+                {
                     "file": "ops/aggregate_ops_test.py"
                 },
                 {
@@ -115,6 +118,9 @@
                     "file": "ops/fill_op_test.py"
                 },
                 {
+                    "file": "ops/ftrl_test.py"
+                },
+                {
                     "file": "ops/gather_nd_op_test.py"
                 },
                 {
@@ -173,6 +179,9 @@
                 },
                 {
                     "file": "ops/pooling_ops_test.py"
+                },
+                {
+                    "file": "ops/proximal_adagrad_test.py"
                 },
                 {
                     "file": "ops/ragged_one_hot_op_test.py"
@@ -263,6 +272,9 @@
                 },
                 {
                     "file": "ops/training_integration_test.py"
+                },
+                {
+                    "file": "ops/training_ops_test.py"
                 },
                 {
                     "file": "ops/training_test.py"

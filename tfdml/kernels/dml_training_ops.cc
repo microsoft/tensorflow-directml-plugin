@@ -1375,6 +1375,257 @@ class DmlApplyAdagradKernel : public DmlTrainingKernel<num_input_refs>
 };
 
 template <int num_input_refs>
+class SparseApplyAdagradInitHelper : public TrainingInitHelper<num_input_refs>
+{
+  public:
+    struct Attributes : public TrainingInitHelper<num_input_refs>::Attributes
+    {
+        explicit Attributes(OpKernelConstruction* ctx)
+            : TrainingInitHelper<num_input_refs>::Attributes(ctx)
+        {
+            OP_REQUIRES_OK(ctx, ctx->GetAttr("update_slots", &update_slots));
+        }
+
+        bool update_slots;
+    };
+
+    SparseApplyAdagradInitHelper(
+        OpKernelContext* ctx,
+        std::shared_ptr<const Attributes> attr)
+        : TrainingInitHelper<num_input_refs>(ctx, attr),
+          update_slots_(attr->update_slots)
+    {
+    }
+
+    bool UpdateSlots() const { return update_slots_; }
+
+  private:
+    bool update_slots_;
+};
+
+template <int num_input_refs>
+class DmlSparseApplyAdagradKernel : public DmlTrainingKernel<num_input_refs>
+{
+  public:
+    using InitHelper = SparseApplyAdagradInitHelper<num_input_refs>;
+
+    DmlSparseApplyAdagradKernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+        : DmlTrainingKernel<num_input_refs>(
+              ctx,
+              init_helper->UseExclusiveLock())
+    {
+        auto* op_ctx = ctx->GetOpKernelContext();
+
+        // SparseApplyAdagradV2 has an additional input
+        CHECK(ctx->GetInputCount() == 5 || ctx->GetInputCount() == 6);
+        CHECK(ctx->GetOutputCount() <= 1);
+
+        this->PrepareVariableTensors(op_ctx, {0, 1});
+        VariableTensorAccessor var_accessor = this->LockVariableTensors(op_ctx);
+
+        OP_REQUIRES(
+            op_ctx,
+            var_accessor.Get(0).IsInitialized(),
+            errors::FailedPrecondition(
+                "Attempting to use uninitialized variables: var"));
+        OP_REQUIRES(
+            op_ctx,
+            var_accessor.Get(1).IsInitialized(),
+            errors::FailedPrecondition(
+                "Attempting to use uninitialized variables: accum"));
+
+        const bool has_epsilon = (ctx->GetInputCount() == 6);
+
+        // The "grad" tensor is the 3rd or 4th tensor, depending on whether this
+        // is Adagrad or AdagradV2.
+        uint32_t grad_index = has_epsilon ? 4u : 3u;
+        uint32_t indices_index = has_epsilon ? 5u : 4u;
+
+        const TensorShape& var_shape = var_accessor.GetShape(0);
+        const TensorShape& accum_shape = var_accessor.GetShape(1);
+        const TensorShape& lr_shape = ctx->GetInputTensorShape(2);
+        const TensorShape& grad_shape = ctx->GetInputTensorShape(grad_index);
+        const TensorShape& indices_shape =
+            ctx->GetInputTensorShape(indices_index);
+
+        OP_REQUIRES(
+            op_ctx,
+            var_shape.IsSameSize(accum_shape),
+            errors::InvalidArgument(
+                "var and accum do not have the same shape",
+                var_shape.DebugString(),
+                " ",
+                accum_shape.DebugString()));
+        OP_REQUIRES(
+            op_ctx,
+            TensorShapeUtils::IsVectorOrHigher(var_shape),
+            errors::InvalidArgument("var must be at least 1 dimensional"));
+        OP_REQUIRES(
+            op_ctx,
+            TensorShapeUtils::IsScalar(lr_shape),
+            errors::InvalidArgument(
+                "lr is not a scalar: ",
+                lr_shape.DebugString()));
+        OP_REQUIRES(
+            op_ctx,
+            TensorShapeUtils::IsVector(indices_shape),
+            errors::InvalidArgument("indices must be one-dimensional"));
+        int64_t inner_dim = 1;
+        for (int d = 1; d < var_shape.dims(); d++)
+        {
+            OP_REQUIRES(
+                op_ctx,
+                var_shape.dim_size(d) == grad_shape.dim_size(d),
+                errors::InvalidArgument(
+                    absl::StrCat("var and grad must match in dimension ", d)));
+            inner_dim *= grad_shape.dim_size(d);
+        }
+        const int N = indices_shape.dim_size(0);
+        OP_REQUIRES(
+            op_ctx,
+            grad_shape.dim_size(0) == N,
+            errors::InvalidArgument("grad must be the same size as indices in "
+                                    "the first dimension."));
+
+        OP_REQUIRES(
+            op_ctx,
+            inner_dim > 0,
+            errors::InvalidArgument(
+                "Inner dimension should be greater than zero."));
+
+        DmlKernelTensors tensors;
+
+        auto var_accum_desc = DmlTensorDesc::Create(
+            init_helper->GetDataType(),
+            var_shape,
+            var_shape);
+        tensors.inputs.push_back(DmlTensorInfo{var_accum_desc, 0});
+        tensors.inputs.push_back(DmlTensorInfo{std::move(var_accum_desc), 1});
+
+        auto lr_desc = DmlTensorDesc::Create(
+            ctx->GetInputDataType(2),
+            grad_shape,
+            lr_shape);
+        tensors.inputs.push_back(DmlTensorInfo{std::move(lr_desc), 2});
+
+        if (has_epsilon)
+        {
+            const TensorShape& epsilon_shape = ctx->GetInputTensorShape(3);
+
+            OP_REQUIRES(
+                op_ctx,
+                TensorShapeUtils::IsScalar(epsilon_shape),
+                errors::InvalidArgument(
+                    "epsilon is not a scalar: ",
+                    epsilon_shape.DebugString()));
+
+            auto epsilon_desc = DmlTensorDesc::Create(
+                ctx->GetInputDataType(3),
+                grad_shape,
+                epsilon_shape);
+            tensors.inputs.push_back(DmlTensorInfo{std::move(epsilon_desc), 3});
+        }
+
+        auto grad_desc = DmlTensorDesc::Create(
+            ctx->GetInputDataType(grad_index),
+            grad_shape,
+            grad_shape);
+        tensors.inputs.push_back(
+            DmlTensorInfo{std::move(grad_desc), grad_index});
+
+        auto indices_desc = DmlTensorDesc::Create(
+            ctx->GetInputDataType(indices_index),
+            indices_shape,
+            indices_shape);
+        tensors.inputs.push_back(
+            DmlTensorInfo{std::move(indices_desc), indices_index});
+
+        auto output_desc = DmlTensorDesc::Create(
+            init_helper->GetDataType(),
+            var_shape,
+            var_shape);
+        tensors.outputs.push_back(DmlTensorInfo{output_desc, 0});
+        tensors.outputs.push_back(DmlTensorInfo{std::move(output_desc), 1});
+
+        this->MaybeForwardRefInputToRefOutput(tensors, 0, 0);
+
+        auto inputs = this->GetDmlTensorDescs(tensors.inputs);
+
+        auto scope = dml::Graph(ctx->GetDmlDevice());
+        auto var = dml::InputTensor(scope, 0, inputs[0]);
+        auto accum = dml::InputTensor(scope, 1, inputs[1]);
+        auto lr = dml::InputTensor(scope, 2, inputs[2]);
+        auto grad = dml::InputTensor(scope, grad_index, inputs[grad_index]);
+
+        auto indices =
+            dml::InputTensor(scope, indices_index, inputs[indices_index]);
+
+        if (var_shape.dims() > 1)
+        {
+            auto indices_sizes = indices.GetOutputDesc().sizes;
+            std::swap(
+                indices_sizes[indices_sizes.size() - 1],
+                indices_sizes[indices_sizes.size() - 2]);
+
+            dml::TensorStrides indices_strides(indices_sizes.size());
+            indices_strides[indices_sizes.size() - 2] = 1;
+
+            indices = dml::Reinterpret(indices, indices_sizes, indices_strides);
+        }
+
+        const int indices_dim_count = var_shape.dims() > 1 ? 2 : 1;
+
+        auto gathered_var =
+            dml::GatherND(var, indices, var_shape.dims(), indices_dim_count, 0);
+        auto gathered_accum = dml::GatherND(
+            accum,
+            indices,
+            accum_shape.dims(),
+            indices_dim_count,
+            0);
+
+        if (init_helper->UpdateSlots())
+        {
+            gathered_accum += grad * grad;
+        }
+
+        // AdagradV2 applies an epsilon before performing the division
+        if (has_epsilon)
+        {
+            auto epsilon = dml::InputTensor(scope, 3, inputs[3]);
+
+            gathered_var -= grad * lr / (dml::Sqrt(gathered_accum) + epsilon);
+        }
+        else
+        {
+            gathered_var -= grad * lr / dml::Sqrt(gathered_accum);
+        }
+
+        auto scattered_var = dml::ScatterND(
+            var,
+            indices,
+            gathered_var,
+            var_shape.dims(),
+            indices_dim_count);
+        auto scattered_accum = dml::ScatterND(
+            accum,
+            indices,
+            gathered_accum,
+            accum_shape.dims(),
+            indices_dim_count);
+
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(
+                DML_EXECUTION_FLAG_NONE,
+                {scattered_var, scattered_accum});
+
+        this->Initialize(ctx, std::move(tensors), compiled_op.Get());
+    }
+};
+
+template <int num_input_refs>
 class DmlApplyMomentumKernel : public DmlTrainingKernel<num_input_refs>
 {
   public:
@@ -2275,6 +2526,62 @@ void RegisterResourceApplyAdagradV2()
         TF_HALF>();
 }
 
+void RegisterSparseApplyAdagrad()
+{
+    using K = KernelDefinition<
+        ops::SparseApplyAdagrad,
+        DmlKernelWrapper<
+            DmlSparseApplyAdagradKernel<2>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::SparseApplyAdagrad::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
+
+void RegisterSparseApplyAdagradV2()
+{
+    using K = KernelDefinition<
+        ops::SparseApplyAdagradV2,
+        DmlKernelWrapper<
+            DmlSparseApplyAdagradKernel<2>,
+            GetOutputShapeAsRefInputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::SparseApplyAdagradV2::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
+
+void RegisterResourceSparseApplyAdagrad()
+{
+    using K = KernelDefinition<
+        ops::ResourceSparseApplyAdagrad,
+        DmlKernelWrapper<DmlSparseApplyAdagradKernel<0>, NoOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::ResourceSparseApplyAdagrad::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
+
+void RegisterResourceSparseApplyAdagradV2()
+{
+    using K = KernelDefinition<
+        ops::ResourceSparseApplyAdagradV2,
+        DmlKernelWrapper<DmlSparseApplyAdagradKernel<0>, NoOutputShapeHelper>>;
+
+    RegisterWithTypes<
+        K,
+        ops::ResourceSparseApplyAdagradV2::Attribute::T,
+        TF_FLOAT,
+        TF_HALF>();
+}
+
 void RegisterApplyMomentum()
 {
     using K = KernelDefinition<
@@ -2453,6 +2760,10 @@ void RegisterKernels_Training()
     RegisterApplyAdagradV2();
     RegisterResourceApplyAdagrad();
     RegisterResourceApplyAdagradV2();
+    RegisterSparseApplyAdagrad();
+    RegisterSparseApplyAdagradV2();
+    RegisterResourceSparseApplyAdagrad();
+    RegisterResourceSparseApplyAdagradV2();
     RegisterApplyMomentum();
     RegisterResourceApplyMomentum();
     RegisterResourceApplyKerasMomentum();
