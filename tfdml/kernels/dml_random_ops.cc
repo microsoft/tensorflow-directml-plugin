@@ -207,11 +207,70 @@ dml::Expression UniformInt(
     }
 }
 
-class StatelessRandomUniformInitHelper : public InitializationHelper
+static Status CheckKeyCounterShape(
+    int minimum_counter_size,
+    TensorShape const& key_shape,
+    TensorShape const& counter_shape)
+{
+    if (!(key_shape.dims() == 1 && key_shape.dim_size(0) == RNG_KEY_SIZE))
+    {
+        return errors::InvalidArgument(
+            "key must have shape [",
+            RNG_KEY_SIZE,
+            "], not ",
+            key_shape.DebugString(),
+            ". (Note that batched keys are not supported yet.)");
+    }
+    if (!(counter_shape.dims() == 1 &&
+          counter_shape.dim_size(0) >= minimum_counter_size))
+    {
+        return errors::InvalidArgument(
+            "counter must be a vector with length at least ",
+            minimum_counter_size,
+            "; got shape: ",
+            counter_shape.DebugString(),
+            ". (Note that batched counters are not supported yet.)");
+    }
+    return Status::OK();
+}
+
+template <typename T>
+static Status GetScalar(const Tensor& tensor, int input_idx, T* result)
+{
+    auto dtype = DataTypeToEnum<T>();
+    if (tensor.dims() != 0)
+    {
+        return errors::InvalidArgument(
+            "input ",
+            std::to_string(input_idx),
+            " (0-based) must have shape [], not ",
+            tensor.shape().DebugString());
+    }
+    if (tensor.dtype() != dtype)
+    {
+        return errors::InvalidArgument(
+            "dtype of input ",
+            std::to_string(input_idx),
+            " (0-based) must be ",
+            DataTypeString(dtype),
+            ", not ",
+            DataTypeString(tensor.dtype()));
+    }
+    *result = tensor.base<T>()[0];
+    return Status::OK();
+}
+
+class BaseStatelessRandomUniformInitHelper : public InitializationHelper
 {
   public:
     using Attributes = EmptyAttributes;
+    virtual const TensorShape& GetOutputShape() const = 0;
+};
 
+class StatelessRandomUniformInitHelper
+    : public BaseStatelessRandomUniformInitHelper
+{
+  public:
     StatelessRandomUniformInitHelper(
         OpKernelContext* ctx,
         std::shared_ptr<const Attributes> attr)
@@ -269,7 +328,7 @@ class StatelessRandomUniformInitHelper : public InitializationHelper
         }
     }
 
-    const TensorShape& GetOutputShape() const { return output_shape_; }
+    const TensorShape& GetOutputShape() const final { return output_shape_; }
     const random::PhiloxRandom::Key GetKey() const { return key_; }
     const random::PhiloxRandom::ResultType GetCounter() const
     {
@@ -296,6 +355,100 @@ class StatelessRandomUniformInitHelper : public InitializationHelper
     random::PhiloxRandom::ResultType counter_;
 };
 
+class StatelessRandomUniformV2InitHelper
+    : public BaseStatelessRandomUniformInitHelper
+{
+  public:
+    StatelessRandomUniformV2InitHelper(
+        OpKernelContext* ctx,
+        std::shared_ptr<const Attributes> attr)
+    {
+        const Tensor& key_tensor = ctx->input(1);
+        const Tensor& counter_tensor = ctx->input(2);
+        const Tensor& alg_tensor = ctx->input(3);
+
+        int alg_id;
+        OP_REQUIRES_OK(ctx, GetScalar(alg_tensor, 3, &alg_id));
+        Algorithm alg = Algorithm(alg_id);
+        if (alg == RNG_ALG_AUTO_SELECT)
+        {
+            alg = RNG_ALG_PHILOX;
+        }
+
+        OP_REQUIRES_OK(
+            ctx,
+            CheckKeyCounterShape(
+                alg,
+                key_tensor.shape(),
+                counter_tensor.shape()));
+
+        OP_REQUIRES(
+            ctx,
+            alg == RNG_ALG_PHILOX,
+            errors::InvalidArgument("Unsupported algorithm id: ", alg));
+
+        TensorShape shape;
+        OP_REQUIRES_OK(ctx, TensorShapeUtils::MakeShape(ctx->input(0), &shape));
+
+        output_shape_ = std::move(shape);
+        if (output_shape_.num_elements() == 0) return;
+
+        // This init helper is shared for both "StatelessRandomUniformV2" (real
+        // types) and "StatelessRandomUniformIntV2" (integral types). The latter
+        // has two extra host-memory tensors for the min and max of the output
+        // range.
+        if (ctx->num_inputs() == 6)
+        {
+            const Tensor& minval = ctx->input(4);
+            const Tensor& maxval = ctx->input(5);
+            OP_REQUIRES(
+                ctx,
+                TensorShapeUtils::IsScalar(minval.shape()),
+                errors::InvalidArgument(
+                    "minval must be 0-D, got shape ",
+                    minval.shape().DebugString()));
+            OP_REQUIRES(
+                ctx,
+                TensorShapeUtils::IsScalar(maxval.shape()),
+                errors::InvalidArgument(
+                    "maxval must be 0-D, got shape ",
+                    maxval.shape().DebugString()));
+
+            // Verify that minval < maxval. Note that we'll never reach this
+            // point for empty output.  Zero impossible things are fine.
+            const auto lo = minval.base<int32_t>()[0];
+            const auto hi = maxval.base<int32_t>()[0];
+            OP_REQUIRES(
+                ctx,
+                lo < hi,
+                errors::InvalidArgument(
+                    "Need minval < maxval, got ",
+                    lo,
+                    " >= ",
+                    hi));
+        }
+    }
+
+    const TensorShape& GetOutputShape() const final { return output_shape_; }
+
+    bool IsNoOpKernel(
+        OpKernelContext* ctx,
+        absl::Span<const TensorShape> output_shapes) const override
+    {
+        for (size_t i = 0; i < output_shapes.size(); ++i)
+        {
+            if (output_shapes[i].num_elements() != 0)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+  private:
+    TensorShape output_shape_;
+};
+
 class StatelessRandomUniformShapeHelper : public ShapeHelper
 {
   public:
@@ -303,8 +456,9 @@ class StatelessRandomUniformShapeHelper : public ShapeHelper
         OpKernelContext* ctx,
         const InitializationHelper* initialization_helper) const override
     {
-        auto init_helper = static_cast<const StatelessRandomUniformInitHelper*>(
-            initialization_helper);
+        auto init_helper =
+            static_cast<const BaseStatelessRandomUniformInitHelper*>(
+                initialization_helper);
         return {init_helper->GetOutputShape()};
     }
 };
@@ -438,6 +592,91 @@ class DmlStatelessRandomUniformKernel : public DmlKernel
             byte_span);
 
         return DmlKernel::Compute(ctx, input_bindings, output_bindings);
+    }
+};
+
+class DmlStatelessRandomUniformV2Kernel : public DmlKernel
+{
+  public:
+    using InitHelper = StatelessRandomUniformV2InitHelper;
+
+    explicit DmlStatelessRandomUniformV2Kernel(
+        DmlKernelConstruction* ctx,
+        const InitHelper* init_helper)
+    {
+        auto num_elements =
+            static_cast<uint32_t>(init_helper->GetOutputShape().num_elements());
+
+        std::array<uint32_t, 4> key_sizes = {1, 1, 1, 2};
+        DmlTensorInfo key_tensor;
+        key_tensor.kernel_index = 1;
+        key_tensor.desc =
+            DmlTensorDesc::Create(TF_UINT32, key_sizes, key_sizes);
+
+        std::array<uint32_t, 4> counter_sizes = {1, 1, 1, 4};
+        DmlTensorInfo counter_tensor;
+        counter_tensor.kernel_index = 2;
+        counter_tensor.desc =
+            DmlTensorDesc::Create(TF_UINT32, counter_sizes, counter_sizes);
+
+        const auto out_dtype = ctx->GetOutputDataType(0);
+
+        // Flatten output shape for DirectML.
+        DmlTensorInfo output_info;
+        output_info.kernel_index = 0;
+        std::array<uint32_t, 4> output_sizes = {1, 1, 1, num_elements};
+        output_info.desc =
+            DmlTensorDesc::Create(out_dtype, output_sizes, output_sizes);
+
+        DmlKernelTensors tensors;
+        tensors.inputs = {key_tensor, counter_tensor};
+        tensors.outputs = {output_info};
+
+        auto inputs = GetDmlTensorDescs(tensors.inputs);
+        auto scope = dml::Graph(ctx->GetDmlDevice());
+        auto key = dml::InputTensor(scope, 0, inputs[0]);
+        auto counter = dml::InputTensor(scope, 1, inputs[1]);
+        auto input_state = dml::Join({counter, key}, 3);
+
+        dml::Expression result;
+        if (out_dtype == TF_FLOAT)
+        {
+            result = UniformFloat(scope, input_state, num_elements);
+        }
+        else if (out_dtype == TF_HALF)
+        {
+            result = UniformHalf(scope, input_state, num_elements);
+        }
+        else if (out_dtype == TF_INT32)
+        {
+            auto min_value = ctx->GetConstantInputTensor(4).base<int32_t>()[0];
+            auto max_value = ctx->GetConstantInputTensor(5).base<int32_t>()[0];
+
+            result = UniformInt(
+                scope,
+                input_state,
+                min_value,
+                max_value,
+                num_elements);
+        }
+        else
+        {
+            assert(out_dtype == TF_INT64);
+            auto min_value = ctx->GetConstantInputTensor(4).base<int64_t>()[0];
+            auto max_value = ctx->GetConstantInputTensor(5).base<int64_t>()[0];
+
+            result = UniformInt(
+                scope,
+                input_state,
+                min_value,
+                max_value,
+                num_elements);
+        }
+
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
@@ -690,7 +929,7 @@ class DmlRandomUniformKernel : public DmlKernel
     }
 };
 
-template <typename DmlRandomKernelWrapperImpl, bool has_seed_attributes>
+template <typename DmlRandomKernelWrapperImpl, bool is_stateless, bool is_v2>
 class RandomUniformInt64KernelSelector : public OpKernel
 {
   public:
@@ -700,17 +939,25 @@ class RandomUniformInt64KernelSelector : public OpKernel
         : OpKernel(node_def),
           dml_kernel_wrapper_(ctx, node_def)
     {
-        if (has_seed_attributes)
+        if (!is_stateless)
         {
             OP_REQUIRES_OK(ctx, ctx->GetAttr("seed", &seed_));
             OP_REQUIRES_OK(ctx, ctx->GetAttr("seed2", &seed2_));
         }
     }
 
+    ~RandomUniformInt64KernelSelector()
+    {
+        TFE_DeleteOp(random_uniform_int_op_);
+    }
+
     void Compute(OpKernelContext* ctx)
     {
-        const Tensor& min_value_tensor = ctx->input(1);
-        const Tensor& max_value_tensor = ctx->input(2);
+        int min_value_index = is_stateless ? 2 : 1;
+        int max_value_index = is_stateless ? 3 : 2;
+
+        const Tensor& min_value_tensor = ctx->input(min_value_index);
+        const Tensor& max_value_tensor = ctx->input(max_value_index);
         int64_t min_value = min_value_tensor.base<int64_t>()[0];
         int64_t max_value = max_value_tensor.base<int64_t>()[0];
         uint64_t range_value =
@@ -737,20 +984,39 @@ class RandomUniformInt64KernelSelector : public OpKernel
             auto eager_context_cleanup = absl::MakeCleanup(
                 [eager_context] { TFE_DeleteContext(eager_context); });
 
-            TFE_Op* random_uniform_int_op =
-                TFE_NewOp(eager_context, "RandomUniformInt", status.raw());
-            OP_REQUIRES_OK(ctx, status);
-            auto random_uniform_int_op_cleanup =
-                absl::MakeCleanup([random_uniform_int_op]
-                                  { TFE_DeleteOp(random_uniform_int_op); });
-
-            TFE_OpSetDevice(random_uniform_int_op, "/device:CPU", status.raw());
-            OP_REQUIRES_OK(ctx, status);
-
-            if (has_seed_attributes)
+            // Lazily create the eager op
+            if (!random_uniform_int_op_)
             {
-                TFE_OpSetAttrInt(random_uniform_int_op, "seed", seed_);
-                TFE_OpSetAttrInt(random_uniform_int_op, "seed2", seed2_);
+                std::string op_name;
+                op_name.reserve(28);
+
+                if (is_stateless)
+                {
+                    op_name += "Stateless";
+                }
+
+                op_name += "RandomUniformInt";
+
+                if (is_v2)
+                {
+                    op_name += "V2";
+                }
+
+                random_uniform_int_op_ =
+                    TFE_NewOp(eager_context, op_name.c_str(), status.raw());
+                OP_REQUIRES_OK(ctx, status);
+
+                TFE_OpSetDevice(
+                    random_uniform_int_op_,
+                    "/device:CPU",
+                    status.raw());
+                OP_REQUIRES_OK(ctx, status);
+
+                if (!is_stateless)
+                {
+                    TFE_OpSetAttrInt(random_uniform_int_op_, "seed", seed_);
+                    TFE_OpSetAttrInt(random_uniform_int_op_, "seed2", seed2_);
+                }
             }
 
             absl::InlinedVector<TFE_TensorHandle*, 4> input_handles;
@@ -765,15 +1031,15 @@ class RandomUniformInt64KernelSelector : public OpKernel
 
             for (int i = 0; i < ctx->num_inputs(); ++i)
             {
-                const Tensor& shape_tensor = ctx->input(i);
+                const Tensor& input_tensor = ctx->input(i);
                 TFE_TensorHandle* input_handle =
-                    TFE_NewTensorHandle(shape_tensor.raw(), status.raw());
+                    TFE_NewTensorHandle(input_tensor.raw(), status.raw());
                 OP_REQUIRES_OK(ctx, status);
 
                 input_handles.push_back(input_handle);
 
                 TFE_OpAddInput(
-                    random_uniform_int_op,
+                    random_uniform_int_op_,
                     input_handle,
                     status.raw());
                 OP_REQUIRES_OK(ctx, status);
@@ -788,7 +1054,7 @@ class RandomUniformInt64KernelSelector : public OpKernel
 
             int num_retvals = 1;
             TFE_Execute(
-                random_uniform_int_op,
+                random_uniform_int_op_,
                 &output_handle,
                 &num_retvals,
                 status.raw());
@@ -818,6 +1084,7 @@ class RandomUniformInt64KernelSelector : public OpKernel
     DmlRandomKernelWrapperImpl dml_kernel_wrapper_;
     int64_t seed_;
     int64_t seed2_;
+    TFE_Op* random_uniform_int_op_ = nullptr;
 };
 
 // ----------------------------------------------------------------------------
@@ -922,32 +1189,6 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
     int seed2_;
     TF_DataType dtype_;
 };
-
-template <typename T>
-static Status GetScalar(const Tensor& tensor, int input_idx, T* result)
-{
-    auto dtype = DataTypeToEnum<T>();
-    if (tensor.dims() != 0)
-    {
-        return errors::InvalidArgument(
-            "input ",
-            std::to_string(input_idx),
-            " (0-based) must have shape [], not ",
-            tensor.shape().DebugString());
-    }
-    if (tensor.dtype() != dtype)
-    {
-        return errors::InvalidArgument(
-            "dtype of input ",
-            std::to_string(input_idx),
-            " (0-based) must be ",
-            DataTypeString(dtype),
-            ", not ",
-            DataTypeString(tensor.dtype()));
-    }
-    *result = tensor.base<T>()[0];
-    return Status::OK();
-}
 
 template <typename AlgEnumType>
 static Status GetAlg(OpKernelContext* ctx, int input_idx, Algorithm* alg)
@@ -1297,6 +1538,24 @@ void RegisterStatelessRandomUniform()
         TF_FLOAT>();
 }
 
+void RegisterStatelessRandomUniformV2()
+{
+    using K = KernelDefinition<
+        ops::StatelessRandomUniformV2,
+        DmlKernelWrapper<
+            DmlStatelessRandomUniformV2Kernel,
+            StatelessRandomUniformShapeHelper>>::
+        WithHostMemoryArguments<
+            ops::StatelessRandomUniformV2::Argument::shape,
+            ops::StatelessRandomUniformV2::Argument::alg>;
+
+    RegisterWithTypes<
+        K,
+        ops::StatelessRandomUniformV2::Attribute::dtype,
+        TF_HALF,
+        TF_FLOAT>();
+}
+
 void RegisterStatelessRandomUniformInt()
 {
     using int32_kernel = KernelDefinition<
@@ -1320,6 +1579,7 @@ void RegisterStatelessRandomUniformInt()
             DmlKernelWrapper<
                 DmlStatelessRandomUniformKernel,
                 StatelessRandomUniformShapeHelper>,
+            true,
             false>>::
         WithHostMemoryArguments<
             ops::StatelessRandomUniformInt::Argument::shape,
@@ -1328,6 +1588,42 @@ void RegisterStatelessRandomUniformInt()
             ops::StatelessRandomUniformInt::Argument::maxval>::
             WithTypeConstraint<
                 ops::StatelessRandomUniformInt::Attribute::dtype,
+                TF_INT64>;
+    int64_kernel::Register();
+}
+
+void RegisterStatelessRandomUniformIntV2()
+{
+    using int32_kernel = KernelDefinition<
+        ops::StatelessRandomUniformIntV2,
+        DmlKernelWrapper<
+            DmlStatelessRandomUniformV2Kernel,
+            StatelessRandomUniformShapeHelper>>::
+        WithHostMemoryArguments<
+            ops::StatelessRandomUniformIntV2::Argument::shape,
+            ops::StatelessRandomUniformIntV2::Argument::alg,
+            ops::StatelessRandomUniformIntV2::Argument::minval,
+            ops::StatelessRandomUniformIntV2::Argument::maxval>::
+            WithTypeConstraint<
+                ops::StatelessRandomUniformIntV2::Attribute::dtype,
+                TF_INT32>;
+    int32_kernel::Register();
+
+    using int64_kernel = KernelDefinition<
+        ops::StatelessRandomUniformIntV2,
+        RandomUniformInt64KernelSelector<
+            DmlKernelWrapper<
+                DmlStatelessRandomUniformV2Kernel,
+                StatelessRandomUniformShapeHelper>,
+            true,
+            true>>::
+        WithHostMemoryArguments<
+            ops::StatelessRandomUniformIntV2::Argument::shape,
+            ops::StatelessRandomUniformIntV2::Argument::alg,
+            ops::StatelessRandomUniformIntV2::Argument::minval,
+            ops::StatelessRandomUniformIntV2::Argument::maxval>::
+            WithTypeConstraint<
+                ops::StatelessRandomUniformIntV2::Attribute::dtype,
                 TF_INT64>;
     int64_kernel::Register();
 }
@@ -1366,7 +1662,8 @@ void RegisterRandomUniformInt()
         ops::RandomUniformInt,
         RandomUniformInt64KernelSelector<
             DmlPhiloxWrapper<DmlRandomUniformKernel, RandomUniformShapeHelper>,
-            true>>::
+            false,
+            false>>::
         WithHostMemoryArguments<
             ops::RandomUniformInt::Argument::shape,
             ops::RandomUniformInt::Argument::minval,
@@ -1489,7 +1786,9 @@ void RegisterGetAlgOp()
 void RegisterKernels_Random()
 {
     RegisterStatelessRandomUniform();
+    RegisterStatelessRandomUniformV2();
     RegisterStatelessRandomUniformInt();
+    RegisterStatelessRandomUniformIntV2();
     RegisterRandomUniform();
     RegisterRandomUniformInt();
     RegisterRandomStandardNormal();
