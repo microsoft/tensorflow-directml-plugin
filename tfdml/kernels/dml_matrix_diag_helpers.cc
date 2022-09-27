@@ -170,11 +170,7 @@ dml::Expression MatrixDiag(
         {
             sub_rev_len_1 =
                 dml::ScalarTensor<uint32_t>(scope, 1, {1, 1, 1, k_sub_len});
-
-            sub_rev_len_2 = dml::ScalarTensor<uint32_t>(
-                scope,
-                diag_width,
-                {1, 1, 1, k_sub_len});
+            sub_rev_len_2 = sub_rev_len_1;
         }
     }
 
@@ -308,14 +304,14 @@ dml::Expression MatrixDiag(
     dml::TensorDesc::Dimensions exp_shape_reshaped(
         {1, 1, head_shape_elem_count * diag_width, 1});
 
-    auto rg =
-        dml::Sequence<float>(scope, left_pad * 2, -1, {1, 1, 1, diag_width});
-
+    int32_t rg_from = (static_cast<int32_t>(left_pad) * 2) -
+                      static_cast<int32_t>(diag_width) + 1;
+    auto rg = dml::Sequence<int32_t>(scope, rg_from, 1, {1, 1, 1, diag_width});
     rg = dml::ActivationRelu(rg);
-    rg = dml::Cast(rg, DML_TENSOR_DATA_TYPE_UINT32);
 
     auto expanded_range = dml::Reinterpret(
         rg,
+        DML_TENSOR_DATA_TYPE_UINT32,
         exp_shape,
         dml::TensorDesc::Dimensions({0, 0, 0, 1}));
 
