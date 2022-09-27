@@ -136,6 +136,9 @@
                     "file": "ops/image_ops_test.py"
                 },
                 {
+                    "file": "ops/in_topk_op_test.py"
+                },
+                {
                     "file": "ops/inplace_ops_test.py"
                 },
                 {
