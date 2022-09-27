@@ -235,10 +235,18 @@ class DmlMatrixSetDiagKernel : public DmlKernel
             dml::ScalarTensor<int32_t>(scope, 1, input.GetOutputDesc().sizes);
         auto ones_diag =
             dml::ScalarTensor<int32_t>(scope, 1, diag.GetOutputDesc().sizes);
-        auto ones_matrix =
-            dml::MatrixDiag(scope, ones_diag, k0, k1, 0, height, width);
+        auto ones_matrix = dml::MatrixDiag(
+            scope,
+            ones_diag,
+            k0,
+            k1,
+            0,
+            height,
+            width,
+            true,
+            true);
         auto diag_matrix =
-            dml::MatrixDiag(scope, diag, k0, k1, 0, height, width);
+            dml::MatrixDiag(scope, diag, k0, k1, 0, height, width, true, true);
 
         auto result = dml::If(ones_matrix == ones, diag_matrix, input);
 

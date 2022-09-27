@@ -28,7 +28,9 @@ dml::Expression MatrixDiag(
     int32_t k_max,
     float padding_value,
     int64_t out_height,
-    int64_t out_width)
+    int64_t out_width,
+    bool align_sup_left,
+    bool align_sub_left)
 {
     assert(k_min <= k_max);
 
@@ -89,26 +91,16 @@ dml::Expression MatrixDiag(
         1u,
         std::multiplies<uint32_t>());
 
-    auto diag_strides = diag.GetOutputDesc().strides;
-
-    // Diag's stride should either be a broadcasted scalar or empty
-    CHECK(
-        !diag_strides.has_value() ||
-        std::all_of(
-            diag_strides->begin(),
-            diag_strides->end(),
-            [](uint32_t stride) { return stride == 0; }));
-
     dml::TensorDesc::Dimensions diag_rev_shape(
         {1u, 1u, diag_elem_count / diag_width, diag_width});
-    auto reshaped_diag = dml::Reinterpret(diag, diag_rev_shape, diag_strides);
+    auto reshaped_diag = dml::Reinterpret(diag, diag_rev_shape, {});
 
     uint32_t k_sub_len = std::max(0, k_sub_end - k_sub_stt);
     uint32_t k_sup_len = std::max(0, k_sup_end - k_sup_stt);
 
-    dml::Expression sub_rev_len_1;
-
-    if (k_sub_len != 0)
+    dml::Expression k_lens;
+    if ((k_sub_len != 0 && align_sub_left) ||
+        (k_sup_len != 0 && !align_sup_left))
     {
         auto left_btm =
             dml::Sequence<int32_t>(scope, 1, 1, {1, 1, 1, rwcl_min - 1});
@@ -124,66 +116,84 @@ dml::Expression MatrixDiag(
             rwcl_min,
             {1, 1, 1, rwcl_gap + 1});
 
-        auto k_lens = dml::Join({left_btm, klen_mid, right_top}, 3);
+        k_lens = dml::Join({left_btm, klen_mid, right_top}, 3);
+    }
 
-        // Only slice if we don't want the entire tensor
-        if (k_sub_len != k_lens.GetOutputDesc().sizes.back())
+    dml::Expression sup_rev_len_1;
+    dml::Expression sup_rev_len_2;
+    if (k_sup_len != 0)
+    {
+        if (align_sup_left)
+        {
+            sup_rev_len_1 =
+                dml::ScalarTensor<uint32_t>(scope, 1, {1, 1, 1, k_sup_len});
+
+            sup_rev_len_2 = sup_rev_len_1;
+        }
+        else
+        {
+            sup_rev_len_1 = dml::ScalarTensor<uint32_t>(
+                scope,
+                diag_width,
+                {1, 1, 1, k_sup_len});
+
+            sup_rev_len_2 = dml::Slice(
+                k_lens,
+                {0, 0, 0, static_cast<uint32_t>(k_sup_stt)},
+                {1, 1, 1, k_sup_len},
+                {1, 1, 1, 1});
+            sup_rev_len_2 =
+                dml::Reinterpret(sup_rev_len_2, DML_TENSOR_DATA_TYPE_UINT32);
+        }
+    }
+
+    dml::Expression sub_rev_len_1;
+    dml::Expression sub_rev_len_2;
+    if (k_sub_len != 0)
+    {
+        if (align_sub_left)
         {
             sub_rev_len_1 = dml::Slice(
                 k_lens,
                 {0, 0, 0, static_cast<uint32_t>(k_sub_stt)},
                 {1, 1, 1, k_sub_len},
                 {1, 1, 1, 1});
-        }
+            sub_rev_len_1 =
+                dml::Reinterpret(sub_rev_len_1, DML_TENSOR_DATA_TYPE_UINT32);
 
-        sub_rev_len_1 =
-            dml::Reinterpret(sub_rev_len_1, DML_TENSOR_DATA_TYPE_UINT32);
+            sub_rev_len_2 = dml::ScalarTensor<uint32_t>(
+                scope,
+                diag_width,
+                {1, 1, 1, k_sub_len});
+        }
+        else
+        {
+            sub_rev_len_1 =
+                dml::ScalarTensor<uint32_t>(scope, 1, {1, 1, 1, k_sub_len});
+
+            sub_rev_len_2 = dml::ScalarTensor<uint32_t>(
+                scope,
+                diag_width,
+                {1, 1, 1, k_sub_len});
+        }
     }
 
-    auto sup_rev_len_1 =
-        k_sup_len == 0
-            ? dml::Expression()
-            : dml::ScalarTensor<uint32_t>(scope, 1, {1, 1, 1, k_sup_len});
-
-    // Build cnt_rev_len_1
+    // Build cnt_rev_len_1 and cnt_rev_len_2
     dml::Expression cnt_rev_len_1;
-
+    dml::Expression cnt_rev_len_2;
     if (k_sub_len == 0)
     {
         cnt_rev_len_1 = sup_rev_len_1;
-    }
-    else if (k_sup_len == 0)
-    {
-        cnt_rev_len_1 = sub_rev_len_1;
-    }
-    else
-    {
-        cnt_rev_len_1 = dml::Join({sub_rev_len_1, sup_rev_len_1}, 3);
-    }
-
-    auto sub_rev_len_2 = k_sub_len == 0 ? dml::Expression()
-                                        : dml::ScalarTensor<uint32_t>(
-                                              scope,
-                                              diag_width,
-                                              {1, 1, 1, k_sub_len});
-
-    // MatrixDiag and MatrixDiagV2's alignment is always LEFT_LEFT, so
-    // sup_rev_len_2 is the same as sup_rev_len_1
-    auto sup_rev_len_2 = sup_rev_len_1;
-
-    // Build cnt_rev_len_2
-    dml::Expression cnt_rev_len_2;
-
-    if (k_sub_len == 0)
-    {
         cnt_rev_len_2 = sup_rev_len_2;
     }
     else if (k_sup_len == 0)
     {
+        cnt_rev_len_1 = sub_rev_len_1;
         cnt_rev_len_2 = sub_rev_len_2;
     }
     else
     {
+        cnt_rev_len_1 = dml::Join({sub_rev_len_1, sup_rev_len_1}, 3);
         cnt_rev_len_2 = dml::Join({sub_rev_len_2, sup_rev_len_2}, 3);
     }
 

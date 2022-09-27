@@ -23,5 +23,7 @@ dml::Expression MatrixDiag(
     int32_t k_max,
     float padding_value,
     int64_t out_height,
-    int64_t out_width);
+    int64_t out_width,
+    bool align_sup_left,
+    bool align_sub_left);
 } // namespace dml

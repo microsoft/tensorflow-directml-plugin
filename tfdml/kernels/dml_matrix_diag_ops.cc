@@ -25,7 +25,23 @@ template <typename T>
 class MatrixDiagInitHelper : public InitializationHelper
 {
   public:
-    using Attributes = EmptyAttributes;
+    struct Attributes
+    {
+        explicit Attributes(OpKernelConstruction* ctx)
+        {
+            if (ctx->HasAttr("align"))
+            {
+                std::string align;
+                OP_REQUIRES_OK(ctx, ctx->GetAttr("align", &align));
+                align_sup_left = align == "LEFT_LEFT" || align == "LEFT_RIGHT";
+                align_sub_left = align == "LEFT_LEFT" || align == "RIGHT_LEFT";
+            }
+        }
+
+        bool align_sup_left = true;
+        bool align_sub_left = true;
+    };
+
     MatrixDiagInitHelper(
         OpKernelContext* ctx,
         std::shared_ptr<const Attributes> attr)
@@ -153,18 +169,24 @@ class MatrixDiagInitHelper : public InitializationHelper
 
         lower_diag_index_ = lower_diag_index;
         upper_diag_index_ = upper_diag_index;
+        align_sup_left_ = attr->align_sup_left;
+        align_sub_left_ = attr->align_sub_left;
     }
 
     TensorShape GetOutputShape() const { return output_shape_; }
     int32_t GetLowerDiagIndex() const { return lower_diag_index_; }
     int32_t GetUpperDiagIndex() const { return upper_diag_index_; }
     T GetPaddingValue() const { return padding_value_; }
+    bool GetAlignSupLeft() const { return align_sup_left_; }
+    bool GetAlignSubLeft() const { return align_sub_left_; }
 
   private:
     TensorShape output_shape_;
     int32_t lower_diag_index_;
     int32_t upper_diag_index_;
     T padding_value_;
+    bool align_sup_left_ = true;
+    bool align_sub_left_ = true;
 };
 
 template <typename T>
@@ -369,7 +391,9 @@ class DmlMatrixDiagKernel : public DmlKernel
             k_max,
             static_cast<float>(padding_value_),
             out_height,
-            out_width);
+            out_width,
+            init_helper->GetAlignSupLeft(),
+            init_helper->GetAlignSubLeft());
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
@@ -444,6 +468,29 @@ static void RegisterMatrixDiagV2()
 }
 
 template <typename T>
+static void RegisterMatrixDiagV3()
+{
+    using Op = ops::MatrixDiagV3;
+    K<Op, T>::template WithHostMemoryArguments<Op::Argument::k>::
+        template WithHostMemoryArguments<Op::Argument::num_rows>::
+            template WithHostMemoryArguments<Op::Argument::num_cols>::
+                template WithHostMemoryArguments<Op::Argument::padding_value>::
+                    template WithTypeConstraint<
+                        Op::Attribute::T,
+                        DataTypeToEnum<T>()>::Register();
+}
+
+template <
+    typename T,
+    typename... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
+static void RegisterMatrixDiagV3()
+{
+    RegisterMatrixDiagV3<T>();
+    RegisterMatrixDiagV3<Ts...>();
+}
+
+template <typename T>
 static void RegisterBatchMatrixDiag()
 {
     using Op = ops::BatchMatrixDiag;
@@ -466,6 +513,7 @@ void RegisterKernels_MatrixDiag()
 {
     RegisterMatrixDiag<float, Eigen::half, bool>();
     RegisterMatrixDiagV2<float, Eigen::half, bool>();
+    RegisterMatrixDiagV3<float, Eigen::half, bool>();
     RegisterBatchMatrixDiag<float, Eigen::half>();
 }
 
