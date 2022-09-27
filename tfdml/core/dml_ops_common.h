@@ -305,6 +305,18 @@ struct TfTensorTypeTraits<float>
 };
 
 template <>
+struct TfTensorTypeTraits<bool>
+{
+    static constexpr DML_TENSOR_DATA_TYPE dml_type = DML_TENSOR_DATA_TYPE_UINT8;
+    static DML_SCALAR_UNION ToDmlScalar(bool val)
+    {
+        DML_SCALAR_UNION scalar;
+        scalar.UInt8 = val;
+        return scalar;
+    }
+};
+
+template <>
 struct TfTensorTypeTraits<uint8_t>
 {
     static constexpr DML_TENSOR_DATA_TYPE dml_type = DML_TENSOR_DATA_TYPE_UINT8;
