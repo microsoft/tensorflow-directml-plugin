@@ -1439,13 +1439,22 @@ class DmlStridedSliceCpuKernel : public OpKernel
         std::shared_ptr<const NodeDef> node_def)
         : OpKernel(std::move(node_def))
     {
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("begin_mask", &begin_mask_));
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("end_mask", &end_mask_));
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("ellipsis_mask", &ellipsis_mask_));
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("new_axis_mask", &new_axis_mask_));
+        int32_t begin_mask;
+        OP_REQUIRES_OK(ctx, ctx->GetAttr("begin_mask", &begin_mask));
+
+        int32_t end_mask;
+        OP_REQUIRES_OK(ctx, ctx->GetAttr("end_mask", &end_mask));
+
+        int32_t ellipsis_mask;
+        OP_REQUIRES_OK(ctx, ctx->GetAttr("ellipsis_mask", &ellipsis_mask));
+
+        int32_t new_axis_mask;
+        OP_REQUIRES_OK(ctx, ctx->GetAttr("new_axis_mask", &new_axis_mask));
+
+        int32_t shrink_axis_mask;
         OP_REQUIRES_OK(
             ctx,
-            ctx->GetAttr("shrink_axis_mask", &shrink_axis_mask_));
+            ctx->GetAttr("shrink_axis_mask", &shrink_axis_mask));
 
         TFE_ContextOptions* context_options = TFE_NewContextOptions();
         auto context_options_cleanup = absl::MakeCleanup(
@@ -1454,72 +1463,54 @@ class DmlStridedSliceCpuKernel : public OpKernel
         Status status;
         eager_context_ = TFE_NewContext(context_options, status.raw());
         OP_REQUIRES_OK(ctx, status);
+
+        strided_slice_op_ =
+            TFE_NewOp(eager_context_, "StridedSlice", status.raw());
+        OP_REQUIRES_OK(ctx, status);
+
+        TFE_OpSetAttrInt(strided_slice_op_, "begin_mask", begin_mask);
+        TFE_OpSetAttrInt(strided_slice_op_, "end_mask", end_mask);
+        TFE_OpSetAttrInt(strided_slice_op_, "ellipsis_mask", ellipsis_mask);
+        TFE_OpSetAttrInt(strided_slice_op_, "new_axis_mask", new_axis_mask);
+        TFE_OpSetAttrInt(
+            strided_slice_op_,
+            "shrink_axis_mask",
+            shrink_axis_mask);
+
+        TFE_OpSetDevice(strided_slice_op_, "/device:CPU", status.raw());
+        OP_REQUIRES_OK(ctx, status);
     }
 
     ~DmlStridedSliceCpuKernel() override
     {
-        if (eager_context_)
-        {
-            TFE_DeleteContext(eager_context_);
-        }
+        TFE_DeleteOp(strided_slice_op_);
+        TFE_DeleteContext(eager_context_);
     }
 
     void Compute(OpKernelContext* ctx)
     {
+        absl::InlinedVector<TFE_TensorHandle*, 4> input_handles;
+        auto input_handles_cleanup = absl::MakeCleanup(
+            [&input_handles]
+            {
+                for (TFE_TensorHandle* handle : input_handles)
+                {
+                    TFE_DeleteTensorHandle(handle);
+                }
+            });
+
         Status status;
-        TFE_Op* strided_slice_op =
-            TFE_NewOp(eager_context_, "StridedSlice", status.raw());
-        OP_REQUIRES_OK(ctx, status);
-        auto strided_slice_op_cleanup = absl::MakeCleanup(
-            [strided_slice_op] { TFE_DeleteOp(strided_slice_op); });
+        for (int i = 0; i < ctx->num_inputs(); ++i)
+        {
+            const Tensor& input_tensor = ctx->input(i);
+            TFE_TensorHandle* input_handle =
+                TFE_NewTensorHandle(input_tensor.raw(), status.raw());
+            OP_REQUIRES_OK(ctx, status);
+            input_handles.push_back(input_handle);
 
-        TFE_OpSetAttrInt(strided_slice_op, "begin_mask", begin_mask_);
-        TFE_OpSetAttrInt(strided_slice_op, "end_mask", end_mask_);
-        TFE_OpSetAttrInt(strided_slice_op, "ellipsis_mask", ellipsis_mask_);
-        TFE_OpSetAttrInt(strided_slice_op, "new_axis_mask", new_axis_mask_);
-        TFE_OpSetAttrInt(
-            strided_slice_op,
-            "shrink_axis_mask",
-            shrink_axis_mask_);
-
-        TFE_OpSetDevice(strided_slice_op, "/device:CPU", status.raw());
-        OP_REQUIRES_OK(ctx, status);
-
-        const Tensor& input_tensor = ctx->input(0);
-        TFE_TensorHandle* input_handle =
-            TFE_NewTensorHandle(input_tensor.raw(), status.raw());
-        OP_REQUIRES_OK(ctx, status);
-        auto input_handle_cleanup = absl::MakeCleanup(
-            [input_handle] { TFE_DeleteTensorHandle(input_handle); });
-        TFE_OpAddInput(strided_slice_op, input_handle, status.raw());
-        OP_REQUIRES_OK(ctx, status);
-
-        const Tensor& begin_tensor = ctx->input(1);
-        TFE_TensorHandle* begin_handle =
-            TFE_NewTensorHandle(begin_tensor.raw(), status.raw());
-        OP_REQUIRES_OK(ctx, status);
-        auto begin_handle_cleanup = absl::MakeCleanup(
-            [begin_handle] { TFE_DeleteTensorHandle(begin_handle); });
-        TFE_OpAddInput(strided_slice_op, begin_handle, status.raw());
-        OP_REQUIRES_OK(ctx, status);
-
-        const Tensor& end_tensor = ctx->input(2);
-        TFE_TensorHandle* end_handle =
-            TFE_NewTensorHandle(end_tensor.raw(), status.raw());
-        OP_REQUIRES_OK(ctx, status);
-        auto end_handle_cleanup = absl::MakeCleanup(
-            [end_handle] { TFE_DeleteTensorHandle(end_handle); });
-        TFE_OpAddInput(strided_slice_op, end_handle, status.raw());
-        OP_REQUIRES_OK(ctx, status);
-
-        const Tensor& strides_tensor = ctx->input(3);
-        TFE_TensorHandle* strides_handle =
-            TFE_NewTensorHandle(strides_tensor.raw(), status.raw());
-        OP_REQUIRES_OK(ctx, status);
-        auto strides_handle_cleanup = absl::MakeCleanup(
-            [strides_handle] { TFE_DeleteTensorHandle(strides_handle); });
-        TFE_OpAddInput(strided_slice_op, strides_handle, status.raw());
-        OP_REQUIRES_OK(ctx, status);
+            TFE_OpAddInput(strided_slice_op_, input_handle, status.raw());
+            OP_REQUIRES_OK(ctx, status);
+        }
 
         TFE_TensorHandle* output_handle = nullptr;
         TFE_TensorHandle** output_handle_ptr = &output_handle;
@@ -1530,7 +1521,7 @@ class DmlStridedSliceCpuKernel : public OpKernel
 
         int num_retvals = 1;
         TFE_Execute(
-            strided_slice_op,
+            strided_slice_op_,
             &output_handle,
             &num_retvals,
             status.raw());
@@ -1545,11 +1536,7 @@ class DmlStridedSliceCpuKernel : public OpKernel
 
   private:
     TFE_Context* eager_context_ = nullptr;
-    int32_t begin_mask_;
-    int32_t end_mask_;
-    int32_t ellipsis_mask_;
-    int32_t new_axis_mask_;
-    int32_t shrink_axis_mask_;
+    TFE_Op* strided_slice_op_ = nullptr;
 };
 
 void RegisterStridedSliceCpu()
