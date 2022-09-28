@@ -26,4 +26,15 @@ dml::Expression MatrixDiag(
     int64_t out_width,
     bool align_sup_left,
     bool align_sub_left);
+
+dml::Expression MatrixDiagPart(
+    dml::Graph& scope,
+    dml::Expression m,
+    int32_t k0,
+    int32_t k1,
+    float padding_value,
+    uint32_t out_height,
+    uint32_t out_width,
+    bool align_sup_left,
+    bool align_sub_left);
 } // namespace dml
