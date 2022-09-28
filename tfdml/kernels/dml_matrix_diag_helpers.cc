@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#define NOMINMAX
 #include "tfdml/kernels/dml_matrix_diag_helpers.h"
 #include "tfdml/kernels/pch.h"
 #include <numeric>
@@ -28,7 +29,9 @@ dml::Expression MatrixDiag(
     int32_t k_max,
     float padding_value,
     int64_t out_height,
-    int64_t out_width)
+    int64_t out_width,
+    bool align_sup_left,
+    bool align_sub_left)
 {
     assert(k_min <= k_max);
 
@@ -89,26 +92,16 @@ dml::Expression MatrixDiag(
         1u,
         std::multiplies<uint32_t>());
 
-    auto diag_strides = diag.GetOutputDesc().strides;
-
-    // Diag's stride should either be a broadcasted scalar or empty
-    CHECK(
-        !diag_strides.has_value() ||
-        std::all_of(
-            diag_strides->begin(),
-            diag_strides->end(),
-            [](uint32_t stride) { return stride == 0; }));
-
     dml::TensorDesc::Dimensions diag_rev_shape(
         {1u, 1u, diag_elem_count / diag_width, diag_width});
-    auto reshaped_diag = dml::Reinterpret(diag, diag_rev_shape, diag_strides);
+    auto reshaped_diag = dml::Reinterpret(diag, diag_rev_shape, {});
 
     uint32_t k_sub_len = std::max(0, k_sub_end - k_sub_stt);
     uint32_t k_sup_len = std::max(0, k_sup_end - k_sup_stt);
 
-    dml::Expression sub_rev_len_1;
-
-    if (k_sub_len != 0)
+    dml::Expression k_lens;
+    if ((k_sub_len != 0 && align_sub_left) ||
+        (k_sup_len != 0 && !align_sup_left))
     {
         auto left_btm =
             dml::Sequence<int32_t>(scope, 1, 1, {1, 1, 1, rwcl_min - 1});
@@ -124,66 +117,80 @@ dml::Expression MatrixDiag(
             rwcl_min,
             {1, 1, 1, rwcl_gap + 1});
 
-        auto k_lens = dml::Join({left_btm, klen_mid, right_top}, 3);
+        k_lens = dml::Join({left_btm, klen_mid, right_top}, 3);
+    }
 
-        // Only slice if we don't want the entire tensor
-        if (k_sub_len != k_lens.GetOutputDesc().sizes.back())
+    dml::Expression sup_rev_len_1;
+    dml::Expression sup_rev_len_2;
+    if (k_sup_len != 0)
+    {
+        if (align_sup_left)
+        {
+            sup_rev_len_1 =
+                dml::ScalarTensor<uint32_t>(scope, 1, {1, 1, 1, k_sup_len});
+
+            sup_rev_len_2 = sup_rev_len_1;
+        }
+        else
+        {
+            sup_rev_len_1 = dml::ScalarTensor<uint32_t>(
+                scope,
+                diag_width,
+                {1, 1, 1, k_sup_len});
+
+            sup_rev_len_2 = dml::Slice(
+                k_lens,
+                {0, 0, 0, static_cast<uint32_t>(k_sup_stt)},
+                {1, 1, 1, k_sup_len},
+                {1, 1, 1, 1});
+            sup_rev_len_2 =
+                dml::Reinterpret(sup_rev_len_2, DML_TENSOR_DATA_TYPE_UINT32);
+        }
+    }
+
+    dml::Expression sub_rev_len_1;
+    dml::Expression sub_rev_len_2;
+    if (k_sub_len != 0)
+    {
+        if (align_sub_left)
         {
             sub_rev_len_1 = dml::Slice(
                 k_lens,
                 {0, 0, 0, static_cast<uint32_t>(k_sub_stt)},
                 {1, 1, 1, k_sub_len},
                 {1, 1, 1, 1});
-        }
+            sub_rev_len_1 =
+                dml::Reinterpret(sub_rev_len_1, DML_TENSOR_DATA_TYPE_UINT32);
 
-        sub_rev_len_1 =
-            dml::Reinterpret(sub_rev_len_1, DML_TENSOR_DATA_TYPE_UINT32);
+            sub_rev_len_2 = dml::ScalarTensor<uint32_t>(
+                scope,
+                diag_width,
+                {1, 1, 1, k_sub_len});
+        }
+        else
+        {
+            sub_rev_len_1 =
+                dml::ScalarTensor<uint32_t>(scope, 1, {1, 1, 1, k_sub_len});
+            sub_rev_len_2 = sub_rev_len_1;
+        }
     }
 
-    auto sup_rev_len_1 =
-        k_sup_len == 0
-            ? dml::Expression()
-            : dml::ScalarTensor<uint32_t>(scope, 1, {1, 1, 1, k_sup_len});
-
-    // Build cnt_rev_len_1
+    // Build cnt_rev_len_1 and cnt_rev_len_2
     dml::Expression cnt_rev_len_1;
-
+    dml::Expression cnt_rev_len_2;
     if (k_sub_len == 0)
     {
         cnt_rev_len_1 = sup_rev_len_1;
-    }
-    else if (k_sup_len == 0)
-    {
-        cnt_rev_len_1 = sub_rev_len_1;
-    }
-    else
-    {
-        cnt_rev_len_1 = dml::Join({sub_rev_len_1, sup_rev_len_1}, 3);
-    }
-
-    auto sub_rev_len_2 = k_sub_len == 0 ? dml::Expression()
-                                        : dml::ScalarTensor<uint32_t>(
-                                              scope,
-                                              diag_width,
-                                              {1, 1, 1, k_sub_len});
-
-    // MatrixDiag and MatrixDiagV2's alignment is always LEFT_LEFT, so
-    // sup_rev_len_2 is the same as sup_rev_len_1
-    auto sup_rev_len_2 = sup_rev_len_1;
-
-    // Build cnt_rev_len_2
-    dml::Expression cnt_rev_len_2;
-
-    if (k_sub_len == 0)
-    {
         cnt_rev_len_2 = sup_rev_len_2;
     }
     else if (k_sup_len == 0)
     {
+        cnt_rev_len_1 = sub_rev_len_1;
         cnt_rev_len_2 = sub_rev_len_2;
     }
     else
     {
+        cnt_rev_len_1 = dml::Join({sub_rev_len_1, sup_rev_len_1}, 3);
         cnt_rev_len_2 = dml::Join({sub_rev_len_2, sup_rev_len_2}, 3);
     }
 
@@ -298,14 +305,14 @@ dml::Expression MatrixDiag(
     dml::TensorDesc::Dimensions exp_shape_reshaped(
         {1, 1, head_shape_elem_count * diag_width, 1});
 
-    auto rg =
-        dml::Sequence<float>(scope, left_pad * 2, -1, {1, 1, 1, diag_width});
-
+    int32_t rg_from = (static_cast<int32_t>(left_pad) * 2) -
+                      static_cast<int32_t>(diag_width) + 1;
+    auto rg = dml::Sequence<int32_t>(scope, rg_from, 1, {1, 1, 1, diag_width});
     rg = dml::ActivationRelu(rg);
-    rg = dml::Cast(rg, DML_TENSOR_DATA_TYPE_UINT32);
 
     auto expanded_range = dml::Reinterpret(
         rg,
+        DML_TENSOR_DATA_TYPE_UINT32,
         exp_shape,
         dml::TensorDesc::Dimensions({0, 0, 0, 1}));
 
@@ -446,6 +453,290 @@ dml::Expression MatrixDiag(
         {0, 0, pad_btm, pad_rht});
 
     return result;
+}
+
+static dml::Expression RightAlign(
+    int32_t maxsize,
+    int32_t stride,
+    dml::Expression sizes,
+    dml::Expression indices,
+    dml::Expression starts,
+    dml::Expression maxval)
+{
+    auto op1 = maxsize - sizes;
+    auto op2 = op1 * stride;
+    auto op3 = indices - op2;
+    auto op4 = op3 < starts;
+    auto op5 = dml::If(op4, maxval, op3);
+    return op5;
+}
+
+dml::Expression MatrixDiagPart(
+    dml::Graph& scope,
+    dml::Expression m,
+    int32_t k0,
+    int32_t k1,
+    float padding_value,
+    uint32_t out_height,
+    uint32_t out_width,
+    bool align_sup_left,
+    bool align_sub_left)
+{
+    dml::TensorDesc::Dimensions input_shape = m.GetOutputDesc().sizes;
+    uint32_t xlen = input_shape[input_shape.size() - 1];
+    uint32_t ylen = input_shape[input_shape.size() - 2];
+    uint32_t elem_count = std::accumulate(
+        input_shape.begin(),
+        input_shape.end(),
+        1u,
+        std::multiplies<uint32_t>());
+    uint32_t leading_dims_size = elem_count / xlen / ylen;
+
+    int32_t xlenp = xlen + 1;
+    int32_t stride = xlenp + 1;
+    int32_t xmax_0 = xlen * xlenp;
+    int32_t xmax_1 = xmax_0 + xlenp;
+    int32_t xmax = xmax_1 - 1;
+
+    int32_t ymax_0 = xlenp * ylen;
+    int32_t ymax = ymax_0 - 1;
+
+    auto m_padded = dml::Padding(
+        m,
+        DML_PADDING_MODE_CONSTANT,
+        padding_value,
+        {0, 0, 0, 0},
+        {0, 0, 1, 1});
+
+    auto m2 = dml::Reinterpret(
+        m_padded,
+        {1, 1, leading_dims_size, (ylen + 1) * (xlen + 1)},
+        {});
+
+    uint32_t minxy = std::min(xlen, ylen);
+
+    dml::Expression diags_indices;
+
+    int32_t xstart_0 = k0;
+    int32_t xstart_1 = std::max(0, xstart_0);
+    int32_t xstart_2 = xstart_1;
+    int32_t xstart_3 = xstart_2 - 1;
+    int32_t xdiag_size = k1 - xstart_3;
+    // TODO (pavignol): Remove if we don't need anymore
+    std::vector<int32_t> xstart_4;
+    std::generate_n(
+        std::back_inserter(xstart_4),
+        xdiag_size,
+        [val = k1]() mutable { return val--; });
+    const std::vector<int32_t>& xstart = xstart_4;
+
+    int32_t ystart_0 = k1;
+    int32_t ystart_1 = std::min(-1, ystart_0);
+    int32_t ystart_2 = ystart_1;
+    int32_t ystart_3 = k0 - 1;
+    int32_t ydiag_size = ystart_2 - ystart_3;
+    // TODO (pavignol): Remove if we don't need anymore
+    std::vector<int32_t> ystart_4;
+    std::generate_n(
+        std::back_inserter(ystart_4),
+        ydiag_size,
+        [val = ystart_2]() mutable { return val--; });
+    const std::vector<int32_t>& ystart = ystart_4;
+
+    std::vector<int32_t> xsize(xstart.size());
+    for (int i = 0; i < xsize.size(); ++i)
+    {
+        int32_t xsize_0 = xlen - xstart[i];
+        int32_t xsize_1 = xsize_0;
+        int32_t xsize_2 = std::min<int32_t>(xsize_1, minxy);
+        xsize[i] = xsize_2;
+    }
+
+    std::vector<int32_t> ysize(ystart.size());
+    for (int i = 0; i < ysize.size(); ++i)
+    {
+        int32_t ysize_0 = ylen + ystart[i];
+        int32_t ysize_1 = ysize_0;
+        int32_t ysize_2 = std::min<int32_t>(ysize_1, minxy);
+        ysize[i] = ysize_2;
+    }
+
+    int32_t maxsize = INT_MIN;
+    if (xdiag_size > 0)
+    {
+        maxsize = *std::max_element(xsize.begin(), xsize.end());
+    }
+
+    if (ydiag_size > 0)
+    {
+        maxsize =
+            std::max(maxsize, *std::max_element(ysize.begin(), ysize.end()));
+    }
+
+    int32_t maxsize_0 = maxsize;
+    int32_t maxsize_scalar = maxsize_0;
+
+    auto diagdistances = dml::Sequence<int32_t>(
+        scope,
+        0,
+        stride,
+        {1, 1, 1, static_cast<uint32_t>(maxsize_scalar)});
+
+    dml::Expression minxy_gpu;
+    if ((xdiag_size > 0 && !align_sup_left) ||
+        (ydiag_size > 0 && !align_sub_left))
+    {
+        minxy_gpu = dml::ScalarTensor<int32_t>(scope, minxy, {1, 1, 1, 1});
+    }
+
+    dml::Expression ymax_gpu;
+    if ((xdiag_size > 0 && !align_sup_left) || ydiag_size > 0)
+    {
+        ymax_gpu = dml::ScalarTensor<int32_t>(scope, ymax, {1, 1, 1, 1});
+    }
+
+    // Starting indices for super diagonals
+    dml::Expression xdiags;
+    if (xdiag_size > 0)
+    {
+        dml::TensorDesc::Dimensions broadcast_sizes({
+            1,
+            1,
+            static_cast<uint32_t>(xdiag_size),
+            static_cast<uint32_t>(maxsize_scalar),
+        });
+
+        auto xstart_4_gpu = dml::Sequence<int32_t>(
+            scope,
+            k1,
+            -1,
+            {1, 1, static_cast<uint32_t>(xdiag_size), 1});
+        auto xstart_gpu = dml::Reinterpret(
+            xstart_4_gpu,
+            broadcast_sizes,
+            dml::TensorDesc::Dimensions({0, 0, 1, 0}));
+        diagdistances = dml::Reinterpret(
+            diagdistances,
+            broadcast_sizes,
+            dml::TensorDesc::Dimensions({0, 0, 0, 1}));
+
+        auto xdiags_0 = xstart_gpu + diagdistances;
+
+        if (align_sup_left)
+        {
+            auto xmax_0_gpu = xstart_gpu * xlenp;
+            auto xmax_gpu = xmax - xmax_0_gpu;
+            auto xdiags_1 = xdiags_0;
+            auto xdiags_2 = dml::Min(xdiags_1, xmax_gpu);
+            xdiags = xdiags_2;
+        }
+        else
+        {
+            minxy_gpu = dml::Reinterpret(
+                minxy_gpu,
+                broadcast_sizes,
+                dml::TensorStrides({0, 0, 0, 0}));
+            ymax_gpu = dml::Reinterpret(
+                ymax_gpu,
+                broadcast_sizes,
+                dml::TensorStrides({0, 0, 0, 0}));
+
+            auto xsize_0 = xlen - xstart_gpu;
+            auto xsize_1 = xsize_0;
+            auto xsize_2 = dml::Min(xsize_1, minxy_gpu);
+            auto xsize = xsize_2;
+            xdiags = RightAlign(
+                maxsize,
+                stride,
+                xsize,
+                xdiags_0,
+                xstart_gpu,
+                ymax_gpu);
+        }
+        diags_indices = xdiags;
+    }
+
+    // Starting indices for sub diagonals
+    dml::Expression ydiags;
+    if (ydiag_size > 0)
+    {
+        dml::TensorDesc::Dimensions broadcast_sizes({
+            1,
+            1,
+            static_cast<uint32_t>(ydiag_size),
+            static_cast<uint32_t>(maxsize_scalar),
+        });
+
+        auto ystart_4_gpu = dml::Sequence<int32_t>(
+            scope,
+            ystart_2,
+            -1,
+            {1, 1, static_cast<uint32_t>(ydiag_size), 1});
+        auto ystart_gpu = dml::Reinterpret(
+            ystart_4_gpu,
+            broadcast_sizes,
+            dml::TensorDesc::Dimensions({0, 0, 1, 0}));
+        diagdistances = dml::Reinterpret(
+            diagdistances,
+            broadcast_sizes,
+            dml::TensorDesc::Dimensions({0, 0, 0, 1}));
+
+        auto ydiags_0 = dml::Abs(ystart_gpu);
+        auto ydiags_1 = ydiags_0 * xlenp;
+        auto ydiags_2 = ydiags_1 + diagdistances;
+
+        ymax_gpu = dml::Reinterpret(
+            ymax_gpu,
+            broadcast_sizes,
+            dml::TensorStrides({0, 0, 0, 0}));
+
+        if (align_sub_left)
+        {
+            auto ydiags_3 = ydiags_2;
+            auto ydiags_4 = dml::Min(ydiags_3, ymax_gpu);
+            ydiags = ydiags_4;
+        }
+        else
+        {
+            minxy_gpu = dml::Reinterpret(
+                minxy_gpu,
+                broadcast_sizes,
+                dml::TensorStrides({0, 0, 0, 0}));
+
+            auto ysize_0 = ylen + ystart_gpu;
+            auto ysize_1 = ysize_0;
+            auto ysize_2 = dml::Min(ysize_1, minxy_gpu);
+            auto ysize = ysize_2;
+            ydiags = RightAlign(
+                maxsize,
+                stride,
+                ysize,
+                ydiags_2,
+                ydiags_1,
+                ymax_gpu);
+        }
+        diags_indices = ydiags;
+    }
+
+    if (xdiag_size > 0 && ydiag_size > 0)
+    {
+        diags_indices = dml::Join({xdiags, ydiags}, 2);
+    }
+
+    uint32_t diags_indices_elem_count = std::accumulate(
+        diags_indices.GetOutputDesc().sizes.begin(),
+        diags_indices.GetOutputDesc().sizes.end(),
+        1u,
+        std::multiplies<uint32_t>());
+
+    // Reshape into a single row and broadcast to all batches
+    diags_indices = dml::Reinterpret(
+        diags_indices,
+        {1, 1, leading_dims_size, diags_indices_elem_count},
+        dml::TensorDesc::Dimensions({0, 0, 0, 1}));
+
+    auto diags = dml::GatherElements(m2, diags_indices, 3);
+    return diags;
 }
 
 } // namespace dml
