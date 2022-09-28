@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include "tfdml/kernels/dml_matrix_diag_helpers.h"
 #include "tfdml/kernels/pch.h"
 
 namespace tfdml
@@ -23,7 +24,22 @@ template <typename T>
 class MatrixDiagPartInitHelper : public InitializationHelper
 {
   public:
-    using Attributes = EmptyAttributes;
+    struct Attributes
+    {
+        explicit Attributes(OpKernelConstruction* ctx)
+        {
+            if (ctx->HasAttr("align"))
+            {
+                std::string align;
+                OP_REQUIRES_OK(ctx, ctx->GetAttr("align", &align));
+                align_sup_left = align == "LEFT_LEFT" || align == "LEFT_RIGHT";
+                align_sub_left = align == "LEFT_LEFT" || align == "RIGHT_LEFT";
+            }
+        }
+
+        bool align_sup_left = true;
+        bool align_sub_left = true;
+    };
 
     MatrixDiagPartInitHelper(
         OpKernelContext* ctx,
@@ -129,18 +145,24 @@ class MatrixDiagPartInitHelper : public InitializationHelper
         padding_value_ = padding_value;
         lower_diag_index_ = lower_diag_index;
         upper_diag_index_ = upper_diag_index;
+        align_sup_left_ = attr->align_sup_left;
+        align_sub_left_ = attr->align_sub_left;
     }
 
     TensorShape GetOutputShape() const { return output_shape_; }
     int32_t GetLowerDiagIndex() const { return lower_diag_index_; }
     int32_t GetUpperDiagIndex() const { return upper_diag_index_; }
     T GetPaddingValue() const { return padding_value_; }
+    bool GetAlignSupLeft() const { return align_sup_left_; }
+    bool GetAlignSubLeft() const { return align_sub_left_; }
 
   private:
     TensorShape output_shape_;
     T padding_value_;
     int32_t lower_diag_index_;
     int32_t upper_diag_index_;
+    bool align_sup_left_ = true;
+    bool align_sub_left_ = true;
 };
 
 template <typename T>
@@ -277,11 +299,6 @@ class DmlMatrixDiagPartKernel : public DmlKernel
         dml::TensorDesc::Dimensions flattened_out_shape(
             {1, out_leading_dim_size, out_rows, out_cols});
 
-        int32_t xlenp = xlen + 1;
-        int32_t stride = xlenp + 1;
-        int32_t xmax = xlen * xlenp + xlenp - 1;
-        int32_t ymax = xlenp * ylen - 1;
-
         DmlTensorInfo input;
         input.kernel_index = 0;
         input.desc =
@@ -301,120 +318,16 @@ class DmlMatrixDiagPartKernel : public DmlKernel
         auto inputs = GetDmlTensorDescs(tensors.inputs);
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto m = dml::InputTensor(scope, 0, inputs[0]);
-
-        float padding_value =
-            static_cast<float>(init_helper->GetPaddingValue());
-        auto m_padded = dml::Padding(
+        auto diags = dml::MatrixDiagPart(
+            scope,
             m,
-            DML_PADDING_MODE_CONSTANT,
-            padding_value,
-            {0, 0, 0, 0},
-            {0, 0, 1, 1});
-
-        auto m2 = dml::Reinterpret(
-            m_padded,
-            {1, 1, leading_dims_size, (ylen + 1) * (xlen + 1)},
-            {});
-
-        uint32_t minxy = std::min(xlen, ylen);
-
-        auto diag_distances =
-            dml::Sequence<int32_t>(scope, 0, stride, {1, 1, 1, minxy});
-
-        dml::Expression diags_indices;
-
-        // Starting indices for super diagonals
-        int32_t xstart_end = std::max(0, k0) - 1;
-        int32_t xdiag_size = k1 - xstart_end;
-        dml::Expression xdiags;
-
-        if (xdiag_size > 0)
-        {
-            dml::TensorDesc::Dimensions broadcast_sizes(
-                {1, 1, static_cast<uint32_t>(xdiag_size), minxy});
-            dml::TensorDesc::Dimensions xstart_sizes(
-                {1, 1, static_cast<uint32_t>(xdiag_size), 1});
-
-            auto xstart = dml::Sequence<int32_t>(scope, k1, -1, xstart_sizes);
-            xstart = dml::Reinterpret(
-                xstart,
-                broadcast_sizes,
-                dml::TensorDesc::Dimensions({0, 0, 1, 0}));
-
-            auto xmax_sequence = dml::Sequence<int32_t>(
-                scope,
-                xmax - k1 * xlenp,
-                xlenp,
-                xstart_sizes);
-            xmax_sequence = dml::Reinterpret(
-                xmax_sequence,
-                broadcast_sizes,
-                dml::TensorDesc::Dimensions({0, 0, 1, 0}));
-
-            auto broadcasted_diag_distances = dml::Reinterpret(
-                diag_distances,
-                broadcast_sizes,
-                dml::TensorDesc::Dimensions({0, 0, 0, 1}));
-
-            xdiags =
-                dml::Min(xstart + broadcasted_diag_distances, xmax_sequence);
-            diags_indices = xdiags;
-        }
-
-        // Starting indices for sub diagonals
-        int32_t ystart_begin = -std::min(-1, k1);
-        int32_t ydiag_size = 1 - k0 - ystart_begin;
-        dml::Expression ydiags;
-
-        if (ydiag_size > 0)
-        {
-            dml::TensorDesc::Dimensions broadcast_sizes(
-                {1, 1, static_cast<uint32_t>(ydiag_size), minxy});
-            dml::TensorDesc::Dimensions ystart_sizes(
-                {1, 1, static_cast<uint32_t>(ydiag_size), 1});
-
-            auto ystart = dml::Sequence<int32_t>(
-                scope,
-                ystart_begin * xlenp,
-                xlenp,
-                ystart_sizes);
-            ystart = dml::Reinterpret(
-                ystart,
-                broadcast_sizes,
-                dml::TensorDesc::Dimensions({0, 0, 1, 0}));
-
-            auto ymax_scalar =
-                dml::ScalarTensor<int32_t>(scope, ymax, ystart_sizes);
-            ymax_scalar = dml::Reinterpret(
-                ymax_scalar,
-                broadcast_sizes,
-                dml::TensorDesc::Dimensions({0, 0, 1, 0}));
-
-            auto broadcasted_diag_distances = dml::Reinterpret(
-                diag_distances,
-                broadcast_sizes,
-                dml::TensorDesc::Dimensions({0, 0, 0, 1}));
-
-            ydiags = dml::Min(ystart + broadcasted_diag_distances, ymax_scalar);
-            diags_indices = ydiags;
-        }
-
-        if (xdiag_size > 0 && ydiag_size > 0)
-        {
-            diags_indices = dml::Join({xdiags, ydiags}, 2);
-        }
-
-        // Reshape into a single row
-        diags_indices =
-            dml::Reinterpret(diags_indices, {1, 1, 1, out_rows * out_cols}, {});
-
-        // Broadcast to all batches
-        diags_indices = dml::Reinterpret(
-            diags_indices,
-            {1, 1, leading_dims_size, out_rows * out_cols},
-            dml::TensorDesc::Dimensions({0, 0, 0, 1}));
-
-        auto diags = dml::GatherElements(m2, diags_indices, 3);
+            k0,
+            k1,
+            static_cast<float>(init_helper->GetPaddingValue()),
+            out_rows,
+            out_cols,
+            init_helper->GetAlignSupLeft(),
+            init_helper->GetAlignSubLeft());
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {diags});
@@ -468,6 +381,26 @@ static void RegisterMatrixDiagPartV2()
 }
 
 template <typename T>
+static void RegisterMatrixDiagPartV3()
+{
+    using Op = ops::MatrixDiagPartV3;
+    K<Op, T>::template WithHostMemoryArguments<Op::Argument::k>::
+        template WithHostMemoryArguments<Op::Argument::padding_value>::
+            template WithTypeConstraint<Op::Attribute::T, DataTypeToEnum<T>()>::
+                Register();
+}
+
+template <
+    typename T,
+    typename... Ts,
+    std::enable_if_t<sizeof...(Ts) >= 1>* = nullptr>
+static void RegisterMatrixDiagPartV3()
+{
+    RegisterMatrixDiagPartV3<T>();
+    RegisterMatrixDiagPartV3<Ts...>();
+}
+
+template <typename T>
 static void RegisterBatchMatrixDiagPart()
 {
     using Op = ops::BatchMatrixDiagPart;
@@ -490,6 +423,7 @@ void RegisterKernels_MatrixDiagPart()
 {
     RegisterMatrixDiagPart<float, Eigen::half, bool>();
     RegisterMatrixDiagPartV2<float, Eigen::half, bool>();
+    RegisterMatrixDiagPartV3<float, Eigen::half, bool>();
     RegisterBatchMatrixDiagPart<float, Eigen::half>();
 }
 

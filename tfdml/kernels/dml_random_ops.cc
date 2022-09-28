@@ -949,6 +949,7 @@ class RandomUniformInt64KernelSelector : public OpKernel
     ~RandomUniformInt64KernelSelector()
     {
         TFE_DeleteOp(random_uniform_int_op_);
+        TFE_DeleteContext(eager_context_);
     }
 
     void Compute(OpKernelContext* ctx)
@@ -971,21 +972,10 @@ class RandomUniformInt64KernelSelector : public OpKernel
         if (invariant_operand * (range_value - 1) + (range_value - 1) >
             UINT32_MAX)
         {
-            TFE_ContextOptions* context_options = TFE_NewContextOptions();
-            auto context_options_cleanup = absl::MakeCleanup(
-                [context_options]
-                { TFE_DeleteContextOptions(context_options); });
-
             Status status;
-            TFE_Context* eager_context =
-                TFE_NewContext(context_options, status.raw());
-            OP_REQUIRES_OK(ctx, status);
-
-            auto eager_context_cleanup = absl::MakeCleanup(
-                [eager_context] { TFE_DeleteContext(eager_context); });
 
             // Lazily create the eager op
-            if (!random_uniform_int_op_)
+            if (!eager_context_)
             {
                 std::string op_name;
                 op_name.reserve(28);
@@ -1002,8 +992,16 @@ class RandomUniformInt64KernelSelector : public OpKernel
                     op_name += "V2";
                 }
 
+                TFE_ContextOptions* context_options = TFE_NewContextOptions();
+                auto context_options_cleanup = absl::MakeCleanup(
+                    [context_options]
+                    { TFE_DeleteContextOptions(context_options); });
+
+                eager_context_ = TFE_NewContext(context_options, status.raw());
+                OP_REQUIRES_OK(ctx, status);
+
                 random_uniform_int_op_ =
-                    TFE_NewOp(eager_context, op_name.c_str(), status.raw());
+                    TFE_NewOp(eager_context_, op_name.c_str(), status.raw());
                 OP_REQUIRES_OK(ctx, status);
 
                 TFE_OpSetDevice(
@@ -1084,6 +1082,7 @@ class RandomUniformInt64KernelSelector : public OpKernel
     DmlRandomKernelWrapperImpl dml_kernel_wrapper_;
     int64_t seed_;
     int64_t seed2_;
+    TFE_Context* eager_context_ = nullptr;
     TFE_Op* random_uniform_int_op_ = nullptr;
 };
 
@@ -1100,9 +1099,14 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
         std::shared_ptr<const NodeDef> node_def)
         : OpKernel(std::move(node_def))
     {
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("seed", &seed_));
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("seed2", &seed2_));
-        OP_REQUIRES_OK(ctx, ctx->GetAttr("dtype", &dtype_));
+        int seed;
+        OP_REQUIRES_OK(ctx, ctx->GetAttr("seed", &seed));
+
+        int seed2;
+        OP_REQUIRES_OK(ctx, ctx->GetAttr("seed2", &seed2));
+
+        TF_DataType dtype;
+        OP_REQUIRES_OK(ctx, ctx->GetAttr("dtype", &dtype));
 
         TFE_ContextOptions* context_options = TFE_NewContextOptions();
         auto context_options_cleanup = absl::MakeCleanup(
@@ -1111,18 +1115,7 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
         Status status;
         eager_context_ = TFE_NewContext(context_options, status.raw());
         OP_REQUIRES_OK(ctx, status);
-    }
 
-    ~DmlEmulatedPhiloxRandomKernel() override
-    {
-        if (eager_context_)
-        {
-            TFE_DeleteContext(eager_context_);
-        }
-    }
-
-    void Compute(OpKernelContext* ctx)
-    {
         const char* emulated_kernel_name;
         switch (emulated_kernel_type)
         {
@@ -1134,27 +1127,34 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
             break;
         }
 
-        Status status;
-        TFE_Op* random_op =
+        random_op_ =
             TFE_NewOp(eager_context_, emulated_kernel_name, status.raw());
         OP_REQUIRES_OK(ctx, status);
-        auto random_op_cleanup =
-            absl::MakeCleanup([random_op] { TFE_DeleteOp(random_op); });
 
-        TFE_OpSetAttrInt(random_op, "seed", seed_);
-        TFE_OpSetAttrInt(random_op, "seed2", seed2_);
-        TFE_OpSetAttrType(random_op, "dtype", dtype_);
+        TFE_OpSetAttrInt(random_op_, "seed", seed);
+        TFE_OpSetAttrInt(random_op_, "seed2", seed2);
+        TFE_OpSetAttrType(random_op_, "dtype", dtype);
 
-        TFE_OpSetDevice(random_op, "/device:CPU", status.raw());
+        TFE_OpSetDevice(random_op_, "/device:CPU", status.raw());
         OP_REQUIRES_OK(ctx, status);
+    }
 
+    ~DmlEmulatedPhiloxRandomKernel() override
+    {
+        TFE_DeleteOp(random_op_);
+        TFE_DeleteContext(eager_context_);
+    }
+
+    void Compute(OpKernelContext* ctx)
+    {
+        Status status;
         const Tensor& shape_tensor = ctx->input(0);
         TFE_TensorHandle* shape_handle =
             TFE_NewTensorHandle(shape_tensor.raw(), status.raw());
         OP_REQUIRES_OK(ctx, status);
         auto shape_handle_cleanup = absl::MakeCleanup(
             [shape_handle] { TFE_DeleteTensorHandle(shape_handle); });
-        TFE_OpAddInput(random_op, shape_handle, status.raw());
+        TFE_OpAddInput(random_op_, shape_handle, status.raw());
         OP_REQUIRES_OK(ctx, status);
 
         TFE_TensorHandle* output_handle = nullptr;
@@ -1165,7 +1165,7 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
                               { TFE_DeleteTensorHandle(*output_handle_ptr); });
 
         int num_retvals = 1;
-        TFE_Execute(random_op, &output_handle, &num_retvals, status.raw());
+        TFE_Execute(random_op_, &output_handle, &num_retvals, status.raw());
         OP_REQUIRES_OK(ctx, status);
 
         Tensor output_cpu =
@@ -1185,9 +1185,7 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
 
   private:
     TFE_Context* eager_context_ = nullptr;
-    int seed_;
-    int seed2_;
-    TF_DataType dtype_;
+    TFE_Op* random_op_ = nullptr;
 };
 
 template <typename AlgEnumType>
