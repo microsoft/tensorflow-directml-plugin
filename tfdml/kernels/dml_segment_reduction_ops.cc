@@ -164,28 +164,6 @@ class DmlUnsortedSegmentReductionKernel : public OpKernel
     TFE_Op* unsorted_segment_op_ = nullptr;
 };
 
-#define REGISTER_GPU_KERNEL_UNSORTEDSEGMENT(                                   \
-    name,                                                                      \
-    type,                                                                      \
-    index_type,                                                                \
-    initial_value_functor,                                                     \
-    reduction_kernel_functor)                                                  \
-    REGISTER_KERNEL_BUILDER(                                                   \
-        Name(name)                                                             \
-            .Device(DEVICE_GPU)                                                \
-            .HostMemory("num_segments")                                        \
-            .TypeConstraint<type>("T")                                         \
-            .TypeConstraint<index_type>("Tindices"),                           \
-        UnsortedSegmentReductionOp<                                            \
-            type,                                                              \
-            index_type,                                                        \
-            functor::UnsortedSegmentFunctor<                                   \
-                GPUDevice,                                                     \
-                type,                                                          \
-                index_type,                                                    \
-                initial_value_functor,                                         \
-                reduction_kernel_functor>>)
-
 void RegisterUnsortedSegmentSum()
 {
     using int32_kernel = KernelDefinition<
