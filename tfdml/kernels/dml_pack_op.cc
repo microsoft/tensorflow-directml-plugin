@@ -214,6 +214,9 @@ class DmlPackCpuKernel : public OpKernel
         pack_op_ = TFE_NewOp(eager_context_, "Pack", status.raw());
         OP_REQUIRES_OK(ctx, status);
 
+        TFE_OpSetDevice(pack_op_, "/device:CPU", status.raw());
+        OP_REQUIRES_OK(ctx, status);
+
         int axis;
         OP_REQUIRES_OK(ctx, ctx->GetAttr("axis", &axis));
         TFE_OpSetAttrInt(pack_op_, "axis", axis);
@@ -227,10 +230,6 @@ class DmlPackCpuKernel : public OpKernel
 
     void Compute(OpKernelContext* ctx)
     {
-        Status status;
-        TFE_OpSetDevice(pack_op_, "/device:CPU", status.raw());
-        OP_REQUIRES_OK(ctx, status);
-
         std::vector<TFE_TensorHandle*> input_handles;
         auto input_handles_cleanup = absl::MakeCleanup(
             [&input_handles]
@@ -241,6 +240,7 @@ class DmlPackCpuKernel : public OpKernel
                 }
             });
 
+        Status status;
         for (int i = 0; i < ctx->num_inputs(); ++i)
         {
             const Tensor& input_tensor = ctx->input(i);
