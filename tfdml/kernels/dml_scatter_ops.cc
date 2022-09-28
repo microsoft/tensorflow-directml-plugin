@@ -477,36 +477,6 @@ class DmlScatterUpdateKernel : public DmlKernel
     }
 };
 
-#define REGISTER_SCATTER_KERNEL_INDEX(type, name, op, index_type)              \
-    REGISTER_KERNEL_BUILDER(                                                   \
-        Name(name)                                                             \
-            .Device(DEVICE_DML)                                                \
-            .TypeConstraint<type>("T")                                         \
-            .TypeConstraint<index_type>("Tindices"),                           \
-        DmlKernelWrapper<                                                      \
-            DmlScatterUpdateKernel<index_type, op>,                            \
-            GetOutputShapeAsInputShapeHelper>)
-
-#define REGISTER_SCATTER_KERNEL(type, name, op)                                \
-    REGISTER_SCATTER_KERNEL_INDEX(type, name, op, int32_t);                    \
-    REGISTER_SCATTER_KERNEL_INDEX(type, name, op, int64_t);
-
-#define REGISTER_RESOURCE_SCATTER_KERNEL_INDEX(type, name, op, index_type)     \
-    REGISTER_KERNEL_BUILDER(                                                   \
-        Name(name)                                                             \
-            .Device(DEVICE_DML)                                                \
-            .HostMemory("resource")                                            \
-            .TypeConstraint<type>("dtype")                                     \
-            .TypeConstraint<index_type>("Tindices"),                           \
-        DmlKernelWrapper<                                                      \
-            DmlScatterUpdateKernel<index_type, op>,                            \
-            NoOutputShapeHelper,                                               \
-            DmlKernelCachePolicy::Never>)
-
-#define REGISTER_RESOURCE_SCATTER_KERNEL(type, name, op)                       \
-    REGISTER_RESOURCE_SCATTER_KERNEL_INDEX(type, name, op, int32_t);           \
-    REGISTER_RESOURCE_SCATTER_KERNEL_INDEX(type, name, op, int64_t);
-
 template <typename type>
 using ScatterPlusOp = ScatterBinaryOperation<
     std::plus<dml::Expression>,
