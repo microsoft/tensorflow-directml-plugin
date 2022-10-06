@@ -33,7 +33,8 @@ class DmlFailureKernel : public OpKernel
                              "could not be properly replaced."));
     }
 
-    void Compute(OpKernelContext*) {}
+  private:
+    void ComputeImpl(OpKernelContext*) final {}
 };
 
 class DmlParallelConcatStartKernel : public OpKernel
@@ -47,14 +48,14 @@ class DmlParallelConcatStartKernel : public OpKernel
         OP_REQUIRES_OK(ctx, ctx->GetAttr("shape", &shape_));
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         StatusOr<Tensor> status_or_output_tensor =
             ctx->allocate_output(0, shape_);
         OP_REQUIRES_OK(ctx, status_or_output_tensor.status());
     }
 
-  private:
     TensorShape shape_;
 };
 
@@ -69,7 +70,8 @@ class DmlParallelConcatUpdateKernel : public OpKernel
         OP_REQUIRES_OK(ctx, ctx->GetAttr("loc", &loc_));
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         const Tensor& value_tensor = ctx->input(0);
 
@@ -143,7 +145,6 @@ class DmlParallelConcatUpdateKernel : public OpKernel
         ctx->set_output(0, output_tensor);
     }
 
-  private:
     int32_t loc_;
 };
 

@@ -29,7 +29,8 @@ class DmlBitcastKernel : public OpKernel
     {
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         const Tensor& input = ctx->input(0);
         int dim_count = input.dims();

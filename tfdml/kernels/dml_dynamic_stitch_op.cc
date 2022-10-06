@@ -54,7 +54,8 @@ class DmlDynamicStitchKernel : public OpKernel
         OP_REQUIRES_OK(ctx, ctx->GetAttr("N", &num_inputs_));
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         // Find maximum index in the indices vectors
         std::vector<Tensor> indices_inputs;
@@ -203,7 +204,6 @@ class DmlDynamicStitchKernel : public OpKernel
         }
     }
 
-  private:
     int32_t num_inputs_;
 };
 

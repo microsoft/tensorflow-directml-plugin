@@ -30,7 +30,8 @@ class DmlEmptyKernel : public OpKernel
         OP_REQUIRES_OK(ctx, ctx->GetAttr("init", &init_));
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         const Tensor& shape = ctx->input(0);
         OP_REQUIRES(
@@ -59,7 +60,6 @@ class DmlEmptyKernel : public OpKernel
         }
     }
 
-  private:
     bool init_;
 };
 

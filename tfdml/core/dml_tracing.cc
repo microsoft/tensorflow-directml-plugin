@@ -347,13 +347,12 @@ void DmlTracing::LogExecutionContextFlush()
     }
 }
 
-absl::optional<DmlTracing::ProfilerEventId> DmlTracing::
-    TryLogKernelComputeStart(
-        uint32_t device_ordinal,
-        const absl::string_view op_type,
-        const absl::string_view op_name)
+absl::optional<uint32_t> DmlTracing::TryLogKernelComputeStart(
+    uint32_t device_ordinal,
+    const absl::string_view op_type,
+    const absl::string_view op_name)
 {
-    absl::optional<ProfilerEventId> profiler_event_id;
+    absl::optional<uint32_t> profiler_event_id;
     if (profiler_active_ && trace_profiler_level_ >= TraceLevel::Standard)
     {
         auto timestamp = absl::GetCurrentTimeNanos();
@@ -361,7 +360,7 @@ absl::optional<DmlTracing::ProfilerEventId> DmlTracing::
         // Locking here is not ideal and can be avoided with TLS.
         std::unique_lock<std::mutex> lock(mutex_);
         auto& events = device_events_[device_ordinal].kernel_compute_events;
-        profiler_event_id = {device_ordinal, events.size()};
+        profiler_event_id = events.size();
         events.push_back(KernelComputeEvent{
             op_type.data(),
             op_name.data(),
@@ -373,14 +372,13 @@ absl::optional<DmlTracing::ProfilerEventId> DmlTracing::
     return profiler_event_id;
 }
 
-void DmlTracing::LogKernelComputeEnd(const ProfilerEventId& id)
+void DmlTracing::LogKernelComputeEnd(uint32_t device_id, uint32_t event_id)
 {
     if (profiler_active_ && trace_profiler_level_ >= TraceLevel::Standard)
     {
         // Locking here is not ideal and can be avoided with TLS.
         std::unique_lock<std::mutex> lock(mutex_);
-        auto& event =
-            device_events_[id.device_id].kernel_compute_events[id.event_id];
+        auto& event = device_events_[device_id].kernel_compute_events[event_id];
         event.end_timestamp_ns = absl::GetCurrentTimeNanos();
         lock.unlock();
     }

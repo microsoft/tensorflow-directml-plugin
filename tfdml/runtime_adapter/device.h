@@ -15,6 +15,7 @@ limitations under the License.
 
 #pragma once
 
+#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "tfdml/runtime_adapter/status.h"
 
@@ -42,5 +43,11 @@ class Device
     virtual void CopyTensorInSameDevice(
         const Tensor* input_tensor,
         Tensor* output_tensor) = 0;
+
+    virtual absl::optional<uint32_t> TryLogKernelComputeStart(
+        const absl::string_view type,
+        const absl::string_view name) const = 0;
+
+    virtual void LogKernelComputeEnd(uint32_t event_id) const = 0;
 };
 } // namespace tfdml

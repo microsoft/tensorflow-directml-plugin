@@ -150,7 +150,8 @@ class DmlWhereKernel : public OpKernel
     {
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         Tensor input_tensor = ctx->input(0);
         OP_REQUIRES(

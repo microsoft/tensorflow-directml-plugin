@@ -29,7 +29,8 @@ class DmlCopyFromGpuToHost : public OpKernel
     {
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         const Tensor& input = ctx->input(0);
         StatusOr<Tensor> status_or_output =
@@ -54,7 +55,8 @@ class DmlCopyFromHostToGpu : public OpKernel
     {
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         const Tensor& input = ctx->input(0);
         StatusOr<Tensor> status_or_output =

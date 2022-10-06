@@ -102,7 +102,8 @@ class DmlDataFormatVecPermuteKernel : public OpKernel
         dst_format_ = dst_format;
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         const Tensor& input = ctx->input(0);
         const TensorShape& input_shape = input.shape();
@@ -235,7 +236,6 @@ class DmlDataFormatVecPermuteKernel : public OpKernel
         }
     }
 
-  private:
     std::string src_format_;
     std::string dst_format_;
 };

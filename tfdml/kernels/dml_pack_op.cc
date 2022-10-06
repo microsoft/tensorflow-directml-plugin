@@ -228,7 +228,8 @@ class DmlPackCpuKernel : public OpKernel
         TFE_DeleteContext(eager_context_);
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         std::vector<TFE_TensorHandle*> input_handles;
         auto input_handles_cleanup = absl::MakeCleanup(
@@ -275,7 +276,6 @@ class DmlPackCpuKernel : public OpKernel
         OP_REQUIRES_OK(ctx, ctx->set_output(0, Tensor(output)));
     }
 
-  private:
     TFE_Context* eager_context_ = nullptr;
     TFE_Op* pack_op_ = nullptr;
 };

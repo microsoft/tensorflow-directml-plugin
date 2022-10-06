@@ -952,7 +952,8 @@ class RandomUniformInt64KernelSelector : public OpKernel
         TFE_DeleteContext(eager_context_);
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         int min_value_index = is_stateless ? 2 : 1;
         int max_value_index = is_stateless ? 3 : 2;
@@ -1078,7 +1079,6 @@ class RandomUniformInt64KernelSelector : public OpKernel
         }
     }
 
-  private:
     DmlRandomKernelWrapperImpl dml_kernel_wrapper_;
     int64_t seed_;
     int64_t seed2_;
@@ -1145,7 +1145,8 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
         TFE_DeleteContext(eager_context_);
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         Status status;
         const Tensor& shape_tensor = ctx->input(0);
@@ -1183,7 +1184,6 @@ class DmlEmulatedPhiloxRandomKernel : public OpKernel
             ctx->device()->CopyCPUTensorToDevice(&output_cpu, &output));
     }
 
-  private:
     TFE_Context* eager_context_ = nullptr;
     TFE_Op* random_op_ = nullptr;
 };
@@ -1427,7 +1427,8 @@ class GetKeyCounterAlgOp : public OpKernel
     {
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         const Tensor& seed_t = ctx->input(0);
         OP_REQUIRES(
@@ -1470,7 +1471,8 @@ class GetKeyCounterOp : public OpKernel
     {
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         const Tensor& seed_t = ctx->input(0);
         OP_REQUIRES(
@@ -1508,7 +1510,8 @@ class GetAlgOp : public OpKernel
     {
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         auto status_or_alg_output = ctx->allocate_output(0, TensorShape({}));
         OP_REQUIRES_OK(ctx, status_or_alg_output.status());

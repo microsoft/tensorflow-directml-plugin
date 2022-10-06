@@ -53,6 +53,12 @@ class DmlDevice : public Device
     Status Sync();
     inline uint32_t GetDeviceOrdinal() const { return device_ordinal_; }
 
+    absl::optional<uint32_t> TryLogKernelComputeStart(
+        const absl::string_view type,
+        const absl::string_view name) const final;
+
+    void LogKernelComputeEnd(uint32_t event_id) const final;
+
     void CopyTensorInSameDevice(
         const Tensor* input_tensor,
         Tensor* output_tensor) final;
