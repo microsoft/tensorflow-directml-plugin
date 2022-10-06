@@ -29,7 +29,8 @@ class DmlDeepCopyKernel : public OpKernel
     {
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         const Tensor& input = ctx->input(0);
         const TensorShape& input_shape = input.shape();

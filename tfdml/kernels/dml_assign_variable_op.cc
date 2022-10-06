@@ -37,7 +37,8 @@ class DmlAssignVariableOp : public OpKernel
         }
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         constexpr int var_index = 0;
         constexpr int value_index = 1;
@@ -56,7 +57,6 @@ class DmlAssignVariableOp : public OpKernel
             ctx->AssignVariable(var_index, value_index, validate_shape_));
     }
 
-  private:
     TF_DataType dtype_;
     bool validate_shape_ = false;
 };
@@ -77,7 +77,8 @@ class DmlAssign : public OpKernel
             context->GetAttr("validate_shape", &validate_shape_));
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         constexpr int input_ref_index = 0;
         constexpr int output_ref_index = 0;
@@ -93,7 +94,6 @@ class DmlAssign : public OpKernel
                 validate_shape_));
     }
 
-  private:
     bool exclusive_lock_;
     bool validate_shape_;
 };
@@ -304,7 +304,8 @@ class DmlUpdateVariableOp : public OpKernel
         OP_REQUIRES_OK(c, c->GetAttr("dtype", &dtype_));
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         constexpr int var_index = 0;
         constexpr int value_index = 1;
@@ -316,7 +317,6 @@ class DmlUpdateVariableOp : public OpKernel
                 UpdateVariable<Expression>));
     }
 
-  private:
     TF_DataType dtype_;
 };
 

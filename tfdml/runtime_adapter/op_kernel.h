@@ -17,10 +17,13 @@ limitations under the License.
 
 #include <string>
 
+#include "absl/cleanup/cleanup.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "attribute.h"
 #include "node_def.h"
+#include "tfdml/runtime_adapter/device.h"
+#include "tfdml/runtime_adapter/op_kernel_context.h"
 #include "types.h"
 
 namespace tfdml
@@ -53,7 +56,27 @@ class OpKernel
         return node_def_->GetOutputTensorMemoryType(index);
     }
 
+    void Compute(OpKernelContext* ctx)
+    {
+        auto profiler_event_id = ctx->device()->TryLogKernelComputeStart(
+            ctx->op_kernel().type_string(),
+            ctx->op_kernel().name());
+
+        auto profiler_cleanup = absl::MakeCleanup(
+            [ctx, &profiler_event_id]
+            {
+                if (profiler_event_id)
+                {
+                    ctx->device()->LogKernelComputeEnd(*profiler_event_id);
+                }
+            });
+
+        ComputeImpl(ctx);
+    }
+
   private:
+    virtual void ComputeImpl(OpKernelContext* raw_ctx) = 0;
+
     std::shared_ptr<const NodeDef> node_def_;
 };
 } // namespace tfdml

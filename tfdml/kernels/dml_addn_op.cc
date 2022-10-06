@@ -226,7 +226,8 @@ class DmlBinaryAddVariantKernelWrapper : public OpKernel
             key);
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         DmlDevice* dml_device = static_cast<DmlDevice*>(ctx->device());
 
@@ -308,7 +309,6 @@ class DmlBinaryAddVariantKernelWrapper : public OpKernel
         return key;
     }
 
-  private:
     std::shared_ptr<NodeDef> node_def_;
     DmlDevice* dml_device_;
     const Tensor* a_tensor_;
@@ -377,7 +377,8 @@ class DmlAddNVariantKernel : public OpKernel
     {
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         OP_REQUIRES_OK(ctx, ctx->AddNVariant(BinaryAddVariant));
     }

@@ -1487,7 +1487,8 @@ class DmlStridedSliceCpuKernel : public OpKernel
         TFE_DeleteContext(eager_context_);
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         absl::InlinedVector<TFE_TensorHandle*, 4> input_handles;
         auto input_handles_cleanup = absl::MakeCleanup(
@@ -1534,7 +1535,6 @@ class DmlStridedSliceCpuKernel : public OpKernel
         OP_REQUIRES_OK(ctx, ctx->set_output(0, Tensor(output)));
     }
 
-  private:
     TFE_Context* eager_context_ = nullptr;
     TFE_Op* strided_slice_op_ = nullptr;
 };

@@ -45,41 +45,6 @@ class DmlTracing
         Verbose = 2,
     };
 
-    // Pair of IDs for the device and event within that device.
-    struct ProfilerEventId
-    {
-        size_t device_id;
-        size_t event_id;
-    };
-
-    // RAII helper to track a DML kernel compute call on the CPU timeline.
-    class KernelComputeEventScope
-    {
-        // This event will be null if the TF profiler isn't active when the
-        // scope is constructed.
-        absl::optional<ProfilerEventId> device_event_id;
-
-      public:
-        KernelComputeEventScope(
-            uint32_t device_id,
-            const absl::string_view type,
-            const absl::string_view name)
-        {
-            device_event_id = DmlTracing::Instance().TryLogKernelComputeStart(
-                device_id,
-                type,
-                name);
-        }
-
-        ~KernelComputeEventScope()
-        {
-            if (device_event_id)
-            {
-                DmlTracing::Instance().LogKernelComputeEnd(*device_event_id);
-            }
-        }
-    };
-
   private:
     DmlTracing();
     ~DmlTracing();
@@ -126,11 +91,11 @@ class DmlTracing
     void LogExecutionContextCopyBufferRegion();
     void LogExecutionContextFillBufferWithPattern();
     void LogExecutionContextFlush();
-    absl::optional<ProfilerEventId> TryLogKernelComputeStart(
+    absl::optional<uint32_t> TryLogKernelComputeStart(
         uint32_t device_ordinal,
         const absl::string_view op_type,
         const absl::string_view op_name);
-    void LogKernelComputeEnd(const ProfilerEventId& id);
+    void LogKernelComputeEnd(uint32_t device_id, uint32_t event_id);
 
     // GPU timeline
     void LogExecuteOperatorStart(

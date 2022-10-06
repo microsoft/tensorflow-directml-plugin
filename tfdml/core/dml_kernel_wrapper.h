@@ -48,8 +48,6 @@ class DmlKernelWrapperBase : public OpKernel
         std::shared_ptr<const NodeDef> node_def);
     virtual ~DmlKernelWrapperBase() = default;
 
-    void Compute(OpKernelContext* raw_ctx);
-
   protected:
     virtual const ShapeHelper* GetShapeHelper() const = 0;
     virtual std::shared_ptr<const InitializationHelper>
@@ -80,6 +78,9 @@ class DmlKernelWrapperBase : public OpKernel
     virtual DmlKernelKey CreateKernelKey(OpKernelContext* ctx) const;
 
     DmlKernelCachePolicy cache_policy_;
+
+  private:
+    void ComputeImpl(OpKernelContext* raw_ctx) final;
 };
 
 // Implements a (templated) GetOrCreateKernel and output shape computation for

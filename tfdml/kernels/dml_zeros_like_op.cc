@@ -40,7 +40,8 @@ class DmlZerosLikeKernel : public OpKernel
     {
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         int candidate_input_indices[] = {0};
 
@@ -121,7 +122,8 @@ class DmlZerosLikeVariantKernel : public OpKernel
     {
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         OP_REQUIRES_OK(ctx, ctx->ZerosLikeVariant(ZerosLikeVariant));
     }

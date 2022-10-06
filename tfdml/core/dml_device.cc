@@ -152,4 +152,19 @@ DMLDeviceContext* DmlDevice::GetDeviceContext() const
     return device_context_.get();
 }
 
+absl::optional<uint32_t> DmlDevice::TryLogKernelComputeStart(
+    const absl::string_view type,
+    const absl::string_view name) const
+{
+    return DmlTracing::Instance().TryLogKernelComputeStart(
+        device_ordinal_,
+        type,
+        name);
+}
+
+void DmlDevice::LogKernelComputeEnd(uint32_t event_id) const
+{
+    DmlTracing::Instance().LogKernelComputeEnd(device_ordinal_, event_id);
+}
+
 } // namespace tfdml

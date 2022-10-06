@@ -74,7 +74,8 @@ class DmlUnsortedSegmentReductionKernel : public OpKernel
         TFE_DeleteContext(eager_context_);
     }
 
-    void Compute(OpKernelContext* ctx)
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
     {
         // data and segment_ids are originally on the GPU, so copy them over to
         // the CPU before executing the CPU operator
@@ -159,7 +160,6 @@ class DmlUnsortedSegmentReductionKernel : public OpKernel
             ctx->device()->CopyCPUTensorToDevice(&output_cpu, &output));
     }
 
-  private:
     TFE_Context* eager_context_ = nullptr;
     TFE_Op* unsorted_segment_op_ = nullptr;
 };

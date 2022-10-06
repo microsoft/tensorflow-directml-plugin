@@ -28,7 +28,8 @@ class DmlSnapshotOp : public OpKernel
     {
     }
 
-    void Compute(OpKernelContext* context)
+  private:
+    void ComputeImpl(OpKernelContext* context) final
     {
         const Tensor& input = context->input(0);
         // Try to use buffer forwarding to avoid an explicit copy.
