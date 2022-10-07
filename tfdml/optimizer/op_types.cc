@@ -27,6 +27,11 @@ bool IsBiasAdd(const tensorflow::NodeDef& node)
     return node.op() == "BiasAdd" || node.op() == "BiasAddV1";
 }
 
+bool IsCast(const tensorflow::NodeDef& node)
+{
+    return node.op() == "Cast";
+}
+
 bool IsConstant(const tensorflow::NodeDef& node)
 {
     return node.op() == "Const";

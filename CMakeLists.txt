@@ -381,6 +381,7 @@ target_precompile_headers(
 add_library(
     optimizer
     STATIC
+    tfdml/optimizer/cast_remover.cc
     tfdml/optimizer/device_name_utils.cc
     tfdml/optimizer/device_type.cc
     tfdml/optimizer/graph_optimizer.cc

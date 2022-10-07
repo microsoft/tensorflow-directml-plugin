@@ -17,6 +17,11 @@ limitations under the License.
 
 #include "tfdml/runtime_adapter/status.h"
 
+namespace tensorflow
+{
+class NodeDef;
+} // namespace tensorflow
+
 namespace tfdml
 {
 
@@ -245,6 +250,8 @@ class DeviceNameUtils
     static Status DeviceNameToCpuDeviceName(
         const std::string& device_name,
         std::string* host_device_name);
+
+    static bool IsOnDml(const tensorflow::NodeDef& node_def);
 };
 
 std::ostream& operator<<(

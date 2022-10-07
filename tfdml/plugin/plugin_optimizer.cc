@@ -16,6 +16,7 @@ limitations under the License.
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/c/tf_status.h"
 #include "tensorflow/core/framework/graph.pb.h"
+#include "tfdml/optimizer/cast_remover.h"
 #include "tfdml/optimizer/optimizer_runner.h"
 #include "tfdml/optimizer/proto_buffer_helpers.h"
 #include "tfdml/optimizer/remapper.h"
@@ -27,6 +28,7 @@ namespace tfdml
 static void* CreateOptimizer()
 {
     return new std::vector<GraphOptimizer*>{
+        new CastRemover(),
         new TransposeRemover(),
         new Remapper(),
     };

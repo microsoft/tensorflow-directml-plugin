@@ -30,6 +30,7 @@ constexpr char kOpDataFormatVecPermute[] = "DataFormatVecPermute";
 constexpr char kOpDataFormatDimMap[] = "DataFormatDimMap";
 
 bool IsBiasAdd(const tensorflow::NodeDef& node);
+bool IsCast(const tensorflow::NodeDef& node);
 bool IsConstant(const tensorflow::NodeDef& node);
 bool IsConv2D(const tensorflow::NodeDef& node);
 bool IsElu(const tensorflow::NodeDef& node);

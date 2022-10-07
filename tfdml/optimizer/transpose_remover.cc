@@ -14,8 +14,6 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tfdml/optimizer/transpose_remover.h"
-#include "absl/strings/ascii.h"
-#include "absl/strings/match.h"
 #include "tensorflow/core/framework/graph.pb.h"
 #include "tfdml/optimizer/device_name_utils.h"
 #include "tfdml/optimizer/graph_properties.h"
@@ -28,17 +26,6 @@ limitations under the License.
 
 namespace tfdml
 {
-
-static bool IsOnDml(const tensorflow::NodeDef& node_def)
-{
-    const std::string& device_name = node_def.device();
-    std::string device;
-    std::string task;
-    return DeviceNameUtils::SplitDeviceName(device_name, &task, &device) &&
-           absl::StrContains(
-               absl::AsciiStrToLower(device),
-               absl::AsciiStrToLower("GPU"));
-}
 
 static bool IsLayoutTranspose(
     const MutableNodeView* transpose_node,
@@ -142,7 +129,7 @@ Status TransposeRemover::Optimize(
     {
         MutableNodeView* fused_batch_norm_grad_node = graph_view->GetNode(i);
 
-        if (!IsOnDml(*fused_batch_norm_grad_node->node()))
+        if (!DeviceNameUtils::IsOnDml(*fused_batch_norm_grad_node->node()))
         {
             continue;
         }

@@ -14,9 +14,12 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tfdml/optimizer/device_name_utils.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "tensorflow/core/framework/node_def.pb.h"
 #include "tfdml/runtime_adapter/macros.h"
 
 namespace tfdml
@@ -864,6 +867,17 @@ std::vector<std::string> DeviceNameUtils::GetLocalNamesForDeviceMappings(
     device.has_id = true;
     *host_device_name = DeviceNameUtils::ParsedNameToString(device);
     return Status::OK();
+}
+
+/*static*/ bool DeviceNameUtils::IsOnDml(const tensorflow::NodeDef& node_def)
+{
+    const std::string& device_name = node_def.device();
+    std::string device;
+    std::string task;
+    return DeviceNameUtils::SplitDeviceName(device_name, &task, &device) &&
+           absl::StrContains(
+               absl::AsciiStrToLower(device),
+               absl::AsciiStrToLower("GPU"));
 }
 
 std::ostream& operator<<(std::ostream& os, const DeviceNameUtils::ParsedName& x)
