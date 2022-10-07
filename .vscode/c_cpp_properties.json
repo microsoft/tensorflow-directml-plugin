@@ -10,7 +10,8 @@
                 "${workspaceFolder}/build/_deps/directml_redist-src/include",
                 "${workspaceFolder}/build/_deps/directmlx-src",
                 "${workspaceFolder}/build/_deps/protobuf-src/src",
-                "${workspaceFolder}/build/_deps/tensorflow_whl-build/proto"
+                "${workspaceFolder}/build/_deps/tensorflow_whl-build/proto",
+                "${workspaceFolder}/build/_deps/pix_event_runtime-src/Include"
             ],
             "defines": [
                 "_DEBUG",

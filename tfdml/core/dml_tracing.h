@@ -45,6 +45,46 @@ class DmlTracing
         Verbose = 2,
     };
 
+    enum class MemcpyType
+    {
+        D2H,
+        H2D,
+        D2D
+    };
+
+    // RAII helper to track a memcpy call on the CPU timeline.
+    class MemcpyEventScope
+    {
+      public:
+        MemcpyEventScope(
+            uint32_t device_id,
+            MemcpyType memory_type,
+            uint64_t total_bytes)
+            : device_id_(device_id)
+        {
+            device_event_id_ = DmlTracing::Instance().TryLogMemcpyStart(
+                device_id,
+                memory_type,
+                total_bytes);
+        }
+
+        ~MemcpyEventScope()
+        {
+            if (device_event_id_)
+            {
+                DmlTracing::Instance().LogMemcpyEnd(
+                    device_id_,
+                    *device_event_id_);
+            }
+        }
+
+      private:
+        // This event will be null if the TF profiler isn't active when the
+        // scope is constructed.
+        absl::optional<uint32_t> device_event_id_;
+        uint32_t device_id_;
+    };
+
   private:
     DmlTracing();
     ~DmlTracing();
@@ -67,12 +107,25 @@ class DmlTracing
         int64_t end_timestamp_ns;
     };
 
+    struct MemcpyEvent
+    {
+        MemcpyType memcpy_type;
+        uint64_t size;
+        int64_t start_timestamp_ns;
+        int64_t end_timestamp_ns;
+    };
+
     // Data collected for the TF profiler.
     struct DeviceEvents
     {
         std::vector<KernelComputeEvent> kernel_compute_events;
+        std::vector<MemcpyEvent> memcpy_events;
 
-        inline void Clear() { kernel_compute_events.clear(); }
+        inline void Clear()
+        {
+            kernel_compute_events.clear();
+            memcpy_events.clear();
+        }
     };
     std::vector<DeviceEvents> device_events_;
     tensorflow::profiler::XSpace xspace_;
@@ -91,11 +144,18 @@ class DmlTracing
     void LogExecutionContextCopyBufferRegion();
     void LogExecutionContextFillBufferWithPattern();
     void LogExecutionContextFlush();
+
     absl::optional<uint32_t> TryLogKernelComputeStart(
         uint32_t device_ordinal,
         const absl::string_view op_type,
         const absl::string_view op_name);
     void LogKernelComputeEnd(uint32_t device_id, uint32_t event_id);
+
+    absl::optional<uint32_t> TryLogMemcpyStart(
+        uint32_t device_ordinal,
+        MemcpyType memcpy_type,
+        uint64_t data_size);
+    void LogMemcpyEnd(uint32_t device_id, uint32_t event_id);
 
     // GPU timeline
     void LogExecuteOperatorStart(
