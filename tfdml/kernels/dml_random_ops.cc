@@ -41,18 +41,11 @@ enum class EmulatedKernelType
 // lowest 23 bits from each 32-bit generator value; FP16 consumes the lowest 10
 // bits from each 32-bit generator value. FP64 (not implemented) would require
 // 2 generator values per output vaule, and it would use the lowest 52 bits.
-dml::Expression UniformFloat(
-    dml::Graph& scope,
-    dml::Expression input_state,
-    uint32_t element_count)
+dml::Expression Uint32ToFloat(dml::Graph& scope, dml::Expression random_bits)
 {
     // FP32 has 1 sign bit, 8 exponent bits, and 23 mantissa bits.
     constexpr uint32_t sign_and_exponent_value = ((1 << (8 - 1)) - 1) << 23;
     constexpr uint32_t mantissa_mask_value = (1 << 23) - 1;
-
-    auto generator_outputs =
-        dml::RandomGenerator(input_state, {1, 1, 1, element_count}, false);
-    auto random_bits = generator_outputs.values;
 
     auto sign_and_exponent = dml::ScalarTensor(
         scope,
@@ -65,8 +58,18 @@ dml::Expression UniformFloat(
         random_bits.GetOutputDesc().sizes);
 
     auto result = sign_and_exponent | (random_bits & mantissa_mask);
-
     return dml::Reinterpret(result, DML_TENSOR_DATA_TYPE_FLOAT32) - 1.0f;
+}
+
+dml::Expression UniformFloat(
+    dml::Graph& scope,
+    dml::Expression input_state,
+    uint32_t element_count)
+{
+    auto generator_outputs =
+        dml::RandomGenerator(input_state, {1, 1, 1, element_count}, false);
+    auto random_bits = generator_outputs.values;
+    return Uint32ToFloat(scope, random_bits);
 }
 
 dml::Expression UniformHalf(
@@ -97,6 +100,29 @@ dml::Expression UniformHalf(
     result = dml::Cast(result, DML_TENSOR_DATA_TYPE_UINT16);
 
     return dml::Reinterpret(result, DML_TENSOR_DATA_TYPE_FLOAT16) - 1.0f;
+}
+
+std::tuple<dml::Expression, dml::Expression> BoxMullerFloat(
+    dml::Graph& scope,
+    dml::Expression input_state,
+    uint32_t element_count)
+{
+    auto generator_outputs =
+        dml::RandomGenerator(input_state, {1, 1, element_count / 2, 2}, false);
+    auto random_bits = generator_outputs.values;
+    random_bits = Uint32ToFloat(scope, random_bits);
+
+    // The BoxMuller normal distribution algorithm handles elements 2 by 2, so
+    // we put them on different columns and split the columns in 2
+    auto split_random_bits = dml::Split(random_bits, 3, {1, 1});
+
+    static constexpr float epsilon = 1.0e-7f;
+    auto u1 = dml::Clip(split_random_bits[0], epsilon, FLOAT_MAX);
+    auto v1 = 2.0f * M_PI * split_random_bits[1];
+    auto u2 = dml::Sqrt(dml::Log(u1), DML_SCALE_BIAS{-2.0f, 0.0f});
+    auto f0 = dml::Sin(v1) * u2;
+    auto f1 = dml::Cos(v1) * u2;
+    return std::make_tuple(f0, f1);
 }
 
 // Compute a + b where a is a signed type and b is unsigned. Requires the result
