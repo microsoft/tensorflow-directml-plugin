@@ -23,6 +23,9 @@ limitations under the License.
 #include "tfdml/runtime_adapter/stateless_random_ops.h"
 #include "tfdml/runtime_adapter/variable_lock.h"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 namespace tfdml
 {
 
@@ -117,7 +120,10 @@ std::tuple<dml::Expression, dml::Expression> BoxMullerFloat(
     auto split_random_bits = dml::Split(random_bits, 3, {1, 1});
 
     static constexpr float epsilon = 1.0e-7f;
-    auto u1 = dml::Clip(split_random_bits[0], epsilon, FLOAT_MAX);
+    auto u1 = dml::Clip(
+        split_random_bits[0],
+        epsilon,
+        std::numeric_limits<float>::max());
     auto v1 = 2.0f * M_PI * split_random_bits[1];
     auto u2 = dml::Sqrt(dml::Log(u1), DML_SCALE_BIAS{-2.0f, 0.0f});
     auto f0 = dml::Sin(v1) * u2;
