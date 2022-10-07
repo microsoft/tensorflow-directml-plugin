@@ -21,6 +21,7 @@ limitations under the License.
 #include "tensorflow/c/kernels.h"
 #include "tensorflow/c/tf_tensor.h"
 #include "tfdml/core/dml_device.h"
+#include "tfdml/core/dml_tracing.h"
 #include "tfdml/runtime_adapter/status.h"
 
 namespace tfdml
@@ -36,6 +37,11 @@ Status DMLDeviceContext::CopyCPUTensorToDevice(
     {
         return Status::OK();
     }
+
+    DmlTracing::MemcpyEventScope memcpy_event(
+        device->GetDeviceOrdinal(),
+        DmlTracing::MemcpyType::H2D,
+        total_bytes);
 
     const void* src_data = cpu_tensor->base<void>();
 
@@ -67,6 +73,11 @@ void DMLDeviceContext::CopyTensorInSameDevice(
         return;
     }
 
+    DmlTracing::MemcpyEventScope memcpy_event(
+        device->GetDeviceOrdinal(),
+        DmlTracing::MemcpyType::D2D,
+        total_bytes);
+
     D3D12BufferRegion src = GetBufferForTensor(*input_tensor);
     D3D12BufferRegion dst = GetBufferForTensor(*output_tensor);
 
@@ -91,6 +102,11 @@ Status DMLDeviceContext::CopyDeviceTensorToCPU(
     {
         return Status::OK();
     }
+
+    DmlTracing::MemcpyEventScope memcpy_event(
+        device->GetDeviceOrdinal(),
+        DmlTracing::MemcpyType::D2H,
+        total_bytes);
 
     D3D12BufferRegion src = GetBufferForTensor(*device_tensor);
 
@@ -134,6 +150,11 @@ Status DMLDeviceContext::CopyDeviceTensorsToCPU(
             continue;
         }
 
+        DmlTracing::MemcpyEventScope memcpy_event(
+            device->GetDeviceOrdinal(),
+            DmlTracing::MemcpyType::D2H,
+            total_bytes);
+
         D3D12BufferRegion src = GetBufferForTensor(device_tensor);
         void* dst_data = cpu_tensor.base<void>();
 
@@ -175,6 +196,11 @@ Status DMLDeviceContext::CopyCPUMemoryToDevice(
         return Status::OK();
     }
 
+    DmlTracing::MemcpyEventScope memcpy_event(
+        device->GetDeviceOrdinal(),
+        DmlTracing::MemcpyType::H2D,
+        size_in_bytes);
+
     D3D12BufferRegion dst =
         device->GetDeviceContext()->GetBufferForDeviceMemory(
             device_memory,
@@ -206,6 +232,11 @@ StatusOr<DmlGpuEvent> DMLDeviceContext::CopyDeviceMemoryToCPU(
         return Status::OK();
     }
 
+    DmlTracing::MemcpyEventScope memcpy_event(
+        device->GetDeviceOrdinal(),
+        DmlTracing::MemcpyType::D2H,
+        size_in_bytes);
+
     D3D12BufferRegion src =
         device->GetDeviceContext()->GetBufferForDeviceMemory(
             device_memory,
@@ -232,6 +263,11 @@ void DMLDeviceContext::CopyMemoryInSameDevice(
     {
         return;
     }
+
+    DmlTracing::MemcpyEventScope memcpy_event(
+        device->GetDeviceOrdinal(),
+        DmlTracing::MemcpyType::D2D,
+        size_in_bytes);
 
     D3D12BufferRegion src =
         device->GetDeviceContext()->GetBufferForDeviceMemory(
