@@ -347,6 +347,40 @@ void DmlTracing::LogExecutionContextFlush()
     }
 }
 
+absl::optional<uint32_t> DmlTracing::TryLogMemcpyStart(
+    uint32_t device_ordinal,
+    MemcpyType memcpy_type,
+    uint64_t data_size)
+{
+    absl::optional<uint32_t> profiler_event_id;
+    if (profiler_active_ && trace_profiler_level_ >= TraceLevel::Standard)
+    {
+        auto timestamp = absl::GetCurrentTimeNanos();
+
+        // Locking here is not ideal and can be avoided with TLS.
+        std::unique_lock<std::mutex> lock(mutex_);
+        auto& events = device_events_[device_ordinal].memcpy_events;
+        profiler_event_id = events.size();
+        events.push_back(
+            MemcpyEvent{memcpy_type, data_size, timestamp, timestamp});
+        lock.unlock();
+    }
+
+    return profiler_event_id;
+}
+
+void DmlTracing::LogMemcpyEnd(uint32_t device_id, uint32_t event_id)
+{
+    if (profiler_active_ && trace_profiler_level_ >= TraceLevel::Standard)
+    {
+        // Locking here is not ideal and can be avoided with TLS.
+        std::unique_lock<std::mutex> lock(mutex_);
+        auto& event = device_events_[device_id].memcpy_events[event_id];
+        event.end_timestamp_ns = absl::GetCurrentTimeNanos();
+        lock.unlock();
+    }
+}
+
 absl::optional<uint32_t> DmlTracing::TryLogKernelComputeStart(
     uint32_t device_ordinal,
     const absl::string_view op_type,
@@ -450,12 +484,56 @@ const tensorflow::profiler::XSpace& DmlTracing::GetXSpace()
         plane.SetName(
             absl::StrCat("/device:GPU:", i, " (DirectML) - ", adapter.Name()));
 
-        auto line = plane.GetOrCreateLine(0);
-        line.SetName("Kernels (CPU Timeline)");
+        auto memcpy_h2d_line = plane.GetOrCreateLine(0);
+        memcpy_h2d_line.SetName("MemcpyH2D (CPU Timeline)");
 
-        plane.ForEachLine(
-            [&](XLineBuilder line)
-            { line.SetTimestampNs(profiler_start_timestamp_ns_); });
+        auto memcpy_d2d_line = plane.GetOrCreateLine(1);
+        memcpy_d2d_line.SetName("MemcpyD2D (CPU Timeline)");
+
+        auto memcpy_d2h_line = plane.GetOrCreateLine(2);
+        memcpy_d2h_line.SetName("MemcpyD2H (CPU Timeline)");
+
+        auto kernels_line = plane.GetOrCreateLine(3);
+        kernels_line.SetName("Kernels (CPU Timeline)");
+
+        for (auto& memcpy_event : device_events.memcpy_events)
+        {
+            // WARNING: The pluggable profiler interface doesn't guarantee
+            // events from the plugin will be reflected in all the various
+            // tools. This logic may change in the future, but for now any
+            // events tagged with the "tf_op" stat and named <op_name>:<op_type>
+            // (e.g. "MyMatrixMultiply:MatMul") will be parsed correctly.
+            const char* event_name;
+            absl::optional<XLineBuilder> memcpy_line;
+
+            switch (memcpy_event.memcpy_type)
+            {
+            case MemcpyType::H2D:
+                event_name = "MemcpyH2D";
+                memcpy_line = memcpy_h2d_line;
+                break;
+            case MemcpyType::D2D:
+                event_name = "MemcpyD2D";
+                memcpy_line = memcpy_d2d_line;
+                break;
+            case MemcpyType::D2H:
+                event_name = "MemcpyD2H";
+                memcpy_line = memcpy_d2h_line;
+                break;
+            }
+
+            auto event_metadata = plane.GetOrCreateEventMetadata(event_name);
+            event_metadata->set_display_name(event_name);
+            auto event = memcpy_line->AddEvent(*event_metadata);
+            event.SetTimestampNs(memcpy_event.start_timestamp_ns);
+            event.SetEndTimestampNs(memcpy_event.end_timestamp_ns);
+            event.AddStatValue(
+                *plane.GetOrCreateStatMetadata("tf_op"),
+                *plane.GetOrCreateStatMetadata(""));
+            event.AddStatValue(
+                *plane.GetOrCreateStatMetadata("size"),
+                memcpy_event.size);
+        }
 
         for (auto& kernel_event : device_events.kernel_compute_events)
         {
@@ -469,13 +547,17 @@ const tensorflow::profiler::XSpace& DmlTracing::GetXSpace()
 
             auto event_metadata = plane.GetOrCreateEventMetadata(event_name);
             event_metadata->set_display_name(kernel_event.op_type);
-            auto event = line.AddEvent(*event_metadata);
+            auto event = kernels_line.AddEvent(*event_metadata);
             event.SetTimestampNs(kernel_event.start_timestamp_ns);
             event.SetEndTimestampNs(kernel_event.end_timestamp_ns);
             event.AddStatValue(
                 *plane.GetOrCreateStatMetadata("tf_op"),
                 *plane.GetOrCreateStatMetadata(event_name));
         }
+
+        plane.ForEachLine(
+            [&](XLineBuilder line)
+            { line.SetTimestampNs(profiler_start_timestamp_ns_); });
     }
 
     xspace_dirty_ = false;
