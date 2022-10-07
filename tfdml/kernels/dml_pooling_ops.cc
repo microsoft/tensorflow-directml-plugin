@@ -1124,7 +1124,7 @@ void RegisterAvgPoolGrad()
         ops::AvgPoolGrad,
         DmlKernelWrapper<
             DmlAvgPoolingGradKernel,
-            GetOutputShapeFromDimsTensorHelper<int32_t, 0>>>::
+            GetOutputShapeFromDimsTensorHelper<0>>>::
         WithHostMemoryArguments<ops::AvgPoolGrad::Argument::orig_input_shape>;
 
     RegisterWithTypes<K, ops::AvgPoolGrad::Attribute::T, TF_FLOAT, TF_HALF>();
@@ -1136,7 +1136,7 @@ void RegisterAvgPool3DGrad()
         ops::AvgPool3DGrad,
         DmlKernelWrapper<
             DmlAvgPoolingGradKernel,
-            GetOutputShapeFromDimsTensorHelper<int32_t, 0>>>::
+            GetOutputShapeFromDimsTensorHelper<0>>>::
         WithHostMemoryArguments<ops::AvgPool3DGrad::Argument::orig_input_shape>;
 
     RegisterWithTypes<K, ops::AvgPool3DGrad::Attribute::T, TF_FLOAT, TF_HALF>();

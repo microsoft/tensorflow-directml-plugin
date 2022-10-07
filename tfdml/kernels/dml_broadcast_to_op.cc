@@ -158,7 +158,7 @@ void RegisterKernels_BroadcastTo()
         ops::BroadcastTo,
         DmlKernelWrapper<
             DmlBroadcastToKernel,
-            GetOutputShapeFromDimsTensorHelper<int32_t, 1>>>::
+            GetOutputShapeFromDimsTensorHelper<1>>>::
         WithTypeConstraint<ops::BroadcastTo::Attribute::Tidx, TF_INT32>::
             WithHostMemoryArguments<ops::BroadcastTo::Argument::shape>;
 
@@ -166,7 +166,7 @@ void RegisterKernels_BroadcastTo()
         ops::BroadcastTo,
         DmlKernelWrapper<
             DmlBroadcastToKernel,
-            GetOutputShapeFromDimsTensorHelper<int64_t, 1>>>::
+            GetOutputShapeFromDimsTensorHelper<1>>>::
         WithTypeConstraint<ops::BroadcastTo::Attribute::Tidx, TF_INT64>::
             WithHostMemoryArguments<ops::BroadcastTo::Argument::shape>;
 

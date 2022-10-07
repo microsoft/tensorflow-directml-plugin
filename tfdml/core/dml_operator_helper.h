@@ -91,7 +91,7 @@ class NoOpInitializationHelper : public InitializationHelper
     }
 };
 
-template <typename TIndex, int dims_tensor_index>
+template <int dims_tensor_index>
 class GetOutputShapeFromDimsTensorHelper : public ShapeHelper
 {
   public:

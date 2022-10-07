@@ -101,7 +101,7 @@ class DmlFillKernel : public DmlKernel
 template <typename TIndex>
 using DmlFillWrapper = DmlKernelWrapper<
     DmlFillKernel<TIndex>,
-    GetOutputShapeFromDimsTensorHelper<TIndex, 0>>;
+    GetOutputShapeFromDimsTensorHelper<0>>;
 
 void RegisterKernels_Fill()
 {
