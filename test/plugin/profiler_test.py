@@ -94,15 +94,15 @@ class ProfilerTest(absltest.TestCase):
             # DML planes are prefixed /device:GPU so that they get picked up
             # by tensorflow_stats and trace_viewer.
             self.assertRegex(xplane.name, r"/device:GPU:\d \(DirectML\) - .*")
-
-            # DML profiler only emits a single line right now (CPU-timeline kernels).
-            self.assertEqual(len(xplane.lines), 1)
-            self.assertEqual(xplane.lines[0].name, "Kernels (CPU Timeline)")
-            cpu_timeline = xplane.lines[0]
+            self.assertEqual(len(xplane.lines), 3)
+            self.assertEqual(xplane.lines[0].name, "MemcpyH2D (CPU Timeline)")
+            self.assertEqual(xplane.lines[1].name, "MemcpyD2H (CPU Timeline)")
+            self.assertEqual(xplane.lines[2].name, "Kernels (CPU Timeline)")
+            kernels_cpu_timeline = xplane.lines[2]
 
             # Ensure the AddN kernel is traced.
-            self.assertEqual(len(cpu_timeline.events), 2)
-            addn_event = cpu_timeline.events[0]
+            self.assertEqual(len(kernels_cpu_timeline.events), 2)
+            addn_event = kernels_cpu_timeline.events[0]
             addn_metadata = xplane.event_metadata[addn_event.metadata_id]
             self.assertEqual(addn_metadata.name, "MyAdd:AddN")
             self.assertEqual(addn_metadata.display_name, "AddN")
@@ -112,7 +112,7 @@ class ProfilerTest(absltest.TestCase):
             )
 
             # Ensure the MatMul kernel is traced.
-            matmul_event = cpu_timeline.events[1]
+            matmul_event = kernels_cpu_timeline.events[1]
             matmul_metadata = xplane.event_metadata[matmul_event.metadata_id]
             self.assertEqual(matmul_metadata.name, "MyMultiply:MatMul")
             self.assertEqual(matmul_metadata.display_name, "MatMul")
