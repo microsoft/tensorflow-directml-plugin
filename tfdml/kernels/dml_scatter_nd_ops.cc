@@ -958,7 +958,7 @@ using ScatterNdKernel = typename KernelDefinition<
     ops::ScatterNd,
     DmlKernelWrapper<
         DmlScatterNdUnaryKernel<Index>,
-        GetOutputShapeFromDimsTensorHelper<Index, 2>>>::
+        GetOutputShapeFromDimsTensorHelper<2>>>::
     template WithHostMemoryArguments<ops::ScatterNd::Argument::shape>::
         template WithTypeConstraint<
             ops::ScatterNd::Attribute::Tindices,
