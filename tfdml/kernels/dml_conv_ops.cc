@@ -3137,7 +3137,7 @@ void RegisterConv2DBackpropFilter()
         ops::Conv2DBackpropFilter,
         DmlKernelWrapper<
             DmlConv2DBackpropFilterKernel,
-            GetOutputShapeFromDimsTensorHelper<int32_t, 1>>>::
+            GetOutputShapeFromDimsTensorHelper<1>>>::
         WithHostMemoryArguments<
             ops::Conv2DBackpropFilter::Argument::filter_sizes>;
 
@@ -3154,7 +3154,7 @@ void RegisterDepthwiseConv2dNativeBackpropFilter()
         ops::DepthwiseConv2dNativeBackpropFilter,
         DmlKernelWrapper<
             DmlDepthwiseConv2DBackpropFilterKernel,
-            GetOutputShapeFromDimsTensorHelper<int32_t, 1>>>::
+            GetOutputShapeFromDimsTensorHelper<1>>>::
         WithHostMemoryArguments<
             ops::DepthwiseConv2dNativeBackpropFilter::Argument::filter_sizes>;
 
@@ -3171,7 +3171,7 @@ void RegisterDepthwiseConv2dNativeBackpropInput()
         ops::DepthwiseConv2dNativeBackpropInput,
         DmlKernelWrapper<
             DmlDepthwiseConv2DBackpropInputKernel,
-            GetOutputShapeFromDimsTensorHelper<int32_t, 0>>>::
+            GetOutputShapeFromDimsTensorHelper<0>>>::
         WithHostMemoryArguments<
             ops::DepthwiseConv2dNativeBackpropInput::Argument::input_sizes>;
 
@@ -3212,7 +3212,7 @@ void RegisterConv3DBackpropInputV2()
         ops::Conv3DBackpropInputV2,
         DmlKernelWrapper<
             DmlConv3DBackpropInputKernel<true>,
-            GetOutputShapeFromDimsTensorHelper<int32_t, 0>>>::
+            GetOutputShapeFromDimsTensorHelper<0>>>::
         WithHostMemoryArguments<
             ops::Conv3DBackpropInputV2::Argument::input_sizes>;
 
@@ -3244,7 +3244,7 @@ void RegisterConv3DBackpropFilterV2()
         ops::Conv3DBackpropFilterV2,
         DmlKernelWrapper<
             DmlConv3DBackpropFilterKernel<true>,
-            GetOutputShapeFromDimsTensorHelper<int32_t, 1>>>::
+            GetOutputShapeFromDimsTensorHelper<1>>>::
         WithHostMemoryArguments<
             ops::Conv3DBackpropFilterV2::Argument::filter_sizes>;
 
