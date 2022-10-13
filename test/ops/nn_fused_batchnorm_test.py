@@ -391,8 +391,7 @@ class BatchNormalizationTest(test.TestCase):
     use_gpu_vals = [False]
     if test_util.is_gpu_available(cuda_only=True) and not cpu_only:
       use_gpu_vals += [True]
-    # TODO #37545850: also run tests with the 0.6 factor when we support exponential_avg_factor
-    # factors = [1.0, 0.6]
+    factors = [1.0, 0.6]
     factors = [1.0,]
     for dtype in [np.float16, np.float32]:
       for use_gpu in use_gpu_vals:

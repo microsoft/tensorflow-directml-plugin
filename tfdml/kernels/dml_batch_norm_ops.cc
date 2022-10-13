@@ -208,14 +208,6 @@ class FusedBatchNormInitializationHelper : public InitializationHelper
                     num_channels));
         }
 
-        // TODO #37545850: support cases where exponential_avg_factor != 1.0f
-        OP_REQUIRES(
-            ctx,
-            attr_->exponential_avg_factor == 1.0f,
-            errors::InvalidArgument(
-                "DML doesn't support exponential_avg_factor != 1 at the "
-                "moment"));
-
         if (attr_->num_side_inputs > 0)
         {
             const Tensor& side_input = ctx->input(5);
@@ -238,7 +230,8 @@ class FusedBatchNormInitializationHelper : public InitializationHelper
         // FusedBatchNorm can legitimately have empty tensors depending on
         // whether is_training is true or not. So this kernel is only truly a
         // no-op when the input tensor is empty.
-        return (ctx->input(0).NumElements() == 0);
+        return (ctx->input(0).NumElements() == 0) &&
+               attr_->exponential_avg_factor == 1.0f;
     }
 
     float GetEpsilon() const { return attr_->epsilon; }
@@ -249,6 +242,11 @@ class FusedBatchNormInitializationHelper : public InitializationHelper
     FusedBatchNormActivationMode GetActivationMode() const
     {
         return attr_->activation_mode;
+    }
+
+    float GetExponentialAvgFactor() const
+    {
+        return attr_->exponential_avg_factor;
     }
 
   private:
@@ -488,7 +486,12 @@ class DmlFusedBatchNormKernel : public DmlKernel
 
         if (ctx->GetInputTensorShape(0).num_elements() == 0)
         {
-            InitializeAsNoOp(ctx);
+            assert(init_helper->GetExponentialAvgFactor() != 1.0f);
+            InitializeForNoOp(
+                ctx,
+                epsilon,
+                tensor_format,
+                init_helper->GetExponentialAvgFactor());
         }
         else if (is_training)
         {
@@ -497,7 +500,8 @@ class DmlFusedBatchNormKernel : public DmlKernel
                 epsilon,
                 tensor_format,
                 init_helper->AddSideInput(),
-                init_helper->GetActivationMode());
+                init_helper->GetActivationMode(),
+                init_helper->GetExponentialAvgFactor());
         }
         else
         {
@@ -510,6 +514,72 @@ class DmlFusedBatchNormKernel : public DmlKernel
         }
     }
 
+    void InitializeForNoOp(
+        DmlKernelConstruction* ctx,
+        float epsilon,
+        TensorFormat tensor_format,
+        float exponential_avg_factor)
+    {
+        DmlKernelParams params;
+        params.kernel_input_indices = {kMean, kVariance};
+
+        // Computed mean, computed variance
+        params.kernel_output_indices = {1, 2};
+
+        DmlKernelTensors tensors = GetTensorInfos(ctx, params);
+        const uint32_t dim_count = ctx->GetInputTensorShape(0).dims();
+
+        // Mean and variance are 1D, in the C dimension
+        TensorShape mean_shape = ctx->GetInputTensorShape(kMean);
+        TensorShape variance_shape = ctx->GetInputTensorShape(kVariance);
+
+        // The order of the N, D, H and W dimensions doesn't matter because they
+        // are all 1's. The only thing we are trying to do here is reorder the C
+        // dimension to the right position.
+        const int missing_dims = dim_count - mean_shape.dims();
+        for (int i = 0; i < missing_dims; ++i)
+        {
+            mean_shape.AddDim(1);
+            variance_shape.AddDim(1);
+        }
+
+        using namespace DmlTensorAxes;
+        assert(dim_count == 4 || dim_count == 5);
+        const auto scalar_layout =
+            dim_count == 4 ? DmlTensorLayout::Cnhw() : DmlTensorLayout::Cndhw();
+
+        tensors.inputs[0]->desc = DmlTensorDesc::Create(
+            ctx->GetInputDataType(kMean),
+            mean_shape,
+            mean_shape,
+            scalar_layout);
+        tensors.inputs[1]->desc = DmlTensorDesc::Create(
+            ctx->GetInputDataType(kVariance),
+            variance_shape,
+            variance_shape,
+            scalar_layout);
+
+        auto input_descs = GetDmlTensorDescs(tensors.inputs);
+        auto output_descs = GetDmlTensorDescs(tensors.outputs);
+
+        auto scope =
+            dml::Graph(ctx->GetDmlDevice(), GetDmlXTensorPolicy(tensor_format));
+        auto mean = dml::InputTensor(scope, 0, input_descs[0]);
+        auto variance = dml::InputTensor(scope, 1, input_descs[1]);
+
+        float one_minus_factor = 1.0f - exponential_avg_factor;
+        auto corrected_variance = variance * one_minus_factor;
+        auto corrected_mean = mean * one_minus_factor;
+
+        auto outputs = {
+            corrected_mean,     // batch_mean
+            corrected_variance, // batch_variance
+        };
+
+        auto compiled_op = scope.Compile(DML_EXECUTION_FLAG_NONE, outputs);
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
+    }
+
     // Initializes the batch norm kernel for training. In training mode, we
     // don't receive the mean/variance and need to compute it ourselves.
     void InitializeForTraining(
@@ -517,16 +587,29 @@ class DmlFusedBatchNormKernel : public DmlKernel
         float epsilon,
         TensorFormat tensor_format,
         bool add_side_input,
-        FusedBatchNormActivationMode activation_mode)
+        FusedBatchNormActivationMode activation_mode,
+        float exponential_avg_factor)
     {
         DmlKernelParams params;
 
-        // The mean/variance tensors are empty when is_training is set; we need
-        // to compute them ourselves
         params.kernel_input_indices = {kX, kScale, kOffset};
+
+        int mean_index = -1;
+        int variance_index = -1;
+        int side_input_index = -1;
+
+        if (exponential_avg_factor != 1.0f)
+        {
+            mean_index = params.kernel_input_indices.size();
+            params.kernel_input_indices.push_back(kMean);
+
+            variance_index = params.kernel_input_indices.size();
+            params.kernel_input_indices.push_back(kVariance);
+        }
 
         if (add_side_input)
         {
+            side_input_index = params.kernel_input_indices.size();
             params.kernel_input_indices.push_back(kSideInput);
         }
 
@@ -576,6 +659,32 @@ class DmlFusedBatchNormKernel : public DmlKernel
             offset_shape,
             scalar_layout);
 
+        if (exponential_avg_factor != 1.0f)
+        {
+            TensorShape mean_shape = ctx->GetInputTensorShape(mean_index);
+            TensorShape variance_shape =
+                ctx->GetInputTensorShape(variance_index);
+
+            for (int i = 0; i < missing_dims; ++i)
+            {
+                scale_shape.AddDim(1);
+                offset_shape.AddDim(1);
+                mean_shape.AddDim(1);
+                variance_shape.AddDim(1);
+            }
+
+            tensors.inputs[mean_index]->desc = DmlTensorDesc::Create(
+                ctx->GetInputDataType(mean_index),
+                mean_shape,
+                mean_shape,
+                scalar_layout);
+            tensors.inputs[variance_index]->desc = DmlTensorDesc::Create(
+                ctx->GetInputDataType(variance_index),
+                variance_shape,
+                variance_shape,
+                scalar_layout);
+        }
+
         auto input_descs = GetDmlTensorDescs(tensors.inputs);
         auto output_descs = GetDmlTensorDescs(tensors.outputs);
 
@@ -599,7 +708,10 @@ class DmlFusedBatchNormKernel : public DmlKernel
         absl::optional<dml::Expression> side_input;
         if (add_side_input)
         {
-            side_input = dml::InputTensor(scope, 3, input_descs[3]);
+            side_input = dml::InputTensor(
+                scope,
+                side_input_index,
+                input_descs[side_input_index]);
         }
 
         dml::BatchNormalizationTrainingOutputs dml_outputs =
@@ -638,11 +750,32 @@ class DmlFusedBatchNormKernel : public DmlKernel
                 dml::Cast(dml_outputs.variance, DML_TENSOR_DATA_TYPE_FLOAT32);
         }
 
+        auto corrected_mean = dml_outputs.mean;
+
+        // Mean and Variance are always float32, so execute the operation after
+        // the cast
+        if (exponential_avg_factor != 1.0f)
+        {
+            auto old_mean =
+                dml::InputTensor(scope, mean_index, input_descs[mean_index]);
+            auto old_variance = dml::InputTensor(
+                scope,
+                variance_index,
+                input_descs[variance_index]);
+
+            float one_minus_factor = 1.0f - exponential_avg_factor;
+            corrected_variance = corrected_variance * exponential_avg_factor +
+                                 old_variance * one_minus_factor;
+
+            corrected_mean = corrected_mean * exponential_avg_factor +
+                             old_mean * one_minus_factor;
+        }
+
         auto outputs = {
             dml_outputs.output,
-            dml_outputs.mean,    // batch_mean
+            corrected_mean,      // batch_mean
             corrected_variance,  // batch_variance
-            dml_outputs.mean,    // saved_mean (same as batch_mean)
+            dml_outputs.mean,    // saved_mean
             dml_outputs.variance // saved_variance
         };
 
