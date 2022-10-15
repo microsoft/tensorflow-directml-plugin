@@ -94,11 +94,6 @@ void DeleteOptimizer(void* optimizers)
 
 } // namespace tfdml
 
-// TODO: Re-enable the warning once the header has been fixed
-// https://github.com/tensorflow/tensorflow/pull/55579
-#pragma warning(push)
-#pragma warning(disable : 4273)
-
 TFDML_EXPORT void TF_InitGraph(
     TP_OptimizerRegistrationParams* params,
     TF_Status* status)
@@ -114,5 +109,3 @@ TFDML_EXPORT void TF_InitGraph(
     params->optimizer->optimize_func = tfdml::OptimizeGraph;
     params->optimizer->destroy_func = tfdml::DeleteOptimizer;
 }
-
-#pragma warning(pop)
