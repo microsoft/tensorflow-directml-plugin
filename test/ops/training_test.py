@@ -202,27 +202,24 @@ class TrainingTest(keras_parameterized.TestCase):
   @keras_parameterized.run_all_keras_modes
   @keras_parameterized.run_with_all_model_types
   def test_target_dtype_matches_output(self):
-    # TODO 37937499: Enable when ResourceApplyGradientDescent is supported
-    self.skipTest("DML doesn't support ResourceApplyGradientDescent yet")
-
     def loss_fn(labels, preds):
       self.assertEqual(labels.dtype, preds.dtype)
       return labels - preds
 
     layers = [
-        layers_module.Dense(10, dtype=np.float64),
-        layers_module.Dense(10, dtype=np.float64)
+        layers_module.Dense(10, dtype=np.float32),
+        layers_module.Dense(10, dtype=np.float32)
     ]
     model = testing_utils.get_model_from_layers(layers, input_shape=(1,))
-    inputs = np.ones(10, dtype=np.float64)
-    targets = np.ones(10, dtype=np.float64)
+    inputs = np.ones(10, dtype=np.float32)
+    targets = np.ones(10, dtype=np.float32)
     model.compile(
         'sgd',
         loss=loss_fn,
         run_eagerly=testing_utils.should_run_eagerly())
     model.train_on_batch(inputs, targets)
     model.test_on_batch(inputs, targets)
-    self.assertEqual(model.predict(inputs).dtype, np.float64)
+    self.assertEqual(model.predict(inputs).dtype, np.float32)
 
   @keras_parameterized.run_all_keras_modes
   def test_fit_and_validate_nested_training_arg(self):
