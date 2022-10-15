@@ -7,7 +7,9 @@ name: $(Date:yyMMdd-HHmm)$(Rev:.r).$(SourceBranchName)
 trigger: none
 
 # Do not trigger on PRs.
-pr: none
+pr:
+- main
+- releases/*
 
 # Build nightly at 5 AM UTC (10 PM PDT)
 schedules:
