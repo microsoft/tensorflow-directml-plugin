@@ -18,7 +18,7 @@ parameters:
 
 jobs:
 - job:
-  displayName: Build ${{parameters.artifact}}
+  displayName: ${{parameters.artifact}}
   timeoutInMinutes: 20
   workspace:
     clean: all
