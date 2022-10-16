@@ -148,7 +148,6 @@ jobs:
         - task: PowerShell@2
           displayName: Test ${{artifact}} (${{tensorflowPackage}})
           condition: contains(variables.agentTestConfigs, '${{artifact}}')
-          continueOnError: true
           inputs:
             targetType: inline
             script: |
@@ -177,7 +176,6 @@ jobs:
         - task: PowerShell@2
           displayName: Test ${{artifact}} (${{tensorflowPackage}})
           condition: contains(variables.agentTestConfigs, '${{artifact}}')
-          continueOnError: true
           inputs:
             targetType: inline
             script: |
