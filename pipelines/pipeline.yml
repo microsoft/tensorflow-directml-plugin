@@ -141,16 +141,17 @@ stages:
         tensorflowVersion: ${{parameters.testTensorflowVersion}}
         kerasPackage: ${{parameters.testKerasPackage}}
 
-- stage: reportStage
-  displayName: Report Results
-  ${{if parameters.enableTests}}:
-    dependsOn: [buildStage, testStage]
-  ${{if not(parameters.enableTests)}}:
-    dependsOn: [buildStage]
-  condition: succeededOrFailed()
-  pool: DirectML_TF2_Windows_Pool
-  jobs:
-  - template: report.yml
-    parameters:
-      emailTo: ${{parameters.emailTo}}
-      enableTests: ${{parameters.enableTests}}
+- ${{if not(eq(variables['Build.Reason'], 'PullRequest'))}}:
+  - stage: reportStage
+    displayName: Report Results
+    ${{if parameters.enableTests}}:
+      dependsOn: [buildStage, testStage]
+    ${{if not(parameters.enableTests)}}:
+      dependsOn: [buildStage]
+    condition: succeededOrFailed()
+    pool: DirectML_TF2_Windows_Pool
+    jobs:
+    - template: report.yml
+      parameters:
+        emailTo: ${{parameters.emailTo}}
+        enableTests: ${{parameters.enableTests}}
