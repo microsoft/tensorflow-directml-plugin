@@ -41,3 +41,7 @@ diff <my_cc_file> /tmp/my_cc_file.cc
 ### Formatting all files
 
 To automatically format all files in the repository and make sure that they conform to the guidelines, run `format.sh` on Ubuntu or `format.ps1` on Windows.
+
+### Adding a new kernel
+
+To add a new kernel, follow the steps outlined in the [Kernel Cookbook](KERNEL_COOKBOOK.md)
