@@ -177,8 +177,6 @@ class ReluTest(test.TestCase):
     self.assertLess(err, 1e-10)
 
   def testGradientScalar(self):
-    # TODO 37937499: Enable when ResourceApplyGradientDescent is supported
-    self.skipTest("DML doesn't support ResourceApplyGradientDescent yet")
     x = variables.Variable(100.)
 
     def loss():
@@ -363,8 +361,6 @@ class LeakyReluTest(test.TestCase):
     self.assertLess(err, 1e-10)
 
   def testGradientScalar(self):
-    # TODO 37937499: Enable when ResourceApplyGradientDescent is supported
-    self.skipTest("DML doesn't support ResourceApplyGradientDescent yet")
     x = variables.Variable(-100.)
 
     def loss():
