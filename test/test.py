@@ -146,11 +146,10 @@ class _TestGroup:
 
         return summary
 
-    def print_summary(self):
+    def print_summary(self, summary):
         """Prints a summary of the results of the TestGroup run"""
         if not self.tests:
             return
-        summary = self.summarize()
 
         print()
         print("=" * 80)
@@ -533,10 +532,19 @@ def _main():
         for test_group in test_groups:
             test_group.run(args.parallel, args.redirect_output)
 
+    failures = False
+
     # Summarize test results.
-    if args.summarize:
-        for test_group in test_groups:
-            test_group.print_summary()
+    for test_group in test_groups:
+        summary = test_group.summarize()
+
+        if args.summarize:
+            test_group.print_summary(summary)
+
+        if summary["tests_failed_count"] > 0 or summary["tests_timed_out_count"] > 0:
+            failures = True
+
+    sys.exit(1 if failures else 0)
 
 
 if __name__ == "__main__":
