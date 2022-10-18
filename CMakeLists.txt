@@ -599,7 +599,7 @@ if(NOT WIN32)
             $<$<BOOL:${WIN32}>:${pix_event_runtime_SOURCE_DIR}/ThirdPartyNotices.txt>
             $<$<BOOL:${WIN32}>:./directml/WinPixEventRuntime_ThirdPartyNotices.txt>
         COMMAND
-            ${CMAKE_COMMAND} -E tar $<$<BOOL:${WIN32}>:"cfv"> $<$<BOOL:${WIN32}>:"cfvz"> "${framework_full_name}" $<$<BOOL:${WIN32}>:--format=zip> --
+            ${CMAKE_COMMAND} -E tar $<$<BOOL:${WIN32}>:"cfv"> $<$<BOOL:${UNIX}>:"cfvz"> "${framework_full_name}" $<$<BOOL:${WIN32}>:--format=zip> --
             $<TARGET_FILE_NAME:tfdml_plugin_framework>
             LICENSE
             directml/DirectML_LICENSE.txt
