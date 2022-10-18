@@ -15,9 +15,12 @@ limitations under the License.
 ==============================================================================*/
 
 #include "tfdml/kernels/pch.h"
+#include "tfdml/kernels/dml_lstm_helpers.h"
 
 namespace tfdml
 {
+// using TensorDimensions = SmallVector<uint32_t, 4>;
+
 // Specifies the types of a RNN model.
 enum class RnnMode {
   kRnnRelu = 0,
@@ -99,6 +102,24 @@ struct CudnnModelTypes {
 //         static_cast<int>(rnn_mode), static_cast<int>(rnn_input_mode),
 //         static_cast<int>(rnn_direction_mode));
 //   }
+};
+
+inline dml::TensorDimensions DimensionFromShape(
+    const TensorShape& shape)
+{
+    if (shape.dims() == 2) {
+        return dml::TensorDimensions{
+            1,
+            1,
+            static_cast<uint32_t>(shape.dim_size(0)),
+            static_cast<uint32_t>(shape.dim_size(1))};
+    } else {
+        return dml::TensorDimensions{
+            1,
+            static_cast<uint32_t>(shape.dim_size(0)),
+            static_cast<uint32_t>(shape.dim_size(1)),
+            static_cast<uint32_t>(shape.dim_size(2))};
+    }
 };
 
 class CudnnRNNCommonInitHelper : public InitializationHelper
@@ -374,7 +395,7 @@ class CudnnRNNParamsToCanonicalKernel: public OpKernel {
             OP_REQUIRES(
                 ctx, num_params_weights_per_layer_ % 2 != 0,
                 errors::InvalidArgument("Number of params (weights) per layer is not"
-                                        "an odl number with projection."));
+                                        "an odd number with projection."));
         }
 
         h_num_units_ = (num_proj_ == 0 ? num_units_ : num_proj_);
@@ -667,11 +688,12 @@ class CudnnRNNCanonicalToParamsInitHelper : public InitializationHelper
     int64_t output_size_;
 };
 
-using InitHelper = CudnnRNNCanonicalToParamsInitHelper;
+// using InitHelper = CudnnRNNCanonicalToParamsInitHelper;
 
 class CudnnRNNCanonicalToParamsShapeHelper : public ShapeHelper
 {
   public:
+    using InitHelper = CudnnRNNCanonicalToParamsInitHelper;
     std::vector<TensorShape> GetOutputShapes(
         OpKernelContext* ctx,
         const InitializationHelper* initialization_helper) const override
@@ -711,8 +733,8 @@ class CudnnRNNCanonicalToParamsKernel : public DmlKernel
 
         uint32_t first_weight_index = 3;
         uint32_t last_weight_index = first_weight_index + init_helper->GetNumParamsWeights();
-        uint32_t first_bias_index = 3;
-        uint32_t last_bias_index = first_weight_index + init_helper->GetNumParamsBiases();
+        uint32_t first_bias_index = last_weight_index;
+        uint32_t last_bias_index = first_bias_index + init_helper->GetNumParamsBiases();
 
         for (uint32_t i = first_weight_index; i < last_weight_index; i++)
         {
@@ -785,7 +807,7 @@ class CudnnRNNForwardInitHelper : public InitializationHelper
             }
             else
             {
-                time_major = false; // TODO: double check
+                time_major = true; // TODO: double check
             }
             OP_REQUIRES_OK(ctx, ctx->GetAttr("dropout", &dropout));
             OP_REQUIRES_OK(ctx, ctx->GetAttr("seed", &seed));
@@ -812,11 +834,22 @@ class CudnnRNNForwardInitHelper : public InitializationHelper
     CudnnRNNForwardInitHelper(OpKernelContext* ctx, std::shared_ptr<const Attributes> attr)
         : attr_(std::move(attr))
     {
-        // TODO: account for extra input for V3
         const Tensor& input_tensor = ctx->input(0);
         const Tensor& input_h_tensor = ctx->input(1);
         const Tensor& input_c_tensor = ctx->input(2);
         const Tensor& params_tensor = ctx->input(3);
+
+        Tensor sequence_lengths_tensor;
+
+        // Extra input for V3
+        if (ctx->num_inputs() == 5) {
+            sequence_lengths_tensor = ctx->input(4);
+        }
+
+        // Extra output for V2/V3
+        if (ctx->num_outputs() == 5) {
+            host_reserved_output_ = true;
+        }
 
         input_h_shape_ = input_h_tensor.shape();
         input_c_shape_ = input_c_tensor.shape();
@@ -931,9 +964,13 @@ class CudnnRNNForwardInitHelper : public InitializationHelper
     int GetNumProj() const { return attr_->num_proj; }
     int GetNumLayers() const { return num_layers_; }
     int GetNumUnits() const { return num_units_; }
+    int GetDirCount() const { return dir_count_; }
     int GetInputSize() const { return input_size_; }
     int GetBatchSize() const { return batch_size_; }
     int GetMaxSeqLen() const { return max_seq_length_; }
+    int GetCellSize() const { return dir_count_ * num_units_; }
+    bool HasHostReservedOutput() const { return host_reserved_output_; }
+    bool IsTraining() const { return attr_->is_training; }
     RnnMode GetRNNMode() const { return attr_->model_types.rnn_mode; }
     RnnDirectionMode GetRNNDirectionMode() const {
         return attr_->model_types.rnn_direction_mode;
@@ -942,15 +979,9 @@ class CudnnRNNForwardInitHelper : public InitializationHelper
     TensorShape GetInputHShape() const { return input_h_shape_; }
     TensorShape GetInputCShape() const { return input_c_shape_; }
 
-    // bool time_major;
-    // float dropout;
-    // int seed;
-    // int seed2;
-    // bool is_training;
-    // CudnnModelTypes model_types;
-
   private:
     std::shared_ptr<const Attributes> attr_;
+    bool host_reserved_output_ = false;
     int max_seq_length_;
     int batch_size_;
     int input_size_;
@@ -966,11 +997,10 @@ class CudnnRNNForwardInitHelper : public InitializationHelper
     TensorShape input_c_shape_;
 };
 
-using InitHelper = CudnnRNNForwardInitHelper;
-
 class CudnnRNNForwardShapeHelper : public ShapeHelper
 {
   public:
+  using InitHelper = CudnnRNNForwardInitHelper;
     std::vector<TensorShape> GetOutputShapes(
         OpKernelContext* ctx,
         const InitializationHelper* initialization_helper) const override
@@ -978,13 +1008,7 @@ class CudnnRNNForwardShapeHelper : public ShapeHelper
         auto init_helper =
             static_cast<const InitHelper*>(initialization_helper);
         std::vector<TensorShape> outputShapes;
-        // TODO: account for additional outputs for V2/V3
-        outputShapes.reserve(4);
-
-        // output,
-        // output_h,
-        // output_c,
-        // reserve_space
+        outputShapes.reserve(5);
 
         // output tensor shape
         outputShapes.push_back(init_helper->GetOutputShape());
@@ -996,8 +1020,11 @@ class CudnnRNNForwardShapeHelper : public ShapeHelper
         outputShapes.push_back(init_helper->GetInputCShape());
 
         // reserve tensor shape
-        // TODO: figure out shape
         outputShapes.push_back(TensorShape({}));
+
+        if (init_helper->HasHostReservedOutput()) {
+            outputShapes.push_back(TensorShape({2}));
+        }
 
         return outputShapes;
     }
@@ -1022,15 +1049,32 @@ class CudnnRNNForwardOp : public DmlKernel
         DmlKernelConstruction* ctx,
         const InitHelper* init_helper)
     {
-        DmlKernelTensors tensors;
+        CHECK(ctx->GetInputCount() == 4 || ctx->GetInputCount() == 5);
+        CHECK(ctx->GetOutputCount() == 4 || ctx->GetOutputCount() == 5);
+
+        DmlKernelParams tparams;
+        if (ctx->GetInputCount() == 4) {
+            tparams.kernel_input_indices = {0, 1, 2, 3};
+        } else {
+            tparams.kernel_input_indices = {0, 1, 2, 3, 4};
+        }
+        tparams.kernel_output_indices = {0, 1, 2};
+        auto tensors = GetTensorInfos(ctx, tparams);
+
         auto input_descs = GetDmlTensorDescs(tensors.inputs);
+        DML_TENSOR_DATA_TYPE dtype =
+            GetDmlDataTypeFromTfDataType(ctx->GetInputDataType(1));
         auto scope = dml::Graph(ctx->GetDmlDevice());
-        
 
         auto inputs = dml::InputTensor(scope, 0, input_descs[0]);
         auto input_h = dml::InputTensor(scope, 1, input_descs[1]);
         auto input_c = dml::InputTensor(scope, 2, input_descs[2]);
         auto params = dml::InputTensor(scope, 3, input_descs[3]);
+
+        dml::Expression sequence_lengths;
+        if (ctx->GetInputCount() == 5) {
+            sequence_lengths = dml::InputTensor(scope, 4, input_descs[4]);
+        }
 
         auto timesteps = ctx->GetInputTensorShape(0).dim_size(0);
         uint32_t batch_size = static_cast<uint32_t>(init_helper->GetBatchSize());
@@ -1040,10 +1084,49 @@ class CudnnRNNForwardOp : public DmlKernel
 
         dml::TensorDesc::Dimensions x_extent{1, 1, batch_size, input_size};
 
+        int num_dirs = init_helper->GetDirCount();
+        int num_layers = init_helper->GetNumLayers();
+        int num_units = init_helper->GetNumUnits();
+
+        // TensorShape w_shape{num_layers * num_dirs, 3 * num_units, input_size};
+        // TensorShape r_shape{num_layers * num_dirs, 3 * num_units, num_units};
+        // TensorShape b_shape{num_layers * num_dirs, 6 * num_units};
+
+        TensorShape w_shape{num_dirs, 3 * num_units, input_size};
+        TensorShape r_shape{num_dirs, 3 * num_units, num_units};
+        TensorShape b_shape{num_dirs, 6 * num_units};
+
+        dml::TensorDimensions w_dims = DimensionFromShape(w_shape);
+        dml::TensorDimensions r_dims = DimensionFromShape(r_shape);
+        dml::TensorDimensions b_dims = DimensionFromShape(b_shape);
+
+        dml::TensorDimensions dummy_dims = DimensionFromShape(TensorShape{1,1,1,1});
+
+        TensorShape output_c_shape{num_layers * num_dirs, batch_size, num_units};
+        dml::TensorDimensions output_c_dims = DimensionFromShape(output_c_shape);
+
+        uint32_t w_end = w_shape.num_elements();
+        uint32_t r_end = w_end + r_shape.num_elements();
+        uint32_t b_end = r_end + b_shape.num_elements();
+
         std::vector<dml::Expression> c_tensors;
         c_tensors.reserve(max_seq_length);
         std::vector<dml::Expression> h_tensors;
         h_tensors.reserve(max_seq_length);
+
+        dml::TensorDesc::Dimensions w_extent =
+                    DimensionFromExtent({1, w_end});
+        auto w = dml::Slice(params, dml::TensorDesc::Dimensions{0, 0, 0, 0}, w_extent, slice_stride);
+        dml::TensorDesc::Dimensions r_extent =
+                    DimensionFromExtent({1, r_shape.num_elements()});
+        auto r = dml::Slice(params, dml::TensorDesc::Dimensions{0, 0, 0, w_end}, r_extent, slice_stride);
+        dml::TensorDesc::Dimensions b_extent =
+                    DimensionFromExtent({1, b_shape.num_elements()});
+        auto b = dml::Slice(params, dml::TensorDesc::Dimensions{0, 0, 0, r_end}, b_extent, slice_stride);
+
+        w = dml::Reinterpret(w, w_dims, {});
+        r = dml::Reinterpret(r, r_dims, {});
+        b = dml::Reinterpret(b, b_dims, {});
 
         for (uint32_t t = 0; t < timesteps; ++t) {
             dml::TensorDesc::Dimensions tensor_offset{0, t, 0, 0};
@@ -1052,93 +1135,129 @@ class CudnnRNNForwardOp : public DmlKernel
             auto input_tensor =
                 dml::Slice(inputs, tensor_offset, x_extent, slice_stride);
 
-            // auto cs_prev_tensor = t == 0 ? cs_prev : cs_tensors.at(t - 1);
-            // auto h_prev_tensor = t == 0 ? h_prev : h_tensors.at(t - 1);
-
             if (init_helper->GetRNNMode() == RnnMode::kRnnLstm) {
                 auto c_tm1 = t == 0 ? input_c : c_tensors.at(t - 1);
                 auto h_tm1 = t == 0 ? input_h : h_tensors.at(t - 1);
 
-                // // Concat xh = [x, h].
-                // auto xh = dml::Join({inputs, h_tm1}, 3);
+                // Concat xh = [x, h].
+                auto xh = dml::Join({input_tensor, h_tm1}, 3);
 
-                // // TODO: get w and b from params
-                // auto w = params;
-                // auto b = params;
-                // // states1 = xh * w + b
-                // auto gates_gemm = dml::Gemm(xh, w);
-                // dml::Expression gates = gates_gemm;
-                // gates += b;
+                // states1 = xh * w + b
+                auto gates_gemm = dml::Gemm(xh, w);
+                dml::Expression gates = gates_gemm;
+                gates += dml::Gemm(gates, r);
+                gates += b;
 
-                // // split z into 4
-                // // i = sigmoid(z[0])
-                // // Input gate.
-                // auto i = dml::Slice(gates, i_offset, cell_extent, slice_stride);
-                // i = dml::ActivationSigmoid(i);
-                // // f = sigmoid(z[1])
-                // // Forget gate (w/ bias).
-                // auto f = dml::Slice(gates, f_offset, cell_extent, slice_stride);
-                // f = dml::ActivationSigmoid(f);
-                // // c = f* init_C + i * tanh(z[2])
-                // // Cell input.
-                // auto ci = dml::Slice(gates, c_offset, cell_extent, slice_stride);
-                // ci = dml::ActivationTanh(ci);
-                // // cs = ci .* i + f .* cs_prev
-                // auto cs = i * ci + f * c_tm1;
-                // // o = sigmoid(z[3])
-                // // Output gate.
-                // auto o = dml::Slice(gates, o_offset, cell_extent, slice_stride);
-                // o = dml::ActivationSigmoid(o);
-                // // co = tanh(cs)
-                // auto co = dml::ActivationTanh(cs);
-                // // h = o * tanh(c)
-                // // h = o * co
-                // auto h = o * co;
-                // i_tensors.push_back(i);
-                // cs_tensors.push_back(cs);
-                // f_tensors.push_back(f);
-                // o_tensors.push_back(o);
-                // ci_tensors.push_back(ci);
-                // co_tensors.push_back(co);
-                // h_tensors.push_back(h);
-                // // return h, [h, c]
+                auto cell_size = init_helper->GetCellSize();
+                functor::LSTMBlockCell cell(batch_size, input_size, cell_size);
+
+                dml::TensorDesc::Dimensions i_offset =
+                    DimensionFromOffset(cell.gates_i_offsets());
+                dml::TensorDesc::Dimensions c_offset =
+                    DimensionFromOffset(cell.gates_c_offsets(ICFO));
+                dml::TensorDesc::Dimensions f_offset =
+                    DimensionFromOffset(cell.gates_f_offsets(ICFO));
+                dml::TensorDesc::Dimensions o_offset =
+                    DimensionFromOffset(cell.gates_o_offsets());
+                dml::TensorDesc::Dimensions cell_extent =
+                    DimensionFromExtent(cell.cell_extents());
+                
+
+                // i = sigmoid(z[0])
+                // Input gate.
+                auto i = dml::Slice(gates, i_offset, cell_extent, slice_stride);
+                i = dml::ActivationSigmoid(i);
+                // f = sigmoid(z[1])
+                // Forget gate (w/ bias).
+                auto f = dml::Slice(gates, f_offset, cell_extent, slice_stride);
+                f = dml::ActivationSigmoid(f);
+                // c = f* init_C + i * tanh(z[2])
+                // Cell input.
+                auto ci = dml::Slice(gates, c_offset, cell_extent, slice_stride);
+                ci = dml::ActivationTanh(ci);
+                // cs = ci .* i + f .* cs_prev
+                auto cs = i * ci + f * c_tm1;
+                // o = sigmoid(z[3])
+                // Output gate.
+                auto o = dml::Slice(gates, o_offset, cell_extent, slice_stride);
+                o = dml::ActivationSigmoid(o);
+                // co = tanh(cs)
+                auto co = dml::ActivationTanh(cs);
+                // h = o * co
+                auto h = o * co;
+                c_tensors.push_back(cs);
+                h_tensors.push_back(h);
+                // return h, [h, c]
             } else {
                 auto h_tm1 = t == 0 ? input_h : h_tensors.at(t - 1);
-                // // z = cell_inputs (dot) params[weights[t]]
-                // // Concat x_h_prev = [x, h_prev].
-                // auto x_h_prev = dml::Join({x, h_prev}, 3);
-                // // z += bias[t]
-                // // r_u_bar = x_h_prev * w_ru + b_ru
-                // auto r_u_bar_gemm = dml::Gemm(x_h_prev, w_ru);
-                // dml::Expression r_u_bar = r_u_bar_gemm;
-                // r_u_bar += b_ru;
-                // // split z into 3
-                // // m_i = init_h * recurrent kernel??
-                // // Slice r_u_bar into r, u and apply the sigmoid.
-                // auto r = dml::Slice(r_u_bar, ru_r_offsets, cell_extents, slice_strides);
-                // r = dml::ActivationSigmoid(r);
 
-                // auto u = dml::Slice(r_u_bar, ru_u_offsets, cell_extents, slice_strides);
-                // u = dml::ActivationSigmoid(u);
-                // // m_i = m_i + bias[t]
-                // // Concat x_h_prevr = [x,h_prev*r]
-                // auto h_prevr = h_prev * r;
-                // auto x_h_prevr = dml::Join({x, h_prevr}, 3);
-                // // r_z, r_r, r_h = split m_i into 3
-                // // z = sigmoid(x_z + r_z)
-                // // r = sigmoid(x_r + r_r)
-                // // hh = tanh (x_h + r * r_h)
-                // // c = tanh(x_h_prevr*w_c+b_c), Note b_c is broadcasted before adding.
-                // auto c_gemm = dml::Gemm(x_h_prevr, w_c);
-                // dml::Expression c = c_gemm;
-                // c += b_c;
-                // c = dml::ActivationTanh(c);
-                // // h = z * input_h + (1-z) * hh
-                // // h= u*h_prev + (1-u)*c
-                // auto h = u * (h_prev - c) + c;
-                // // return h, [h]
+                uint32_t axis_size = 3 * num_units;
+                auto split_b = dml::Split(b, 3, {axis_size, axis_size});
+                auto& b_i = split_b[0];
+                auto& b_r = split_b[1];
+                auto b_i_tile = dml::Tile(b_i, {1, 1, batch_size, 1});
+                auto b_r_tile = dml::Tile(b_r, {1, 1, batch_size, 1});
+
+                auto matrix_x_gemm = dml::Gemm(input_tensor, w, dml::NullOpt, DML_MATRIX_TRANSFORM_NONE, DML_MATRIX_TRANSFORM_TRANSPOSE);
+                dml::Expression matrix_x = matrix_x_gemm;
+                matrix_x += b_i_tile;
+
+                auto cell_size = static_cast<uint32_t>(init_helper->GetCellSize());
+                dml::TensorDesc::Dimensions x_z_offsets = {0, 0, 0, 0};
+                dml::TensorDesc::Dimensions x_r_offsets = {0, 0, 0, cell_size};
+                dml::TensorDesc::Dimensions cell_extents = {1, 1, batch_size, cell_size};
+                int32_t slice_strides[] = {1, 1, 1, 1};
+
+                // split z into 3
+                uint32_t matrix_axis_size = num_units;
+                auto split_matrix_x = dml::Split(matrix_x, 3, {matrix_axis_size, matrix_axis_size, matrix_axis_size});
+                auto x_z = split_matrix_x[0];
+                auto x_r = split_matrix_x[1];
+                auto x_h = split_matrix_x[2];
+
+                auto matrix_inner_gemm = dml::Gemm(h_tm1, r, dml::NullOpt, DML_MATRIX_TRANSFORM_NONE, DML_MATRIX_TRANSFORM_TRANSPOSE);
+                dml::Expression matrix_inner = matrix_inner_gemm;
+                matrix_inner += b_r_tile;
+
+                auto split_matrix_inner = dml::Split(matrix_inner, 3, {matrix_axis_size, matrix_axis_size, matrix_axis_size});
+                auto recurrent_z = split_matrix_inner[0];
+                auto recurrent_r = split_matrix_inner[1];
+                auto recurrent_h = split_matrix_inner[2];
+
+                auto z = dml::ActivationSigmoid(x_z + recurrent_z);
+                auto r1 = dml::ActivationSigmoid(x_r + recurrent_r);
+                auto hh = dml::ActivationTanh(x_h + r1 * recurrent_h);
+
+                auto h = z * h_tm1 + (1 - z) * hh;
+                // return h, [h]
+                h_tensors.push_back(h);
             }
         }
+        std::vector<dml::Expression> outputs = {h_tensors.back(), h_tensors.back()};
+        if (init_helper->GetRNNMode() == RnnMode::kRnnLstm) {
+            outputs.push_back(c_tensors.back());
+        }
+        auto output_c_dummy = dml::ScalarTensor(scope, 1, output_c_dims);
+
+        outputs.push_back(output_c_dummy);
+
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, outputs);
+
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
+    }
+
+    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override {
+        for (int i = 0; i < 3; ++i) {
+            ctx->GetDmlDeviceContext()->ZeroBuffer(
+                ctx->GetDmlDeviceContext()->GetBufferForTensor(ctx->GetOutputTensor(i)));
+        }
+
+        ctx->GetDmlDeviceContext()->FillBufferWithPattern(
+            ctx->GetDmlDeviceContext()->GetBufferForTensor(ctx->GetOutputTensor(4)),
+            {1, 0} //TODO: dnn:kDefaultAlgorithm has value -1 but FillBufferWithPattern takes uint8
+        );
+        return DmlKernel::Compute(ctx);
     }
 };
 
@@ -1163,7 +1282,7 @@ class CudnnRNNBackwardInitHelper : public InitializationHelper
             }
             else
             {
-                time_major = false; // TODO: double check
+                time_major = true; // TODO: double check
             }
             OP_REQUIRES_OK(ctx, ctx->GetAttr("dropout", &dropout));
             OP_REQUIRES_OK(ctx, ctx->GetAttr("seed", &seed));
@@ -1192,6 +1311,33 @@ class CudnnRNNBackwardInitHelper : public InitializationHelper
         const Tensor& input_h_tensor = ctx->input(1);
         const Tensor& input_c_tensor = ctx->input(2);
         const Tensor& params_tensor = ctx->input(3);
+
+        // TODO: account for extra inputs for V2/V3
+
+        const Tensor& output_tensor = ctx->input(4);
+        const Tensor& output_h_tensor = ctx->input(5);
+        
+        
+        Tensor output_backprop_tensor = nullptr;
+        Tensor output_h_backprop_tensor = nullptr;
+        Tensor output_c_tensor = nullptr;
+        Tensor output_c_backprop_tensor = nullptr;
+        Tensor reserve_space_tensor = nullptr;
+
+        if (attr_->model_types.HasInputC()) {
+            output_c_tensor = ctx->input(6);
+            output_backprop_tensor = ctx->input(7);
+            output_h_backprop_tensor = ctx->input(8);
+            output_c_backprop_tensor = ctx->input(9);
+            reserve_space_tensor = ctx->input(10);
+        } else {
+            output_backprop_tensor = ctx->input(6);
+            output_h_backprop_tensor = ctx->input(7);
+            reserve_space_tensor = ctx->input(8);
+        }
+
+
+        ////////
 
         input_h_shape_ = input_h_tensor.shape();
         input_c_shape_ = input_c_tensor.shape();
@@ -1303,19 +1449,7 @@ class CudnnRNNBackwardInitHelper : public InitializationHelper
                             dir_count_ * num_units_});
         }
 
-        //////////
-
-        const Tensor& output_tensor = ctx->input(4);
-        const Tensor& output_backprop_tensor = ctx->input(7);
-        const Tensor& output_h_tensor = ctx->input(5);
-        const Tensor& output_h_backprop_tensor = ctx->input(8);
-
-        // if (attr_->model_types.HasInputC()) {
-        const Tensor& output_c_tensor = ctx->input(6);
-        const Tensor& output_c_backprop_tensor = ctx->input(9);
-        // }
-
-        const Tensor& reserve_space_tensor = ctx->input(10);
+        ////////
 
         OP_REQUIRES(
             ctx,
@@ -1371,9 +1505,11 @@ class CudnnRNNBackwardInitHelper : public InitializationHelper
     int GetNumProj() const { return attr_->num_proj; }
     int GetNumLayers() const { return num_layers_; }
     int GetNumUnits() const { return num_units_; }
+    int GetDirCount() const { return dir_count_; }
     int GetInputSize() const { return input_size_; }
     int GetBatchSize() const { return batch_size_; }
     int GetMaxSeqLen() const { return max_seq_length_; }
+    int GetCellSize() const { return dir_count_ * num_units_; }
     RnnMode GetRNNMode() const { return attr_->model_types.rnn_mode; }
     RnnDirectionMode GetRNNDirectionMode() const {
         return attr_->model_types.rnn_direction_mode;
@@ -1454,11 +1590,30 @@ class CudnnRNNBackwardOp : public DmlKernel
         auto input_descs = GetDmlTensorDescs(tensors.inputs);
         auto scope = dml::Graph(ctx->GetDmlDevice());
         
-
+        // input: [seq_length, batch_size, input_size]
         auto inputs = dml::InputTensor(scope, 0, input_descs[0]);
+        // input_h: [num_layer * dir, batch_size, num_units]
         auto input_h = dml::InputTensor(scope, 1, input_descs[1]);
+        // input_c (only LSTM): [num_layer * dir, batch_size, num_units]
         auto input_c = dml::InputTensor(scope, 2, input_descs[2]);
+        // opaque- same as forward??
         auto params = dml::InputTensor(scope, 3, input_descs[3]);
+        // output: [seq_length, batch_size, dir * num_units]
+        auto output = dml::InputTensor(scope, 4, input_descs[4]);
+        // output_h: [same as input_h]
+        auto output_h = dml::InputTensor(scope, 5, input_descs[5]);
+        // output_c: [same as input_c]
+        auto output_c = dml::InputTensor(scope, 6, input_descs[6]);
+        // output_backprop: [same as output in forward pass]
+        auto output_backprop = dml::InputTensor(scope, 7, input_descs[7]);
+        // output_h_backprop: [same as output_h in forward pass]
+        auto output_h_backprop = dml::InputTensor(scope, 8, input_descs[8]);
+        // output_c_backprop: [same as output_c in forward pass]
+        auto output_c_backprop = dml::InputTensor(scope, 9, input_descs[9]);
+        // reserve_space: same reserve_space produced in forward
+        // auto reserve_space = dml::InputTensor(scope, 10, input_descs[10]);
+        // host_reserved
+        // auto host_reserved = dml::InputTensor(scope, 11, input_descs[11]);
 
         auto timesteps = ctx->GetInputTensorShape(0).dim_size(0);
         uint32_t batch_size = static_cast<uint32_t>(init_helper->GetBatchSize());
@@ -1468,31 +1623,289 @@ class CudnnRNNBackwardOp : public DmlKernel
 
         dml::TensorDesc::Dimensions x_extent{1, 1, batch_size, input_size};
 
+        int num_dirs = init_helper->GetDirCount();
+        int num_layers = init_helper->GetNumLayers(); 
+        int num_units = init_helper->GetNumUnits();
+        uint32_t u_num_units = static_cast<uint32_t>(init_helper->GetNumUnits());
+
+        // TensorShape w_shape{num_layers * num_dirs, 3 * num_units, input_size};
+        // TensorShape r_shape{num_layers * num_dirs, 3 * num_units, num_units};
+        // TensorShape b_shape{num_layers * num_dirs, 6 * num_units};
+
+        TensorShape w_shape{num_dirs, 3 * num_units, input_size};
+        TensorShape r_shape{num_dirs, 3 * num_units, num_units};
+        TensorShape b_shape{num_dirs, 6 * num_units};
+
+        dml::TensorDimensions w_dims = DimensionFromShape(w_shape);
+        dml::TensorDimensions r_dims = DimensionFromShape(r_shape);
+        dml::TensorDimensions b_dims = DimensionFromShape(b_shape);
+
+        uint32_t w_end = w_shape.num_elements();
+        uint32_t r_end = w_end + r_shape.num_elements();
+        uint32_t b_end = r_end + b_shape.num_elements();
+
         std::vector<dml::Expression> c_tensors;
         c_tensors.reserve(max_seq_length);
         std::vector<dml::Expression> h_tensors;
         h_tensors.reserve(max_seq_length);
 
-        for (uint32_t t = 0; t < timesteps; ++t) {
+        dml::TensorDesc::Dimensions w_extent =
+                    DimensionFromExtent({0, w_end});
+        auto w = dml::Slice(params, dml::TensorDesc::Dimensions{0, 0, 0, 0}, w_extent, slice_stride);
+        dml::TensorDesc::Dimensions r_extent =
+                    DimensionFromExtent({0, r_shape.num_elements()});
+        auto r = dml::Slice(params, dml::TensorDesc::Dimensions{0, 0, w_end, 0}, r_extent, slice_stride);
+        dml::TensorDesc::Dimensions b_extent =
+                    DimensionFromExtent({0, b_shape.num_elements()});
+        auto b = dml::Slice(params, dml::TensorDesc::Dimensions{0, 0, r_end, 0}, b_extent, slice_stride);
+
+        w = dml::Reinterpret(w, w_dims, {});
+        r = dml::Reinterpret(r, r_dims, {});
+        b = dml::Reinterpret(b, b_dims, {});
+
+        std::vector<dml::Expression> x_grad_tensors;
+
+        DML_TENSOR_DATA_TYPE dtype =
+            GetDmlDataTypeFromTfDataType(ctx->GetInputDataType(1));
+        
+        dml::TensorDesc::Dimensions output_extent{1, 1, batch_size, u_num_units};
+        dml::TensorDesc::Dimensions xh_x_offset{0, 0, 0, 0};
+        dml::TensorDesc::Dimensions xh_h_offset{0, 0, 0, input_size};
+
+        auto b_grad = dml::ZeroTensor(scope, dtype, b_dims);
+        auto cs_prev_grad = dml::ZeroTensor(scope, dtype, output_extent);
+        auto h_prev_grad = dml::ZeroTensor(scope, dtype, output_extent);
+        auto w_grad = dml::ZeroTensor(scope, dtype, w_dims);
+
+        dml::Expression input_backprop;
+        dml::Expression input_h_backprop;
+        dml::Expression input_c_backprop;
+        dml::Expression params_backprop;
+
+        for (uint32_t t = timesteps - 1; t >= 0; --t) {
             dml::TensorDesc::Dimensions tensor_offset{0, t, 0, 0};
             dml::TensorDesc::Dimensions prev_offset{0, t - 1, 0, 0};
 
             auto input_tensor =
                 dml::Slice(inputs, tensor_offset, x_extent, slice_stride);
-
-            // auto cs_prev_tensor = t == 0 ? cs_prev : cs_tensors.at(t - 1);
-            // auto h_prev_tensor = t == 0 ? h_prev : h_tensors.at(t - 1);
+            auto output_tensor =
+                dml::Slice(output, tensor_offset, x_extent, slice_stride);
 
             if (init_helper->GetRNNMode() == RnnMode::kRnnLstm) {
                 auto c_tm1 = t == 0 ? input_c : c_tensors.at(t - 1);
                 auto h_tm1 = t == 0 ? input_h : h_tensors.at(t - 1);
 
-                // TODO: LSTM gradients
+                auto xh = dml::Join({input_tensor, h_tm1}, 3);
+                auto gates_gemm = dml::Gemm(xh, w);
+                dml::Expression gates = gates_gemm;
+                gates += dml::Gemm(gates, r);
+                gates += b;
+
+                auto cell_size = init_helper->GetCellSize();
+                functor::LSTMBlockCell cell(batch_size, input_size, cell_size);
+
+                dml::TensorDesc::Dimensions i_offset =
+                    DimensionFromOffset(cell.gates_i_offsets());
+                dml::TensorDesc::Dimensions c_offset =
+                    DimensionFromOffset(cell.gates_c_offsets(ICFO));
+                dml::TensorDesc::Dimensions f_offset =
+                    DimensionFromOffset(cell.gates_f_offsets(ICFO));
+                dml::TensorDesc::Dimensions o_offset =
+                    DimensionFromOffset(cell.gates_o_offsets());
+                dml::TensorDesc::Dimensions cell_extent =
+                    DimensionFromExtent(cell.cell_extents());
+
+                auto i = dml::Slice(gates, i_offset, cell_extent, slice_stride);
+                i = dml::ActivationSigmoid(i);
+                // f = sigmoid(z[1])
+                // Forget gate (w/ bias).
+                auto f = dml::Slice(gates, f_offset, cell_extent, slice_stride);
+                f = dml::ActivationSigmoid(f);
+                // c = f* init_C + i * tanh(z[2])
+                // Cell input.
+                auto ci = dml::Slice(gates, c_offset, cell_extent, slice_stride);
+                ci = dml::ActivationTanh(ci);
+                // cs = ci .* i + f .* cs_prev
+                auto cs = i * ci + f * c_tm1;
+                // o = sigmoid(z[3])
+                // Output gate.
+                auto o = dml::Slice(gates, o_offset, cell_extent, slice_stride);
+                o = dml::ActivationSigmoid(o);
+                // co = tanh(cs)
+                auto co = dml::ActivationTanh(cs);
+                // h = o * co
+                auto h = o * co;
+                c_tensors.push_back(cs);
+                h_tensors.push_back(h);
+
+                // LSTM gradients
+                uint32_t t_ind = static_cast<uint32_t>(t);
+                dml::TensorDesc::Dimensions tensor_offset{0, t_ind, 0, 0};
+                dml::TensorDesc::Dimensions prev_offset{0, t_ind - 1, 0, 0};
+
+                auto x_tensor =
+                    dml::Slice(input_tensor, tensor_offset, x_extent, slice_stride);
+
+                auto cs_prev_tensor = c_tm1;
+                auto h_prev_tensor = h_tm1;
+
+                dml::Expression cs_tensor;
+
+                auto cs_grad_tensor = output_c_backprop;
+                    // dml::Slice(output_backprop, tensor_offset, output_extent, slice_stride);
+
+                cs_grad_tensor += cs_prev_grad;
+
+                auto h_grad_tensor = output_h_backprop;
+                    // dml::Slice(h_grad, tensor_offset, output_extent, slice_stride);
+
+                h_grad_tensor += h_prev_grad;
+
+                // do[t] = sigm'(o[t]) .* dh[t] .* co[t]
+                auto do_tensor =
+                    o * (1 - o) * h_grad_tensor * co;
+
+                // dcs[t] += tanh'(cs[t]) .* dh[t] .* o[t] + dcs[t + 1] .* f[t + 1]
+                auto dcs =
+                    (1 - dml::Pow(co, 2.0f)) * h_grad_tensor * o +
+                    cs_grad_tensor;
+
+                // dci[t] = tanh'(ci[t]) dcs[t] i[t]
+                auto dci = (1 - dml::Pow(ci, 2.0f)) * dcs * i;
+
+                // df[t] = sigm'(f[t]) dcs[t] cs[t - 1]
+                auto df = f * (1 - f) * dcs * cs_prev_tensor;
+
+                // di[t] = sigm'(i[t]) dcs[t] ci[t]
+                auto di = i * (1 - i) * dcs * ci;
+
+                auto dgates = dml::Join({di, dci, df, do_tensor}, 3);
+
+                cs_prev_grad = dcs * f;
+
+                auto xh_grad_gemm = dml::Gemm(
+                    dgates,
+                    w,
+                    dml::NullOpt,
+                    DML_MATRIX_TRANSFORM_NONE,
+                    DML_MATRIX_TRANSFORM_TRANSPOSE);
+                dml::Expression xh_grad = xh_grad_gemm;
+
+                // auto xh = dml::Join({x_tensor, h_prev_tensor}, 3);
+
+                auto x_grad_tensor =
+                    dml::Slice(xh_grad, xh_x_offset, x_extent, slice_stride);
+                h_prev_grad =
+                    dml::Slice(xh_grad, xh_h_offset, output_extent, slice_stride);
+
+                auto w_grad_gemm = dml::Gemm(
+                    xh,
+                    dgates,
+                    dml::NullOpt,
+                    DML_MATRIX_TRANSFORM_TRANSPOSE,
+                    DML_MATRIX_TRANSFORM_NONE);
+                w_grad += w_grad_gemm;
+
+                b_grad += dml::Reduce(dgates, DML_REDUCE_FUNCTION_SUM, {2});
+
+                // add to vector of x_grad tensors
+                x_grad_tensors.insert(x_grad_tensors.begin(), x_grad_tensor);
+
             } else {
+                absl::InlinedVector<dml::Expression, 2> param_grad_tensors;
                 auto h_tm1 = t == 0 ? input_h : h_tensors.at(t - 1);
-                // TODO: GRU gradients
+
+                uint32_t axis_size = 3 * num_units;
+                auto split_b = dml::Split(b, 1, {axis_size, axis_size});
+                auto& b_i = split_b[0];
+                auto& b_r = split_b[1];
+
+                auto matrix_x_gemm = dml::Gemm(input_tensor, w);
+                dml::Expression matrix_x = matrix_x_gemm;
+                matrix_x += b_i;
+
+                auto cell_size = static_cast<uint32_t>(init_helper->GetCellSize());
+                dml::TensorDesc::Dimensions x_z_offsets = {0, 0, 0, 0};
+                dml::TensorDesc::Dimensions x_r_offsets = {0, 0, 0, cell_size};
+                dml::TensorDesc::Dimensions cell_extents = {1, 1, batch_size, cell_size};
+                int32_t slice_strides[] = {1, 1, 1, 1};
+
+                // split z into 3
+                uint32_t matrix_axis_size = num_units;
+                auto split_matrix_x = dml::Split(matrix_x, 1, {matrix_axis_size, matrix_axis_size, matrix_axis_size});
+
+                auto x_z = split_matrix_x[0];
+                auto x_r = split_matrix_x[1];
+                auto x_h = split_matrix_x[2];
+
+                auto matrix_inner_gemm = dml::Gemm(h_tm1, r);
+                dml::Expression matrix_inner = matrix_inner_gemm;
+                matrix_inner += b_r;
+
+                auto split_matrix_inner = dml::Split(matrix_inner, 1, {matrix_axis_size, matrix_axis_size, matrix_axis_size});
+                auto recurrent_z = split_matrix_inner[0];
+                auto recurrent_r = split_matrix_inner[1];
+                auto recurrent_h = split_matrix_inner[2];
+
+                auto z = dml::ActivationSigmoid(x_z + recurrent_z);
+                auto r1 = dml::ActivationSigmoid(x_r + recurrent_r);
+                auto hh = dml::ActivationTanh(x_h + r1 * recurrent_h);
+
+                auto h = z * h_tm1 + (1 - z) * hh;
+                h_tensors.push_back(h);
+
+                // GRU gradients
+                auto d0 = output_tensor;
+                auto d1 = z * d0;
+                auto d2 = h_tm1 * d0;
+                auto d3 = hh * d0;
+                auto d4 = -1 * d3;
+                auto d5 = d2 + d4;
+                auto d6 = (1 - z) * d0;
+                auto d7 = d5 * (z * (1 - z));
+                auto d8 = d6 * (1 - dml::Pow(hh, 2.0));
+                auto d9 = d8 * x_h;
+                auto d10 = d8 * recurrent_h;
+                auto d11 = d7 * x_z;
+                auto d12 = d7 * recurrent_z;
+                auto d14 = d10 * r1;
+                auto d15 = d10 * h_tm1;
+                auto d16 = d15 * (r1 * (1 - r1));
+                auto d13 = d16 * x_r;
+                auto d17 = d16 * recurrent_r;
+
+                auto dx = d9 + d11 + d13;
+                auto d_h_prev = d12 + d14 + d1 + d17;
+                // u_z + u_r + u_h
+                auto d_r = (input_tensor * d7) + (input_tensor * d16) + (input_tensor * d8);
+                param_grad_tensors.push_back(d_r);
+                // w_z + w_r + w_h
+                auto d_w = (h_tm1 * d7) + (h_tm1 * d16) + ((h_tm1 * r1) * d8);
+                param_grad_tensors.push_back(d_w);
+                
+                auto d_params = dml::Join(param_grad_tensors, 3);
+
+                input_backprop = dx;
+                input_h_backprop = d_h_prev;
+                params_backprop = d_params;
             }
         }
+        std::vector<dml::Expression> outputs = {input_backprop, input_h_backprop, params_backprop};
+        // if (init_helper->GetRNNMode() == RnnMode::kRnnLstm) {
+        //     outputs.push_back(c_tensors.back());
+        // }
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, outputs);
+
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
+    }
+
+    StatusOr<DmlGpuEvent> Compute(DmlKernelContext* ctx) const override {
+        for (int i = 0; i < ctx->GetOutputCount(); ++i) {
+            ctx->GetDmlDeviceContext()->ZeroBuffer(
+                ctx->GetDmlDeviceContext()->GetBufferForTensor(ctx->GetOutputTensor(i)));
+        }
+        return DmlKernel::Compute(ctx);
     }
 };
 

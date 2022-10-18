@@ -20,26 +20,6 @@ limitations under the License.
 namespace tfdml
 {
 
-inline dml::TensorDesc::Dimensions DimensionFromOffset(
-    const Eigen::array<Eigen::DenseIndex, 2>& offset)
-{
-    return dml::TensorDesc::Dimensions{
-        0,
-        0,
-        static_cast<uint32_t>(offset[0]),
-        static_cast<uint32_t>(offset[1])};
-};
-
-inline dml::TensorDesc::Dimensions DimensionFromExtent(
-    const Eigen::array<Eigen::DenseIndex, 2>& extent)
-{
-    return dml::TensorDesc::Dimensions{
-        1,
-        1,
-        static_cast<uint32_t>(extent[0]),
-        static_cast<uint32_t>(extent[1])};
-};
-
 class LstmInitHelper : public InitializationHelper
 {
   public:
