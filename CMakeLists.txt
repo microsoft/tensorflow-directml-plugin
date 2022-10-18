@@ -562,9 +562,9 @@ if(NOT WIN32)
     set(DIRECTML_SHA ${CMAKE_MATCH_1})
 
     if(WIN32)
-        set(framework_full_name "${pkg_name}-${pkg_platform}-${pkg_version}.zip")
+        set(framework_full_name "${CMAKE_PROJECT_NAME}-${pkg_platform}-${pkg_version}.zip")
     else()
-        set(framework_full_name "${pkg_name}-${pkg_platform}-${pkg_version}.tar.gz")
+        set(framework_full_name "lib${CMAKE_PROJECT_NAME}-${pkg_platform}-${pkg_version}.tar.gz")
     endif()
 
     add_custom_command(
