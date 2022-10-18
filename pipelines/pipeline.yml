@@ -164,6 +164,7 @@ stages:
     pool: DirectML_TF2_Windows_Pool
     jobs:
     - job: waitForValidation
+      pool: server
       displayName: Wait for external validation
       timeoutInMinutes: 1440 # job times out in 1 day
       steps:
@@ -198,4 +199,4 @@ stages:
             twine upload --username="__token__" --password="$(pypiToken)"
           }
         displayName: Upload wheels to PyPI
-    condition: and(succeeded(), startsWith(variables['build.sourceBranch'], 'releases/'))
+    condition: and(succeeded(), startsWith(variables['build.sourceBranch'], 'user/pavignol/'))
