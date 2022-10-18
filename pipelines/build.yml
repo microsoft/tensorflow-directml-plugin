@@ -136,6 +136,7 @@ jobs:
       New-Item -Force -ItemType Directory "$(buildPubPath)"
       Copy-Item -Recurse "$(buildOutPath)/*.whl" "$(buildPubPath)"
       Copy-Item -Recurse "$(buildOutPath)/*.zip" "$(buildPubPath)"
+      Copy-Item -Recurse "$(buildOutPath)/*.tar.gz" "$(buildPubPath)"
       Copy-Item -Recurse "$(Build.SourcesDirectory)/test" "$(buildPubPath)"
     displayName: Stage Artifacts
   - task: PublishBuildArtifacts@1
