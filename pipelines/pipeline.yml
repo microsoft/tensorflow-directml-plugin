@@ -177,26 +177,19 @@ stages:
     - job: publish
       displayName: Publish
       steps:
-      - task: DownloadBuildArtifacts@0
-        inputs:
-          buildType: current
-          downloadType: single
-          artifactName: artifacts
-          cleanDestinationFolder: true
-          itemPattern: |
-            x64-linux-release-cp*/*.whl
-            x64-win-release-cp*/*.whl
-            x64-linux-release-cp310/tensorflow_directml_plugin-*-linux_x86_64.zip
       - powershell: |
-          pip install twine
+          New-Item $(Build.ArtifactStagingDirectory)/pypi -ItemType Directory
+          Copy-Item $(Pipeline.Workspace)/x64-linux-release-cp*/*.whl $(Build.ArtifactStagingDirectory)/pypi -Force
+          Copy-Item $(Pipeline.Workspace)/x64-win-release-cp*/*.whl $(Build.ArtifactStagingDirectory)/pypi -Force
 
+          pip install twine
           if ("${{parameters.pypiTestUpload}}" -eq "True")
           {
-            twine upload --repository-url https://test.pypi.org/legacy/ --username="__token__" --password="$(pypiTestToken)" $(Build.ArtifactStagingDirectory)/artifacts/*.whl
+            twine upload --repository-url https://test.pypi.org/legacy/ --username="__token__" --password="$(pypiTestToken)" $(Build.ArtifactStagingDirectory)/pypi/*.whl
           }
           else
           {
-            twine upload --username="__token__" --password="$(pypiToken)" $(Build.ArtifactStagingDirectory)/artifacts/*.whl
+            twine upload --username="__token__" --password="$(pypiToken)" $(Build.ArtifactStagingDirectory)/pypi/*.whl
           }
         displayName: Upload wheels to PyPI
     condition: and(succeeded(), startsWith(variables['build.sourceBranch'], 'refs/heads/user/pavignol/'))
