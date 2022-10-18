@@ -25,6 +25,9 @@ parameters:
   displayName: Release Build
   type: boolean
   default: false
+- name: pypiTestUpload
+  type: boolean
+  default: false
 
 # Uploads artifacts to blob storage to be ushered to network share. Generally this should only be enabled for main
 # and release branches.
@@ -155,3 +158,44 @@ stages:
       parameters:
         emailTo: ${{parameters.emailTo}}
         enableTests: ${{parameters.enableTests}}
+
+  - stage: publishStage
+    displayName: Publish
+    pool: DirectML_TF2_Windows_Pool
+    jobs:
+    - job: waitForValidation
+      displayName: Wait for external validation
+      timeoutInMinutes: 1440 # job times out in 1 day
+      steps:
+      - task: ManualValidation@0
+        inputs:
+          notifyUsers: |
+            pavignol@microsoft.com
+          instructions: 'If the test results look good, resume the pipeline to publish to PyPI and GitHub releases'
+          onTimeout: 'resume'
+    - job: publish
+      displayName: Publish
+      steps:
+      - task: DownloadBuildArtifacts@0
+        inputs:
+          buildType: current
+          downloadType: single
+          artifactName: artifacts
+          cleanDestinationFolder: true
+          itemPattern: |
+            x64-linux-release-cp*/*.whl
+            x64-win-release-cp*/*.whl
+            x64-linux-release-cp310/tensorflow_directml_plugin-*-linux_x86_64.zip
+      - powershell: |
+          pip install twine
+
+          if ("${{parameters.pypiTestUpload}}" -eq "True")
+          {
+            twine upload --repository-url https://test.pypi.org/legacy/ --username="__token__" --password="$(pypiTestToken)" $(Build.ArtifactStagingDirectory)/artifacts/*.whl
+          }
+          else
+          {
+            twine upload --username="__token__" --password="$(pypiToken)"
+          }
+        displayName: Upload wheels to PyPI
+    condition: and(succeeded(), startsWith(variables['build.sourceBranch'], 'releases/'))
