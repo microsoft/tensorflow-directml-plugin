@@ -154,14 +154,10 @@ jobs:
               $ScriptPath = "$(Build.SourcesDirectory)/test/test.py" -replace '\\','/'
               $ScriptPathWsl = wsl wslpath -a $ScriptPath
 
-              # Results are written to Linux filesystem ($ResultsDirLinux) and copied to Windows ($ResultsDirWin)
-              $ResultsDirLinux = "/tmp/tfdml_plugin_pipeline/results/$(agentName)/${{artifact}}/${{tensorflowPackage}}"
               $ResultsDirWin = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}/${{tensorflowPackage}}" -replace '\\','/'
               $ResultsDirWinWsl = wsl wslpath -a $ResultsDirWin
               New-Item -ItemType Directory $ResultsDirWin -Force | Out-Null
-
-              cmd /c "wsl $(test_env_linux_${{replace(tensorflowPackage, '-', '_')}}.activateCommand); python $ScriptPathWsl --run --parallel --summarize --redirect_output --results_dir $ResultsDirLinux --groups ${{join(' ', parameters.testGroups)}}"
-              wsl cp -r $ResultsDirLinux/* $ResultsDirWinWsl
+              cmd /c "wsl $(test_env_linux_${{replace(tensorflowPackage, '-', '_')}}.activateCommand); python $ScriptPathWsl --run --parallel --summarize --redirect_output --results_dir $ResultsDirWinWsl --groups ${{join(' ', parameters.testGroups)}}"
 
       - ${{if contains(artifact, '-win-') }}:
         - task: PowerShell@2
