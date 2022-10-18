@@ -561,7 +561,12 @@ if(NOT WIN32)
     string(REGEX MATCH "#define DIRECTML_SOURCE_VERSION \"([abcdef0-9]+)\"" REGEX_MATCH ${DIRECTML_CONFIG})
     set(DIRECTML_SHA ${CMAKE_MATCH_1})
 
-    set(framework_full_name "${pkg_name}-${pkg_version}-${pkg_platform}.zip")
+    if(WIN32)
+        set(framework_full_name "${pkg_name}-${pkg_platform}-${pkg_version}.zip")
+    else()
+        set(framework_full_name "${pkg_name}-${pkg_platform}-${pkg_version}.tar.gz")
+    endif()
+
     add_custom_command(
         OUTPUT 
             ${framework_full_name}
@@ -594,7 +599,7 @@ if(NOT WIN32)
             $<$<BOOL:${WIN32}>:${pix_event_runtime_SOURCE_DIR}/ThirdPartyNotices.txt>
             $<$<BOOL:${WIN32}>:./directml/WinPixEventRuntime_ThirdPartyNotices.txt>
         COMMAND
-            ${CMAKE_COMMAND} -E tar "cfv" "${framework_full_name}" --format=zip --
+            ${CMAKE_COMMAND} -E tar $<$<BOOL:${WIN32}>:"cfv"> $<$<BOOL:${WIN32}>:"cfvz"> "${framework_full_name}" $<$<BOOL:${WIN32}>:--format=zip> --
             $<TARGET_FILE_NAME:tfdml_plugin_framework>
             LICENSE
             directml/DirectML_LICENSE.txt
