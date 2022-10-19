@@ -171,8 +171,8 @@ stages:
       - task: ManualValidation@0
         inputs:
           notifyUsers: |
-            pavignol@microsoft.com
-          instructions: 'If the test results look good, resume the pipeline to publish to PyPI and GitHub releases'
+            $(emailTo)
+          instructions: 'If the test results look good, resume the pipeline to publish to PyPI'
           onTimeout: 'resume'
     - job: publish
       displayName: Publish
