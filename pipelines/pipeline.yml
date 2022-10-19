@@ -197,4 +197,4 @@ stages:
             twine upload --username="__token__" --password="$(pypiToken)" $(Build.ArtifactStagingDirectory)/pypi/*.whl
           }
         displayName: Upload wheels to PyPI
-    condition: and(succeeded(), startsWith(variables['build.sourceBranch'], 'refs/heads/user/pavignol/'))
+    condition: and(succeeded(), startsWith(variables['build.sourceBranch'], 'refs/heads/release/'))
