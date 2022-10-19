@@ -176,7 +176,12 @@ stages:
           onTimeout: 'resume'
     - job: publish
       displayName: Publish
+      dependsOn: waitForValidation
       steps:
+      - ${{each artifact in parameters.buildArtifacts}}:
+        - download: 'current'
+          artifact: ${{artifact}}
+          displayName: Download ${{artifact}}
       - powershell: |
           New-Item $(Build.ArtifactStagingDirectory)/pypi -ItemType Directory
           Copy-Item $(Pipeline.Workspace)/x64-linux-release-cp*/*.whl $(Build.ArtifactStagingDirectory)/pypi -Force
