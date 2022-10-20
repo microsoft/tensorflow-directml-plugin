@@ -25,6 +25,9 @@ parameters:
   displayName: Release Build
   type: boolean
   default: false
+- name: pypiTestUpload
+  type: boolean
+  default: false
 
 # Uploads artifacts to blob storage to be ushered to network share. Generally this should only be enabled for main
 # and release branches.
@@ -155,3 +158,43 @@ stages:
       parameters:
         emailTo: ${{parameters.emailTo}}
         enableTests: ${{parameters.enableTests}}
+
+  - stage: publishStage
+    displayName: Publish
+    pool: DirectML_TF2_Windows_Pool
+    jobs:
+    - job: waitForValidation
+      pool: server
+      displayName: Wait for external validation
+      timeoutInMinutes: 1440 # job times out in 1 day
+      steps:
+      - task: ManualValidation@0
+        inputs:
+          notifyUsers: |
+            $(emailTo)
+          instructions: 'If the test results look good, resume the pipeline to publish to PyPI'
+          onTimeout: 'resume'
+    - job: publish
+      displayName: Publish
+      dependsOn: waitForValidation
+      steps:
+      - ${{each artifact in parameters.buildArtifacts}}:
+        - download: 'current'
+          artifact: ${{artifact}}
+          displayName: Download ${{artifact}}
+      - powershell: |
+          New-Item $(Build.ArtifactStagingDirectory)/pypi -ItemType Directory
+          Copy-Item $(Pipeline.Workspace)/x64-linux-release-cp*/*.whl $(Build.ArtifactStagingDirectory)/pypi -Force
+          Copy-Item $(Pipeline.Workspace)/x64-win-release-cp*/*.whl $(Build.ArtifactStagingDirectory)/pypi -Force
+
+          pip install twine
+          if ("${{parameters.pypiTestUpload}}" -eq "True")
+          {
+            twine upload --repository-url https://test.pypi.org/legacy/ --username="__token__" --password="$(pypiTestToken)" $(Build.ArtifactStagingDirectory)/pypi/*.whl
+          }
+          else
+          {
+            twine upload --username="__token__" --password="$(pypiToken)" $(Build.ArtifactStagingDirectory)/pypi/*.whl
+          }
+        displayName: Upload wheels to PyPI
+    condition: and(succeeded(), startsWith(variables['build.sourceBranch'], 'refs/heads/release/'))
