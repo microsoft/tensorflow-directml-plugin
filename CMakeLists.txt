@@ -2,6 +2,26 @@ cmake_minimum_required(VERSION 3.20)
 
 project(tensorflow-directml-plugin VERSION 0.2.0 LANGUAGES CXX)
 
+find_program(buildcache_program buildcache)
+if(buildcache_program)
+  message("***********************************")
+  message("***********************************")
+  message("***********************************")
+  message("***********************************")
+  message("***********************************")
+  message("***********************************")
+  message("***********************************")
+  message("***********************************")
+  message("***********************************")
+  message("***********************************")
+  message("***********************************")
+  message("***********************************")
+  string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+  string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+  string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${buildcache_program}")
+endif()
+
 # Statically link runtime library to avoid runtime dependency on Visual C++ redistributable.
 set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
 
