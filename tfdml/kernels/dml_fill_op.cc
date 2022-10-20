@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include "tensorflow/c/eager/c_api.h"
 #include "tfdml/kernels/pch.h"
 
 namespace tfdml
@@ -98,12 +99,89 @@ class DmlFillKernel : public DmlKernel
     }
 };
 
+class DmlFillCpuKernel : public OpKernel
+{
+  public:
+    explicit DmlFillCpuKernel(
+        OpKernelConstruction* ctx,
+        std::shared_ptr<const NodeDef> node_def)
+        : OpKernel(std::move(node_def))
+    {
+        TFE_ContextOptions* context_options = TFE_NewContextOptions();
+        auto context_options_cleanup = absl::MakeCleanup(
+            [context_options] { TFE_DeleteContextOptions(context_options); });
+
+        Status status;
+        eager_context_ = TFE_NewContext(context_options, status.raw());
+        OP_REQUIRES_OK(ctx, status);
+
+        fill_op_ = TFE_NewOp(eager_context_, "Fill", status.raw());
+        OP_REQUIRES_OK(ctx, status);
+
+        TFE_OpSetDevice(fill_op_, "/device:CPU", status.raw());
+        OP_REQUIRES_OK(ctx, status);
+    }
+
+    ~DmlFillCpuKernel() override
+    {
+        TFE_DeleteOp(fill_op_);
+        TFE_DeleteContext(eager_context_);
+    }
+
+  private:
+    void ComputeImpl(OpKernelContext* ctx) final
+    {
+        absl::InlinedVector<TFE_TensorHandle*, 2> input_handles;
+        auto input_handles_cleanup = absl::MakeCleanup(
+            [&input_handles]
+            {
+                for (TFE_TensorHandle* handle : input_handles)
+                {
+                    TFE_DeleteTensorHandle(handle);
+                }
+            });
+
+        Status status;
+        for (int i = 0; i < ctx->num_inputs(); ++i)
+        {
+            const Tensor& input_tensor = ctx->input(i);
+            TFE_TensorHandle* input_handle =
+                TFE_NewTensorHandle(input_tensor.raw(), status.raw());
+            OP_REQUIRES_OK(ctx, status);
+            input_handles.push_back(input_handle);
+
+            TFE_OpAddInput(fill_op_, input_handle, status.raw());
+            OP_REQUIRES_OK(ctx, status);
+        }
+
+        TFE_TensorHandle* output_handle = nullptr;
+        TFE_TensorHandle** output_handle_ptr = &output_handle;
+        OP_REQUIRES_OK(ctx, status);
+        auto output_handle_cleanup =
+            absl::MakeCleanup([output_handle_ptr]
+                              { TFE_DeleteTensorHandle(*output_handle_ptr); });
+
+        int num_retvals = 1;
+        TFE_Execute(fill_op_, &output_handle, &num_retvals, status.raw());
+        OP_REQUIRES_OK(ctx, status);
+
+        TF_Tensor* output =
+            TFE_TensorHandleResolve(output_handle, status.raw());
+        OP_REQUIRES_OK(ctx, status);
+
+        OP_REQUIRES_OK(ctx, ctx->set_output(0, Tensor(output)));
+    }
+
+    TFE_Context* eager_context_ = nullptr;
+    TFE_Op* fill_op_ = nullptr;
+};
+
 template <typename TIndex>
 using DmlFillWrapper = DmlKernelWrapper<
     DmlFillKernel<TIndex>,
     GetOutputShapeFromDimsTensorHelper<0>>;
 
-void RegisterKernels_Fill()
+void RegisterFill()
 {
     using int32_kernel = KernelDefinition<ops::Fill, DmlFillWrapper<int32_t>>::
         WithTypeConstraint<ops::Fill::Attribute::index_type, TF_INT32>::
@@ -136,6 +214,23 @@ void RegisterKernels_Fill()
         TF_INT16,
         TF_INT64,
         TF_BOOL>();
+}
+
+void RegisterFillCpu()
+{
+    KernelDefinition<ops::Fill, DmlFillCpuKernel>::WithHostMemoryArguments<
+        ops::Fill::Argument::dims,
+        ops::Fill::Argument::value,
+        ops::Fill::Argument::output>::
+        WithTypeConstraint<ops::Fill::Attribute::T, TF_INT32>::
+            WithTypeConstraint<ops::Fill::Attribute::index_type, TF_INT32>::
+                Register();
+}
+
+void RegisterKernels_Fill()
+{
+    RegisterFill();
+    RegisterFillCpu();
 }
 
 } // namespace tfdml
