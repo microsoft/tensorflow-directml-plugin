@@ -416,8 +416,37 @@ static dml::Expression CreateBatchNormNode(
             ? dml::FusedActivation::None()
             : dml::FusedActivation::Relu();
 
+    // TODO: Remove when the bug causing intermediate value overflow is fixed
+    // TFDML #41739122
+    bool float16_inputs =
+        x.GetOutputDesc().dataType == DML_TENSOR_DATA_TYPE_FLOAT16;
+    if (float16_inputs)
+    {
+        x = dml::Cast(x, DML_TENSOR_DATA_TYPE_FLOAT32);
+    }
+
+    if (mean.GetOutputDesc().dataType != DML_TENSOR_DATA_TYPE_FLOAT32)
+    {
+        mean = dml::Cast(mean, DML_TENSOR_DATA_TYPE_FLOAT32);
+    }
+
+    if (variance.GetOutputDesc().dataType != DML_TENSOR_DATA_TYPE_FLOAT32)
+    {
+        variance = dml::Cast(variance, DML_TENSOR_DATA_TYPE_FLOAT32);
+    }
+
+    if (scale.GetOutputDesc().dataType != DML_TENSOR_DATA_TYPE_FLOAT32)
+    {
+        scale = dml::Cast(scale, DML_TENSOR_DATA_TYPE_FLOAT32);
+    }
+
+    if (offset.GetOutputDesc().dataType != DML_TENSOR_DATA_TYPE_FLOAT32)
+    {
+        offset = dml::Cast(offset, DML_TENSOR_DATA_TYPE_FLOAT32);
+    }
+
     constexpr bool is_spatial = true;
-    return dml::BatchNormalization(
+    auto result = dml::BatchNormalization(
         x,
         mean,
         variance,
@@ -426,6 +455,13 @@ static dml::Expression CreateBatchNormNode(
         is_spatial,
         epsilon,
         fused_activation);
+
+    if (float16_inputs)
+    {
+        result = dml::Cast(result, DML_TENSOR_DATA_TYPE_FLOAT16);
+    }
+
+    return result;
 }
 
 static dml::BatchNormalizationTrainingOutputs CreateBatchNormTrainingNode(
@@ -699,6 +735,12 @@ class DmlFusedBatchNormKernel : public DmlKernel
         // scale and offset are always float32, but the input data type might
         // not be. If that's the case, we need to insert a cast.
         bool is_cast_required = (input_type != scale.GetOutputDesc().dataType);
+
+        // TODO: Remove when the bug causing intermediate value overflow is
+        // fixed
+        // TFDML #41739122
+        is_cast_required = false;
+
         if (is_cast_required)
         {
             scale = dml::Cast(scale, input_type);
@@ -714,6 +756,20 @@ class DmlFusedBatchNormKernel : public DmlKernel
                 input_descs[side_input_index]);
         }
 
+        // TODO: Remove when the bug causing intermediate value overflow is
+        // fixed
+        // TFDML #41739122
+        if (input_type == DML_TENSOR_DATA_TYPE_FLOAT16)
+        {
+            x = dml::Cast(x, DML_TENSOR_DATA_TYPE_FLOAT32);
+
+            if (side_input)
+            {
+                *side_input =
+                    dml::Cast(*side_input, DML_TENSOR_DATA_TYPE_FLOAT32);
+            }
+        }
+
         dml::BatchNormalizationTrainingOutputs dml_outputs =
             CreateBatchNormTrainingNode(
                 x,
@@ -722,6 +778,15 @@ class DmlFusedBatchNormKernel : public DmlKernel
                 side_input,
                 epsilon,
                 activation_mode);
+
+        // TODO: Remove when the bug causing intermediate value overflow is
+        // fixed
+        // TFDML #41739122
+        if (input_type == DML_TENSOR_DATA_TYPE_FLOAT16)
+        {
+            dml_outputs.output =
+                dml::Cast(dml_outputs.output, DML_TENSOR_DATA_TYPE_FLOAT16);
+        }
 
         // Apply Bessel's correction to the variance
         auto input_sizes = x.GetOutputDesc().sizes;
@@ -880,9 +945,15 @@ class DmlFusedBatchNormKernel : public DmlKernel
         auto original_mean = mean;
         auto original_variance = variance;
 
+        bool is_cast_required = (input_type != scale.GetOutputDesc().dataType);
+
+        // TODO: Remove when the intermediate accumulation bug in DML is fixed
+        // TFDML #41739122
+        is_cast_required = false;
+
         // scale, offset, mean, and variance are always float32, but the input
         // data type might not be. If that's the case, we need to insert a cast.
-        if (input_type != scale.GetOutputDesc().dataType)
+        if (is_cast_required)
         {
             mean = dml::Cast(mean, input_type);
             variance = dml::Cast(variance, input_type);
@@ -1232,16 +1303,21 @@ class DmlFusedBatchNormGradKernel : public DmlKernel
         // to insert casts.
         bool is_cast_required = (input_type != scale.GetOutputDesc().dataType);
 
+        // TODO: Remove when the intermediate accumulation bug in DML is fixed
+        // TFDML #41739122
+        is_cast_required = false;
+        if (input_type == DML_TENSOR_DATA_TYPE_FLOAT16)
+        {
+            x = dml::Cast(x, DML_TENSOR_DATA_TYPE_FLOAT32);
+            y_backprop = dml::Cast(y_backprop, DML_TENSOR_DATA_TYPE_FLOAT32);
+        }
+
         if (is_cast_required)
         {
             mean = dml::Cast(mean, input_type);
             variance = dml::Cast(variance, input_type);
             scale = dml::Cast(scale, input_type);
         }
-
-        dml::Expression scale_backprop;
-        dml::Expression offset_backprop;
-        dml::Expression x_backprop;
 
         dml::BatchNormalizationGradOutputs batch_norm_grad_op_outputs;
         if (init_helper->IsTraining())
@@ -1265,9 +1341,16 @@ class DmlFusedBatchNormGradKernel : public DmlKernel
                 init_helper->GetEpsilon());
         }
 
-        x_backprop = batch_norm_grad_op_outputs.gradient;
-        scale_backprop = batch_norm_grad_op_outputs.scaleGradient;
-        offset_backprop = batch_norm_grad_op_outputs.biasGradient;
+        auto x_backprop = batch_norm_grad_op_outputs.gradient;
+        auto scale_backprop = batch_norm_grad_op_outputs.scaleGradient;
+        auto offset_backprop = batch_norm_grad_op_outputs.biasGradient;
+
+        // TODO: Remove when the intermediate accumulation bug in DML is fixed
+        // TFDML #41739122
+        if (input_type == DML_TENSOR_DATA_TYPE_FLOAT16)
+        {
+            x_backprop = dml::Cast(x_backprop, DML_TENSOR_DATA_TYPE_FLOAT16);
+        }
 
         // If necessary, cast outputs to their required types
         if (is_cast_required)
