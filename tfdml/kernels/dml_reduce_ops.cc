@@ -632,27 +632,15 @@ class DmlReduceKernel : public DmlKernel
         tensors.inputs = {input};
         tensors.outputs = {output};
 
-        DML_TENSOR_DATA_TYPE dml_input_data_type =
-            GetDmlDataTypeFromTfDataType(ctx->GetInputDataType(0));
-
-        DML_TENSOR_DATA_TYPE dml_output_data_type =
-            GetDmlDataTypeFromTfDataType(ctx->GetOutputDataType(0));
-
         auto input_descs = GetDmlTensorDescs(tensors.inputs);
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto result = dml::InputTensor(scope, 0, input_descs[0]);
 
-        // For logical operators like Any and All, we need to cast from uint8 to
-        // float
-        if (dml_input_data_type != DML_TENSOR_DATA_TYPE_FLOAT32 &&
-            dml_input_data_type != DML_TENSOR_DATA_TYPE_FLOAT16)
+        if (is_arg_function_)
         {
-            result = dml::Cast(result, DML_TENSOR_DATA_TYPE_FLOAT32);
-            result = dml::Reduce(result, reduce_function, reduce_axes);
-            result = dml::Cast(result, dml_input_data_type);
-        }
-        else if (is_arg_function_)
-        {
+            const DML_TENSOR_DATA_TYPE dml_output_data_type =
+                GetDmlDataTypeFromTfDataType(ctx->GetOutputDataType(0));
+
             // ARGMAX and ARGMIN in DML don't support outputs with less than 32
             // bit precision
             const bool is_low_precision_output =
