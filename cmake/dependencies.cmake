@@ -24,8 +24,8 @@ if(WIN32)
     # URLs and SHA256 hashes for the cp37 versions. For stable builds, go to https://pypi.org/project/tensorflow-intel/#files instead.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/4a/43/b6c853d9e9532b9dd04191383b76fe5ff7b7dfa40d2be2af98f40c7536ce/tensorflow_intel-2.10.0-cp37-cp37m-win_amd64.whl
-        URL_HASH SHA256=e6096b3a84bbc57eab88cc39ad7d6148e400a0da6a448f94d5e84c8cdbb521b5
+        URL https://files.pythonhosted.org/packages/f7/8c/18288ac12dc0e1997c73f1b86dbd6f7fa3674ae5341769387e1f13b07c9e/tensorflow_intel-2.11.0-cp37-cp37m-win_amd64.whl
+        URL_HASH SHA256=9f783b63889a8cb294a3bd293b326b575146582afeba0580e1e9bead77f49bd1
     )
 
     FetchContent_Declare(
@@ -38,8 +38,8 @@ else()
     # URLs and SHA256 hashes for the cp37 versions. For stable builds, go to https://pypi.org/project/tensorflow-cpu/#files instead.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/9b/4b/293733cd86f09760b14517f077f79bad16de4af11828273eda1722e9b03a/tensorflow_cpu-2.10.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-        URL_HASH SHA256=34477fdfa97045c854fde55381cc3eb7fa6c63f5958ccf30ae3a21513ee73031
+        URL https://files.pythonhosted.org/packages/02/72/923ad6a375caee01bab56044f0fae486739d63863e8a3caff75e3709bf07/tensorflow_cpu-2.11.0rc2-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+        URL_HASH SHA256=2057ad90054d0d2cd669238e1d6a7c63aa0ed7baf09a28d854d8fd632cff3a8c
     )
 
     FetchContent_Declare(
