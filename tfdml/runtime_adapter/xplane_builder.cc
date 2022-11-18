@@ -25,7 +25,7 @@ limitations under the License.
 #include "tensorflow/core/profiler/protobuf/xplane.pb.h"
 #include "tensorflow/core/profiler/utils/math_utils.h"
 
-namespace tensorflow
+namespace tsl
 {
 namespace profiler
 {
@@ -179,4 +179,4 @@ void XLineBuilder::SetTimestampNsAndAdjustEventOffsets(int64_t timestamp_ns)
 }
 
 } // namespace profiler
-} // namespace tensorflow
+} // namespace tsl

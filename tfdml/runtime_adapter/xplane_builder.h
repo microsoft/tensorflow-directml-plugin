@@ -29,12 +29,20 @@ limitations under the License.
 #include "tensorflow/core/platform/types.h"
 #include "tensorflow/core/profiler/protobuf/xplane.pb.h"
 #include "tensorflow/core/profiler/utils/math_utils.h"
-#include "tensorflow/core/profiler/utils/timespan.h"
+#include "tensorflow/tsl/profiler/utils/timespan.h"
 
-namespace tensorflow
+namespace tsl
 {
 namespace profiler
 {
+
+using tensorflow::profiler::XEvent;         // NOLINT
+using tensorflow::profiler::XEventMetadata; // NOLINT
+using tensorflow::profiler::XLine;          // NOLINT
+using tensorflow::profiler::XPlane;         // NOLINT
+using tensorflow::profiler::XSpace;         // NOLINT
+using tensorflow::profiler::XStat;          // NOLINT
+using tensorflow::profiler::XStatMetadata;  // NOLINT
 
 class XPlaneBuilder;
 
@@ -470,6 +478,6 @@ const XStatMetadata& XStatsBuilder<T>::GetOrCreateStatMetadata(
 }
 
 } // namespace profiler
-} // namespace tensorflow
+} // namespace tsl
 
 #endif // TENSORFLOW_CORE_PROFILER_UTILS_XPLANE_BUILDER_H_

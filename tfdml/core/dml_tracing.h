@@ -128,7 +128,7 @@ class DmlTracing
         }
     };
     std::vector<DeviceEvents> device_events_;
-    tensorflow::profiler::XSpace xspace_;
+    tsl::profiler::XSpace xspace_;
     bool xspace_dirty_ = true;
     int64_t profiler_start_timestamp_ns_ = 0;
     std::mutex mutex_;
@@ -165,7 +165,7 @@ class DmlTracing
 
     // Lazily converts internal events into a profiler XSpace. Repeated calls
     // to this function will return the same XSpace.
-    const tensorflow::profiler::XSpace& GetXSpace();
+    const tsl::profiler::XSpace& GetXSpace();
 
     void LogKernelComputeTelemetry(const char* kernel_name);
 
