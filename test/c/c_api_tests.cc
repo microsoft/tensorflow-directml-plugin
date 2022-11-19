@@ -16,7 +16,6 @@ limitations under the License.
 #include "absl/cleanup/cleanup.h"
 #include "tensorflow/c/c_api.h"
 #include "tensorflow/c/c_api_experimental.h"
-#include "tensorflow/core/platform/logging.h"
 #include <array>
 #include <cstring>
 #include <fstream>
