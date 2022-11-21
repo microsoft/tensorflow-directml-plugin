@@ -24,24 +24,28 @@ limitations under the License.
 #include "absl/strings/numbers.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "tensorflow/core/platform/macros.h"
-#include "tensorflow/core/platform/protobuf.h"
-#include "tensorflow/core/platform/types.h"
+// #include "tensorflow/core/platform/macros.h"
+#include "tensorflow/tsl/platform/macros.h"
+// #include "tensorflow/core/platform/protobuf.h"
+#include "tensorflow/tsl/platform/protobuf.h"
+// #include "tensorflow/core/platform/types.h"
+#include "tensorflow/tsl/platform/types.h"
 #include "tensorflow/core/profiler/protobuf/xplane.pb.h"
-#include "tensorflow/core/profiler/utils/math_utils.h"
+// #include "tensorflow/core/profiler/utils/math_utils.h"
+#include "tensorflow/tsl/profiler/utils/math_utils.h"
 
-namespace tensorflow
+namespace tsl
 {
 namespace profiler
 {
 
-// using tensorflow::profiler::XEvent;         // NOLINT
-// using tensorflow::profiler::XEventMetadata; // NOLINT
-// using tensorflow::profiler::XLine;          // NOLINT
-// using tensorflow::profiler::XPlane;         // NOLINT
-// using tensorflow::profiler::XSpace;         // NOLINT
-// using tensorflow::profiler::XStat;          // NOLINT
-// using tensorflow::profiler::XStatMetadata;  // NOLINT
+using tensorflow::profiler::XEvent;         // NOLINT
+using tensorflow::profiler::XEventMetadata; // NOLINT
+using tensorflow::profiler::XLine;          // NOLINT
+using tensorflow::profiler::XPlane;         // NOLINT
+using tensorflow::profiler::XSpace;         // NOLINT
+using tensorflow::profiler::XStat;          // NOLINT
+using tensorflow::profiler::XStatMetadata;  // NOLINT
 
 class XPlaneBuilder;
 
