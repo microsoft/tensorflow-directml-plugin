@@ -30,18 +30,18 @@ limitations under the License.
 #include "tensorflow/core/profiler/protobuf/xplane.pb.h"
 #include "tensorflow/core/profiler/utils/math_utils.h"
 
-namespace tsl
+namespace tensorflow
 {
 namespace profiler
 {
 
-using tensorflow::profiler::XEvent;         // NOLINT
-using tensorflow::profiler::XEventMetadata; // NOLINT
-using tensorflow::profiler::XLine;          // NOLINT
-using tensorflow::profiler::XPlane;         // NOLINT
-using tensorflow::profiler::XSpace;         // NOLINT
-using tensorflow::profiler::XStat;          // NOLINT
-using tensorflow::profiler::XStatMetadata;  // NOLINT
+// using tensorflow::profiler::XEvent;         // NOLINT
+// using tensorflow::profiler::XEventMetadata; // NOLINT
+// using tensorflow::profiler::XLine;          // NOLINT
+// using tensorflow::profiler::XPlane;         // NOLINT
+// using tensorflow::profiler::XSpace;         // NOLINT
+// using tensorflow::profiler::XStat;          // NOLINT
+// using tensorflow::profiler::XStatMetadata;  // NOLINT
 
 class XPlaneBuilder;
 

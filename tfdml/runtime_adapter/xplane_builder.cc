@@ -25,7 +25,7 @@ limitations under the License.
 #include "tensorflow/core/profiler/protobuf/xplane.pb.h"
 #include "tensorflow/core/profiler/utils/math_utils.h"
 
-namespace tsl
+namespace tensorflow
 {
 namespace profiler
 {
