@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 // #include "tensorflow/core/profiler/utils/xplane_builder.h"
-#include "tensorflow/tsl/profiler/utils/xplane_builder.h"
+#include "tfdml/runtime_adapter/xplane_builder.h"
 
 #include <algorithm>
 #include <string>
@@ -25,7 +25,6 @@ limitations under the License.
 // #include "tensorflow/core/platform/types.h"
 #include "tensorflow/tsl/platform/types.h"
 #include "tensorflow/core/profiler/protobuf/xplane.pb.h"
-// #include "tensorflow/core/profiler/utils/math_utils.h"
 #include "tensorflow/tsl/profiler/utils/math_utils.h"
 
 namespace tsl
