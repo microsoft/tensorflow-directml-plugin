@@ -24,13 +24,10 @@ limitations under the License.
 #include "absl/strings/numbers.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-// #include "tensorflow/core/platform/macros.h"
-#include "tensorflow/tsl/platform/macros.h"
-// #include "tensorflow/core/platform/protobuf.h"
-#include "tensorflow/tsl/platform/protobuf.h"
-// #include "tensorflow/core/platform/types.h"
-#include "tensorflow/tsl/platform/types.h"
 #include "tensorflow/core/profiler/protobuf/xplane.pb.h"
+#include "tensorflow/tsl/platform/macros.h"
+#include "tensorflow/tsl/platform/protobuf.h"
+#include "tensorflow/tsl/platform/types.h"
 #include "tensorflow/tsl/profiler/utils/math_utils.h"
 
 namespace tsl
