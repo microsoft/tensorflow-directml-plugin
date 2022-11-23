@@ -1404,6 +1404,7 @@ void RegisterResourceStridedSliceAssign()
         TF_INT8,
         TF_UINT8,
         TF_UINT32,
+        TF_INT16,
         TF_INT64>();
 }
 
