@@ -38,8 +38,8 @@ else()
     # URLs and SHA256 hashes for the cp37 versions. For stable builds, go to https://pypi.org/project/tensorflow-cpu/#files instead.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/02/72/923ad6a375caee01bab56044f0fae486739d63863e8a3caff75e3709bf07/tensorflow_cpu-2.11.0rc2-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-        URL_HASH SHA256=2057ad90054d0d2cd669238e1d6a7c63aa0ed7baf09a28d854d8fd632cff3a8c
+        URL https://files.pythonhosted.org/packages/24/cd/68fe47492ce827fadd56e5ab2819421084a596925158ceb81959a5ba9947/tensorflow_cpu-2.11.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+        URL_HASH SHA256=fdcc9f733285bb1c917cde6731edcbf2ecc5ca4bd8c6a4c168a7f478e4056654
     )
 
     FetchContent_Declare(
