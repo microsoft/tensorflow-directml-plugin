@@ -39,6 +39,7 @@ from keras.mixed_precision import policy
 from keras.optimizers import optimizer_v2
 from keras.optimizers.optimizer_experimental import rmsprop
 from keras.optimizers.optimizer_experimental import sgd as sgd_experimental
+from keras.optimizers.optimizer_experimental import adam as adam_experimental
 from keras.testing_infra import test_combinations
 from keras.testing_infra import test_utils
 from keras.utils import data_utils
@@ -85,7 +86,8 @@ class TrainingTest(test_combinations.TestCase):
                     return inputs + tf.constant([0], "float32")
 
         model = sequential.Sequential([ReturnTraining()])
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer, "mse", run_eagerly=test_utils.should_run_eagerly())
         hist = model.fit(x=np.array([0.0]), y=np.array([0.0]))
         self.assertAllClose(hist.history["loss"][0], 10000)
 
@@ -98,49 +100,51 @@ class TrainingTest(test_combinations.TestCase):
         ):
             model.fit(x=np.array([]), y=np.array([]))
 
-    # @test_combinations.run_all_keras_modes(always_skip_v1=True)
-    # def test_compile_fit_with_jit_compile(self):
-    #     # Test with jit_compile = True
-    #     model = sequential.Sequential([layers_module.Dense(1)])
-    #     model.compile("sgd", loss="mse", run_eagerly=False, jit_compile=True)
-    #     x, y = np.ones((10, 1)), np.ones((10, 1))
-    #     model.fit(x, y, epochs=2)
-    #     # Test fcompile fit for a RNN model
-    #     model = sequential.Sequential()
-    #     model.add(
-    #         layers_module.TimeDistributed(
-    #             layers_module.Embedding(5, 6, mask_zero=True),
-    #             input_shape=(None, None),
-    #         )
-    #     )  # N by t_1 by t_2 by 6
-    #     model.add(
-    #         layers_module.TimeDistributed(
-    #             layers_module.SimpleRNN(7, return_sequences=True)
-    #         )
-    #     )
-    #     model.add(
-    #         layers_module.TimeDistributed(
-    #             layers_module.SimpleRNN(8, return_sequences=False)
-    #         )
-    #     )
-    #     model.add(layers_module.SimpleRNN(1, return_sequences=False))
-    #     model.compile(optimizer="sgd", loss="mse", jit_compile=True)
-    #     model_input = np.random.randint(
-    #         low=1, high=5, size=(10, 3, 4), dtype="int32"
-    #     )
-    #     for i in range(4):
-    #         model_input[i, i:, i:] = 0
-    #     model.fit(
-    #         model_input, np.random.random((10, 1)), epochs=1, batch_size=10
-    #     )
+    @test_combinations.run_all_keras_modes(always_skip_v1=True)
+    def test_compile_fit_with_jit_compile(self):
+        self.skipTest("DML doesn't support JIT compile.")
+        # Test with jit_compile = True
+        model = sequential.Sequential([layers_module.Dense(1)])
+        model.compile("sgd", loss="mse", run_eagerly=False, jit_compile=True)
+        x, y = np.ones((10, 1)), np.ones((10, 1))
+        model.fit(x, y, epochs=2)
+        # Test fcompile fit for a RNN model
+        model = sequential.Sequential()
+        model.add(
+            layers_module.TimeDistributed(
+                layers_module.Embedding(5, 6, mask_zero=True),
+                input_shape=(None, None),
+            )
+        )  # N by t_1 by t_2 by 6
+        model.add(
+            layers_module.TimeDistributed(
+                layers_module.SimpleRNN(7, return_sequences=True)
+            )
+        )
+        model.add(
+            layers_module.TimeDistributed(
+                layers_module.SimpleRNN(8, return_sequences=False)
+            )
+        )
+        model.add(layers_module.SimpleRNN(1, return_sequences=False))
+        model.compile(optimizer="sgd", loss="mse", jit_compile=True)
+        model_input = np.random.randint(
+            low=1, high=5, size=(10, 3, 4), dtype="int32"
+        )
+        for i in range(4):
+            model_input[i, i:, i:] = 0
+        model.fit(
+            model_input, np.random.random((10, 1)), epochs=1, batch_size=10
+        )
 
     @test_combinations.run_all_keras_modes(always_skip_v1=True)
     def test_compile_fit_evaluate_predict_with_mirrored_strategy(self):
+        self.skipTest("DML doesn't support distributed training.")
         # Test with jit_compile = True
         strategy = tf.distribute.MirroredStrategy()
         with strategy.scope():
             model = sequential.Sequential([layers_module.Dense(1)])
-        model.compile("sgd", loss="mse", run_eagerly=False, jit_compile=False)
+        model.compile("sgd", loss="mse", run_eagerly=False, jit_compile=True)
         x, y = np.ones((10, 1)), np.ones((10, 1))
         model.fit(x, y, epochs=2)
         model.evaluate(x, y)
@@ -224,46 +228,48 @@ class TrainingTest(test_combinations.TestCase):
         eval_output = model.evaluate(x, y, batch_size=BATCH_SIZE)
         self.assertAllClose(eval_output, 1.0)
 
-    # @test_combinations.run_all_keras_modes(always_skip_v1=True)
-    # def test_verify_xla_compile_with_jit_compile(self):
-    #     vocab_data = ["earth", "wind", "and", "fire"]
-    #     input_array = np.array(
-    #         [
-    #             ["earth", "wind", "and", "fire"],
-    #             ["fire", "and", "earth", "michigan"],
-    #         ]
-    #     )
-    #     expected_output = np.array([[1, 2, 3, 4], [4, 3, 1, 0]])
-    #     strategy = tf.distribute.MirroredStrategy()
-    #     with strategy.scope():
-    #         input_data = keras.Input(shape=(None,), dtype=tf.string)
-    #         layer = string_lookup.StringLookup(vocabulary=vocab_data)
-    #         int_data = layer(input_data)
-    #         model = keras.Model(inputs=input_data, outputs=int_data)
-    #         model.compile(
-    #             "sgd", loss="mse", run_eagerly=False, jit_compile=True
-    #         )
-    #         # Added a string op unsupported by XLA compiler to make sure that an
-    #         # error is thrown, This ensures that the graph is indeed being
-    #         # compiled using XLA
-    #         with self.assertRaisesRegex(
-    #             tf.errors.InvalidArgumentError, "Graph execution error"
-    #         ):
-    #             model.fit(input_array, expected_output, epochs=1)
-    #             model.predict(input_array)
+    @test_combinations.run_all_keras_modes(always_skip_v1=True)
+    def test_verify_xla_compile_with_jit_compile(self):
+        self.skipTest("DML doesn't support JIT compile.")
+        vocab_data = ["earth", "wind", "and", "fire"]
+        input_array = np.array(
+            [
+                ["earth", "wind", "and", "fire"],
+                ["fire", "and", "earth", "michigan"],
+            ]
+        )
+        expected_output = np.array([[1, 2, 3, 4], [4, 3, 1, 0]])
+        strategy = tf.distribute.MirroredStrategy()
+        with strategy.scope():
+            input_data = keras.Input(shape=(None,), dtype=tf.string)
+            layer = string_lookup.StringLookup(vocabulary=vocab_data)
+            int_data = layer(input_data)
+            model = keras.Model(inputs=input_data, outputs=int_data)
+            model.compile(
+                "sgd", loss="mse", run_eagerly=False, jit_compile=True
+            )
+            # Added a string op unsupported by XLA compiler to make sure that an
+            # error is thrown, This ensures that the graph is indeed being
+            # compiled using XLA
+            with self.assertRaisesRegex(
+                tf.errors.InvalidArgumentError, "Graph execution error"
+            ):
+                model.fit(input_array, expected_output, epochs=1)
+                model.predict(input_array)
 
-    # @test_combinations.run_all_keras_modes(always_skip_v1=True)
-    # def test_jit_compile_for_compile_evaluate_predict(self):
-    #     # Test with jit_compile = True for model.compile(), model.evaluate(),
-    #     # model.predict()
-    #     model = sequential.Sequential([layers_module.Dense(1)])
-    #     self.assertIsNone(model._jit_compile)
-    #     model.compile("sgd", loss="mse", run_eagerly=False, jit_compile=True)
-    #     self.assertTrue(model._jit_compile)
-    #     x, y = np.ones((10, 1)), np.ones((10, 1))
-    #     model.fit(x, y, epochs=2)
-    #     model.evaluate(x, y)
-    #     model.predict(x)
+    @test_combinations.run_all_keras_modes(always_skip_v1=True)
+    def test_jit_compile_for_compile_evaluate_predict(self):
+        self.skipTest("DML doesn't support JIT compile.")
+        # Test with jit_compile = True for model.compile(), model.evaluate(),
+        # model.predict()
+        model = sequential.Sequential([layers_module.Dense(1)])
+        self.assertIsNone(model._jit_compile)
+        model.compile("sgd", loss="mse", run_eagerly=False, jit_compile=True)
+        self.assertTrue(model._jit_compile)
+        x, y = np.ones((10, 1)), np.ones((10, 1))
+        model.fit(x, y, epochs=2)
+        model.evaluate(x, y)
+        model.predict(x)
 
     @test_combinations.run_all_keras_modes(always_skip_v1=True)
     def test_fit_without_loss_at_compile(self):
@@ -449,18 +455,19 @@ class TrainingTest(test_combinations.TestCase):
             return labels - preds
 
         layers = [
-            layers_module.Dense(10, dtype=np.float64),
-            layers_module.Dense(10, dtype=np.float64),
+            layers_module.Dense(10, dtype=np.float32),
+            layers_module.Dense(10, dtype=np.float32),
         ]
         model = test_utils.get_model_from_layers(layers, input_shape=(1,))
-        inputs = np.ones(shape=(10, 1), dtype=np.float64)
-        targets = np.ones(shape=(10, 1), dtype=np.float64)
+        inputs = np.ones(shape=(10, 1), dtype=np.float32)
+        targets = np.ones(shape=(10, 1), dtype=np.float32)
+        optimizer = sgd_experimental.SGD(jit_compile=False)
         model.compile(
-            "sgd", loss=loss_fn, run_eagerly=test_utils.should_run_eagerly()
+            optimizer, loss=loss_fn, run_eagerly=test_utils.should_run_eagerly()
         )
         model.train_on_batch(inputs, targets)
         model.test_on_batch(inputs, targets)
-        self.assertEqual(model.predict(inputs).dtype, np.float64)
+        self.assertEqual(model.predict(inputs).dtype, np.float32)
 
     @test_combinations.run_all_keras_modes
     def test_fit_and_validate_nested_training_arg(self):
@@ -921,7 +928,7 @@ class TrainingTest(test_combinations.TestCase):
         model = test_utils.get_small_mlp(1, 1, 1)
         model.compile(
             loss="mse",
-            optimizer="sgd",
+            optimizer=sgd_experimental.SGD(jit_compile=False),
             run_eagerly=test_utils.should_run_eagerly(),
         )
 
@@ -987,7 +994,7 @@ class TrainingTest(test_combinations.TestCase):
         model = training_module.Model([inputs], output_layer)
         model.compile(
             loss="binary_crossentropy",
-            optimizer="adam",
+            optimizer=adam_experimental.Adam(jit_compile=False),
             metrics=["accuracy"],
             run_eagerly=test_utils.should_run_eagerly(),
         )
@@ -1006,7 +1013,7 @@ class TrainingTest(test_combinations.TestCase):
         if not tf.compat.v1.executing_eagerly_outside_functions():
             self.assertEmpty(model.updates)
 
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        model.compile(sgd_experimental.SGD(jit_compile=False), "mse", run_eagerly=test_utils.should_run_eagerly())
         if not tf.compat.v1.executing_eagerly_outside_functions():
             self.assertEmpty(model.updates)
 
@@ -1016,7 +1023,7 @@ class TrainingTest(test_combinations.TestCase):
         self.assertAllClose(x1, x2, atol=1e-7)
 
         model.trainable = True
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        model.compile(sgd_experimental.SGD(jit_compile=False), "mse", run_eagerly=test_utils.should_run_eagerly())
         if not tf.compat.v1.executing_eagerly_outside_functions():
             self.assertAllGreater(len(model.updates), 0)
 
@@ -1025,7 +1032,7 @@ class TrainingTest(test_combinations.TestCase):
         assert np.abs(np.sum(x1 - x2)) > 1e-5
 
         layer.trainable = False
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        model.compile(sgd_experimental.SGD(jit_compile=False), "mse", run_eagerly=test_utils.should_run_eagerly())
         if not tf.compat.v1.executing_eagerly_outside_functions():
             self.assertEmpty(model.updates)
 
@@ -1463,7 +1470,7 @@ class TrainingTest(test_combinations.TestCase):
         )
         reference_model.compile(
             loss="sparse_categorical_crossentropy",
-            optimizer=RMSPropOptimizer(learning_rate=0.001),
+            optimizer=rmsprop.RMSprop(learning_rate=0.001, jit_compile=False),
             run_eagerly=True,
         )
         fixed_weights = reference_model.get_weights()
@@ -1472,7 +1479,7 @@ class TrainingTest(test_combinations.TestCase):
         test_model = test_utils.get_small_sequential_mlp(16, 2, input_dim=4)
         test_model.compile(
             loss="sparse_categorical_crossentropy",
-            optimizer=RMSPropOptimizer(learning_rate=0.001),
+            optimizer=rmsprop.RMSprop(learning_rate=0.001, jit_compile=False),
             run_eagerly=False,
         )
         test_model.set_weights(fixed_weights)
@@ -1492,7 +1499,7 @@ class TrainingTest(test_combinations.TestCase):
         )
         reference_model.compile(
             loss="categorical_crossentropy",
-            optimizer=rmsprop.RMSprop(learning_rate=0.001),
+            optimizer=rmsprop.RMSprop(learning_rate=0.001, jit_compile=False),
             run_eagerly=True,
         )
         fixed_weights = reference_model.get_weights()
@@ -1501,7 +1508,7 @@ class TrainingTest(test_combinations.TestCase):
         test_model = test_utils.get_small_sequential_mlp(16, 2, input_dim=4)
         test_model.compile(
             loss="categorical_crossentropy",
-            optimizer=RMSPropOptimizer(learning_rate=0.001),
+            optimizer=rmsprop.RMSprop(learning_rate=0.001, jit_compile=False),
             run_eagerly=False,
         )
         test_model.set_weights(fixed_weights)
@@ -1517,7 +1524,7 @@ class TrainingTest(test_combinations.TestCase):
         )
         reference_model.compile(
             loss="binary_crossentropy",
-            optimizer=RMSPropOptimizer(learning_rate=0.001),
+            optimizer=rmsprop.RMSprop(learning_rate=0.001, jit_compile=False),
             run_eagerly=True,
         )
         fixed_weights = reference_model.get_weights()
@@ -1526,7 +1533,7 @@ class TrainingTest(test_combinations.TestCase):
         test_model = test_utils.get_small_sequential_mlp(16, 1, input_dim=4)
         test_model.compile(
             loss="binary_crossentropy",
-            optimizer=RMSPropOptimizer(learning_rate=0.001),
+            optimizer=rmsprop.RMSprop(learning_rate=0.001, jit_compile=False),
             run_eagerly=False,
         )
         test_model.set_weights(fixed_weights)
@@ -1545,7 +1552,8 @@ class TrainingTest(test_combinations.TestCase):
     def test_validation_freq(self, validation_freq, expected_runs):
         x, y = np.ones((10, 10)), np.ones((10, 1))
         model = test_utils.get_small_mlp(2, 1, 10)
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer, "mse", run_eagerly=test_utils.should_run_eagerly())
 
         class ValCounter(Callback):
             def __init__(self):
@@ -1572,7 +1580,8 @@ class TrainingTest(test_combinations.TestCase):
             self.skipTest("Check removed in new `fit`")
         x, y = np.ones((10, 10)), np.ones((10, 1))
         model = test_utils.get_small_mlp(2, 1, 10)
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer, "mse", run_eagerly=test_utils.should_run_eagerly())
 
         with self.assertRaisesRegex(
             ValueError,
@@ -1597,7 +1606,8 @@ class TrainingTest(test_combinations.TestCase):
             [VariableOutputLayer(), layers_module.Dense(1)], input_shape=(10,)
         )
         # TODO(omalleyt): Make this work with `run_eagerly=True`.
-        model.compile("sgd", "mse", run_eagerly=False)
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer, "mse", run_eagerly=False)
         model.fit(np.ones((10, 10)), np.ones((10, 1)), batch_size=2, epochs=5)
 
         self.assertLen(model.trainable_variables, 3)
@@ -1633,7 +1643,8 @@ class TrainingTest(test_combinations.TestCase):
     @test_utils.enable_v2_dtype_behavior
     def test_model_input_dtype(self):
         model = test_utils.get_small_mlp(1, 10, 10)
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer, "mse", run_eagerly=test_utils.should_run_eagerly())
         x = np.ones((10, 10)).astype(np.float64)
         y = np.ones((10, 10)).astype(np.float64)
         dataset = tf.data.Dataset.from_tensor_slices((x, y)).batch(2)
@@ -1704,8 +1715,9 @@ class TrainingTest(test_combinations.TestCase):
         model = training_module.Model(inp, [out_1, out_2])
         extra_loss = tf.reduce_sum(tf.cast(out_2, "float64"))
         model.add_loss(extra_loss)
+        optimizer = sgd_experimental.SGD(jit_compile=False)
         model.compile(
-            "sgd", ["mse", "mse"], run_eagerly=test_utils.should_run_eagerly()
+            optimizer, ["mse", "mse"], run_eagerly=test_utils.should_run_eagerly()
         )
         x, y = np.ones((10, 2)), np.ones((10, 2))
         model.fit(x, [y, y])
@@ -1722,7 +1734,8 @@ class TrainingTest(test_combinations.TestCase):
                 return self.dense(inputs)
 
         model = MyModel(dtype="float32")
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer, "mse", run_eagerly=test_utils.should_run_eagerly())
         x, y = np.ones((10, 2)), np.ones((10, 2))
         model.fit(x, y)
 
@@ -1738,7 +1751,8 @@ class TrainingTest(test_combinations.TestCase):
             2, dtype="float32", kernel_regularizer=regularizer
         )(inp)
         model = training_module.Model(inp, out)
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer, "mse", run_eagerly=test_utils.should_run_eagerly())
         x, y = np.ones((10, 2)), np.ones((10, 2))
         model.fit(x, y)
 
@@ -1746,8 +1760,9 @@ class TrainingTest(test_combinations.TestCase):
     def test_outputs_are_floats(self):
         x, y = np.ones((10, 1)), np.ones((10, 1))
         model = sequential.Sequential([layers_module.Dense(1)])
+        optimizer = sgd_experimental.SGD(jit_compile=False)
         model.compile(
-            "sgd",
+            optimizer,
             "mse",
             metrics=["accuracy"],
             run_eagerly=test_utils.should_run_eagerly(),
@@ -1773,6 +1788,7 @@ class TrainingTest(test_combinations.TestCase):
     def test_int_output(self):
         x, y = np.ones((10, 1)), np.ones((10, 1))
         model = sequential.Sequential([layers_module.Dense(1)])
+        optimizer = sgd_experimental.SGD(jit_compile=False)
 
         class MyMetric(metrics_module.Metric):
             def update_state(self, y_true, y_pred, sample_weight=None):
@@ -1782,7 +1798,7 @@ class TrainingTest(test_combinations.TestCase):
                 return tf.constant(1, dtype="int64")
 
         model.compile(
-            "sgd",
+            optimizer,
             "mse",
             metrics=[MyMetric()],
             run_eagerly=test_utils.should_run_eagerly(),
@@ -1796,7 +1812,7 @@ class TrainingTest(test_combinations.TestCase):
         x, y = np.ones((10, 1)), np.ones((10, 1))
         policy.set_global_policy("mixed_float16")
         model = sequential.Sequential([layers_module.Dense(1)])
-        optimizer = sgd_experimental.SGD()
+        optimizer = sgd_experimental.SGD(jit_compile=False)
         model.compile(
             optimizer,
             "mse",
@@ -1979,7 +1995,8 @@ class TrainingTest(test_combinations.TestCase):
         outputs = layers_module.Dense(1)(inputs)
         model = MyModel(inputs, outputs)
         model.add_loss(tf.reduce_sum(outputs))
-        model.compile("sgd")
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer)
         model.fit(x, batch_size=batch_size)
         model.evaluate(x, batch_size=batch_size)
         model.predict(x, batch_size=batch_size)
@@ -2186,7 +2203,7 @@ class TrainingTest(test_combinations.TestCase):
         tensors = tf.random.uniform((4, 4)), tf.random.uniform((4,))
         dataset = tf.data.Dataset.from_tensor_slices(tensors).repeat().batch(1)
 
-        optimizer = sgd_experimental.SGD(use_ema=True, ema_momentum=1)
+        optimizer = sgd_experimental.SGD(use_ema=True, ema_momentum=1, jit_compile=False)
         model.compile(optimizer, loss="mse", steps_per_execution=10)
         initial_value = tf.Variable(model.trainable_variables[0])
         history = model.fit(dataset, epochs=2, steps_per_epoch=10)
@@ -2399,8 +2416,9 @@ class LossWeightingTest(test_combinations.TestCase):
             loss="categorical_crossentropy",
             metrics=["acc", metrics_module.CategoricalAccuracy()],
             weighted_metrics=["mae", metrics_module.CategoricalAccuracy()],
-            optimizer=RMSPropOptimizer(learning_rate=learning_rate),
+            optimizer=rmsprop.RMSprop(learning_rate=learning_rate, jit_compile=False),
             run_eagerly=test_utils.should_run_eagerly(),
+            jit_compile=False
         )
 
         np.random.seed(1337)
@@ -2524,7 +2542,7 @@ class LossWeightingTest(test_combinations.TestCase):
             )
 
             model.compile(
-                RMSPropOptimizer(learning_rate=learning_rate),
+                optimizer=rmsprop.RMSprop(learning_rate=learning_rate, jit_compile=False),
                 loss="categorical_crossentropy",
                 metrics=["acc", metrics_module.CategoricalAccuracy()],
                 weighted_metrics=["mae", metrics_module.CategoricalAccuracy()],
@@ -2721,7 +2739,7 @@ class MaskingTest(test_combinations.TestCase):
         model = test_utils.get_model_from_layers(layers, input_shape)
         model.compile(
             loss="mse",
-            optimizer=RMSPropOptimizer(learning_rate=0.001),
+            optimizer=rmsprop.RMSprop(learning_rate=0.001, jit_compile=False),
             run_eagerly=test_utils.should_run_eagerly(),
         )
         return model
@@ -2929,7 +2947,7 @@ class TestDynamicTrainability(test_combinations.TestCase):
         model1 = training_module.Model(inputs1, outputs1)
         shared_layer.trainable = False
         model1.compile(
-            "sgd", "mse", run_eagerly=test_utils.should_run_eagerly()
+            sgd_experimental.SGD(jit_compile=False), "mse", run_eagerly=test_utils.should_run_eagerly()
         )
 
         inputs2 = input_layer.Input(10)
@@ -2937,7 +2955,7 @@ class TestDynamicTrainability(test_combinations.TestCase):
         model2 = training_module.Model(inputs2, outputs2)
         shared_layer.trainable = True
         model2.compile(
-            "sgd", "mse", run_eagerly=test_utils.should_run_eagerly()
+            sgd_experimental.SGD(jit_compile=False), "mse", run_eagerly=test_utils.should_run_eagerly()
         )
 
         x, y = np.ones((10, 10)), np.ones((10, 10))
@@ -2963,7 +2981,8 @@ class TestDynamicTrainability(test_combinations.TestCase):
         result = layers_module.Add()([dense_0(input_0), dense_1(input_0)])
         model = training_module.Model(input_0, result)
         dense_0.trainable = False
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer, "mse", run_eagerly=test_utils.should_run_eagerly())
 
         x = np.ones((10, 1))
         y = 5 * x + 2
@@ -3044,7 +3063,7 @@ class TestTrainingWithDataTensors(test_combinations.TestCase):
 
         model = training_module.Model([a, b], [d, e])
 
-        optimizer = "rmsprop"
+        optimizer = rmsprop.RMSprop(jit_compile=False)
         loss = "mse"
         loss_weights = [1.0, 0.5]
         model.compile(
@@ -3271,7 +3290,7 @@ class TestTrainingWithDataTensors(test_combinations.TestCase):
             a_3 = dp(a_2)
             model = training_module.Model(a, [a_2, a_3])
 
-            optimizer = "rmsprop"
+            optimizer = rmsprop.RMSprop(jit_compile=False)
             loss = {"dropout": "mse"}
             model.compile(optimizer, loss, metrics=["mae"])
 
@@ -3292,7 +3311,7 @@ class TestTrainingWithDataTensors(test_combinations.TestCase):
             a_3 = layers_module.Dense(4, name="dense_2")(a_2)
             model = training_module.Model(a, [a_2, a_3])
 
-            optimizer = "rmsprop"
+            optimizer = rmsprop.RMSprop(jit_compile=False)
             loss = {"dense_2": "mse"}
             model.compile(optimizer, loss, metrics={"dense_1": "mae"})
 
@@ -3784,8 +3803,9 @@ class TestTrainingWithMetrics(test_combinations.TestCase):
                 with backend.get_graph().as_default():
                     model.add_metric(metrics_module.Mean(name="metric_2")(y))
 
+        optimizer = sgd_experimental.SGD(jit_compile=False)
         model.compile(
-            "sgd", loss="mse", run_eagerly=test_utils.should_run_eagerly()
+            optimizer, loss="mse", run_eagerly=test_utils.should_run_eagerly()
         )
 
         inputs = np.ones(shape=(10, 1))
@@ -3931,8 +3951,9 @@ class TestTrainingWithMetrics(test_combinations.TestCase):
                 with backend.get_graph().as_default():
                     model.add_metric(metrics_module.Mean(name="metric_4")(y))
 
+        optimizer = sgd_experimental.SGD(jit_compile=False)
         model.compile(
-            "sgd",
+            optimizer,
             loss="mse",
             metrics=[metrics_module.Accuracy("metric_4")],
             run_eagerly=test_utils.should_run_eagerly(),
@@ -4209,8 +4230,9 @@ class TestTrainingWithMetrics(test_combinations.TestCase):
                 return self.dense1(x)
 
         model = TestModel()
+        optimizer = rmsprop.RMSprop(jit_compile=False)
         model.compile(
-            "rmsprop", "mse", run_eagerly=test_utils.should_run_eagerly()
+            optimizer, "mse", run_eagerly=test_utils.should_run_eagerly()
         )
         model.fit(np.ones(shape=(10, 1)), np.ones(shape=(10, 2)), batch_size=5)
 
@@ -4227,8 +4249,9 @@ class TestTrainingWithMetrics(test_combinations.TestCase):
                 return self.dense1(x)
 
         model = TestModel()
+        optimizer = rmsprop.RMSprop(jit_compile=False)
         model.compile(
-            "rmsprop", "mse", run_eagerly=test_utils.should_run_eagerly()
+            optimizer, "mse", run_eagerly=test_utils.should_run_eagerly()
         )
         model.fit(np.ones(shape=(10, 1)), np.ones(shape=(10, 2)), batch_size=5)
 
@@ -4265,7 +4288,8 @@ class TestTrainingWithMetrics(test_combinations.TestCase):
         train_ds = tf.data.Dataset.from_tensor_slices((ones, ones)).batch(5)
         val_ds_1 = tf.data.Dataset.from_tensor_slices((ones, ones)).batch(5)
         val_ds_2 = tf.data.Dataset.from_tensor_slices((zeros, zeros)).batch(5)
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer, "mse", run_eagerly=test_utils.should_run_eagerly())
 
         class MyCallback(Callback):
             def on_epoch_end(self, *args, **kwargs):
@@ -4308,7 +4332,7 @@ class TestTrainingWithMetrics(test_combinations.TestCase):
         )
 
         inner_model.compile(
-            "sgd",
+            sgd_experimental.SGD(jit_compile=False),
             loss="mse",
             metrics=[metrics_module.Accuracy("acc")],
             run_eagerly=test_utils.should_run_eagerly(),
@@ -4328,7 +4352,7 @@ class TestTrainingWithMetrics(test_combinations.TestCase):
         )
 
         outer_model.compile(
-            "sgd",
+            sgd_experimental.SGD(jit_compile=False),
             loss="mse",
             metrics=[metrics_module.Accuracy("acc2")],
             run_eagerly=test_utils.should_run_eagerly(),
@@ -4367,7 +4391,7 @@ class TestTrainingWithMetrics(test_combinations.TestCase):
                 return {"my_mse": mse, "my_rmse": rmse}
 
         model.compile(
-            "sgd",
+            sgd_experimental.SGD(jit_compile=False),
             "mse",
             metrics=["mae", DictMetric()],
             run_eagerly=test_utils.should_run_eagerly(),
@@ -4486,7 +4510,8 @@ class TestAutoUpdates(test_combinations.TestCase):
         model = test_utils.get_model_from_layers(
             [layer, layers_module.Dense(1)], input_shape=(10,)
         )
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer, "mse", run_eagerly=test_utils.should_run_eagerly())
         model.fit(x, y, batch_size=2, epochs=1)
         self.assertEqual(self.evaluate(layer.counter), 5)
 
@@ -4497,11 +4522,13 @@ class TestAutoUpdates(test_combinations.TestCase):
         model = test_utils.get_model_from_layers(
             [layer, layers_module.Dense(1)], input_shape=(10,)
         )
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer, "mse", run_eagerly=test_utils.should_run_eagerly())
         model.fit(x, y, batch_size=2, epochs=1)
         self.assertEqual(self.evaluate(layer.counter), 5)
         layer.trainable = False
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer, "mse", run_eagerly=test_utils.should_run_eagerly())
         model.fit(x, y, batch_size=2, epochs=1)
         self.assertEqual(self.evaluate(layer.counter), 5)
 
@@ -4512,7 +4539,8 @@ class TestAutoUpdates(test_combinations.TestCase):
         model = test_utils.get_model_from_layers(
             [layer, layers_module.Dense(1)], input_shape=(10,)
         )
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer, "mse", run_eagerly=test_utils.should_run_eagerly())
         model.fit(x, y, batch_size=2, epochs=1)
         self.assertEqual(self.evaluate(layer.counter), 5)
 
@@ -4546,7 +4574,8 @@ class TestAutoUpdates(test_combinations.TestCase):
             [bn, layers_module.Dense(1)], input_shape=(10,)
         )
         bn.trainable = False
-        model.compile("sgd", "mse", run_eagerly=test_utils.should_run_eagerly())
+        optimizer = sgd_experimental.SGD(jit_compile=False)
+        model.compile(optimizer, "mse", run_eagerly=test_utils.should_run_eagerly())
         x, y = np.ones((10, 10)), np.ones((10, 1))
         model.fit(x, y, batch_size=2, epochs=1)
         self.assertAllEqual(self.evaluate(bn.moving_mean), np.zeros((10,)))
