@@ -1013,7 +1013,11 @@ class TrainingTest(test_combinations.TestCase):
         if not tf.compat.v1.executing_eagerly_outside_functions():
             self.assertEmpty(model.updates)
 
-        model.compile(sgd_experimental.SGD(jit_compile=False), "mse", run_eagerly=test_utils.should_run_eagerly())
+        model.compile(
+            sgd_experimental.SGD(jit_compile=False), 
+            "mse", 
+            run_eagerly=test_utils.should_run_eagerly()
+        )
         if not tf.compat.v1.executing_eagerly_outside_functions():
             self.assertEmpty(model.updates)
 
@@ -1023,7 +1027,11 @@ class TrainingTest(test_combinations.TestCase):
         self.assertAllClose(x1, x2, atol=1e-7)
 
         model.trainable = True
-        model.compile(sgd_experimental.SGD(jit_compile=False), "mse", run_eagerly=test_utils.should_run_eagerly())
+        model.compile(
+            sgd_experimental.SGD(jit_compile=False), 
+            "mse", 
+            run_eagerly=test_utils.should_run_eagerly()
+        )
         if not tf.compat.v1.executing_eagerly_outside_functions():
             self.assertAllGreater(len(model.updates), 0)
 
@@ -1032,7 +1040,11 @@ class TrainingTest(test_combinations.TestCase):
         assert np.abs(np.sum(x1 - x2)) > 1e-5
 
         layer.trainable = False
-        model.compile(sgd_experimental.SGD(jit_compile=False), "mse", run_eagerly=test_utils.should_run_eagerly())
+        model.compile(
+            sgd_experimental.SGD(jit_compile=False), 
+            "mse", 
+            run_eagerly=test_utils.should_run_eagerly()
+        )
         if not tf.compat.v1.executing_eagerly_outside_functions():
             self.assertEmpty(model.updates)
 
@@ -2947,7 +2959,8 @@ class TestDynamicTrainability(test_combinations.TestCase):
         model1 = training_module.Model(inputs1, outputs1)
         shared_layer.trainable = False
         model1.compile(
-            sgd_experimental.SGD(jit_compile=False), "mse", run_eagerly=test_utils.should_run_eagerly()
+            sgd_experimental.SGD(jit_compile=False), 
+            "mse", run_eagerly=test_utils.should_run_eagerly()
         )
 
         inputs2 = input_layer.Input(10)
@@ -2955,7 +2968,8 @@ class TestDynamicTrainability(test_combinations.TestCase):
         model2 = training_module.Model(inputs2, outputs2)
         shared_layer.trainable = True
         model2.compile(
-            sgd_experimental.SGD(jit_compile=False), "mse", run_eagerly=test_utils.should_run_eagerly()
+            sgd_experimental.SGD(jit_compile=False), 
+            "mse", run_eagerly=test_utils.should_run_eagerly()
         )
 
         x, y = np.ones((10, 10)), np.ones((10, 10))
