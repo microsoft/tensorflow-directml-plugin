@@ -22,7 +22,7 @@ parameters:
   default: 2.10.0
 - name: kerasPackage
   type: string
-  default: keras==2.9.0
+  default: keras==2.10.0
 - name: pluginBuildPipeline
   type: string
   default: current
