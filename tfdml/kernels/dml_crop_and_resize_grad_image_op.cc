@@ -184,6 +184,7 @@ class DmlCropAndResizeGradImageKernel : public DmlKernel
 
         DmlKernelParams params;
         params.kernel_input_indices = {0, 1, 2};
+        params.kernel_output_indices = {0};
 
         using namespace DmlTensorAxes;
         auto layout = {N, H, W, C};
@@ -196,31 +197,42 @@ class DmlCropAndResizeGradImageKernel : public DmlKernel
         tensors.outputs[0]->desc = CreateTensorDescFromOutput(ctx, 0, layout);
 
         auto inputs = GetDmlTensorDescs(tensors.inputs);
-        auto scope = dml::Graph(
-            ctx->GetDmlDevice(),
-            dml::TensorPolicy::InterleavedChannel());
-        auto input_gradient = dml::InputTensor(scope, 0, inputs[0]);
-        auto roi = dml::InputTensor(scope, 1, inputs[1]);
-        auto batch_indices = dml::InputTensor(scope, 2, inputs[2]);
+        auto outputs = GetDmlTensorDescs(tensors.outputs);
+        // auto scope = dml::Graph(
+        //     ctx->GetDmlDevice(),
+        //     dml::TensorPolicy::InterleavedChannel());
+        auto input_gradient = &inputs[0];
+        auto roi = &inputs[1];
+        auto batch_indices = &inputs[2];
 
         // TF's ROIs are in {y1, x1, y2, x2} order, but DML's are in {x1, y1,
         // x2, y2} order
-        auto roi_sizes = roi.GetOutputDesc().sizes;
-        roi = dml::Reinterpret(roi, {1, roi_sizes[2], 2, 2}, {});
+        // auto roi_sizes = roi->GetOutputDesc().sizes;
 
-        auto seq_lengths =
-            dml::ScalarTensor<uint32_t>(scope, 2, {1, roi_sizes[2], 2, 1});
-        roi = dml::ReverseSubsequences(roi, seq_lengths, 3);
+        // roi = dml::Reinterpret(roi, {1, roi_sizes[2], 2, 2}, {});
 
-        // NHWC strides for sizes [1, 1, roiCount, 4]
-        dml::TensorDimensions roiStrides{
-            roi_sizes[2] * 4,
-            roi_sizes[2] * 4,
-            1,
-            roi_sizes[2],
-        };
+        // auto seq_lengths =
+        //     dml::ScalarTensor<uint32_t>(scope, 2, {1, roi_sizes[2], 2, 1});
+        // roi = dml::ReverseSubsequences(roi, seq_lengths, 3);
 
-        roi = dml::Reinterpret(roi, roi_sizes, roiStrides);
+        // // NHWC strides for sizes [1, 1, roiCount, 4]
+        // dml::TensorDimensions roiStrides{
+        //     roi_sizes[2] * 4,
+        //     roi_sizes[2] * 4,
+        //     1,
+        //     roi_sizes[2],
+        // };
+
+        // for (int i = 0; i < 4; i++) {
+        //     auto x1 = roi[0, 0, i, 1];
+        //     roi[0, 0, i, 1] = roi[0, 0, i, 0];
+        //     roi[0, 0, i, 0] = x1;
+        //     auto x2 = roi[0, 0, i, 3];
+        //     roi[0, 0, i, 3] = roi[0, 0, i, 2];
+        //     roi[0, 0, i, 2] = x2;
+        // }
+
+        // roi = dml::Reinterpret(roi, roi_sizes, roiStrides);
 
         const float spatial_scale_x = output_gradient_shape.dim_size(2) - 1;
         const float spatial_scale_y = output_gradient_shape.dim_size(1) - 1;
@@ -235,39 +247,53 @@ class DmlCropAndResizeGradImageKernel : public DmlKernel
         constexpr bool compute_output_gradient = true;
         constexpr bool compute_output_roi_gradient = false;
 
-        auto results = dml::RoiAlignGrad(
-            {},
-            input_gradient,
-            roi,
-            batch_indices,
-            DML_REDUCE_FUNCTION_AVERAGE,
-            init_helper->GetInterpolationMode(),
-            spatial_scale_x,
-            spatial_scale_y,
-            input_pixel_offset,
-            output_pixel_offset,
-            minimum_samples_per_output,
-            maximum_samples_per_output,
-            align_region_to_corners,
-            batch_size,
-            image_height,
-            image_width,
-            compute_output_gradient,
-            compute_output_roi_gradient);
+        // dml::TensorDesc inputTensor = dTensorDesc();
+        auto inputGradientTensor = &inputs[0]; //input_gradient.Impl()->GetOutputDesc();
+        auto roiTensor = &inputs[1]; //roi.Impl()->GetOutputDesc();
+        auto batchIndicesTensor = &inputs[2]; //batch_indices.Impl()->GetOutputDesc();
 
-        auto result = results.outputGradient;
+        // dml::TensorDesc outputGradientTensor;
 
-        if (ctx->GetOutputDataType(0) != ctx->GetInputDataType(0))
-        {
-            auto dml_dtype =
-                GetDmlDataTypeFromTfDataType(ctx->GetOutputDataType(0));
-            result = dml::Cast(result, dml_dtype);
-        }
+        // dml::TensorDesc::Dimensions outputGradientSizes({
+        //     batch_size,
+        //     4,
+        //     image_height,
+        //     image_width,
+        // });
 
-        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
-            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+        // outputGradientTensor = dml::TensorDesc(DML_TENSOR_DATA_TYPE_FLOAT32, outputGradientSizes);
 
-        Initialize(ctx, std::move(tensors), compiled_op.Get());
+        DML_ROI_ALIGN_GRAD_OPERATOR_DESC roi_align_grad_desc = {};
+        roi_align_grad_desc.InputTensor = nullptr;
+        roi_align_grad_desc.InputGradientTensor = inputGradientTensor;//.AsPtr<DML_TENSOR_DESC>();
+        roi_align_grad_desc.ROITensor = roiTensor;//.AsPtr<DML_TENSOR_DESC>();
+        roi_align_grad_desc.BatchIndicesTensor = batchIndicesTensor;//.AsPtr<DML_TENSOR_DESC>();
+        roi_align_grad_desc.OutputGradientTensor = &outputs[0]; //outputGradientTensor.AsPtr<DML_TENSOR_DESC>();
+        roi_align_grad_desc.OutputROIGradientTensor = nullptr;
+        roi_align_grad_desc.ReductionFunction = DML_REDUCE_FUNCTION_AVERAGE; 
+        roi_align_grad_desc.InterpolationMode = init_helper->GetInterpolationMode();
+        roi_align_grad_desc.SpatialScaleX = spatial_scale_x;
+        roi_align_grad_desc.SpatialScaleY = spatial_scale_y;
+        roi_align_grad_desc.InputPixelOffset = input_pixel_offset;
+        roi_align_grad_desc.OutputPixelOffset = output_pixel_offset;
+        roi_align_grad_desc.MinimumSamplesPerOutput = minimum_samples_per_output;
+        roi_align_grad_desc.MaximumSamplesPerOutput = maximum_samples_per_output;
+        roi_align_grad_desc.AlignRegionsToCorners = align_region_to_corners;
+
+        DML_OPERATOR_DESC op_desc = {DML_OPERATOR_ROI_ALIGN_GRAD, &roi_align_grad_desc};
+        Initialize(ctx, std::move(tensors), op_desc);
+
+        // if (ctx->GetOutputDataType(0) != ctx->GetInputDataType(0))
+        // {
+        //     auto dml_dtype =
+        //         GetDmlDataTypeFromTfDataType(ctx->GetOutputDataType(0));
+        //     result = dml::Cast(result, dml_dtype);
+        // }
+
+        // Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+        //     scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+
+        // Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
