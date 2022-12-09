@@ -198,12 +198,10 @@ class DmlCropAndResizeGradImageKernel : public DmlKernel
 
         auto inputs = GetDmlTensorDescs(tensors.inputs);
         auto outputs = GetDmlTensorDescs(tensors.outputs);
-        // auto scope = dml::Graph(
-        //     ctx->GetDmlDevice(),
-        //     dml::TensorPolicy::InterleavedChannel());
-        auto input_gradient = &inputs[0];
-        auto roi = &inputs[1];
-        auto batch_indices = &inputs[2];
+
+        // auto input_gradient = &inputs[0];
+        // auto roi = &inputs[1];
+        // auto batch_indices = &inputs[2];
 
         // TF's ROIs are in {y1, x1, y2, x2} order, but DML's are in {x1, y1,
         // x2, y2} order
@@ -223,6 +221,8 @@ class DmlCropAndResizeGradImageKernel : public DmlKernel
         //     roi_sizes[2],
         // };
 
+        // roi = dml::Reinterpret(roi, roi_sizes, roiStrides);
+
         // for (int i = 0; i < 4; i++) {
         //     auto x1 = roi[0, 0, i, 1];
         //     roi[0, 0, i, 1] = roi[0, 0, i, 0];
@@ -231,8 +231,6 @@ class DmlCropAndResizeGradImageKernel : public DmlKernel
         //     roi[0, 0, i, 3] = roi[0, 0, i, 2];
         //     roi[0, 0, i, 2] = x2;
         // }
-
-        // roi = dml::Reinterpret(roi, roi_sizes, roiStrides);
 
         const float spatial_scale_x = output_gradient_shape.dim_size(2) - 1;
         const float spatial_scale_y = output_gradient_shape.dim_size(1) - 1;
@@ -247,28 +245,16 @@ class DmlCropAndResizeGradImageKernel : public DmlKernel
         constexpr bool compute_output_gradient = true;
         constexpr bool compute_output_roi_gradient = false;
 
-        // dml::TensorDesc inputTensor = dTensorDesc();
-        auto inputGradientTensor = &inputs[0]; //input_gradient.Impl()->GetOutputDesc();
-        auto roiTensor = &inputs[1]; //roi.Impl()->GetOutputDesc();
-        auto batchIndicesTensor = &inputs[2]; //batch_indices.Impl()->GetOutputDesc();
-
-        // dml::TensorDesc outputGradientTensor;
-
-        // dml::TensorDesc::Dimensions outputGradientSizes({
-        //     batch_size,
-        //     4,
-        //     image_height,
-        //     image_width,
-        // });
-
-        // outputGradientTensor = dml::TensorDesc(DML_TENSOR_DATA_TYPE_FLOAT32, outputGradientSizes);
+        auto inputGradientTensor = &inputs[0];
+        auto roiTensor = &inputs[1];
+        auto batchIndicesTensor = &inputs[2];
 
         DML_ROI_ALIGN_GRAD_OPERATOR_DESC roi_align_grad_desc = {};
         roi_align_grad_desc.InputTensor = nullptr;
-        roi_align_grad_desc.InputGradientTensor = inputGradientTensor;//.AsPtr<DML_TENSOR_DESC>();
-        roi_align_grad_desc.ROITensor = roiTensor;//.AsPtr<DML_TENSOR_DESC>();
-        roi_align_grad_desc.BatchIndicesTensor = batchIndicesTensor;//.AsPtr<DML_TENSOR_DESC>();
-        roi_align_grad_desc.OutputGradientTensor = &outputs[0]; //outputGradientTensor.AsPtr<DML_TENSOR_DESC>();
+        roi_align_grad_desc.InputGradientTensor = inputGradientTensor;
+        roi_align_grad_desc.ROITensor = roiTensor;
+        roi_align_grad_desc.BatchIndicesTensor = batchIndicesTensor;
+        roi_align_grad_desc.OutputGradientTensor = &outputs[0];
         roi_align_grad_desc.OutputROIGradientTensor = nullptr;
         roi_align_grad_desc.ReductionFunction = DML_REDUCE_FUNCTION_AVERAGE; 
         roi_align_grad_desc.InterpolationMode = init_helper->GetInterpolationMode();
@@ -282,18 +268,6 @@ class DmlCropAndResizeGradImageKernel : public DmlKernel
 
         DML_OPERATOR_DESC op_desc = {DML_OPERATOR_ROI_ALIGN_GRAD, &roi_align_grad_desc};
         Initialize(ctx, std::move(tensors), op_desc);
-
-        // if (ctx->GetOutputDataType(0) != ctx->GetInputDataType(0))
-        // {
-        //     auto dml_dtype =
-        //         GetDmlDataTypeFromTfDataType(ctx->GetOutputDataType(0));
-        //     result = dml::Cast(result, dml_dtype);
-        // }
-
-        // Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
-        //     scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
-
-        // Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
