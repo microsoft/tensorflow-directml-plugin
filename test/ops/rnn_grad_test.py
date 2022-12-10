@@ -28,7 +28,6 @@ from tensorflow.python.ops import math_ops
 from tensorflow.python.ops import rnn_grad  # pylint: disable=unused-import
 from tensorflow.python.platform import test
 
-
 class RNNGradTest(test.TestCase):
 
   @test_util.deprecated_graph_mode_only
@@ -114,7 +113,7 @@ class RNNGradTest(test.TestCase):
         outputs.append(output)
         grads.append(grad)
     self.assertAllClose(outputs[0], outputs[1])
-    self.assertAllClose(grads[0], grads[1])
+    self.assertAllClose(grads[0], grads[1], atol=1e-3)
 
   def _lstm_block(self, op, w, b, x, cs_prev, h_prev):
     w_peephole = array_ops.zeros(cs_prev.shape[1:], dtype=w.dtype)
@@ -131,6 +130,48 @@ class RNNGradTest(test.TestCase):
         use_peephole=False)
     return all_cs, all_h
 
+  @test_util.deprecated_graph_mode_only
+  def testGRUBlockCell(self):
+    batch_size = np.random.randint(1, 32)
+    input_size = np.random.randint(1, 32)
+    cell_size = np.random.randint(1, 32)
+    x = deterministic_random_uniform([batch_size, input_size])
+    h_prev = deterministic_random_uniform([batch_size, cell_size])
+    w_ru = deterministic_random_uniform(
+        [input_size + cell_size, 2*cell_size])
+    w_c = deterministic_random_uniform(
+        [input_size + cell_size, cell_size])
+    b_ru = deterministic_random_uniform([2 * cell_size])
+    b_c = deterministic_random_uniform([cell_size])
+    d_h = deterministic_random_uniform([batch_size, cell_size])
+
+    outputs = []
+    grads = []
+    for use_gpu in [False, True]:
+      with self.cached_session(use_gpu=use_gpu):
+        output = gen_rnn_ops.gru_block_cell(
+            x=x,
+            h_prev=h_prev,
+            w_ru=w_ru,
+            w_c=w_c,
+            b_ru=b_ru,
+            b_c=b_c)
+        (r, u, c, h) = output
+        grad = gen_rnn_ops.gru_block_cell_grad(
+            x=x,
+            h_prev=h_prev,
+            w_ru=w_ru,
+            w_c=w_c,
+            b_ru=b_ru,
+            b_c=b_c,
+            r=r,
+            u=u,
+            c=c,
+            d_h=d_h)
+        outputs.append(output)
+        grads.append(grad)
+    self.assertAllClose(outputs[0], outputs[1])
+    self.assertAllClose(grads[0], grads[1])
 
 def deterministic_random_uniform(shape):
   return ops.convert_to_tensor(np.random.random(shape), dtype=dtypes.float32)
