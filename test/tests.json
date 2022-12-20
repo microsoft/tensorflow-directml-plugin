@@ -73,6 +73,9 @@
                     "file": "ops/cross_grad_test.py"
                 },
                 {
+                    "file": "ops/cudnn_recurrent_test.py"
+                },
+                {
                     "file": "ops/cwise_ops_binary_test.py"
                 },
                 {
