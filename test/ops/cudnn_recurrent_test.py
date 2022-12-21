@@ -89,30 +89,40 @@ class CuDNNTest(keras_parameterized.TestCase):
     num_params = weights_input.shape[0]
     biases = layer.get_weights()[2]
 
-    kwargs2={'num_layers': num_layers, 'num_units': units, 'input_size': input_size, 'weights': test_weights, 'biases': biases.tolist()}
-    params = tf.raw_ops.CudnnRNNCanonicalToParams(**kwargs2)
+    kwargs1={
+        'num_layers': num_layers, 
+        'num_units': units, 
+        'input_size': input_size, 
+        'weights': test_weights, 
+        'biases': biases.tolist()}
+    params = tf.raw_ops.CudnnRNNCanonicalToParams(**kwargs1)
 
-    kwargs3 = {'num_layers': num_layers, 'num_units': units, 'input_size': input_size, 'params': params, 'num_params': num_params}
-    weights2, biases2 = tf.raw_ops.CudnnRNNParamsToCanonical(**kwargs3)
+    kwargs2 = {
+        'num_layers': num_layers, 
+        'num_units': units, 
+        'input_size': input_size, 
+        'params': params, 
+        'num_params': num_params}
+    weights2, biases2 = tf.raw_ops.CudnnRNNParamsToCanonical(**kwargs2)
 
     weights2 = [np.array(x) for x in weights2]
     num_input_weights = len(weights2)//2
 
-    weights2_input, weights2_hidden = weights2[:num_input_weights], weights2[num_input_weights:]
+    weights_input2, weights_hidden2 = weights2[:num_input_weights], weights2[num_input_weights:]
 
-    weights2_input = np.concatenate(weights2_input, axis=0)
-    weights2_hidden = np.concatenate(weights2_hidden, axis=0)
+    weights_input2 = np.concatenate(weights_input2, axis=0)
+    weights_hidden2 = np.concatenate(weights_hidden2, axis=0)
 
     biases2 = [np.array(x) for x in biases2]
     biases2 = np.array(biases2)
     biases2 = np.ndarray.flatten(biases2)
 
-    self.assertEqual(weights_input.shape, weights2_input.shape)
-    self.assertEqual(weights_hidden.shape, weights2_hidden.shape)
+    self.assertEqual(weights_input.shape, weights_input2.shape)
+    self.assertEqual(weights_hidden.shape, weights_hidden2.shape)
     self.assertEqual(biases.shape, biases2.shape)
 
-    self.assertAllEqual(weights_input, weights2_input)
-    self.assertAllEqual(weights_hidden, weights2_hidden)
+    self.assertAllEqual(weights_input, weights_input2)
+    self.assertAllEqual(weights_hidden, weights_hidden2)
     self.assertAllEqual(biases.tolist(), biases2)
 
 if __name__ == '__main__':
