@@ -421,15 +421,10 @@ class CudnnRNNCanonicalToParamsInitHelper : public InitializationHelper
             {
                 num_dirs = 2;
             }
-            num_params_weights_per_layer =
-                num_params_weights / num_layers / num_dirs;
-            num_params_input_state = num_params_weights_per_layer / 2;
         }
         int num_proj;
         int num_layers;
         int num_dirs;
-        int num_params_weights_per_layer;
-        int num_params_input_state;
         int num_params;
         int num_params_biases;
         int num_params_weights;
@@ -478,6 +473,9 @@ class CudnnRNNCanonicalToParamsInitHelper : public InitializationHelper
             auto input_size = ctx->input(i).shape();
             output_size_ += input_size.num_elements();
         }
+        num_params_weights_per_layer_ =
+            attr->num_params_weights / num_layers_ / attr->num_dirs;
+        num_params_input_state_ = num_params_weights_per_layer_ / 2;
     }
 
     int GetNumProj() const { return attr_->num_proj; }
@@ -499,6 +497,8 @@ class CudnnRNNCanonicalToParamsInitHelper : public InitializationHelper
     int num_units_;
     int input_size_;
     int64_t output_size_;
+    int num_params_weights_per_layer_;
+    int num_params_input_state_;
 };
 
 class CudnnRNNCanonicalToParamsShapeHelper : public ShapeHelper
