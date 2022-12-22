@@ -242,29 +242,31 @@ class _Test:
             environ["PYTHONIOENCODING"] = "utf-8"
             process_result = None
             try:
-                process_result = subprocess.run(
+                process_result = subprocess.Popen(
                     self.command_line,
                     cwd=self.cwd,
                     timeout=timeout_seconds,
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
+                    # stdin=subprocess.PIPE,
+                    # stdout=subprocess.PIPE,
+                    # stderr=subprocess.PIPE,
                     universal_newlines=True,
                     encoding="utf-8",
                     env=environ,
                     shell=True,
                     check=True,
                 )
-                print('exit status:', process_result.returncode)
-                print('stdout:', process_result.stdout)
-                print('stderr:', process_result.stderr)
+                process_result.communicate()
+                # print('exit status:', process_result.returncode)
+                # print('stdout:', process_result.stdout)
+                # print('stderr:', process_result.stderr)
                 run_state = "completed"
             # except subprocess.TimeoutExpired:
             #     run_state = "timed_out"
             except subprocess.CalledProcessError:
-                print('exit status:', process_result.returncode)
-                print('stdout:', process_result.stdout)
-                print('stderr:', process_result.stderr)
+                process_result.communicate()
+                # print('exit status:', process_result.returncode)
+                # print('stdout:', process_result.stdout)
+                # print('stderr:', process_result.stderr)
                 run_state = "exited_abnormally"
 
             if process_result and redirect_output:
