@@ -245,15 +245,15 @@ class _Test:
                 process_result = subprocess.Popen(
                     self.command_line,
                     cwd=self.cwd,
-                    timeout=timeout_seconds,
+                    # timeout=timeout_seconds,
                     # stdin=subprocess.PIPE,
                     # stdout=subprocess.PIPE,
                     # stderr=subprocess.PIPE,
                     universal_newlines=True,
                     encoding="utf-8",
                     env=environ,
-                    shell=True,
-                    check=True,
+                    # shell=True,
+                    # check=True,
                 )
                 process_result.communicate()
                 # print('exit status:', process_result.returncode)
