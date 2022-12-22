@@ -421,15 +421,10 @@ class CudnnRNNCanonicalToParamsInitHelper : public InitializationHelper
             {
                 num_dirs = 2;
             }
-            num_params_weights_per_layer =
-                num_params_weights / num_layers / num_dirs;
-            num_params_input_state = num_params_weights_per_layer / 2;
         }
         int num_proj;
         int num_layers;
         int num_dirs;
-        int num_params_weights_per_layer;
-        int num_params_input_state;
         int num_params;
         int num_params_biases;
         int num_params_weights;
@@ -470,6 +465,10 @@ class CudnnRNNCanonicalToParamsInitHelper : public InitializationHelper
         num_units_ = num_units_tensor.base<int>()[0];
         input_size_ = input_size_tensor.base<int>()[0];
 
+        num_params_weights_per_layer_ =
+            attr_->num_params_weights / num_layers_ / attr_->num_dirs;
+        num_params_input_state_ = num_params_weights_per_layer_ / 2;
+
         output_size_ = 0;
         int last_index =
             3 + attr_->num_params_weights + attr_->num_params_biases;
@@ -495,6 +494,8 @@ class CudnnRNNCanonicalToParamsInitHelper : public InitializationHelper
 
   private:
     std::shared_ptr<const Attributes> attr_;
+    int num_params_weights_per_layer_;
+    int num_params_input_state_;
     int num_layers_;
     int num_units_;
     int input_size_;

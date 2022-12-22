@@ -7,7 +7,304 @@
             "is_python_test": true,
             "tests": [
                 {
+                    "file": "ops/adagrad_test.py"
+                },
+                {
+                    "file": "ops/aggregate_ops_test.py"
+                },
+                {
+                    "file": "ops/argmax_op_test.py"
+                },
+                {
+                    "file": "ops/array_ops_test.py"
+                },
+                {
+                    "file": "ops/batch_matmul_op_test.py"
+                },
+                {
+                    "file": "ops/batchtospace_op_test.py"
+                },
+                {
+                    "file": "ops/bias_op_deterministic_test.py"
+                },
+                {
+                    "file": "ops/bias_op_test.py"
+                },
+                {
+                    "file": "ops/bitcast_op_test.py"
+                },
+                {
+                    "file": "ops/cast_op_test.py"
+                },
+                {
+                    "file": "ops/concat_op_test.py"
+                },
+                {
+                    "file": "ops/constant_op_test.py"
+                },
+                {
+                    "file": "ops/conv_ops_3d_test.py"
+                },
+                {
+                    "file": "ops/conv_ops_test.py"
+                },
+                {
+                    "file": "ops/conv1d_test.py"
+                },
+                {
+                    "file": "ops/conv1d_transpose_test.py"
+                },
+                {
+                    "file": "ops/conv2d_backprop_filter_grad_test.py"
+                },
+                {
+                    "file": "ops/conv2d_transpose_test.py"
+                },
+                {
+                    "file": "ops/conv3d_backprop_filter_v2_grad_test.py"
+                },
+                {
+                    "file": "ops/conv3d_transpose_test.py"
+                },
+                {
+                    "file": "ops/cross_device_ops_test.py"
+                },
+                {
+                    "file": "ops/cross_grad_test.py"
+                },
+                {
                     "file": "ops/cudnn_recurrent_test.py"
+                },
+                {
+                    "file": "ops/cwise_ops_binary_test.py"
+                },
+                {
+                    "file": "ops/cwise_ops_test.py"
+                },
+                {
+                    "file": "ops/cwise_ops_unary_test.py"
+                },
+                {
+                    "file": "ops/data_format_op_test.py"
+                },
+                {
+                    "file": "ops/deepcopy_op_test.py"
+                },
+                {
+                    "file": "ops/depthtospace_op_test.py"
+                },
+                {
+                    "file": "ops/depthwise_conv_op_test.py"
+                },
+                {
+                    "file": "ops/diag_op_test.py"
+                },
+                {
+                    "file": "ops/dynamic_stitch_op_test.py"
+                },
+                {
+                    "file": "ops/empty_op_test.py"
+                },
+                {
+                    "file": "ops/extract_image_patches_grad_test.py"
+                },
+                {
+                    "file": "ops/extract_image_patches_op_test.py"
+                },
+                {
+                    "file": "ops/extract_volume_patches_grad_test.py"
+                },
+                {
+                    "file": "ops/extract_volume_patches_op_test.py"
+                },
+                {
+                    "file": "ops/fill_op_test.py"
+                },
+                {
+                    "file": "ops/ftrl_test.py"
+                },
+                {
+                    "file": "ops/gather_nd_op_test.py"
+                },
+                {
+                    "file": "ops/gather_op_test.py"
+                },
+                {
+                    "file": "ops/image_grad_deterministic_test.py"
+                },
+                {
+                    "file": "ops/image_grad_test.py"
+                },
+                {
+                    "file": "ops/image_ops_test.py"
+                },
+                {
+                    "file": "ops/in_topk_op_test.py"
+                },
+                {
+                    "file": "ops/inplace_ops_test.py"
+                },
+                {
+                    "file": "ops/l2loss_test.py"
+                },
+                {
+                    "file": "ops/lrn_op_test.py"
+                },
+                {
+                    "file": "ops/math_ops_test.py"
+                },
+                {
+                    "file": "ops/matmul_op_test.py"
+                },
+                {
+                    "file": "ops/matrix_band_part_op_test.py"
+                },
+                {
+                    "file": "ops/nn_batchnorm_test.py"
+                },
+                {
+                    "file": "ops/nn_fused_batchnorm_test.py"
+                },
+                {
+                    "file": "ops/numerics_test.py"
+                },
+                {
+                    "file": "ops/one_hot_op_test.py"
+                },
+                {
+                    "file": "ops/ones_like_test.py"
+                },
+                {
+                    "file": "ops/pad_op_test.py"
+                },
+                {
+                    "file": "ops/pool_test.py"
+                },
+                {
+                    "file": "ops/pooling_ops_3d_test.py"
+                },
+                {
+                    "file": "ops/pooling_ops_test.py"
+                },
+                {
+                    "file": "ops/proximal_adagrad_test.py"
+                },
+                {
+                    "file": "ops/ragged_one_hot_op_test.py"
+                },
+                {
+                    "file": "ops/ragged_reduce_op_test.py"
+                },
+                {
+                    "file": "ops/random_ops_test.py"
+                },
+                {
+                    "file": "ops/range_op_test.py"
+                },
+                {
+                    "file": "ops/reduce_join_op_test.py"
+                },
+                {
+                    "file": "ops/reduce_test.py"
+                },
+                {
+                    "file": "ops/reduction_ops_test_big.py"
+                },
+                {
+                    "file": "ops/reduction_ops_test.py"
+                },
+                {
+                    "file": "ops/relu_op_test.py"
+                },
+                {
+                    "file": "ops/resource_variable_ops_test.py"
+                },
+                {
+                    "file": "ops/reverse_sequence_op_test.py"
+                },
+                {
+                    "file": "ops/rnn_grad_test.py"
+                },
+                {
+                    "file": "ops/roll_op_test.py"
+                },
+                {
+                    "file": "ops/scan_ops_test.py"
+                },
+                {
+                    "file": "ops/scatter_nd_ops_test.py"
+                },
+                {
+                    "file": "ops/segment_reduction_ops_test.py"
+                },
+                {
+                    "file": "ops/slice_op_test.py"
+                },
+                {
+                    "file": "ops/spacetobatch_op_test.py"
+                },
+                {
+                    "file": "ops/spacetodepth_op_test.py"
+                },
+                {
+                    "file": "ops/sparse_xent_op_test.py"
+                },
+                {
+                    "file": "ops/split_op_test.py"
+                },
+                {
+                    "file": "ops/stack_op_test.py"
+                },
+                {
+                    "file": "ops/strings_reduce_join_op_test.py"
+                },
+                {
+                    "file": "ops/topk_op_test.py"
+                },
+                {
+                    "file": "ops/training_arrays_test.py"
+                },
+                {
+                    "file": "ops/training_dataset_test.py"
+                },
+                {
+                    "file": "ops/training_eager_test.py"
+                },
+                {
+                    "file": "ops/training_generator_test.py"
+                },
+                {
+                    "file": "ops/training_gpu_test.py"
+                },
+                {
+                    "file": "ops/training_integration_test.py"
+                },
+                {
+                    "file": "ops/training_ops_test.py"
+                },
+                {
+                    "file": "ops/training_test.py"
+                },
+                {
+                    "file": "ops/training_util_test.py"
+                },
+                {
+                    "file": "ops/training_utils_v1_test.py"
+                },
+                {
+                    "file": "ops/transpose_op_test.py"
+                },
+                {
+                    "file": "ops/unstack_op_test.py"
+                },
+                {
+                    "file": "ops/where_op_test.py"
+                },
+                {
+                    "file": "ops/xent_op_test.py"
+                },
+                {
+                    "file": "ops/zeros_like_test.py"
                 }
             ]
         },
@@ -21,6 +318,36 @@
             "timeout_seconds": 300,
             "is_python_test": true,
             "tests": [
+                {
+                    "file": "plugin/dml_multiple_devices_test.py"
+                },
+                {
+                    "name": "dml_visible_devices_empty1",
+                    "file": "plugin/dml_visible_devices_test.py",
+                    "args": [
+                        "--dml_visible_devices",
+                        "-1"
+                    ]
+                },
+                {
+                    "name": "dml_visible_devices_empty2",
+                    "file": "plugin/dml_visible_devices_test.py",
+                    "args": [
+                        "--dml_visible_devices",
+                        "-1,0"
+                    ]
+                },
+                {
+                    "name": "dml_visible_devices_single",
+                    "file": "plugin/dml_visible_devices_test.py",
+                    "args": [
+                        "--dml_visible_devices",
+                        "0"
+                    ]
+                },
+                {
+                    "file": "plugin/profiler_test.py"
+                }
             ]
         },
         {
@@ -28,6 +355,14 @@
             "timeout_seconds": 300,
             "is_python_test": false,
             "tests": [
+                {
+                    "name": "c_api_tests",
+                    "file": "../build/c_api_tests",
+                    "cwd": "build",
+                    "disabled_platforms": [
+                        "nt"
+                    ]
+                }
             ]
         }
     ]

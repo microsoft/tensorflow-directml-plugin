@@ -153,11 +153,10 @@ jobs:
             script: |
               $ScriptPath = "$(Build.SourcesDirectory)/test/test.py" -replace '\\','/'
               $ScriptPathWsl = wsl wslpath -a $ScriptPath
-
               $ResultsDirWin = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}/${{tensorflowPackage}}" -replace '\\','/'
               $ResultsDirWinWsl = wsl wslpath -a $ResultsDirWin
               New-Item -ItemType Directory $ResultsDirWin -Force | Out-Null
-              cmd /c "wsl $(test_env_linux_${{replace(tensorflowPackage, '-', '_')}}.activateCommand); python $ScriptPathWsl --run --parallel --summarize --results_dir $ResultsDirWinWsl --groups ${{join(' ', parameters.testGroups)}}"
+              cmd /c "wsl $(test_env_linux_${{replace(tensorflowPackage, '-', '_')}}.activateCommand); python $ScriptPathWsl --run --parallel --summarize --redirect_output --results_dir $ResultsDirWinWsl --groups ${{join(' ', parameters.testGroups)}}"
 
       - ${{if contains(artifact, '-win-') }}:
         - task: PowerShell@2
@@ -181,7 +180,7 @@ jobs:
             script: |
               Invoke-Expression '$(test_env_win_${{replace(tensorflowPackage, '-', '_')}}.activateCommand)'
               $ResultsDir = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}/${{tensorflowPackage}}"
-              python $(Build.SourcesDirectory)/test/test.py --run --parallel --summarize --results_dir $ResultsDir --groups ${{join(' ', parameters.testGroups)}}
+              python $(Build.SourcesDirectory)/test/test.py --run --parallel --summarize --redirect_output --results_dir $ResultsDir --groups ${{join(' ', parameters.testGroups)}}
 
     - task: PublishBuildArtifacts@1
       displayName: Publish ${{artifact}}
