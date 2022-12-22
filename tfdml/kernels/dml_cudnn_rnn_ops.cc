@@ -474,7 +474,7 @@ class CudnnRNNCanonicalToParamsInitHelper : public InitializationHelper
             output_size_ += input_size.num_elements();
         }
         num_params_weights_per_layer_ =
-            attr->num_params_weights / num_layers_ / attr->num_dirs;
+            attr_->num_params_weights / num_layers_ / attr_->num_dirs;
         num_params_input_state_ = num_params_weights_per_layer_ / 2;
     }
 
