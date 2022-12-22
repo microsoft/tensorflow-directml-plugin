@@ -249,7 +249,6 @@ class _Test:
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                capture_output=True,
                 universal_newlines=True,
                 encoding="utf-8",
                 env=environ,
