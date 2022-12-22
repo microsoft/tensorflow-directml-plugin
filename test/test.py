@@ -247,18 +247,15 @@ class _Test:
                     cwd=self.cwd,
                     timeout=timeout_seconds,
                     capture_output=True,
-                    stdin=subprocess.DEVNULL if redirect_output else None,
-                    stdout=subprocess.PIPE if redirect_output else None,
-                    stderr=subprocess.STDOUT if redirect_output else None,
                     universal_newlines=True,
                     encoding="utf-8",
                     env=environ,
                     shell=True,
                     check=True,
                 )
-                print( 'exit status:', process_result.returncode )
-                print( 'stdout:', process_result.stdout.decode() )
-                print( 'stderr:', process_result.stderr.decode() )
+                print('exit status:', process_result.returncode)
+                print('stdout:', process_result.stdout.decode())
+                print('stderr:', process_result.stderr.decode())
                 run_state = "completed"
             except subprocess.TimeoutExpired:
                 run_state = "timed_out"
