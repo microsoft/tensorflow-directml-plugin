@@ -241,28 +241,31 @@ class _Test:
             environ = os.environ.copy()
             environ["PYTHONIOENCODING"] = "utf-8"
             process_result = None
-            # try:
-            process_result = subprocess.run(
-                self.command_line,
-                cwd=self.cwd,
-                timeout=timeout_seconds,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                universal_newlines=True,
-                encoding="utf-8",
-                env=environ,
-                shell=True,
-                check=True,
-            )
-            print('exit status:', process_result.returncode)
-            print('stdout:', process_result.stdout)
-            print('stderr:', process_result.stderr)
-            run_state = "completed"
+            try:
+                process_result = subprocess.run(
+                    self.command_line,
+                    cwd=self.cwd,
+                    timeout=timeout_seconds,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    universal_newlines=True,
+                    encoding="utf-8",
+                    env=environ,
+                    shell=True,
+                    check=True,
+                )
+                print('exit status:', process_result.returncode)
+                print('stdout:', process_result.stdout)
+                print('stderr:', process_result.stderr)
+                run_state = "completed"
             # except subprocess.TimeoutExpired:
             #     run_state = "timed_out"
-            # except subprocess.CalledProcessError:
-            #     run_state = "exited_abnormally"
+            except subprocess.CalledProcessError:
+                print('exit status:', process_result.returncode)
+                print('stdout:', process_result.stdout)
+                print('stderr:', process_result.stderr)
+                run_state = "exited_abnormally"
 
             if process_result and redirect_output:
                 results_subdir = Path(log_file_path).parent
