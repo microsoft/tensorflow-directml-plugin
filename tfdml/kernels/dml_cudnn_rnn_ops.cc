@@ -161,7 +161,10 @@ class CudnnRNNParamsToCanonicalKernel : public OpKernel
             ctx,
             ParseRNNDirectionMode(str, &model_types_.rnn_direction_mode));
 
-        num_dirs_ = model_types_.rnn_direction_mode == RnnDirectionMode::kRnnBidirectional ? 2 : 1;
+        num_dirs_ = model_types_.rnn_direction_mode ==
+                            RnnDirectionMode::kRnnBidirectional
+                        ? 2
+                        : 1;
     }
 
   private:
@@ -410,7 +413,10 @@ class CudnnRNNCanonicalToParamsInitHelper : public InitializationHelper
                 ctx,
                 ParseRNNDirectionMode(str, &model_types.rnn_direction_mode));
 
-            num_dirs = model_types.rnn_direction_mode == RnnDirectionMode::kRnnBidirectional ? 2 : 1;
+            num_dirs = model_types.rnn_direction_mode ==
+                               RnnDirectionMode::kRnnBidirectional
+                           ? 2
+                           : 1;
         }
         int num_proj;
         int num_layers;
