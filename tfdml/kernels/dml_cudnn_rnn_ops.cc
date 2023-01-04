@@ -415,12 +415,7 @@ class CudnnRNNCanonicalToParamsInitHelper : public InitializationHelper
                 ctx,
                 ParseRNNDirectionMode(str, &model_types.rnn_direction_mode));
 
-            num_dirs = 1;
-            if (model_types.rnn_direction_mode ==
-                RnnDirectionMode::kRnnBidirectional)
-            {
-                num_dirs = 2;
-            }
+            num_dirs = model_types.rnn_direction_mode == RnnDirectionMode::kRnnBidirectional ? 2 : 1;
         }
         int num_proj;
         int num_layers;
