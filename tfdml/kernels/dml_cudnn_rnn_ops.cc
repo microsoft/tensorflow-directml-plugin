@@ -161,12 +161,7 @@ class CudnnRNNParamsToCanonicalKernel : public OpKernel
             ctx,
             ParseRNNDirectionMode(str, &model_types_.rnn_direction_mode));
 
-        num_dirs_ = 1;
-        if (model_types_.rnn_direction_mode ==
-            RnnDirectionMode::kRnnBidirectional)
-        {
-            num_dirs_ = 2;
-        }
+        num_dirs = model_types_.rnn_direction_mode == RnnDirectionMode::kRnnBidirectional ? 2 : 1;
     }
 
   private:
