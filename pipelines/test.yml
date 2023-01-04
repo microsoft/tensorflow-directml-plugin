@@ -153,7 +153,6 @@ jobs:
             script: |
               $ScriptPath = "$(Build.SourcesDirectory)/test/test.py" -replace '\\','/'
               $ScriptPathWsl = wsl wslpath -a $ScriptPath
-
               $ResultsDirWin = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}/${{tensorflowPackage}}" -replace '\\','/'
               $ResultsDirWinWsl = wsl wslpath -a $ResultsDirWin
               New-Item -ItemType Directory $ResultsDirWin -Force | Out-Null

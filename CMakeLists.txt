@@ -289,6 +289,7 @@ add_library(
     tfdml/kernels/dml_crop_and_resize_grad_image_op.cc
     tfdml/kernels/dml_crop_and_resize_op.cc
     tfdml/kernels/dml_cross_op.cc
+    tfdml/kernels/dml_cudnn_rnn_ops.cc
     tfdml/kernels/dml_cwise_ops.cc
     tfdml/kernels/dml_data_format_dim_map.cc
     tfdml/kernels/dml_data_format_vec_permute.cc
