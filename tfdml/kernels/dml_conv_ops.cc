@@ -1749,20 +1749,12 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
         uint32_t output_padding[] = {0, 0};
         uint32_t group_count =
             static_cast<uint32_t>(conv_dims.in_depth / conv_dims.patch_depth);
-
-        // TODO: Support grouped Conv2DBackpropFilter
-        // TFDML #39216059
-        OP_REQUIRES(
-            ctx->GetOpKernelContext(),
-            group_count == 1,
-            errors::InvalidArgument(
-                "DML doesn't support grouped Conv2DBackpropFilter yet"));
+        uint32_t group_size = static_cast<uint32_t>(conv_dims.in_depth / group_count);
 
         DmlKernelParams params;
         params.kernel_input_indices = {
             0,
-            2,
-            absl::nullopt // We don't use the DML bias tensor
+            2
         };
 
         using namespace DmlTensorAxes;
@@ -1830,24 +1822,131 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
         auto input_descs = GetDmlTensorDescs(tensors.inputs);
         auto output_descs = GetDmlTensorDescs(tensors.outputs);
 
-        DML_CONVOLUTION_OPERATOR_DESC conv_desc = {};
-        conv_desc.InputTensor = &input_descs[0];
-        conv_desc.FilterTensor = &input_descs[1];
-        conv_desc.BiasTensor = nullptr;
-        conv_desc.OutputTensor = &output_descs[0];
-        conv_desc.Mode = DML_CONVOLUTION_MODE_CROSS_CORRELATION;
-        conv_desc.Direction = DML_CONVOLUTION_DIRECTION_FORWARD;
-        conv_desc.DimensionCount = kSpatialDimensionCount;
-        conv_desc.Strides = dilations;
-        conv_desc.Dilations = strides;
-        conv_desc.StartPadding = start_padding;
-        conv_desc.EndPadding = end_padding;
-        conv_desc.OutputPadding = output_padding;
-        conv_desc.GroupCount = group_count;
-        conv_desc.FusedActivation = nullptr;
+        auto scope = dml::Graph(
+            ctx->GetDmlDevice(),
+            GetDmlXTensorPolicy(conv_params.data_format));
+        auto input_tensor = dml::InputTensor(scope, 0, input_descs[0]);
+        auto filter_tensor = dml::InputTensor(scope, 1, input_descs[1]);
 
-        DML_OPERATOR_DESC op_desc = {DML_OPERATOR_CONVOLUTION, &conv_desc};
-        Initialize(ctx, std::move(tensors), op_desc);
+          // Backward (Filter) example...
+  //                                   Transposed (C,N,H,W)     (G,Gs,N,H,W)        Transposed (Gs,G,N,H,W)    Reinterpret (Gs,N*G,H,W)
+  // Input:      (3, 4, 3, 4)          (4, 3, 3, 4)             (2, 2, 3, 3, 4)     (2, 2, 3, 3, 4)            (2, 6, 3, 4)
+  // GradOutput: (3, 2, 1, 2)          (2, 3, 1, 2) ---------------------------------------------------------> (2, 3, 1, 2)
+  // GradKernel: (2, 2, 3, 3)          (2, 2, 3, 3) ---------------------------------------------------------> (2, 2, 3, 3)
+
+        uint32_t N = static_cast<uint32_t>(conv_dims.batch);
+        uint32_t H = static_cast<uint32_t>(conv_dims.input_rows);
+        uint32_t W = static_cast<uint32_t>(conv_dims.input_cols);
+
+        const auto old_policy = scope.GetTensorPolicy();
+        const auto out_policy = dml::TensorPolicy(
+            [](DML_TENSOR_DATA_TYPE dataType,
+                DML_TENSOR_FLAGS flags,
+                dml::Span<const uint32_t> sizes)
+            {
+                uint32_t dimension_count =
+                    static_cast<uint32_t>(sizes.size());
+                // Permute output sizes CNHW->NCHW in order to calculate
+                // strides.
+                dml::TensorDimensions output_tensor_sizes =
+                    {sizes[1], sizes[0], sizes[2], sizes[3]};
+
+                // Calculate strides with the permuted sizes
+                dml::TensorStrides strides =
+                    ComputePackedStrides(output_tensor_sizes);
+
+                // Permute output strides NCHW->CNHW
+                dml::TensorStrides output_tensor_strides =
+                    {strides[1], strides[0], strides[2], strides[3]};
+
+                dml::TensorProperties props = {};
+                props.guaranteedBaseOffsetAlignment = 0;
+                props.strides = std::move(output_tensor_strides);
+                props.totalTensorSizeInBytes = DMLCalcBufferTensorSize(
+                    dataType,
+                    dimension_count,
+                    sizes.data(),
+                    props.strides->data());
+                return props;
+            });
+
+        scope.SetTensorPolicy(out_policy);
+
+        absl::InlinedVector<dml::Expression, 4> input_tensors;
+        input_tensors.reserve(group_count);
+
+        for (uint32_t i = 0; i < group_size; i++) {
+            absl::InlinedVector<dml::Expression, 4> temp_tensors;
+            temp_tensors.reserve(group_size);
+
+            for (uint32_t j = 0; j < group_count; j++) {
+                uint32_t index = i + (group_count * j);
+
+                dml::TensorDesc::Dimensions slice_offsets({index, 0, 0, 0});
+                dml::TensorDesc::Dimensions slice_sizes({1, N, H, W});
+                absl::InlinedVector<int32_t, 5> slice_strides({1, 1, 1, 1});
+
+                auto sliced_input = dml::Slice(input_tensor, slice_offsets, slice_sizes, slice_strides);
+
+                temp_tensors.push_back(sliced_input);
+            }
+
+            auto temp_joined_input = dml::Join(temp_tensors, 0);
+
+            dml::TensorDimensions temp_slice_shape({1, group_count * N, H, W});
+            // dml::TensorStrides temp_input_strides = {
+            //     H,
+            //     H * W,
+            //     1,
+            //     1};
+            auto temp_input = dml::Reinterpret(temp_joined_input, temp_slice_shape, {});
+
+            input_tensors.push_back(temp_input);
+        }
+
+        auto transposed_input = dml::Join(input_tensors, 0);
+
+        dml::TensorDimensions input_final_shape({group_size, group_count * N, H, W});
+
+        dml::TensorStrides input_strides_final = {
+            group_size * H,
+            group_size * H * W,
+            group_size,
+            1};
+
+        auto input_tensor4 = dml::Reinterpret(transposed_input, input_final_shape, input_strides_final);
+
+        scope.SetTensorPolicy(old_policy);
+
+        dml::detail::GraphBuilder* builder = input_tensor4.Impl()->GetGraphBuilder();
+
+        dml::TensorDesc inputTensor = input_tensor4.Impl()->GetOutputDesc();
+        dml::TensorDesc filterTensor = filter_tensor.Impl()->GetOutputDesc();
+
+        DML_CONVOLUTION_OPERATOR_DESC desc = {};
+        desc.InputTensor = inputTensor.AsPtr<DML_TENSOR_DESC>();
+        desc.FilterTensor = filterTensor.AsPtr<DML_TENSOR_DESC>();
+        desc.BiasTensor = nullptr;
+        desc.OutputTensor = &output_descs[0];
+        desc.Mode = DML_CONVOLUTION_MODE_CROSS_CORRELATION;
+        desc.Direction = DML_CONVOLUTION_DIRECTION_FORWARD;
+        desc.DimensionCount = kSpatialDimensionCount;
+        desc.Strides = dilations;
+        desc.Dilations = strides;
+        desc.StartPadding = start_padding;
+        desc.EndPadding = end_padding;
+        desc.OutputPadding = output_padding;
+        desc.GroupCount = group_count;
+        desc.FusedActivation = nullptr;
+
+        dml::detail::NodeOutput* const inputs[] = { input_tensor4.Impl(), filter_tensor.Impl(), nullptr };
+        dml::detail::NodeID node = builder->CreateOperatorNode(DML_OPERATOR_CONVOLUTION, &desc, inputs);
+        dml::detail::NodeOutput* output_c = builder->CreateNodeOutput(node, 0, output_descs[0]);
+        dml::Expression result = output_c;
+
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
