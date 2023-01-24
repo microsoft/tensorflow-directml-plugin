@@ -1870,10 +1870,12 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
                 return props;
             });
 
-        scope.SetTensorPolicy(out_policy);
+        // scope.SetTensorPolicy(out_policy);
 
         absl::InlinedVector<dml::Expression, 4> input_tensors;
         input_tensors.reserve(group_count);
+
+        auto sliced_input = dml::Split(input_tensor, 0, {1, 1, 1, 1});
 
         for (uint32_t i = 0; i < group_size; i++) {
             absl::InlinedVector<dml::Expression, 4> temp_tensors;
@@ -1882,41 +1884,41 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
             for (uint32_t j = 0; j < group_count; j++) {
                 uint32_t index = i + (group_count * j);
 
-                dml::TensorDesc::Dimensions slice_offsets({index, 0, 0, 0});
-                dml::TensorDesc::Dimensions slice_sizes({1, N, H, W});
-                absl::InlinedVector<int32_t, 5> slice_strides({1, 1, 1, 1});
+                // dml::TensorDesc::Dimensions slice_offsets({index, 0, 0, 0});
+                // dml::TensorDesc::Dimensions slice_sizes({1, N, H, W});
+                // absl::InlinedVector<int32_t, 5> slice_strides({1, 1, 1, 1});
 
-                auto sliced_input = dml::Slice(input_tensor, slice_offsets, slice_sizes, slice_strides);
+                // auto sliced_input = dml::Slice(input_tensor, slice_offsets, slice_sizes, slice_strides);
 
-                temp_tensors.push_back(sliced_input);
+                temp_tensors.push_back(sliced_input[index]);
             }
 
             auto temp_joined_input = dml::Join(temp_tensors, 0);
 
             dml::TensorDimensions temp_slice_shape({1, group_count * N, H, W});
-            // dml::TensorStrides temp_input_strides = {
-            //     H,
-            //     H * W,
-            //     1,
-            //     1};
-            auto temp_input = dml::Reinterpret(temp_joined_input, temp_slice_shape, {});
+            dml::TensorStrides temp_input_strides = {
+                H * W,
+                H * W,
+                W,
+                1};
+            auto temp_input = dml::Reinterpret(temp_joined_input, temp_slice_shape, temp_input_strides);
 
             input_tensors.push_back(temp_input);
         }
 
-        auto transposed_input = dml::Join(input_tensors, 0);
+        auto input_tensor4 = dml::Join(input_tensors, 0);
 
-        dml::TensorDimensions input_final_shape({group_size, group_count * N, H, W});
+        // dml::TensorDimensions input_final_shape({group_size, group_count * N, H, W});
 
-        dml::TensorStrides input_strides_final = {
-            group_size * H,
-            group_size * H * W,
-            group_size,
-            1};
+        // dml::TensorStrides input_strides_final = {
+        //     group_size * H,
+        //     group_size * H * W,
+        //     group_size,
+        //     1};
 
-        auto input_tensor4 = dml::Reinterpret(transposed_input, input_final_shape, input_strides_final);
+        // auto input_tensor4 = dml::Reinterpret(transposed_input, input_final_shape, input_strides_final);
 
-        scope.SetTensorPolicy(old_policy);
+        // scope.SetTensorPolicy(old_policy);
 
         dml::detail::GraphBuilder* builder = input_tensor4.Impl()->GetGraphBuilder();
 
@@ -1947,6 +1949,8 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
         Initialize(ctx, std::move(tensors), compiled_op.Get());
+
+        // CopyDeviceTensorToCPU
     }
 };
 
