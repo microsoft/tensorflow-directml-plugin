@@ -1749,13 +1749,11 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
         uint32_t output_padding[] = {0, 0};
         uint32_t group_count =
             static_cast<uint32_t>(conv_dims.in_depth / conv_dims.patch_depth);
-        uint32_t group_size = static_cast<uint32_t>(conv_dims.in_depth / group_count);
+        uint32_t group_size =
+            static_cast<uint32_t>(conv_dims.in_depth / group_count);
 
         DmlKernelParams params;
-        params.kernel_input_indices = {
-            0,
-            2
-        };
+        params.kernel_input_indices = {0, 2};
 
         using namespace DmlTensorAxes;
 
@@ -1828,7 +1826,8 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
 
         auto grouped_input_tensor = input_tensor;
 
-        // if (group_count > 1) {
+        if (group_count > 1)
+        {
             absl::InlinedVector<dml::Expression, 4> input_tensors;
             input_tensors.reserve(group_count);
 
@@ -1837,43 +1836,49 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
             uint32_t width = static_cast<uint32_t>(conv_dims.input_cols);
             uint32_t channels = static_cast<uint32_t>(conv_dims.in_depth);
 
-            dml::TensorDimensions single_grouped_shape({1, group_count * batch, height, width});
-            dml::TensorStrides single_grouped_strides = {
-                height * width,
-                height * width,
-                width,
-                1};
+            dml::TensorDimensions single_grouped_shape(
+                {1, group_count * batch, height, width});
+            dml::TensorStrides single_grouped_strides =
+                {height * width, height * width, width, 1};
 
             std::vector<uint32_t> axis_sizes;
-            for (int i = 0; i < channels; i++) {
+            for (int i = 0; i < channels; i++)
+            {
                 axis_sizes.push_back(1);
             }
             auto output_axis_sizes = absl::Span<const uint32_t>(axis_sizes);
 
             auto split_input = dml::Split(input_tensor, 0, output_axis_sizes);
 
-            for (uint32_t i = 0; i < group_size; i++) {
+            for (uint32_t i = 0; i < group_size; i++)
+            {
                 absl::InlinedVector<dml::Expression, 4> temp_tensors;
                 temp_tensors.reserve(group_size);
 
-                for (uint32_t j = 0; j < group_count; j++) {
+                for (uint32_t j = 0; j < group_count; j++)
+                {
                     uint32_t index = i + (group_count * j);
                     temp_tensors.push_back(split_input[index]);
                 }
 
                 auto temp_joined_input = dml::Join(temp_tensors, 0);
 
-                auto temp_input = dml::Reinterpret(temp_joined_input, single_grouped_shape, single_grouped_strides);
+                auto temp_input = dml::Reinterpret(
+                    temp_joined_input,
+                    single_grouped_shape,
+                    single_grouped_strides);
 
                 input_tensors.push_back(temp_input);
             }
 
             grouped_input_tensor = dml::Join(input_tensors, 0);
-        // }
+        }
 
-        dml::detail::GraphBuilder* builder = grouped_input_tensor.Impl()->GetGraphBuilder();
+        dml::detail::GraphBuilder* builder =
+            grouped_input_tensor.Impl()->GetGraphBuilder();
 
-        dml::TensorDesc inputTensor = grouped_input_tensor.Impl()->GetOutputDesc();
+        dml::TensorDesc inputTensor =
+            grouped_input_tensor.Impl()->GetOutputDesc();
         dml::TensorDesc filterTensor = filter_tensor.Impl()->GetOutputDesc();
 
         DML_CONVOLUTION_OPERATOR_DESC desc = {};
@@ -1892,9 +1897,16 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
         desc.GroupCount = group_count;
         desc.FusedActivation = nullptr;
 
-        dml::detail::NodeOutput* const inputs[] = { grouped_input_tensor.Impl(), filter_tensor.Impl(), nullptr };
-        dml::detail::NodeID node = builder->CreateOperatorNode(DML_OPERATOR_CONVOLUTION, &desc, inputs);
-        dml::detail::NodeOutput* output_c = builder->CreateNodeOutput(node, 0, output_descs[0]);
+        dml::detail::NodeOutput* const inputs[] = {
+            grouped_input_tensor.Impl(),
+            filter_tensor.Impl(),
+            nullptr};
+        dml::detail::NodeID node = builder->CreateOperatorNode(
+            DML_OPERATOR_CONVOLUTION,
+            &desc,
+            inputs);
+        dml::detail::NodeOutput* output_c =
+            builder->CreateNodeOutput(node, 0, output_descs[0]);
         dml::Expression result = output_c;
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
@@ -2885,14 +2897,6 @@ class Conv3DGradInitHelper : public InitializationHelper
         end_padding_[0] = pad_d / 2 + pad_d % 2;
         end_padding_[1] = pad_h / 2 + pad_h % 2;
         end_padding_[2] = pad_w / 2 + pad_w % 2;
-
-        // TODO: Support grouped Conv3DBackpropFilter
-        // TFDML #39216059
-        OP_REQUIRES(
-            context,
-            GetGroupCount() == 1,
-            errors::InvalidArgument(
-                "DML doesn't support grouped Conv3DBackpropFilter yet"));
     }
 
     TensorFormat GetDataFormat() const { return attr_->data_format; }
@@ -3046,10 +3050,7 @@ class DmlConv3DBackpropFilterKernel : public DmlKernel
         TensorShape filter_shape = TensorShapeUtils::MakeShape(filter_sizes);
 
         DmlKernelParams params;
-        params.kernel_input_indices = {
-            0,
-            2
-        };
+        params.kernel_input_indices = {0, 2};
 
         using namespace DmlTensorAxes;
 
@@ -3120,52 +3121,64 @@ class DmlConv3DBackpropFilterKernel : public DmlKernel
 
         auto grouped_input_tensor = input_tensor;
 
-        absl::InlinedVector<dml::Expression, 4> input_tensors;
-        input_tensors.reserve(group_count);
+        if (group_count > 1)
+        {
+            absl::InlinedVector<dml::Expression, 4> input_tensors;
+            input_tensors.reserve(group_count);
 
-        uint32_t batch = init_helper->GetBatchSize();
-        uint32_t height = init_helper->GetInHeight();
-        uint32_t width = init_helper->GetInWidth();
-        uint32_t depth = init_helper->GetInDepth();
-        uint32_t channels = init_helper->GetInChannels();
+            uint32_t batch = init_helper->GetBatchSize();
+            uint32_t height = init_helper->GetInHeight();
+            uint32_t width = init_helper->GetInWidth();
+            uint32_t depth = init_helper->GetInDepth();
+            uint32_t channels = init_helper->GetInChannels();
 
-        dml::TensorDimensions single_grouped_shape({1, group_count * batch, depth, height, width});
-        dml::TensorStrides single_grouped_strides = {
-            height * width * depth,
-            height * width * depth,
-            height * width,
-            width,
-            1};
+            dml::TensorDimensions single_grouped_shape(
+                {1, group_count * batch, depth, height, width});
+            dml::TensorStrides single_grouped_strides = {
+                height * width * depth,
+                height * width * depth,
+                height * width,
+                width,
+                1};
 
-        std::vector<uint32_t> axis_sizes;
-        for (int i = 0; i < channels; i++) {
-            axis_sizes.push_back(1);
-        }
-        auto output_axis_sizes = absl::Span<const uint32_t>(axis_sizes);
+            std::vector<uint32_t> axis_sizes;
+            for (int i = 0; i < channels; i++)
+            {
+                axis_sizes.push_back(1);
+            }
+            auto output_axis_sizes = absl::Span<const uint32_t>(axis_sizes);
 
-        auto split_input = dml::Split(input_tensor, 0, output_axis_sizes);
+            auto split_input = dml::Split(input_tensor, 0, output_axis_sizes);
 
-        for (uint32_t i = 0; i < group_size; i++) {
-            absl::InlinedVector<dml::Expression, 4> temp_tensors;
-            temp_tensors.reserve(group_size);
+            for (uint32_t i = 0; i < group_size; i++)
+            {
+                absl::InlinedVector<dml::Expression, 4> temp_tensors;
+                temp_tensors.reserve(group_size);
 
-            for (uint32_t j = 0; j < group_count; j++) {
-                uint32_t index = i + (group_count * j);
-                temp_tensors.push_back(split_input[index]);
+                for (uint32_t j = 0; j < group_count; j++)
+                {
+                    uint32_t index = i + (group_count * j);
+                    temp_tensors.push_back(split_input[index]);
+                }
+
+                auto temp_joined_input = dml::Join(temp_tensors, 0);
+
+                auto temp_input = dml::Reinterpret(
+                    temp_joined_input,
+                    single_grouped_shape,
+                    single_grouped_strides);
+
+                input_tensors.push_back(temp_input);
             }
 
-            auto temp_joined_input = dml::Join(temp_tensors, 0);
-
-            auto temp_input = dml::Reinterpret(temp_joined_input, single_grouped_shape, single_grouped_strides);
-
-            input_tensors.push_back(temp_input);
+            grouped_input_tensor = dml::Join(input_tensors, 0);
         }
 
-        grouped_input_tensor = dml::Join(input_tensors, 0);
+        dml::detail::GraphBuilder* builder =
+            grouped_input_tensor.Impl()->GetGraphBuilder();
 
-        dml::detail::GraphBuilder* builder = grouped_input_tensor.Impl()->GetGraphBuilder();
-
-        dml::TensorDesc inputTensor = grouped_input_tensor.Impl()->GetOutputDesc();
+        dml::TensorDesc inputTensor =
+            grouped_input_tensor.Impl()->GetOutputDesc();
         dml::TensorDesc filterTensor = filter_tensor.Impl()->GetOutputDesc();
 
         DML_CONVOLUTION_OPERATOR_DESC conv_desc = {};
@@ -3186,12 +3199,16 @@ class DmlConv3DBackpropFilterKernel : public DmlKernel
         conv_desc.GroupCount = init_helper->GetGroupCount();
         conv_desc.FusedActivation = nullptr;
 
-        // DML_OPERATOR_DESC op_desc = {DML_OPERATOR_CONVOLUTION, &conv_desc};
-        // Initialize(ctx, std::move(tensors), op_desc);
-
-        dml::detail::NodeOutput* const inputs[] = { grouped_input_tensor.Impl(), filter_tensor.Impl(), nullptr };
-        dml::detail::NodeID node = builder->CreateOperatorNode(DML_OPERATOR_CONVOLUTION, &conv_desc, inputs);
-        dml::detail::NodeOutput* output_c = builder->CreateNodeOutput(node, 0, output_descs[0]);
+        dml::detail::NodeOutput* const inputs[] = {
+            grouped_input_tensor.Impl(),
+            filter_tensor.Impl(),
+            nullptr};
+        dml::detail::NodeID node = builder->CreateOperatorNode(
+            DML_OPERATOR_CONVOLUTION,
+            &conv_desc,
+            inputs);
+        dml::detail::NodeOutput* output_c =
+            builder->CreateNodeOutput(node, 0, output_descs[0]);
         dml::Expression result = output_c;
 
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
