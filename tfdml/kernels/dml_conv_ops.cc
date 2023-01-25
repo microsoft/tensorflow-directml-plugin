@@ -1822,107 +1822,58 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
         auto input_descs = GetDmlTensorDescs(tensors.inputs);
         auto output_descs = GetDmlTensorDescs(tensors.outputs);
 
-        auto scope = dml::Graph(
-            ctx->GetDmlDevice(),
-            GetDmlXTensorPolicy(conv_params.data_format));
+        auto scope = dml::Graph(ctx->GetDmlDevice());
         auto input_tensor = dml::InputTensor(scope, 0, input_descs[0]);
         auto filter_tensor = dml::InputTensor(scope, 1, input_descs[1]);
 
-          // Backward (Filter) example...
-  //                                   Transposed (C,N,H,W)     (G,Gs,N,H,W)        Transposed (Gs,G,N,H,W)    Reinterpret (Gs,N*G,H,W)
-  // Input:      (3, 4, 3, 4)          (4, 3, 3, 4)             (2, 2, 3, 3, 4)     (2, 2, 3, 3, 4)            (2, 6, 3, 4)
-  // GradOutput: (3, 2, 1, 2)          (2, 3, 1, 2) ---------------------------------------------------------> (2, 3, 1, 2)
-  // GradKernel: (2, 2, 3, 3)          (2, 2, 3, 3) ---------------------------------------------------------> (2, 2, 3, 3)
+        auto grouped_input_tensor = input_tensor;
 
-        uint32_t N = static_cast<uint32_t>(conv_dims.batch);
-        uint32_t H = static_cast<uint32_t>(conv_dims.input_rows);
-        uint32_t W = static_cast<uint32_t>(conv_dims.input_cols);
+        // if (group_count > 1) {
+            absl::InlinedVector<dml::Expression, 4> input_tensors;
+            input_tensors.reserve(group_count);
 
-        const auto old_policy = scope.GetTensorPolicy();
-        const auto out_policy = dml::TensorPolicy(
-            [](DML_TENSOR_DATA_TYPE dataType,
-                DML_TENSOR_FLAGS flags,
-                dml::Span<const uint32_t> sizes)
-            {
-                uint32_t dimension_count =
-                    static_cast<uint32_t>(sizes.size());
-                // Permute output sizes CNHW->NCHW in order to calculate
-                // strides.
-                dml::TensorDimensions output_tensor_sizes =
-                    {sizes[1], sizes[0], sizes[2], sizes[3]};
+            uint32_t batch = static_cast<uint32_t>(conv_dims.batch);
+            uint32_t height = static_cast<uint32_t>(conv_dims.input_rows);
+            uint32_t width = static_cast<uint32_t>(conv_dims.input_cols);
+            uint32_t channels = static_cast<uint32_t>(conv_dims.in_depth);
 
-                // Calculate strides with the permuted sizes
-                dml::TensorStrides strides =
-                    ComputePackedStrides(output_tensor_sizes);
+            dml::TensorDimensions single_grouped_shape({1, group_count * batch, height, width});
+            dml::TensorStrides single_grouped_strides = {
+                height * width,
+                height * width,
+                width,
+                1};
 
-                // Permute output strides NCHW->CNHW
-                dml::TensorStrides output_tensor_strides =
-                    {strides[1], strides[0], strides[2], strides[3]};
+            std::vector<uint32_t> axis_sizes;
+            for (int i = 0; i < channels; i++) {
+                axis_sizes.push_back(1);
+            }
+            auto output_axis_sizes = absl::Span<const uint32_t>(axis_sizes);
 
-                dml::TensorProperties props = {};
-                props.guaranteedBaseOffsetAlignment = 0;
-                props.strides = std::move(output_tensor_strides);
-                props.totalTensorSizeInBytes = DMLCalcBufferTensorSize(
-                    dataType,
-                    dimension_count,
-                    sizes.data(),
-                    props.strides->data());
-                return props;
-            });
+            auto split_input = dml::Split(input_tensor, 0, output_axis_sizes);
 
-        // scope.SetTensorPolicy(out_policy);
+            for (uint32_t i = 0; i < group_size; i++) {
+                absl::InlinedVector<dml::Expression, 4> temp_tensors;
+                temp_tensors.reserve(group_size);
 
-        absl::InlinedVector<dml::Expression, 4> input_tensors;
-        input_tensors.reserve(group_count);
+                for (uint32_t j = 0; j < group_count; j++) {
+                    uint32_t index = i + (group_count * j);
+                    temp_tensors.push_back(split_input[index]);
+                }
 
-        auto sliced_input = dml::Split(input_tensor, 0, {1, 1, 1, 1});
+                auto temp_joined_input = dml::Join(temp_tensors, 0);
 
-        for (uint32_t i = 0; i < group_size; i++) {
-            absl::InlinedVector<dml::Expression, 4> temp_tensors;
-            temp_tensors.reserve(group_size);
+                auto temp_input = dml::Reinterpret(temp_joined_input, single_grouped_shape, single_grouped_strides);
 
-            for (uint32_t j = 0; j < group_count; j++) {
-                uint32_t index = i + (group_count * j);
-
-                // dml::TensorDesc::Dimensions slice_offsets({index, 0, 0, 0});
-                // dml::TensorDesc::Dimensions slice_sizes({1, N, H, W});
-                // absl::InlinedVector<int32_t, 5> slice_strides({1, 1, 1, 1});
-
-                // auto sliced_input = dml::Slice(input_tensor, slice_offsets, slice_sizes, slice_strides);
-
-                temp_tensors.push_back(sliced_input[index]);
+                input_tensors.push_back(temp_input);
             }
 
-            auto temp_joined_input = dml::Join(temp_tensors, 0);
+            grouped_input_tensor = dml::Join(input_tensors, 0);
+        // }
 
-            dml::TensorDimensions temp_slice_shape({1, group_count * N, H, W});
-            dml::TensorStrides temp_input_strides = {
-                H * W,
-                H * W,
-                W,
-                1};
-            auto temp_input = dml::Reinterpret(temp_joined_input, temp_slice_shape, temp_input_strides);
+        dml::detail::GraphBuilder* builder = grouped_input_tensor.Impl()->GetGraphBuilder();
 
-            input_tensors.push_back(temp_input);
-        }
-
-        auto input_tensor4 = dml::Join(input_tensors, 0);
-
-        // dml::TensorDimensions input_final_shape({group_size, group_count * N, H, W});
-
-        // dml::TensorStrides input_strides_final = {
-        //     group_size * H,
-        //     group_size * H * W,
-        //     group_size,
-        //     1};
-
-        // auto input_tensor4 = dml::Reinterpret(transposed_input, input_final_shape, input_strides_final);
-
-        // scope.SetTensorPolicy(old_policy);
-
-        dml::detail::GraphBuilder* builder = input_tensor4.Impl()->GetGraphBuilder();
-
-        dml::TensorDesc inputTensor = input_tensor4.Impl()->GetOutputDesc();
+        dml::TensorDesc inputTensor = grouped_input_tensor.Impl()->GetOutputDesc();
         dml::TensorDesc filterTensor = filter_tensor.Impl()->GetOutputDesc();
 
         DML_CONVOLUTION_OPERATOR_DESC desc = {};
@@ -1941,7 +1892,7 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
         desc.GroupCount = group_count;
         desc.FusedActivation = nullptr;
 
-        dml::detail::NodeOutput* const inputs[] = { input_tensor4.Impl(), filter_tensor.Impl(), nullptr };
+        dml::detail::NodeOutput* const inputs[] = { grouped_input_tensor.Impl(), filter_tensor.Impl(), nullptr };
         dml::detail::NodeID node = builder->CreateOperatorNode(DML_OPERATOR_CONVOLUTION, &desc, inputs);
         dml::detail::NodeOutput* output_c = builder->CreateNodeOutput(node, 0, output_descs[0]);
         dml::Expression result = output_c;
@@ -1949,8 +1900,6 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
         Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
         Initialize(ctx, std::move(tensors), compiled_op.Get());
-
-        // CopyDeviceTensorToCPU
     }
 };
 
@@ -2976,6 +2925,7 @@ class Conv3DGradInitHelper : public InitializationHelper
         return out_padding_;
     }
     uint32_t GetGroupCount() const { return in_channels_ / filter_channels_; }
+    uint32_t GetGroupSize() const { return in_channels_ / GetGroupCount(); }
 
   private:
     const std::shared_ptr<const Attributes> attr_;
@@ -3098,8 +3048,7 @@ class DmlConv3DBackpropFilterKernel : public DmlKernel
         DmlKernelParams params;
         params.kernel_input_indices = {
             0,
-            2,
-            absl::nullopt // We don't use the DML bias tensor
+            2
         };
 
         using namespace DmlTensorAxes;
@@ -3162,9 +3111,66 @@ class DmlConv3DBackpropFilterKernel : public DmlKernel
         auto input_descs = GetDmlTensorDescs(tensors.inputs);
         auto output_descs = GetDmlTensorDescs(tensors.outputs);
 
+        auto scope = dml::Graph(ctx->GetDmlDevice());
+        auto input_tensor = dml::InputTensor(scope, 0, input_descs[0]);
+        auto filter_tensor = dml::InputTensor(scope, 1, input_descs[1]);
+
+        auto group_count = init_helper->GetGroupCount();
+        auto group_size = init_helper->GetGroupSize();
+
+        auto grouped_input_tensor = input_tensor;
+
+        absl::InlinedVector<dml::Expression, 4> input_tensors;
+        input_tensors.reserve(group_count);
+
+        uint32_t batch = init_helper->GetBatchSize();
+        uint32_t height = init_helper->GetInHeight();
+        uint32_t width = init_helper->GetInWidth();
+        uint32_t depth = init_helper->GetInDepth();
+        uint32_t channels = init_helper->GetInChannels();
+
+        dml::TensorDimensions single_grouped_shape({1, group_count * batch, depth, height, width});
+        dml::TensorStrides single_grouped_strides = {
+            height * width * depth,
+            height * width * depth,
+            height * width,
+            width,
+            1};
+
+        std::vector<uint32_t> axis_sizes;
+        for (int i = 0; i < channels; i++) {
+            axis_sizes.push_back(1);
+        }
+        auto output_axis_sizes = absl::Span<const uint32_t>(axis_sizes);
+
+        auto split_input = dml::Split(input_tensor, 0, output_axis_sizes);
+
+        for (uint32_t i = 0; i < group_size; i++) {
+            absl::InlinedVector<dml::Expression, 4> temp_tensors;
+            temp_tensors.reserve(group_size);
+
+            for (uint32_t j = 0; j < group_count; j++) {
+                uint32_t index = i + (group_count * j);
+                temp_tensors.push_back(split_input[index]);
+            }
+
+            auto temp_joined_input = dml::Join(temp_tensors, 0);
+
+            auto temp_input = dml::Reinterpret(temp_joined_input, single_grouped_shape, single_grouped_strides);
+
+            input_tensors.push_back(temp_input);
+        }
+
+        grouped_input_tensor = dml::Join(input_tensors, 0);
+
+        dml::detail::GraphBuilder* builder = grouped_input_tensor.Impl()->GetGraphBuilder();
+
+        dml::TensorDesc inputTensor = grouped_input_tensor.Impl()->GetOutputDesc();
+        dml::TensorDesc filterTensor = filter_tensor.Impl()->GetOutputDesc();
+
         DML_CONVOLUTION_OPERATOR_DESC conv_desc = {};
-        conv_desc.InputTensor = &input_descs[0];
-        conv_desc.FilterTensor = &input_descs[1];
+        conv_desc.InputTensor = inputTensor.AsPtr<DML_TENSOR_DESC>();
+        conv_desc.FilterTensor = filterTensor.AsPtr<DML_TENSOR_DESC>();
         conv_desc.BiasTensor = nullptr;
         conv_desc.OutputTensor = &output_descs[0];
         conv_desc.Mode = DML_CONVOLUTION_MODE_CROSS_CORRELATION;
@@ -3180,8 +3186,17 @@ class DmlConv3DBackpropFilterKernel : public DmlKernel
         conv_desc.GroupCount = init_helper->GetGroupCount();
         conv_desc.FusedActivation = nullptr;
 
-        DML_OPERATOR_DESC op_desc = {DML_OPERATOR_CONVOLUTION, &conv_desc};
-        Initialize(ctx, std::move(tensors), op_desc);
+        // DML_OPERATOR_DESC op_desc = {DML_OPERATOR_CONVOLUTION, &conv_desc};
+        // Initialize(ctx, std::move(tensors), op_desc);
+
+        dml::detail::NodeOutput* const inputs[] = { grouped_input_tensor.Impl(), filter_tensor.Impl(), nullptr };
+        dml::detail::NodeID node = builder->CreateOperatorNode(DML_OPERATOR_CONVOLUTION, &conv_desc, inputs);
+        dml::detail::NodeOutput* output_c = builder->CreateNodeOutput(node, 0, output_descs[0]);
+        dml::Expression result = output_c;
+
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 

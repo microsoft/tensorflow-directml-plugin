@@ -849,7 +849,7 @@ class Conv2DTest(test.TestCase):
   def testInputGradientGroupConv(self):
     # TODO: Support grouped Conv2DBackpropFilter
     # TFDML #39216059
-    self.skipTest("DML doesn't support grouped Conv3DBackpropFilter yet")
+    # self.skipTest("DML doesn't support grouped Conv3DBackpropFilter yet")
     for data_format in ["NCHW", "NHWC"]:
       for test_input in [True, False]:
         self.ConstructAndTestGradient(
@@ -874,7 +874,7 @@ class Conv2DTest(test.TestCase):
   def testFilterGradientGroupConv(self):
     # TODO: Support grouped Conv2DBackpropFilter
     # TFDML #39216059
-    self.skipTest("DML doesn't support grouped Conv3DBackpropFilter yet")
+    # self.skipTest("DML doesn't support grouped Conv3DBackpropFilter yet")
     for data_format in ["NCHW", "NHWC"]:
       for test_input in [True, False]:
         self.ConstructAndTestGradient(
