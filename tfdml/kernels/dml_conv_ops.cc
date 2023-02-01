@@ -1749,21 +1749,11 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
         uint32_t output_padding[] = {0, 0};
         uint32_t group_count =
             static_cast<uint32_t>(conv_dims.in_depth / conv_dims.patch_depth);
-
-        // TODO: Support grouped Conv2DBackpropFilter
-        // TFDML #39216059
-        OP_REQUIRES(
-            ctx->GetOpKernelContext(),
-            group_count == 1,
-            errors::InvalidArgument(
-                "DML doesn't support grouped Conv2DBackpropFilter yet"));
+        uint32_t group_size =
+            static_cast<uint32_t>(conv_dims.in_depth / group_count);
 
         DmlKernelParams params;
-        params.kernel_input_indices = {
-            0,
-            2,
-            absl::nullopt // We don't use the DML bias tensor
-        };
+        params.kernel_input_indices = {0, 2};
 
         using namespace DmlTensorAxes;
 
@@ -1830,24 +1820,98 @@ class DmlConv2DBackpropFilterKernel : public DmlKernel
         auto input_descs = GetDmlTensorDescs(tensors.inputs);
         auto output_descs = GetDmlTensorDescs(tensors.outputs);
 
-        DML_CONVOLUTION_OPERATOR_DESC conv_desc = {};
-        conv_desc.InputTensor = &input_descs[0];
-        conv_desc.FilterTensor = &input_descs[1];
-        conv_desc.BiasTensor = nullptr;
-        conv_desc.OutputTensor = &output_descs[0];
-        conv_desc.Mode = DML_CONVOLUTION_MODE_CROSS_CORRELATION;
-        conv_desc.Direction = DML_CONVOLUTION_DIRECTION_FORWARD;
-        conv_desc.DimensionCount = kSpatialDimensionCount;
-        conv_desc.Strides = dilations;
-        conv_desc.Dilations = strides;
-        conv_desc.StartPadding = start_padding;
-        conv_desc.EndPadding = end_padding;
-        conv_desc.OutputPadding = output_padding;
-        conv_desc.GroupCount = group_count;
-        conv_desc.FusedActivation = nullptr;
+        auto scope = dml::Graph(ctx->GetDmlDevice());
+        auto input_tensor = dml::InputTensor(scope, 0, input_descs[0]);
+        auto filter_tensor = dml::InputTensor(scope, 1, input_descs[1]);
 
-        DML_OPERATOR_DESC op_desc = {DML_OPERATOR_CONVOLUTION, &conv_desc};
-        Initialize(ctx, std::move(tensors), op_desc);
+        auto grouped_input_tensor = input_tensor;
+
+        if (group_count > 1)
+        {
+            absl::InlinedVector<dml::Expression, 4> input_tensors;
+            input_tensors.reserve(group_count);
+
+            uint32_t batch = static_cast<uint32_t>(conv_dims.batch);
+            uint32_t height = static_cast<uint32_t>(conv_dims.input_rows);
+            uint32_t width = static_cast<uint32_t>(conv_dims.input_cols);
+            uint32_t channels = static_cast<uint32_t>(conv_dims.in_depth);
+
+            dml::TensorDimensions single_grouped_shape(
+                {1, group_count * batch, height, width});
+            dml::TensorStrides single_grouped_strides =
+                {height * width, height * width, width, 1};
+
+            std::vector<uint32_t> axis_sizes;
+            for (int i = 0; i < channels; i++)
+            {
+                axis_sizes.push_back(1);
+            }
+            auto output_axis_sizes = absl::Span<const uint32_t>(axis_sizes);
+
+            auto split_input = dml::Split(input_tensor, 0, output_axis_sizes);
+
+            for (uint32_t i = 0; i < group_size; i++)
+            {
+                absl::InlinedVector<dml::Expression, 4> temp_tensors;
+                temp_tensors.reserve(group_size);
+
+                for (uint32_t j = 0; j < group_count; j++)
+                {
+                    uint32_t index = i + (group_count * j);
+                    temp_tensors.push_back(split_input[index]);
+                }
+
+                auto temp_joined_input = dml::Join(temp_tensors, 0);
+
+                auto temp_input = dml::Reinterpret(
+                    temp_joined_input,
+                    single_grouped_shape,
+                    single_grouped_strides);
+
+                input_tensors.push_back(temp_input);
+            }
+
+            grouped_input_tensor = dml::Join(input_tensors, 0);
+        }
+
+        dml::detail::GraphBuilder* builder =
+            grouped_input_tensor.Impl()->GetGraphBuilder();
+
+        dml::TensorDesc inputTensor =
+            grouped_input_tensor.Impl()->GetOutputDesc();
+        dml::TensorDesc filterTensor = filter_tensor.Impl()->GetOutputDesc();
+
+        DML_CONVOLUTION_OPERATOR_DESC desc = {};
+        desc.InputTensor = inputTensor.AsPtr<DML_TENSOR_DESC>();
+        desc.FilterTensor = filterTensor.AsPtr<DML_TENSOR_DESC>();
+        desc.BiasTensor = nullptr;
+        desc.OutputTensor = &output_descs[0];
+        desc.Mode = DML_CONVOLUTION_MODE_CROSS_CORRELATION;
+        desc.Direction = DML_CONVOLUTION_DIRECTION_FORWARD;
+        desc.DimensionCount = kSpatialDimensionCount;
+        desc.Strides = dilations;
+        desc.Dilations = strides;
+        desc.StartPadding = start_padding;
+        desc.EndPadding = end_padding;
+        desc.OutputPadding = output_padding;
+        desc.GroupCount = group_count;
+        desc.FusedActivation = nullptr;
+
+        dml::detail::NodeOutput* const inputs[] = {
+            grouped_input_tensor.Impl(),
+            filter_tensor.Impl(),
+            nullptr};
+        dml::detail::NodeID node = builder->CreateOperatorNode(
+            DML_OPERATOR_CONVOLUTION,
+            &desc,
+            inputs);
+        dml::detail::NodeOutput* output_c =
+            builder->CreateNodeOutput(node, 0, output_descs[0]);
+        dml::Expression result = output_c;
+
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
@@ -2833,14 +2897,6 @@ class Conv3DGradInitHelper : public InitializationHelper
         end_padding_[0] = pad_d / 2 + pad_d % 2;
         end_padding_[1] = pad_h / 2 + pad_h % 2;
         end_padding_[2] = pad_w / 2 + pad_w % 2;
-
-        // TODO: Support grouped Conv3DBackpropFilter
-        // TFDML #39216059
-        OP_REQUIRES(
-            context,
-            GetGroupCount() == 1,
-            errors::InvalidArgument(
-                "DML doesn't support grouped Conv3DBackpropFilter yet"));
     }
 
     TensorFormat GetDataFormat() const { return attr_->data_format; }
@@ -2873,6 +2929,7 @@ class Conv3DGradInitHelper : public InitializationHelper
         return out_padding_;
     }
     uint32_t GetGroupCount() const { return in_channels_ / filter_channels_; }
+    uint32_t GetGroupSize() const { return in_channels_ / GetGroupCount(); }
 
   private:
     const std::shared_ptr<const Attributes> attr_;
@@ -2993,11 +3050,7 @@ class DmlConv3DBackpropFilterKernel : public DmlKernel
         TensorShape filter_shape = TensorShapeUtils::MakeShape(filter_sizes);
 
         DmlKernelParams params;
-        params.kernel_input_indices = {
-            0,
-            2,
-            absl::nullopt // We don't use the DML bias tensor
-        };
+        params.kernel_input_indices = {0, 2};
 
         using namespace DmlTensorAxes;
 
@@ -3059,9 +3112,78 @@ class DmlConv3DBackpropFilterKernel : public DmlKernel
         auto input_descs = GetDmlTensorDescs(tensors.inputs);
         auto output_descs = GetDmlTensorDescs(tensors.outputs);
 
+        auto scope = dml::Graph(ctx->GetDmlDevice());
+        auto input_tensor = dml::InputTensor(scope, 0, input_descs[0]);
+        auto filter_tensor = dml::InputTensor(scope, 1, input_descs[1]);
+
+        auto group_count = init_helper->GetGroupCount();
+        auto group_size = init_helper->GetGroupSize();
+
+        auto grouped_input_tensor = input_tensor;
+
+        if (group_count > 1)
+        {
+            absl::InlinedVector<dml::Expression, 4> input_tensors;
+            input_tensors.reserve(group_count);
+
+            uint32_t batch = init_helper->GetBatchSize();
+            uint32_t height = init_helper->GetInHeight();
+            uint32_t width = init_helper->GetInWidth();
+            uint32_t depth = init_helper->GetInDepth();
+            uint32_t channels = init_helper->GetInChannels();
+
+            dml::TensorDimensions single_grouped_shape(
+                {1, group_count * batch, depth, height, width});
+            dml::TensorStrides single_grouped_strides = {
+                height * width * depth,
+                height * width * depth,
+                height * width,
+                width,
+                1};
+
+            std::vector<uint32_t> axis_sizes;
+            for (int i = 0; i < channels; i++)
+            {
+                axis_sizes.push_back(1);
+            }
+            auto output_axis_sizes = absl::Span<const uint32_t>(axis_sizes);
+
+            auto split_input = dml::Split(input_tensor, 0, output_axis_sizes);
+
+            for (uint32_t i = 0; i < group_size; i++)
+            {
+                absl::InlinedVector<dml::Expression, 4> temp_tensors;
+                temp_tensors.reserve(group_size);
+
+                for (uint32_t j = 0; j < group_count; j++)
+                {
+                    uint32_t index = i + (group_count * j);
+                    temp_tensors.push_back(split_input[index]);
+                }
+
+                auto temp_joined_input = dml::Join(temp_tensors, 0);
+
+                auto temp_input = dml::Reinterpret(
+                    temp_joined_input,
+                    single_grouped_shape,
+                    single_grouped_strides);
+
+                input_tensors.push_back(temp_input);
+            }
+
+            grouped_input_tensor = dml::Join(input_tensors, 0);
+        }
+
+        dml::detail::GraphBuilder* builder =
+            grouped_input_tensor.Impl()->GetGraphBuilder();
+
+        dml::TensorDesc inputTensor =
+            grouped_input_tensor.Impl()->GetOutputDesc();
+        dml::TensorDesc filterTensor = filter_tensor.Impl()->GetOutputDesc();
+
         DML_CONVOLUTION_OPERATOR_DESC conv_desc = {};
-        conv_desc.InputTensor = &input_descs[0];
-        conv_desc.FilterTensor = &input_descs[1];
+        conv_desc.InputTensor = inputTensor.AsPtr<DML_TENSOR_DESC>();
+        conv_desc.FilterTensor = filterTensor.AsPtr<DML_TENSOR_DESC>();
         conv_desc.BiasTensor = nullptr;
         conv_desc.OutputTensor = &output_descs[0];
         conv_desc.Mode = DML_CONVOLUTION_MODE_CROSS_CORRELATION;
@@ -3077,8 +3199,21 @@ class DmlConv3DBackpropFilterKernel : public DmlKernel
         conv_desc.GroupCount = init_helper->GetGroupCount();
         conv_desc.FusedActivation = nullptr;
 
-        DML_OPERATOR_DESC op_desc = {DML_OPERATOR_CONVOLUTION, &conv_desc};
-        Initialize(ctx, std::move(tensors), op_desc);
+        dml::detail::NodeOutput* const inputs[] = {
+            grouped_input_tensor.Impl(),
+            filter_tensor.Impl(),
+            nullptr};
+        dml::detail::NodeID node = builder->CreateOperatorNode(
+            DML_OPERATOR_CONVOLUTION,
+            &conv_desc,
+            inputs);
+        dml::detail::NodeOutput* output_c =
+            builder->CreateNodeOutput(node, 0, output_descs[0]);
+        dml::Expression result = output_c;
+
+        Microsoft::WRL::ComPtr<IDMLCompiledOperator> compiled_op =
+            scope.Compile(DML_EXECUTION_FLAG_NONE, {result});
+        Initialize(ctx, std::move(tensors), compiled_op.Get());
     }
 };
 
