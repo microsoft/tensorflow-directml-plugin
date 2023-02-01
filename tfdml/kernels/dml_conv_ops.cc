@@ -3241,12 +3241,11 @@ void RegisterConv2D()
 
 void RegisterFusedConv2D()
 {
-    // FusedConv2D only supports float32
     using K = KernelDefinition<
         ops::_FusedConv2D,
         DmlKernelWrapper<DmlFusedConv2DKernel<float>, ConvShapeHelper>>;
 
-    RegisterWithTypes<K, ops::_FusedConv2D::Attribute::T, TF_FLOAT>();
+    RegisterWithTypes<K, ops::_FusedConv2D::Attribute::T, TF_FLOAT, TF_HALF>();
 }
 
 void RegisterConv2DBackpropInput()
