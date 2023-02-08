@@ -12,8 +12,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-#ifndef TENSORFLOW_CORE_PROFILER_UTILS_XPLANE_BUILDER_H_
-#define TENSORFLOW_CORE_PROFILER_UTILS_XPLANE_BUILDER_H_
+#ifndef TENSORFLOW_TSL_PROFILER_UTILS_XPLANE_BUILDER_H_
+#define TENSORFLOW_TSL_PROFILER_UTILS_XPLANE_BUILDER_H_
 
 #include <stddef.h>
 
@@ -24,10 +24,11 @@ limitations under the License.
 #include "absl/strings/numbers.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "tensorflow/core/profiler/protobuf/xplane.pb.h"
+#include "tfdml/runtime_adapter/platform_types.h"
+#include "tensorflow/tsl/profiler/protobuf/xplane.pb.h"
 #include "tensorflow/tsl/platform/macros.h"
 #include "tensorflow/tsl/platform/protobuf.h"
-#include "tensorflow/tsl/platform/types.h"
+// #include "tensorflow/core/platform/types.h"
 #include "tensorflow/tsl/profiler/utils/math_utils.h"
 
 namespace tsl
@@ -148,7 +149,7 @@ class XStatsBuilder
         return AddStat(metadata);
     }
 
-    static void SetStatValue(uint32 value, XStat* stat)
+    static void SetStatValue(uint32_t value, XStat* stat)
     {
         stat->set_uint64_value(value);
     }

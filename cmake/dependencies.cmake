@@ -24,8 +24,8 @@ if(WIN32)
     # URLs and SHA256 hashes for the cp37 versions. For stable builds, go to https://pypi.org/project/tensorflow-intel/#files instead.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/f7/8c/18288ac12dc0e1997c73f1b86dbd6f7fa3674ae5341769387e1f13b07c9e/tensorflow_intel-2.11.0-cp37-cp37m-win_amd64.whl
-        URL_HASH SHA256=9f783b63889a8cb294a3bd293b326b575146582afeba0580e1e9bead77f49bd1
+        URL https://files.pythonhosted.org/packages/00/4a/1840524f3448cbf111bf7613945688c0450573b9c3d32ba16a438059c7e9/tf_nightly_intel-2.13.0.dev20230207-cp39-cp39-win_amd64.whl
+        URL_HASH SHA256=ecb92fa8c5631a8c3ac09303b9bb5c5bd43e8533c160321c4bf1b5fc8f36831c
     )
 
     FetchContent_Declare(
@@ -38,8 +38,8 @@ else()
     # URLs and SHA256 hashes for the cp37 versions. For stable builds, go to https://pypi.org/project/tensorflow-cpu/#files instead.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/24/cd/68fe47492ce827fadd56e5ab2819421084a596925158ceb81959a5ba9947/tensorflow_cpu-2.11.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-        URL_HASH SHA256=fdcc9f733285bb1c917cde6731edcbf2ecc5ca4bd8c6a4c168a7f478e4056654
+        URL https://storage.googleapis.com/tensorflow-nightly/prod/tensorflow/rel/docker/critique_optional/cpu_any/282/20230207-145433/pkg/tf_nightly_cpu-2.13.0.dev20230207-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+        URL_HASH SHA256=4e2feba1bd485ffd3f204fba16c3ee19a948190fab2aaaa8e3fcaff9707decfa
     )
 
     FetchContent_Declare(
@@ -93,6 +93,14 @@ FetchContent_Declare(
     DOWNLOAD_NO_EXTRACT TRUE
 )
 
+# xplane.proto file
+# FetchContent_Declare(
+#     tsl_xplane
+#     URL https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/tsl/profiler/protobuf/xplane.proto
+#     URL_HASH SHA256=4abc7e20e19515b2da418fddadf80e7d3b4ea6096c87ab3d503954b292883132
+#     DOWNLOAD_NO_EXTRACT TRUE
+# )
+
 # Download and extract dependencies.
 FetchContent_MakeAvailable(
     abseil
@@ -105,6 +113,7 @@ FetchContent_MakeAvailable(
     pix_event_runtime
     googletest
     squeezenet_model
+    # tsl_xplane
 )
 
 # The DirectX-Headers target assumes dependent targets include headers with the directx prefix 
@@ -139,7 +148,9 @@ add_library(pix_event_runtime::headers ALIAS pix_headers)
 # deleted to avoid accidental usage, since their protobuf version will not likely match the copy
 # of protobuf above.
 set(tensorflow_generated_protobuf_dir ${tensorflow_whl_BINARY_DIR}/proto)
+# message("tensorflow_generated_protobuf_dir is \"${tensorflow_generated_protobuf_dir}\"")
 set(tensorflow_include_dir ${tensorflow_whl_SOURCE_DIR}/tensorflow/include)
+# set(tsl_include_dir ${tensorflow_whl_SOURCE_DIR}/tensorflow)
 file(GLOB_RECURSE tensorflow_whl_pb_h_files ${tensorflow_include_dir}/**/*.pb.h)
 if(tensorflow_whl_pb_h_files)
     file(REMOVE ${tensorflow_whl_pb_h_files})
@@ -186,9 +197,15 @@ target_include_directories(
 # Introduces a command to generate C++ code for a .proto file in the TF wheel.
 function(tf_proto_cpp proto_path)
     cmake_path(GET proto_path STEM proto_stem)
+    # message("Proto stem is \"${proto_stem}\"")
     cmake_path(GET proto_path PARENT_PATH proto_parent_dir)
+    # message("Proto parent dir is \"${proto_parent_dir}\"")
+    # message("tensorflow_generated_protobuf_dir is \"${tensorflow_generated_protobuf_dir}\"")
     cmake_path(SET proto_generated_h ${tensorflow_generated_protobuf_dir}/${proto_parent_dir}/${proto_stem}.pb.h)
+    # message("proto_generated_h is \"${proto_generated_h}\"")
     cmake_path(SET proto_generated_cc ${tensorflow_generated_protobuf_dir}/${proto_parent_dir}/${proto_stem}.pb.cc)
+    message("tensorflow_include_dir is \"${tensorflow_include_dir}\"")
+    message("proto_path is \"${proto_path}\"")
 
     add_custom_command(
         OUTPUT 
@@ -209,7 +226,7 @@ function(tf_proto_cpp proto_path)
 endfunction()
 
 # Generate the necessary .proto files in the TF wheel (performed at build time).
-tf_proto_cpp(tensorflow/core/profiler/protobuf/xplane.proto)
+# tf_proto_cpp(tensorflow/core/profiler/protobuf/xplane.proto)
 tf_proto_cpp(tensorflow/core/framework/graph.proto)
 tf_proto_cpp(tensorflow/core/framework/function.proto)
 tf_proto_cpp(tensorflow/core/framework/attr_value.proto)
@@ -224,6 +241,8 @@ tf_proto_cpp(tensorflow/core/framework/versions.proto)
 tf_proto_cpp(tensorflow/core/framework/kernel_def.proto)
 tf_proto_cpp(tensorflow/core/grappler/costs/op_performance_data.proto)
 tf_proto_cpp(tensorflow/core/protobuf/device_properties.proto)
+tf_proto_cpp(tensorflow/tsl/profiler/protobuf/xplane.proto)
+
 
 # A python interpreter is required to produce the plugin wheel. This python environment
 # must have the 'wheel' package installed.

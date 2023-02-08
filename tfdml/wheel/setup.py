@@ -40,7 +40,7 @@ _PLUGIN_LIB_PATH = "tensorflow-plugins"
 _MY_PLUGIN_PATH = "tensorflow-directml-plugin"
 
 REQUIRED_PACKAGES = [
-    "tensorflow-cpu >= 2.11.0",
+    "tf-nightly-cpu == 2.13.0.dev20230207",
 ]
 
 if sys.byteorder == "little":
