@@ -24,8 +24,8 @@ if(WIN32)
     # URLs and SHA256 hashes for the cp37 versions. For stable builds, go to https://pypi.org/project/tensorflow-intel/#files instead.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/1d/fe/49609774f36c3ea24a22212e790cefc715ffdf45755869eaedd3fee100dc/tf_nightly_intel-2.13.0.dev20230209-cp39-cp39-win_amd64.whl
-        URL_HASH SHA256=e1490ce53b28851b772dc6cf70dd9207111f611ef7fa2e13d398e1163adca07d
+        URL https://files.pythonhosted.org/packages/4c/57/3b37cf30bf1549e617f8328c10b1f3237bf50c9ac7be3de6fcb4c73a19ef/tensorflow_intel-2.12.0rc0-cp39-cp39-win_amd64.whl
+        URL_HASH SHA256=4f6793e0d9238b2fd57f10f39d7b3ab38000e2fca3144c260f581665be35a971
     )
 
     FetchContent_Declare(
@@ -38,8 +38,8 @@ else()
     # URLs and SHA256 hashes for the cp37 versions. For stable builds, go to https://pypi.org/project/tensorflow-cpu/#files instead.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/8b/04/f69bba1e85e9193b6365a7818d585479eed3994d2cfd15c6b4a1230def70/tf_nightly_cpu-2.13.0.dev20230209-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-        URL_HASH SHA256=6b3de6261acc7e0b675b82efd05203773f626a42f90ca56f9a3ed2c67b89b54e
+        URL https://files.pythonhosted.org/packages/61/f7/5888bb138d8ae9c6400996c3f0ffc2d9034c5213d7c6aa6deea79bbfe2c3/tensorflow_cpu-2.12.0rc0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+        URL_HASH SHA256=505921b47561f7b26fef8d1e5d781c4afd9aaba8945b02258d36037f70cdfbef
     )
 
     FetchContent_Declare(
@@ -93,14 +93,6 @@ FetchContent_Declare(
     DOWNLOAD_NO_EXTRACT TRUE
 )
 
-# xplane.proto file
-# FetchContent_Declare(
-#     tsl_xplane
-#     URL https://raw.githubusercontent.com/tensorflow/tensorflow/master/tensorflow/tsl/profiler/protobuf/xplane.proto
-#     URL_HASH SHA256=4abc7e20e19515b2da418fddadf80e7d3b4ea6096c87ab3d503954b292883132
-#     DOWNLOAD_NO_EXTRACT TRUE
-# )
-
 # Download and extract dependencies.
 FetchContent_MakeAvailable(
     abseil
@@ -113,7 +105,6 @@ FetchContent_MakeAvailable(
     pix_event_runtime
     googletest
     squeezenet_model
-    # tsl_xplane
 )
 
 # The DirectX-Headers target assumes dependent targets include headers with the directx prefix 
@@ -226,7 +217,6 @@ function(tf_proto_cpp proto_path)
 endfunction()
 
 # Generate the necessary .proto files in the TF wheel (performed at build time).
-# tf_proto_cpp(tensorflow/core/profiler/protobuf/xplane.proto)
 tf_proto_cpp(tensorflow/core/framework/graph.proto)
 tf_proto_cpp(tensorflow/core/framework/function.proto)
 tf_proto_cpp(tensorflow/core/framework/attr_value.proto)
@@ -241,6 +231,7 @@ tf_proto_cpp(tensorflow/core/framework/versions.proto)
 tf_proto_cpp(tensorflow/core/framework/kernel_def.proto)
 tf_proto_cpp(tensorflow/core/grappler/costs/op_performance_data.proto)
 tf_proto_cpp(tensorflow/core/protobuf/device_properties.proto)
+tf_proto_cpp(tensorflow/core/profiler/protobuf/xplane.proto)
 tf_proto_cpp(tensorflow/tsl/profiler/protobuf/xplane.proto)
 
 
