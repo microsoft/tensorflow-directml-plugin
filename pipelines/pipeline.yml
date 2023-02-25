@@ -40,13 +40,11 @@ parameters:
   displayName: Build Artifacts
   type: object
   default:
-  - x64-win-release-cp37
-  - x64-win-debug-cp37
+  - x64-win-debug-cp39
   - x64-win-release-cp38
   - x64-win-release-cp39
   - x64-win-release-cp310
-  - x64-linux-release-cp37
-  - x64-linux-debug-cp37
+  - x64-linux-debug-cp39
   - x64-linux-release-cp38
   - x64-linux-release-cp39
   - x64-linux-release-cp310
