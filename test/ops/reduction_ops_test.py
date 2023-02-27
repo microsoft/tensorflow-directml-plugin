@@ -378,9 +378,9 @@ class SumReductionTest(BaseReductionTest):
   def testDegenerate(self):
     # TODO: Remove this skip once the resource zeroing bug has been fixed
     # TFDML #41044841
-    if should_skip_test(".*UHD Graphics 630.*"):
-      self.skipTest("This test currently fails on some Intel devices because resources "
-                    "don't get completely zeroed out under certain conditions.")
+    # if should_skip_test(".*UHD Graphics 630.*"):
+    #   self.skipTest("This test currently fails on some Intel devices because resources "
+    #                 "don't get completely zeroed out under certain conditions.")
 
     with self.session():
       for dtype in (dtypes.float16, dtypes.float32, dtypes.float64,
@@ -568,9 +568,9 @@ class EuclideanNormReductionTest(BaseReductionTest):
   def testComplex128(self):
     # TODO: Remove this skip once the resource zeroing bug has been fixed
     # TFDML #41044841
-    if should_skip_test(".*UHD Graphics 630.*"):
-      self.skipTest("This test currently fails on some Intel devices because resources "
-                    "don't get completely zeroed out under certain conditions.")
+    # if should_skip_test(".*UHD Graphics 630.*"):
+    #   self.skipTest("This test currently fails on some Intel devices because resources "
+    #                 "don't get completely zeroed out under certain conditions.")
 
     for rank in range(1, _MAX_RANK + 1):
       np_arr = self._makeIncremental((2,) * rank, dtypes.complex128)
