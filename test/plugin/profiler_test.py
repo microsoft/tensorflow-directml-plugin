@@ -25,7 +25,6 @@ from pathlib import Path
 from absl.testing import absltest
 import tensorflow as tf
 from tensorflow.core.profiler.protobuf import xplane_pb2
-from tensorboard_plugin_profile.protobuf import tf_stats_pb2
 
 
 class ProfilerTest(absltest.TestCase):
