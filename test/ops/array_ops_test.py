@@ -14,6 +14,7 @@
 # ==============================================================================
 """Tests for array_ops."""
 import re
+import sys
 import time
 import unittest
 
@@ -49,6 +50,7 @@ from tensorflow.python.ops import variable_scope
 from tensorflow.python.ops import variables
 from tensorflow.python.ops.ragged.ragged_tensor import RaggedTensor
 from tensorflow.python.platform import test as test_lib
+
 
 @test_util.run_all_in_graph_and_eager_modes
 class BatchMatrixTransposeTest(test_util.TensorFlowTestCase):
@@ -142,6 +144,7 @@ class BatchMatrixTransposeTest(test_util.TensorFlowTestCase):
 class BooleanMaskTest(test_util.TensorFlowTestCase):
 
   def setUp(self):
+    super().setUp()
     self.rng = np.random.RandomState(42)
 
   def CheckVersusNumpy(self, ndims_mask, arr_shape, make_mask=None, axis=None):
@@ -349,6 +352,15 @@ class OperatorShapeTest(test_util.TensorFlowTestCase):
     with self.assertRaisesRegex(Exception,
                                 "must be a tensor with a single value"):
       array_ops.expand_dims(1, axis=[0, 1])
+
+  def testReshapeWithManyDims(self):
+    with self.assertRaisesRegex(errors.InvalidArgumentError,
+                                "too many dimensions"):
+      self.evaluate(
+          array_ops.reshape(
+              tensor=[[1]],
+              shape=constant_op.constant([1 for i in range(254)],
+                                         dtype=dtypes.int64)))
 
 
 @test_util.with_eager_op_as_function
@@ -672,6 +684,9 @@ class StridedSliceTest(test_util.TensorFlowTestCase):
   @test_util.assert_no_new_pyobjects_executing_eagerly
   @test_util.assert_no_garbage_created
   def testVariableSliceEagerMemory(self):
+    if sys.version_info.major == 3 and sys.version_info.minor == 11:
+      # TODO(b/265082239)
+      self.skipTest("Not working in Python 3.11")
     with context.eager_mode():
       v = variables.Variable([1., 2.])
       v[0]  # pylint: disable=pointless-statement
@@ -1289,6 +1304,16 @@ class SliceAssignTest(test_util.TensorFlowTestCase, parameterized.TestCase):
       return gen_array_ops.tensor_strided_slice_update(y, [0], [1], [1], [0])
     self.assertAllEqual([0, 1], self.evaluate(assign(array_ops.zeros([2]))))
 
+  @test_util.run_in_graph_and_eager_modes
+  def testTensorStridedSliceUpdateWithInputForwardInt32(self):
+    """Tests tensor_strided_slice_update with int32."""
+    @def_function.function
+    def assign(x):
+      y = x + 1
+      return gen_array_ops.tensor_strided_slice_update(y, [0], [1], [1], [0])
+    self.assertAllEqual(
+        [0, 1], self.evaluate(assign(array_ops.zeros([2], dtype=dtypes.int32))))
+
   @test_util.disable_xla("b/123559667")
   @test_util.run_in_graph_and_eager_modes
   def testTensorStridedSliceUpdateNoInputForward(self):
@@ -1499,6 +1524,13 @@ class IdentityTest(test_util.TensorFlowTestCase):
         e = array_ops.identity(d)
         _test(d, e, "gpu")
 
+  def testIdentityVariable(self):
+    v = resource_variable_ops.ResourceVariable(1.0)
+    self.evaluate(v.initializer)
+    result = array_ops.identity(v)
+    self.assertIsInstance(result, ops.Tensor)
+    self.assertAllEqual(result, v)
+
 
 class PadTest(test_util.TensorFlowTestCase):
 
@@ -1513,6 +1545,22 @@ class PadTest(test_util.TensorFlowTestCase):
       self.assertAllEqual(padded.numpy(),
                           [[0, 0, 0, 0, 0, 0, 0], [0, 0, 1, 2, 3, 0, 0],
                            [0, 0, 4, 5, 6, 0, 0], [0, 0, 0, 0, 0, 0, 0]])
+      
+  # b/246325518: Bad shape size. Explicitly testing different execution paths.
+  def testInvalidMirrorPadGradEagerMode(self):
+    with context.eager_mode():
+      with self.assertRaises(Exception):
+        gen_array_ops.MirrorPadGrad(
+            input=[1], paddings=[[0x77f00000, 0xa000000]], mode="REFLECT")
+
+  # b/246325518: Bad shape size. Explicitly testing different execution paths.
+  def testInvalidMirrorPadGradGraphMode(self):
+    with context.graph_mode():
+      with self.assertRaises(Exception):
+        result = gen_array_ops.MirrorPadGrad(
+            input=[1], paddings=[[0x77f00000, 0xa000000]], mode="REFLECT")
+        self.evaluate(result)
+
 
   def testSymmetricMirrorPadGrad(self):
     t = np.broadcast_to(np.arange(0, 7), (3, 2, 1, 7))
@@ -1735,6 +1783,72 @@ class QuantizeAndDequantizeTest(test_util.TensorFlowTestCase):
               max_range=input_max,
               axis=2**31 - 1))
 
+  @test_util.run_v2_only
+  def testInvalidAxis(self):
+
+    @def_function.function
+    def test_quantize_and_dequantize_v2():
+      gen_array_ops.quantize_and_dequantize_v2(
+          input=[2.5],
+          input_min=[1.0],
+          input_max=[10.0],
+          signed_input=True,
+          num_bits=1,
+          range_given=True,
+          round_mode="HALF_TO_EVEN",
+          narrow_range=True,
+          axis=0x7fffffff)
+
+    @def_function.function
+    def test_quantize_and_dequantize_v3():
+      gen_array_ops.quantize_and_dequantize_v3(
+          input=[2.5],
+          input_min=[1.0],
+          input_max=[10.0],
+          num_bits=1,
+          signed_input=True,
+          range_given=True,
+          narrow_range=True,
+          axis=0x7fffffff)
+
+    @def_function.function
+    def test_quantize_and_dequantize_v4():
+      gen_array_ops.quantize_and_dequantize_v4(
+          input=[2.5],
+          input_min=[1.0],
+          input_max=[10.0],
+          signed_input=True,
+          num_bits=1,
+          range_given=True,
+          round_mode="HALF_TO_EVEN",
+          narrow_range=True,
+          axis=0x7fffffff)
+
+    @def_function.function
+    def test_quantize_and_dequantize_v4_grad():
+      gen_array_ops.quantize_and_dequantize_v4_grad(
+          gradients=[2.5],
+          input=[2.5],
+          input_min=[1.0],
+          input_max=[10.0],
+          axis=0x7fffffff)
+
+    with self.assertRaisesRegex(
+        ValueError, "Axis cannot be >= kint32max value, got 2147483647"):
+      test_quantize_and_dequantize_v2()
+
+    with self.assertRaisesRegex(
+        ValueError, "Axis cannot be >= kint32max value, got 2147483647"):
+      test_quantize_and_dequantize_v3()
+
+    with self.assertRaisesRegex(
+        ValueError, "Axis cannot be >= kint32max value, got 2147483647"):
+      test_quantize_and_dequantize_v4()
+
+    with self.assertRaisesRegex(
+        ValueError, "Axis cannot be >= kint32max value, got 2147483647"):
+      test_quantize_and_dequantize_v4_grad()
+
 
 @test_util.run_all_in_graph_and_eager_modes
 class SortedSearchTest(test_util.TensorFlowTestCase):
@@ -1954,6 +2068,17 @@ class SortedSearchTest(test_util.TensorFlowTestCase):
                 array_ops.ones([2, 0]),
                 side=side,
                 out_type=dtype), array_ops.zeros([2, 0], dtype))
+        
+  def testZeroInputSize(self):
+    dtype = dtypes.int32
+    for side in ("left", "right"):
+      with self.subTest(side=side):
+        self.assertAllEqual(
+            array_ops.searchsorted(
+                array_ops.ones([2, 0]),
+                array_ops.ones([2, 3]),
+                side=side,
+                out_type=dtype), array_ops.zeros([2, 3], dtype))
 
   def testInt64(self):
 
@@ -2295,7 +2420,7 @@ class TileVariantTest(test_util.TensorFlowTestCase):
     self.assertAllEqual(t, tiled_tensor_1)
 
 
-class StopGradientTest(test_util.TensorFlowTestCase):
+class StopGradientTest(test_util.TensorFlowTestCase, parameterized.TestCase):
 
   def testStopGradient(self):
     x = array_ops.zeros(3)
@@ -2319,7 +2444,26 @@ class StopGradientTest(test_util.TensorFlowTestCase):
     with backprop.GradientTape() as tape:
       y = array_ops.stop_gradient(x)
 
-    self.assertIsNone(tape.gradient(y.values, x.values))
+    self.assertIsNone(tape.gradient(y, x))
+
+  @parameterized.named_parameters([
+      ("TFFunction", def_function.function),
+      ("PythonFunction", lambda f: f),
+  ])
+  def test_stop_gradient_resource_variable(self, decorator):
+    x = resource_variable_ops.ResourceVariable([1.0])
+    self.evaluate(x.initializer)
+
+    @decorator
+    def stop_gradient_f(x):
+      return array_ops.stop_gradient(x)
+
+    with backprop.GradientTape() as tape:
+      y = stop_gradient_f(x)
+    self.assertIsNone(tape.gradient(y, x))
+    # stop_gradient converts ResourceVariable to Tensor
+    self.assertIsInstance(y, ops.Tensor)
+    self.assertAllEqual(y, x)
 
 
 if __name__ == "__main__":
