@@ -44,10 +44,12 @@ parameters:
   - x64-win-release-cp38
   - x64-win-release-cp39
   - x64-win-release-cp310
+  - x64-win-release-cp311
   - x64-linux-debug-cp39
   - x64-linux-release-cp38
   - x64-linux-release-cp39
   - x64-linux-release-cp310
+  - x64-linux-release-cp311
 
 - name: enableTelemetry
   displayName: Enable Telemetry
