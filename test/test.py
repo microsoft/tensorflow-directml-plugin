@@ -216,13 +216,14 @@ class _Test:
         else:
             self.args.append(f"--gtest_output=xml:{self.results_file_path}")
 
+        if re.match(".*reduction_ops_test.*", str(name)) is not None:
+            self.args = [gpu_name.replace(" ", "")] + self.args
+
         if is_python_test:
             self.command_line = f"python {test_file_path} {' '.join(self.args)}"
         else:
             self.command_line = f"{test_file_path} {' '.join(self.args)}"
 
-        if re.match(".*reduction_ops_test.*", str(name)) is not None:
-            self.args = [gpu_name.replace(" ", "")] + self.args
         print("command: ", self.command_line)
 
     def show(self):
