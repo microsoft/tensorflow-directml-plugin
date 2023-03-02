@@ -188,15 +188,9 @@ target_include_directories(
 # Introduces a command to generate C++ code for a .proto file in the TF wheel.
 function(tf_proto_cpp proto_path)
     cmake_path(GET proto_path STEM proto_stem)
-    # message("Proto stem is \"${proto_stem}\"")
     cmake_path(GET proto_path PARENT_PATH proto_parent_dir)
-    # message("Proto parent dir is \"${proto_parent_dir}\"")
-    # message("tensorflow_generated_protobuf_dir is \"${tensorflow_generated_protobuf_dir}\"")
     cmake_path(SET proto_generated_h ${tensorflow_generated_protobuf_dir}/${proto_parent_dir}/${proto_stem}.pb.h)
-    # message("proto_generated_h is \"${proto_generated_h}\"")
     cmake_path(SET proto_generated_cc ${tensorflow_generated_protobuf_dir}/${proto_parent_dir}/${proto_stem}.pb.cc)
-    message("tensorflow_include_dir is \"${tensorflow_include_dir}\"")
-    message("proto_path is \"${proto_path}\"")
 
     add_custom_command(
         OUTPUT 

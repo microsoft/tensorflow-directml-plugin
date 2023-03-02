@@ -21,9 +21,11 @@ def _get_adapter_name():
     return matches.group(1)
 
 
-def should_skip_test(pattern):
+def should_skip_test(pattern, gpu_name):
     """
     Returns whether the test should be skipped based on a regex that should match the
     adapter name
     """
-    return re.match(pattern, _get_adapter_name()) is not None
+    # return re.match(pattern, _get_adapter_name(argv[1])) is not None
+    print("gpu name: ", gpu_name)
+    return re.match(pattern, gpu_name) is not None
