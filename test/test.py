@@ -509,7 +509,6 @@ def _main():
     )
     parser.add_argument(
         "--gpu_name",
-        "-n",
         type=str,
         default="",
         help="Name of GPU, used for disabling tests for specific cards.",
@@ -519,6 +518,8 @@ def _main():
     if not (args.run or args.show or args.summarize):
         print("No mode specified. Did you intend to use --run, --summarize, or --show?")
         return
+
+    print("args.gpu_name: ", args.gpu_name)
 
     # Parse tests from tests.json.
     test_groups = _parse_test_groups(

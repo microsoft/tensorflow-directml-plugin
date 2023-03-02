@@ -158,7 +158,7 @@ jobs:
               $ResultsDirWin = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}/${{tensorflowPackage}}" -replace '\\','/'
               $ResultsDirWinWsl = wsl wslpath -a $ResultsDirWin
               New-Item -ItemType Directory $ResultsDirWin -Force | Out-Null
-              cmd /c "wsl $(test_env_linux_${{replace(tensorflowPackage, '-', '_')}}.activateCommand); python $ScriptPathWsl --run --parallel --summarize --redirect_output --results_dir $ResultsDirWinWsl --groups ${{join(' ', parameters.testGroups)}} --gpu_name $GPUInfo"
+              cmd /c "wsl $(test_env_linux_${{replace(tensorflowPackage, '-', '_')}}.activateCommand); python $ScriptPathWsl --run --parallel --summarize --redirect_output --results_dir $ResultsDirWinWsl --groups ${{join(' ', parameters.testGroups)}} --gpu_name '$GPUInfo'"
 
       - ${{if contains(artifact, '-win-') }}:
         - task: PowerShell@2
@@ -183,7 +183,7 @@ jobs:
               Invoke-Expression '$(test_env_win_${{replace(tensorflowPackage, '-', '_')}}.activateCommand)'
               $ResultsDir = "$(System.ArtifactsDirectory)/results/$(agentName)/${{artifact}}/${{tensorflowPackage}}"
               $GPUInfo = wmic path win32_VideoController get name
-              python $(Build.SourcesDirectory)/test/test.py --run --parallel --summarize --redirect_output --results_dir $ResultsDir --groups ${{join(' ', parameters.testGroups)}} --gpu_name $GPUInfo
+              python $(Build.SourcesDirectory)/test/test.py --run --parallel --summarize --redirect_output --results_dir $ResultsDir --groups ${{join(' ', parameters.testGroups)}} --gpu_name "$GPUInfo"
 
     - task: PublishBuildArtifacts@1
       displayName: Publish ${{artifact}}
