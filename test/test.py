@@ -221,6 +221,7 @@ class _Test:
             self.command_line = f"python {test_file_path} {' '.join(self.args)}"
         else:
             self.command_line = f"{test_file_path} {' '.join(self.args)}"
+        print("command: ", self.command_line)
 
     def show(self):
         """Prints the command lines that would be executed without executing anything"""
