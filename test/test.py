@@ -216,7 +216,7 @@ class _Test:
         else:
             self.args.append(f"--gtest_output=xml:{self.results_file_path}")
 
-        if re.match(".*reduction_ops_test.*", str(name)) is not None:
+        if re.match(".*ops.reduction_ops_test", str(name)) is not None:
             self.args = [gpu_name.replace(" ", "")] + self.args
 
         if is_python_test:
