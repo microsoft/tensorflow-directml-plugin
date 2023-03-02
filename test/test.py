@@ -221,7 +221,7 @@ class _Test:
         else:
             self.command_line = f"{test_file_path} {' '.join(self.args)}"
 
-        if re.match(".*reduction_ops_test.*", test_file_path) is not None:
+        if re.match(".*reduction_ops_test.*", str(name)) is not None:
             self.args = [gpu_name.replace(" ", "")] + self.args
         print("command: ", self.command_line)
 
