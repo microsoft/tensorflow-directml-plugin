@@ -216,15 +216,13 @@ class _Test:
         else:
             self.args.append(f"--gtest_output=xml:{self.results_file_path}")
 
-        if (str(name) == "ops.reduction_ops_test"):
+        if str(name) == "ops.reduction_ops_test":
             self.args = [gpu_name.replace(" ", "")] + self.args
 
         if is_python_test:
             self.command_line = f"python {test_file_path} {' '.join(self.args)}"
         else:
             self.command_line = f"{test_file_path} {' '.join(self.args)}"
-
-        print("command: ", self.command_line)
 
     def show(self):
         """Prints the command lines that would be executed without executing anything"""
@@ -419,7 +417,13 @@ def _parse_test_groups(
 
 # pylint:disable=too-many-arguments
 def _parse_test(
-    is_python_test, tests_json_path, json_test, test_names, test_group_name, results_dir, gpu_name
+    is_python_test,
+    tests_json_path,
+    json_test,
+    test_names,
+    test_group_name,
+    results_dir,
+    gpu_name,
 ):
     test_file = Path(tests_json_path).parent / json_test["file"]
     test_base_name = _get_optional_json_property(

@@ -16,6 +16,7 @@ limitations under the License.
 
 #include "tfdml/kernels/pch.h"
 #include "tfdml/runtime_adapter/bcast.h"
+#include <limits>
 
 namespace tfdml
 {
@@ -342,6 +343,8 @@ class DmlClipByValueKernel : public DmlKernel
         DmlKernelTensors tensors = GetTensorInfos(ctx, params);
         auto inputs = GetDmlTensorDescs(tensors.inputs);
 
+        auto input_type = ctx->GetInputDataType(0);
+
         // Min/max are supplied as tensors for ClipByValue, which are required
         // to be constant CPU inputs
         const Tensor& min_tensor = ctx->GetConstantInputTensor(1);
@@ -349,10 +352,33 @@ class DmlClipByValueKernel : public DmlKernel
 
         auto scope = dml::Graph(ctx->GetDmlDevice());
         auto input = dml::InputTensor(scope, 0, inputs[0]);
-        auto result = dml::Clip(
-            input,
-            min_tensor.base<float>()[0],
-            max_tensor.base<float>()[0]);
+
+        dml::Expression result;
+
+        // if input type is int64 and out_max is < int64 max, value = min(value,
+        // out_max)
+        if (input_type == TF_INT64 &&
+            max_tensor.base<int>()[0] < std::numeric_limits<int64_t>::max())
+        {
+            dml::TensorDesc::Dimensions min_dims = input.GetOutputDesc().sizes;
+            auto min_exp = dml::ScalarTensor<int64_t>(
+                scope,
+                min_tensor.base<int64_t>()[0],
+                min_dims);
+            auto max_exp = dml::ScalarTensor<int64_t>(
+                scope,
+                max_tensor.base<int64_t>()[0],
+                min_dims);
+            result = dml::Max(input, min_exp);
+            result = dml::Min(result, max_exp);
+        }
+        else
+        {
+            result = dml::Clip(
+                input,
+                min_tensor.base<float>()[0],
+                max_tensor.base<float>()[0]);
+        }
 
         ComPtr<IDMLCompiledOperator> compiled_op =
             scope.Compile(DML_EXECUTION_FLAG_NONE, {result});

@@ -24,16 +24,17 @@ limitations under the License.
 
 // Include appropriate platform-dependent implementations
 #if defined(PLATFORM_GOOGLE) || defined(GOOGLE_INTEGRAL_TYPES)
-#include "tensorflow/tsl/platform/google/integral_types.h"  // IWYU pragma: export
-#elif defined(PLATFORM_POSIX) || defined(PLATFORM_POSIX_ANDROID) ||    \
-    defined(PLATFORM_GOOGLE_ANDROID) || defined(PLATFORM_POSIX_IOS) || \
+#include "tensorflow/tsl/platform/google/integral_types.h" // IWYU pragma: export
+#elif defined(PLATFORM_POSIX) || defined(PLATFORM_POSIX_ANDROID) ||            \
+    defined(PLATFORM_GOOGLE_ANDROID) || defined(PLATFORM_POSIX_IOS) ||         \
     defined(PLATFORM_GOOGLE_IOS) || defined(PLATFORM_WINDOWS)
-#include "tensorflow/tsl/platform/default/integral_types.h"  // IWYU pragma: export
+#include "tensorflow/tsl/platform/default/integral_types.h" // IWYU pragma: export
 #else
 #error Define the appropriate PLATFORM_<foo> macro for this platform
 #endif
 
-namespace tsl {
+namespace tsl
+{
 
 // Alias tsl::string to std::string.
 using std::string;
@@ -54,17 +55,20 @@ static const int64_t kint64max = static_cast<int64_t>(0x7FFFFFFFFFFFFFFFll);
 // A typedef for a uint64 used as a short fingerprint.
 using Fprint = uint64;
 
-}  // namespace tsl
+} // namespace tsl
 
 // Alias namespace ::stream_executor as ::tensorflow::se.
-namespace stream_executor {}
-namespace tensorflow {
+namespace stream_executor
+{
+}
+namespace tensorflow
+{
 namespace se = ::stream_executor;
-}  // namespace tensorflow
+} // namespace tensorflow
 
 #if defined(PLATFORM_WINDOWS)
 #include <cstddef>
 typedef std::ptrdiff_t ssize_t;
 #endif
 
-#endif  // TENSORFLOW_TSL_PLATFORM_TYPES_H_
+#endif // TENSORFLOW_TSL_PLATFORM_TYPES_H_
