@@ -355,20 +355,17 @@ class DmlClipByValueKernel : public DmlKernel
 
         dml::Expression result;
 
-        // if input type is int64 and out_max is < int64 max, value = min(value,
-        // out_max)
-        if (input_type == TF_INT64 &&
-            max_tensor.base<int>()[0] < std::numeric_limits<int64_t>::max())
+        if (input_type == TF_INT64)
         {
-            dml::TensorDesc::Dimensions min_dims = input.GetOutputDesc().sizes;
+            dml::TensorDesc::Dimensions input_dims = input.GetOutputDesc().sizes;
             auto min_exp = dml::ScalarTensor<int64_t>(
                 scope,
                 min_tensor.base<int64_t>()[0],
-                min_dims);
+                input_dims);
             auto max_exp = dml::ScalarTensor<int64_t>(
                 scope,
                 max_tensor.base<int64_t>()[0],
-                min_dims);
+                input_dims);
             result = dml::Max(input, min_exp);
             result = dml::Min(result, max_exp);
         }
