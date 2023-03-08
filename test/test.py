@@ -361,6 +361,7 @@ def _get_optional_json_property(json_object, property_name, default_value):
 
 
 # Parses tests.json to build a list of test groups to execute.
+# pylint:disable=too-many-arguments
 def _parse_test_groups(
     tests_json_path,
     test_filter,

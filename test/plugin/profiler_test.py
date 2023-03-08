@@ -19,8 +19,6 @@
 
 import tempfile
 import shutil
-import gzip
-import json
 from pathlib import Path
 from absl.testing import absltest
 import tensorflow as tf
