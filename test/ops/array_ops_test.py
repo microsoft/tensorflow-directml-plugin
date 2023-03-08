@@ -51,7 +51,6 @@ from tensorflow.python.ops import variables
 from tensorflow.python.ops.ragged.ragged_tensor import RaggedTensor
 from tensorflow.python.platform import test as test_lib
 
-
 @test_util.run_all_in_graph_and_eager_modes
 class BatchMatrixTransposeTest(test_util.TensorFlowTestCase):
 

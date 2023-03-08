@@ -355,9 +355,12 @@ class DmlClipByValueKernel : public DmlKernel
 
         dml::Expression result;
 
+        // Since int64 to float is a narrowing conversion, we use max/min
+        // instead to preserve the clipping values
         if (input_type == TF_INT64)
         {
-            dml::TensorDesc::Dimensions input_dims = input.GetOutputDesc().sizes;
+            dml::TensorDesc::Dimensions input_dims =
+                input.GetOutputDesc().sizes;
             auto min_exp = dml::ScalarTensor<int64_t>(
                 scope,
                 min_tensor.base<int64_t>()[0],

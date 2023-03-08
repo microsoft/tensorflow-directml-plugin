@@ -139,9 +139,7 @@ add_library(pix_event_runtime::headers ALIAS pix_headers)
 # deleted to avoid accidental usage, since their protobuf version will not likely match the copy
 # of protobuf above.
 set(tensorflow_generated_protobuf_dir ${tensorflow_whl_BINARY_DIR}/proto)
-# message("tensorflow_generated_protobuf_dir is \"${tensorflow_generated_protobuf_dir}\"")
 set(tensorflow_include_dir ${tensorflow_whl_SOURCE_DIR}/tensorflow/include)
-# set(tsl_include_dir ${tensorflow_whl_SOURCE_DIR}/tensorflow)
 file(GLOB_RECURSE tensorflow_whl_pb_h_files ${tensorflow_include_dir}/**/*.pb.h)
 if(tensorflow_whl_pb_h_files)
     file(REMOVE ${tensorflow_whl_pb_h_files})
@@ -227,7 +225,6 @@ tf_proto_cpp(tensorflow/core/grappler/costs/op_performance_data.proto)
 tf_proto_cpp(tensorflow/core/protobuf/device_properties.proto)
 tf_proto_cpp(tensorflow/core/profiler/protobuf/xplane.proto)
 tf_proto_cpp(tensorflow/tsl/profiler/protobuf/xplane.proto)
-
 
 # A python interpreter is required to produce the plugin wheel. This python environment
 # must have the 'wheel' package installed.

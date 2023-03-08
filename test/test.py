@@ -527,8 +527,6 @@ def _main():
         print("No mode specified. Did you intend to use --run, --summarize, or --show?")
         return
 
-    print("args.gpu_name: ", args.gpu_name)
-
     # Parse tests from tests.json.
     test_groups = _parse_test_groups(
         args.tests_json,

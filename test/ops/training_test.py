@@ -14,7 +14,6 @@
 # ==============================================================================
 """Tests for training routines."""
 
-
 import collections
 import io
 import sys
