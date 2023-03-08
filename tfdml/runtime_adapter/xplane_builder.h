@@ -20,6 +20,7 @@ limitations under the License.
 #include <string>
 #include <utility>
 
+// clang-format off
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/string_view.h"
@@ -29,6 +30,7 @@ limitations under the License.
 #include "tensorflow/tsl/platform/protobuf.h"
 #include "tensorflow/tsl/profiler/protobuf/xplane.pb.h"
 #include "tensorflow/tsl/profiler/utils/math_utils.h"
+// clang-format on
 
 namespace tsl
 {
