@@ -217,7 +217,7 @@ class _Test:
             self.args.append(f"--gtest_output=xml:{self.results_file_path}")
 
         if str(name) == "ops.reduction_ops_test":
-            self.args = [gpu_name.replace(" ", "")] + self.args
+            self.args = ['"' + gpu_name + '"'] + self.args
 
         if is_python_test:
             self.command_line = f"python {test_file_path} {' '.join(self.args)}"
