@@ -21,11 +21,18 @@ limitations under the License.
 #include <utility>
 
 // clang-format off
+#ifndef TENSORFLOW_TSL_PLATFORM_TYPES_H_
+#define TENSORFLOW_TSL_PLATFORM_TYPES_H_
+
+#include "tensorflow/tsl/platform/tstring.h"
+#include "tensorflow/tsl/platform/default/integral_types.h" // IWYU pragma: export
+
+#endif // TENSORFLOW_TSL_PLATFORM_TYPES_H_
+
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "tfdml/runtime_adapter/platform_types.h"
 #include "tensorflow/tsl/platform/macros.h"
 #include "tensorflow/tsl/platform/protobuf.h"
 #include "tensorflow/tsl/profiler/protobuf/xplane.pb.h"
