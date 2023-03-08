@@ -74,12 +74,12 @@ parameters:
 - name: testTensorflowVersion
   displayName: TensorFlow Package Version
   type: string
-  default: 2.12.0rc0
+  default: 2.12.0rc1
 
 - name: testKerasPackage
   displayName: Keras Package Version
   type: string
-  default: keras==2.12.0rc0
+  default: keras==2.12.0rc1
 
 - name: enableTests
   displayName: Enable Tests
