@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(tensorflow-directml-plugin VERSION 0.2.0 LANGUAGES CXX)
+project(tensorflow-directml-plugin VERSION 0.3.0 LANGUAGES CXX)
 
 # Statically link runtime library to avoid runtime dependency on Visual C++ redistributable.
 set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
@@ -289,6 +289,7 @@ add_library(
     tfdml/kernels/dml_crop_and_resize_grad_image_op.cc
     tfdml/kernels/dml_crop_and_resize_op.cc
     tfdml/kernels/dml_cross_op.cc
+    tfdml/kernels/dml_cudnn_rnn_ops.cc
     tfdml/kernels/dml_cwise_ops.cc
     tfdml/kernels/dml_data_format_dim_map.cc
     tfdml/kernels/dml_data_format_vec_permute.cc

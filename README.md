@@ -22,7 +22,7 @@ TensorFlow DirectML Plugin only works with the `tensorflow-cpu>=2.12` package, n
 pip install tensorflow-directml-plugin
 ```
 
-If `tensorflow-cpu` hasn't already been already installed, the latest stable version will automatically be installed.
+If `tensorflow-cpu` hasn't already been already installed, version 2.10.0 will automatically be installed.
 
 The following resources provide additional background on DirectML and TensorFlow:
 - [DirectML GitHub](https://github.com/microsoft/DirectML/)
