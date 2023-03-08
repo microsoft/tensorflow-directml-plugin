@@ -12,29 +12,45 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-#ifndef TENSORFLOW_CORE_PROFILER_UTILS_XPLANE_BUILDER_H_
-#define TENSORFLOW_CORE_PROFILER_UTILS_XPLANE_BUILDER_H_
+#ifndef TENSORFLOW_TSL_PROFILER_UTILS_XPLANE_BUILDER_H_
+#define TENSORFLOW_TSL_PROFILER_UTILS_XPLANE_BUILDER_H_
 
 #include <stddef.h>
 
 #include <string>
 #include <utility>
 
+// clang-format off
+#ifndef TENSORFLOW_TSL_PLATFORM_TYPES_H_
+#define TENSORFLOW_TSL_PLATFORM_TYPES_H_
+
+#include "tensorflow/tsl/platform/tstring.h"
+#include "tensorflow/tsl/platform/default/integral_types.h" // IWYU pragma: export
+
+#endif // TENSORFLOW_TSL_PLATFORM_TYPES_H_
+
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "tensorflow/core/platform/macros.h"
-#include "tensorflow/core/platform/protobuf.h"
-#include "tensorflow/core/platform/types.h"
-#include "tensorflow/core/profiler/protobuf/xplane.pb.h"
-#include "tensorflow/core/profiler/utils/math_utils.h"
-#include "tensorflow/core/profiler/utils/timespan.h"
+#include "tensorflow/tsl/platform/macros.h"
+#include "tensorflow/tsl/platform/protobuf.h"
+#include "tensorflow/tsl/profiler/protobuf/xplane.pb.h"
+#include "tensorflow/tsl/profiler/utils/math_utils.h"
+// clang-format on
 
-namespace tensorflow
+namespace tsl
 {
 namespace profiler
 {
+
+using tensorflow::profiler::XEvent;         // NOLINT
+using tensorflow::profiler::XEventMetadata; // NOLINT
+using tensorflow::profiler::XLine;          // NOLINT
+using tensorflow::profiler::XPlane;         // NOLINT
+using tensorflow::profiler::XSpace;         // NOLINT
+using tensorflow::profiler::XStat;          // NOLINT
+using tensorflow::profiler::XStatMetadata;  // NOLINT
 
 class XPlaneBuilder;
 
@@ -141,7 +157,7 @@ class XStatsBuilder
         return AddStat(metadata);
     }
 
-    static void SetStatValue(uint32 value, XStat* stat)
+    static void SetStatValue(uint32_t value, XStat* stat)
     {
         stat->set_uint64_value(value);
     }
@@ -280,13 +296,6 @@ class XEventBuilder : public XStatsBuilder<XEvent>
         SetDurationPs(
             NanoToPico(end_timestamp_ns - line_->timestamp_ns()) -
             event_->offset_ps());
-    }
-
-    Timespan GetTimespan() const
-    {
-        return Timespan(
-            NanoToPico(line_->timestamp_ns()) + event_->offset_ps(),
-            event_->duration_ps());
     }
 
   private:
@@ -470,6 +479,6 @@ const XStatMetadata& XStatsBuilder<T>::GetOrCreateStatMetadata(
 }
 
 } // namespace profiler
-} // namespace tensorflow
+} // namespace tsl
 
 #endif // TENSORFLOW_CORE_PROFILER_UTILS_XPLANE_BUILDER_H_

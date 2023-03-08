@@ -12,7 +12,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
-#include "tensorflow/core/profiler/utils/xplane_builder.h"
+#include "tfdml/runtime_adapter/xplane_builder.h"
 
 #include <algorithm>
 #include <string>
@@ -21,11 +21,10 @@ limitations under the License.
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "tensorflow/core/platform/types.h"
-#include "tensorflow/core/profiler/protobuf/xplane.pb.h"
-#include "tensorflow/core/profiler/utils/math_utils.h"
+#include "tensorflow/tsl/profiler/protobuf/xplane.pb.h"
+#include "tensorflow/tsl/profiler/utils/math_utils.h"
 
-namespace tensorflow
+namespace tsl
 {
 namespace profiler
 {
@@ -179,4 +178,4 @@ void XLineBuilder::SetTimestampNsAndAdjustEventOffsets(int64_t timestamp_ns)
 }
 
 } // namespace profiler
-} // namespace tensorflow
+} // namespace tsl

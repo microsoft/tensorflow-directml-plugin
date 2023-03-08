@@ -201,6 +201,7 @@ class _Test:
         name,
         args,
         results_dir,
+        gpu_name,
     ):
         self.is_python_test = is_python_test
         self.cwd = cwd
@@ -214,6 +215,9 @@ class _Test:
             self.args.append(f"--xml_output_file={self.results_file_path}")
         else:
             self.args.append(f"--gtest_output=xml:{self.results_file_path}")
+
+        if str(name) == "ops.reduction_ops_test":
+            self.args = ['"' + gpu_name + '"'] + self.args
 
         if is_python_test:
             self.command_line = f"python {test_file_path} {' '.join(self.args)}"
@@ -357,12 +361,15 @@ def _get_optional_json_property(json_object, property_name, default_value):
 
 
 # Parses tests.json to build a list of test groups to execute.
+# pylint:disable=too-many-arguments
+# pylint:disable=too-many-locals
 def _parse_test_groups(
     tests_json_path,
     test_filter,
     allowed_test_groups,
     results_dir,
     run_disabled,
+    gpu_name,
 ):
     test_groups = []
     test_names = set()
@@ -387,6 +394,7 @@ def _parse_test_groups(
                 test_names,
                 test_group_name,
                 results_dir,
+                gpu_name,
             )
 
             if (
@@ -411,7 +419,13 @@ def _parse_test_groups(
 
 # pylint:disable=too-many-arguments
 def _parse_test(
-    is_python_test, tests_json_path, json_test, test_names, test_group_name, results_dir
+    is_python_test,
+    tests_json_path,
+    json_test,
+    test_names,
+    test_group_name,
+    results_dir,
+    gpu_name,
 ):
     test_file = Path(tests_json_path).parent / json_test["file"]
     test_base_name = _get_optional_json_property(
@@ -440,6 +454,7 @@ def _parse_test(
         test_full_name,
         test_args,
         results_dir,
+        gpu_name,
     )
 
 
@@ -502,6 +517,12 @@ def _main():
         action="store_true",
         help="Runs multiple tests in parallel using a multiprocessing pool.",
     )
+    parser.add_argument(
+        "--gpu_name",
+        type=str,
+        default="",
+        help="Name of GPU, used for disabling tests for specific cards.",
+    )
     args = parser.parse_args()
 
     if not (args.run or args.show or args.summarize):
@@ -515,6 +536,7 @@ def _main():
         args.groups,
         args.results_dir,
         args.run_disabled,
+        args.gpu_name,
     )
 
     # Show test commands.

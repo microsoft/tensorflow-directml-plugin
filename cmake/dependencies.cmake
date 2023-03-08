@@ -24,8 +24,8 @@ if(WIN32)
     # URLs and SHA256 hashes for the cp37 versions. For stable builds, go to https://pypi.org/project/tensorflow-intel/#files instead.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/4a/43/b6c853d9e9532b9dd04191383b76fe5ff7b7dfa40d2be2af98f40c7536ce/tensorflow_intel-2.10.0-cp37-cp37m-win_amd64.whl
-        URL_HASH SHA256=e6096b3a84bbc57eab88cc39ad7d6148e400a0da6a448f94d5e84c8cdbb521b5
+        URL https://files.pythonhosted.org/packages/4c/57/3b37cf30bf1549e617f8328c10b1f3237bf50c9ac7be3de6fcb4c73a19ef/tensorflow_intel-2.12.0rc0-cp39-cp39-win_amd64.whl
+        URL_HASH SHA256=4f6793e0d9238b2fd57f10f39d7b3ab38000e2fca3144c260f581665be35a971
     )
 
     FetchContent_Declare(
@@ -38,8 +38,8 @@ else()
     # URLs and SHA256 hashes for the cp37 versions. For stable builds, go to https://pypi.org/project/tensorflow-cpu/#files instead.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/9b/4b/293733cd86f09760b14517f077f79bad16de4af11828273eda1722e9b03a/tensorflow_cpu-2.10.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-        URL_HASH SHA256=34477fdfa97045c854fde55381cc3eb7fa6c63f5958ccf30ae3a21513ee73031
+        URL https://files.pythonhosted.org/packages/61/f7/5888bb138d8ae9c6400996c3f0ffc2d9034c5213d7c6aa6deea79bbfe2c3/tensorflow_cpu-2.12.0rc0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+        URL_HASH SHA256=505921b47561f7b26fef8d1e5d781c4afd9aaba8945b02258d36037f70cdfbef
     )
 
     FetchContent_Declare(
@@ -209,7 +209,6 @@ function(tf_proto_cpp proto_path)
 endfunction()
 
 # Generate the necessary .proto files in the TF wheel (performed at build time).
-tf_proto_cpp(tensorflow/core/profiler/protobuf/xplane.proto)
 tf_proto_cpp(tensorflow/core/framework/graph.proto)
 tf_proto_cpp(tensorflow/core/framework/function.proto)
 tf_proto_cpp(tensorflow/core/framework/attr_value.proto)
@@ -224,6 +223,8 @@ tf_proto_cpp(tensorflow/core/framework/versions.proto)
 tf_proto_cpp(tensorflow/core/framework/kernel_def.proto)
 tf_proto_cpp(tensorflow/core/grappler/costs/op_performance_data.proto)
 tf_proto_cpp(tensorflow/core/protobuf/device_properties.proto)
+tf_proto_cpp(tensorflow/core/profiler/protobuf/xplane.proto)
+tf_proto_cpp(tensorflow/tsl/profiler/protobuf/xplane.proto)
 
 # A python interpreter is required to produce the plugin wheel. This python environment
 # must have the 'wheel' package installed.

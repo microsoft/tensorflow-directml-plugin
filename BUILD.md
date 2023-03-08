@@ -21,7 +21,7 @@ This document contains instructions for producing private builds of tensorflow-d
 Your machine must have a few tools installed before you can get started.
 
 - CMake.
-- A Python 3.7, 3.8, 3.9 or 3.10 environment with the `wheel` package installed.
+- A Python 3.8, 3.9, 3.10 or 3.11 environment with the `wheel` package installed.
 - Build tools appropriate for your platform (MSVC on Windows, Clang on Linux).
 - Linux: a glibc-based distro, like Ubuntu.
 
@@ -65,7 +65,7 @@ This project requires a Python interpreter to produce the TFDML plugin wheel. Th
 
 Feel free to use any version of Python, but we recommend [Miniconda](https://docs.conda.io/en/latest/miniconda.html) to sandbox your project environments. Miniconda is a bundle that includes [Python](https://www.python.org/), a package and environment manager named [Conda](https://docs.conda.io/projects/conda/en/latest/), and a very small set of Python packages. It is a lighter-weight alternative to Anaconda, which contains hundreds of Python packages that aren't necessary for building. See the [user guide](https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html) for more details if you're not familiar with its usage.
 
-Once you've installed Miniconda you will want to create and activate a Python 3.7, 3.8, 3.9 or 3.10 environment with the required packages Use this activated environment when building this project.
+Once you've installed Miniconda you will want to create and activate a Python 3.8, 3.9, 3.10, or 3.11 environment with the required packages Use this activated environment when building this project.
 
 **Windows**:
 

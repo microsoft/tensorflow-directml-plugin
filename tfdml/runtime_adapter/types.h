@@ -17,7 +17,7 @@ limitations under the License.
 #pragma once
 
 #include "tensorflow/c/tf_datatype.h"
-#include "third_party/eigen3/unsupported/Eigen/CXX11/FixedPoint"
+#include "tensorflow/tsl/framework/fixedpoint/FixedPoint.h"
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 namespace tfdml

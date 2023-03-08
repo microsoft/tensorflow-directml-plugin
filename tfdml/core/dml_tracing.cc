@@ -444,9 +444,9 @@ void DmlTracing::LogExecuteOperatorEnd(ID3D12GraphicsCommandList* command_list)
     }
 }
 
-const tensorflow::profiler::XSpace& DmlTracing::GetXSpace()
+const tsl::profiler::XSpace& DmlTracing::GetXSpace()
 {
-    using namespace tensorflow::profiler;
+    using namespace tsl::profiler;
 
     if (!xspace_dirty_)
     {
