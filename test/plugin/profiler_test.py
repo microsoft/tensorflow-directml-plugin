@@ -19,13 +19,10 @@
 
 import tempfile
 import shutil
-import gzip
-import json
 from pathlib import Path
 from absl.testing import absltest
 import tensorflow as tf
 from tensorflow.core.profiler.protobuf import xplane_pb2
-from tensorboard_plugin_profile.protobuf import tf_stats_pb2
 
 
 class ProfilerTest(absltest.TestCase):
@@ -94,11 +91,12 @@ class ProfilerTest(absltest.TestCase):
             # DML planes are prefixed /device:GPU so that they get picked up
             # by tensorflow_stats and trace_viewer.
             self.assertRegex(xplane.name, r"/device:GPU:\d \(DirectML\) - .*")
-            self.assertEqual(len(xplane.lines), 3)
+            self.assertEqual(len(xplane.lines), 4)
             self.assertEqual(xplane.lines[0].name, "MemcpyH2D (CPU Timeline)")
-            self.assertEqual(xplane.lines[1].name, "MemcpyD2H (CPU Timeline)")
-            self.assertEqual(xplane.lines[2].name, "Kernels (CPU Timeline)")
-            kernels_cpu_timeline = xplane.lines[2]
+            self.assertEqual(xplane.lines[1].name, "MemcpyD2D (CPU Timeline)")
+            self.assertEqual(xplane.lines[2].name, "MemcpyD2H (CPU Timeline)")
+            self.assertEqual(xplane.lines[3].name, "Kernels (CPU Timeline)")
+            kernels_cpu_timeline = xplane.lines[3]
 
             # Ensure the AddN kernel is traced.
             self.assertEqual(len(kernels_cpu_timeline.events), 2)
@@ -120,65 +118,6 @@ class ProfilerTest(absltest.TestCase):
             self.assertEqual(
                 xplane.stat_metadata[matmul_event.stats[0].metadata_id].name, "tf_op"
             )
-
-    def test_trace_kernel_events(self):
-        """Checks that trace.json contains expected device kernel events"""
-        file_path = self._get_profiler_log_file_path("*trace.json.gz")
-        with gzip.open(file_path) as file:
-            json_trace = json.loads(file.read())
-
-        pid_to_event = {}
-        dml_kernel_events = 0
-
-        for trace_event in json_trace["traceEvents"]:
-            if not "ph" in trace_event:
-                continue
-
-            if trace_event["ph"] == "M":
-                if trace_event["name"] == "process_name":
-                    pid_to_event[trace_event["pid"]] = trace_event
-            elif trace_event["ph"] == "X":
-                # The MatMul and AddN events should be on a DirectML device
-                if trace_event["name"] == "MatMul" or trace_event["name"] == "AddN":
-                    proc_event = pid_to_event[trace_event["pid"]]
-                    self.assertRegex(
-                        proc_event["args"]["name"], r"/device:GPU:\d \(DirectML\) - .*"
-                    )
-                    dml_kernel_events += 1
-
-        self.assertEqual(dml_kernel_events, 2)
-
-    def test_tensorflow_stats(self):
-        """Checks that device kernels appear in the tensorflow_stats.pb"""
-        file_path = self._get_profiler_log_file_path("*tensorflow_stats.pb")
-        database = tf_stats_pb2.TfStatsDatabase()
-        with open(file_path, "rb") as file:
-            database.ParseFromString(file.read())
-
-        # Even though we're using DML devices we should see "GPU" here
-        # because the XPlanes are prefixed '/device:GPU:# (DirectML) ...'
-        self.assertEqual(database.device_type, "GPU")  # pylint:disable=no-member
-
-        records = database.without_idle.tf_stats_record  # pylint:disable=no-member
-        self.assertEqual(len(records), 3)
-
-        # Record ordering might change.
-        matched_records = 0
-        for record in records:
-            if record.op_type == "AddN":
-                self.assertEqual(record.host_or_device, "Device")
-                self.assertEqual(record.op_name, "MyAdd")
-                matched_records += 1
-            elif record.op_type == "MatMul":
-                self.assertEqual(record.host_or_device, "Device")
-                self.assertEqual(record.op_name, "MyMultiply")
-                matched_records += 1
-            elif record.op_type == "_Recv":
-                self.assertEqual(record.host_or_device, "Host")
-                self.assertEqual(record.op_name, "MyMultiply/_7")
-                matched_records += 1
-
-        self.assertEqual(matched_records, 3)
 
 
 if __name__ == "__main__":

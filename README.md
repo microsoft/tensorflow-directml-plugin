@@ -16,7 +16,7 @@ You can also contact us directly at askdirectml@microsoft.com.
 
 TensorFlow DirectML Plugin is in early development and is not supported for production yet. For production scenarios, use [TensorFlow 1.15 with DirectML](https://github.com/microsoft/tensorflow-directml) instead.
 
-TensorFlow DirectML Plugin only works with the `tensorflow-cpu==2.10` package, not `tensorflow` or `tensorflow-gpu`. To install the package, run the following commands:
+TensorFlow DirectML Plugin only works with the `tensorflow-cpu>=2.12` package, not `tensorflow` or `tensorflow-gpu`. To install the package, run the following commands:
 
 ```sh
 pip install tensorflow-directml-plugin
@@ -34,7 +34,7 @@ The following resources provide additional background on DirectML and TensorFlow
 ### Windows 10
 
 * Windows 10 Version 1709, 64-bit (Build 16299 or higher)
-* Python x86-64 3.7, 3.8, 3.9 or 3.10<sup>1</sup>
+* Python x86-64 3.8, 3.9, 3.10 or 3.11<sup>1</sup>
 * One of the following supported GPUs:
   * AMD Radeon R5/R7/R9 2xx series or newer
   * Intel HD Graphics 5xx or newer
@@ -43,7 +43,7 @@ The following resources provide additional background on DirectML and TensorFlow
 ### Windows Subsystem for Linux
 
 * Windows 10 Insider Preview, 64-bit (Build 20150 or higher)
-* Python x86-64 3.7, 3.8, 3.9 or 3.10<sup>2</sup>
+* Python x86-64 3.8, 3.9, 3.10 or 3.11<sup>2</sup>
 * One of the following supported GPUs:
   * AMD Radeon R5/R7/R9 2xx series or newer, and [20.20.01.05 WSL driver](https://www.amd.com/en/support/kb/release-notes/rn-rad-win-wsl-support)
   * Intel HD Graphics 6xx or newer, and [28.20.100.8322 WSL driver](https://downloadcenter.intel.com/download/29526)

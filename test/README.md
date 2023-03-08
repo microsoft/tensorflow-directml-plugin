@@ -1,6 +1,6 @@
 # Testing TensorFlow-DirectML-Plugin
 
-This directory contains tests for validating the DirectML plugin. Testing is done with a combination of python scripts and native test executables. The python tests should be run in a python environment with the `tensorflow-directml-plugin` and `tensorflow-cpu == 2.10.0` packages installed. All testing is driven by the following two files:
+This directory contains tests for validating the DirectML plugin. Testing is done with a combination of python scripts and native test executables. The python tests should be run in a python environment with the `tensorflow-directml-plugin` and `tensorflow-cpu >= 2.12.0` packages installed. All testing is driven by the following two files:
 
 - [test.py](test.py) : main script that will execute all test content (python and native tests) and summarize the results. Uses tests.json to drive testing.
 - [tests.json](tests.json) : describes the test content and how it should be executed.

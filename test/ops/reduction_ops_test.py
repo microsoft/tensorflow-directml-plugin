@@ -16,6 +16,7 @@
 
 import itertools
 import numbers
+from sys import argv
 
 import numpy as np
 
@@ -378,7 +379,7 @@ class SumReductionTest(BaseReductionTest):
   def testDegenerate(self):
     # TODO: Remove this skip once the resource zeroing bug has been fixed
     # TFDML #41044841
-    if should_skip_test(".*UHD Graphics 630.*"):
+    if len(argv) >= 2 and should_skip_test(".*UHD Graphics 630.*", argv):
       self.skipTest("This test currently fails on some Intel devices because resources "
                     "don't get completely zeroed out under certain conditions.")
 
@@ -568,7 +569,7 @@ class EuclideanNormReductionTest(BaseReductionTest):
   def testComplex128(self):
     # TODO: Remove this skip once the resource zeroing bug has been fixed
     # TFDML #41044841
-    if should_skip_test(".*UHD Graphics 630.*"):
+    if len(argv) >= 2 and should_skip_test(".*UHD Graphics 630.*", argv):
       self.skipTest("This test currently fails on some Intel devices because resources "
                     "don't get completely zeroed out under certain conditions.")
 
@@ -1142,4 +1143,4 @@ class CountNonzeroReductionTest(test.TestCase):
 
 
 if __name__ == "__main__":
-  test.main()
+  test.main(argv=[""])
