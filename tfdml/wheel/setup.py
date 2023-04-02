@@ -40,7 +40,7 @@ _PLUGIN_LIB_PATH = "tensorflow-plugins"
 _MY_PLUGIN_PATH = "tensorflow-directml-plugin"
 
 REQUIRED_PACKAGES = [
-    "tensorflow-cpu == 2.12.0rc0",
+    "tensorflow-cpu == 2.12.0",
 ]
 
 if sys.byteorder == "little":
@@ -54,17 +54,7 @@ with open("TFDML_WHEEL_NAME", "r", encoding="utf-8") as f:
     project_name = f.read()
 
 # python3 requires wheel 0.26
-if sys.version_info.major == 3:
-    REQUIRED_PACKAGES.append("wheel >= 0.26")
-else:
-    REQUIRED_PACKAGES.append("wheel")
-    # mock comes with unittest.mock for python3, need to install for python2
-    REQUIRED_PACKAGES.append("mock >= 2.0.0")
-
-# weakref.finalize and enum were introduced in Python 3.4
-if sys.version_info < (3, 4):
-    REQUIRED_PACKAGES.append("backports.weakref >= 1.0rc1")
-    REQUIRED_PACKAGES.append("enum34 >= 1.1.6")
+REQUIRED_PACKAGES.append("wheel >= 0.26")
 
 # pylint: disable=line-too-long
 CONSOLE_SCRIPTS = [

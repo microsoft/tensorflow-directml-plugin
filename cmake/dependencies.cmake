@@ -21,25 +21,25 @@ set(protobuf_BUILD_TESTS OFF CACHE BOOL "Build protobuf tests")
 # TensorFlow python package
 if(WIN32)
     # To update the package version to a nightly build, go to https://pypi.org/project/tf-nightly-intel/#files and copy the
-    # URLs and SHA256 hashes for the cp37 versions. For stable builds, go to https://pypi.org/project/tensorflow-intel/#files instead.
+    # URLs and SHA256 hashes for the cp39 versions. For stable builds, go to https://pypi.org/project/tensorflow-intel/#files instead.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/4c/57/3b37cf30bf1549e617f8328c10b1f3237bf50c9ac7be3de6fcb4c73a19ef/tensorflow_intel-2.12.0rc0-cp39-cp39-win_amd64.whl
-        URL_HASH SHA256=4f6793e0d9238b2fd57f10f39d7b3ab38000e2fca3144c260f581665be35a971
+        URL https://files.pythonhosted.org/packages/36/5b/401b3eb4b0af7f7a261689255b9944c0d7266eb528b12fe6a6df20b0796c/tensorflow_intel-2.12.0-cp39-cp39-win_amd64.whl
+        URL_HASH SHA256=2c3ece439d589362374d6e9f7775d2fac4591e0d9fc22a431f2eeaa4a0d2994a
     )
 
     FetchContent_Declare(
         tensorflow_framework
-        URL https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-2.10.0.zip
-        URL_HASH SHA256=4c5e6f9a7683583220716fecadea53ace233f31f59062e83585c4821f9968438
+        URL https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-windows-x86_64-2.12.0.zip
+        URL_HASH SHA256=bbb6c123247104e766437577ce42b426bf14234cd839114e4223fe5e56cc1b99
     )
 else()
     # To update the package version to a nightly build, go to https://pypi.org/project/tf-nightly-cpu/#files and copy the
-    # URLs and SHA256 hashes for the cp37 versions. For stable builds, go to https://pypi.org/project/tensorflow-cpu/#files instead.
+    # URLs and SHA256 hashes for the cp39 versions. For stable builds, go to https://pypi.org/project/tensorflow-cpu/#files instead.
     FetchContent_Declare(
         tensorflow_whl
-        URL https://files.pythonhosted.org/packages/61/f7/5888bb138d8ae9c6400996c3f0ffc2d9034c5213d7c6aa6deea79bbfe2c3/tensorflow_cpu-2.12.0rc0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-        URL_HASH SHA256=505921b47561f7b26fef8d1e5d781c4afd9aaba8945b02258d36037f70cdfbef
+        URL https://files.pythonhosted.org/packages/6a/d8/137fd38cf5572c8aa11a05ea0f255675299ce299c2967c40f2ae2fea19ad/tensorflow_cpu-2.12.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+        URL_HASH SHA256=55685b9a19c8ecb2587fb53914c045b188ed0289a2c6495e4e59d5fb082da9cc
     )
 
     FetchContent_Declare(
@@ -228,7 +228,7 @@ tf_proto_cpp(tensorflow/tsl/profiler/protobuf/xplane.proto)
 
 # A python interpreter is required to produce the plugin wheel. This python environment
 # must have the 'wheel' package installed.
-find_package(Python 3.6 COMPONENTS Interpreter REQUIRED)
+find_package(Python 3.9 COMPONENTS Interpreter REQUIRED)
 
 execute_process(
     COMMAND "${Python_EXECUTABLE}" "-c" "import wheel"
