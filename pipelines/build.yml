@@ -121,17 +121,17 @@ jobs:
           python build.py --config $(vars.configuration) --build_output $(buildOutPath) --wheel_version_suffix "$(vars.wheelVersionSuffix)"
         }
       displayName: Build Wheel
-# TODO: Make available on Windows once the TensorFlow C API exports all the necessary symbols
-# TF #40927951
-   - powershell: |
-       Invoke-Expression '$(miniconda.activateCommand)'
+    # TODO: Make available on Windows once the TensorFlow C API exports all the necessary symbols
+    # TF #40927951
+    - powershell: |
+        Invoke-Expression '$(miniconda.activateCommand)'
 
-       if ("${{parameters.enableTelemetry}}" -eq "True") {
-         python build.py --config $(vars.configuration) --target tfdml_plugin_framework_zip --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}"
-       } else {
-         python build.py --config $(vars.configuration) --target tfdml_plugin_framework_zip --build_output $(buildOutPath)
-       }
-     displayName: Build C API Library
+        if ("${{parameters.enableTelemetry}}" -eq "True") {
+          python build.py --config $(vars.configuration) --target tfdml_plugin_framework_zip --build_output $(buildOutPath) --telemetry --telemetry_provider_group_guid "${{parameters.telemetryProviderGroupGuid}}"
+        } else {
+          python build.py --config $(vars.configuration) --target tfdml_plugin_framework_zip --build_output $(buildOutPath)
+        }
+      displayName: Build C API Library
   - powershell: |
       New-Item -Force -ItemType Directory "$(buildPubPath)"
       Copy-Item -Recurse "$(buildOutPath)/*.whl" "$(buildPubPath)"
