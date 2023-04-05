@@ -141,7 +141,6 @@ jobs:
           python build.py --config $(vars.configuration) --target c_api_tests_zip --build_output $(buildOutPath)
         }
       displayName: Build C API Tests
-      target: manylinux
   - powershell: |
       New-Item -Force -ItemType Directory "$(buildPubPath)"
       Copy-Item -Recurse "$(buildOutPath)/*.whl" "$(buildPubPath)"
