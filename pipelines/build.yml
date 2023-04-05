@@ -121,8 +121,6 @@ jobs:
           python build.py --config $(vars.configuration) --build_output $(buildOutPath) --wheel_version_suffix "$(vars.wheelVersionSuffix)"
         }
       displayName: Build Wheel
-    # TODO: Make available on Windows once the TensorFlow C API exports all the necessary symbols
-    # TF #40927951
     - powershell: |
         Invoke-Expression '$(miniconda.activateCommand)'
 

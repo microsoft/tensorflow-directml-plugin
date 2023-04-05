@@ -554,9 +554,6 @@ add_custom_command(
 )
 add_custom_target(tfdml_plugin_wheel ALL DEPENDS ${pkg_full_name})
 
-# TODO: Make available on Windows once the TensorFlow C API exports all the necessary symbols
-# TF #40927951
-# if(NOT WIN32)
 # Get the DirectML SHA
 file(READ "${directml_redist_SOURCE_DIR}/include/DirectMLConfig.h" DIRECTML_CONFIG)
 string(REGEX MATCH "#define DIRECTML_SOURCE_VERSION \"([abcdef0-9]+)\"" REGEX_MATCH ${DIRECTML_CONFIG})
@@ -665,4 +662,3 @@ add_custom_command(
         "Creating ${c_api_tests_full_name}"
 )
 add_custom_target(c_api_tests_zip ALL DEPENDS ${c_api_tests_full_name})
-# endif()
