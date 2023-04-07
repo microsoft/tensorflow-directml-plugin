@@ -358,10 +358,7 @@
                 {
                     "name": "c_api_tests",
                     "file": "../build/c_api_tests",
-                    "cwd": "build",
-                    "disabled_platforms": [
-                        "nt"
-                    ]
+                    "cwd": "build"
                 }
             ]
         }

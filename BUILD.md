@@ -72,7 +72,7 @@ Once you've installed Miniconda you will want to create and activate a Python 3.
 Download the latest [Miniconda3 Windows 64-bit](https://docs.conda.io/en/latest/miniconda.html) installer. You can leave all the default settings.
 
 ```
-conda create --name tfdml_plugin python=3.7
+conda create --name tfdml_plugin python=3.9
 conda activate tfdml_plugin
 pip install wheel vswhere
 ```
@@ -86,7 +86,7 @@ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 bash Miniconda3-latest-Linux-x86_64.sh
 # follow prompts to install Miniconda and activate it in your shell
 
-conda create --name tfdml_plugin python=3.7
+conda create --name tfdml_plugin python=3.9
 conda activate tfdml_plugin
 pip install wheel
 ```
