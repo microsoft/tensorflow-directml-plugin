@@ -1,3 +1,5 @@
+⚠️ **Development of TensorFlow-DirectML-Plugin has been paused until further notice. To take advantage of the latest DirectML features and performance improvements for inference scenarios, we recommend taking a look at [ONNX Runtime](https://github.com/microsoft/onnxruntime).** ⚠️
+
 # TensorFlow-DirectML-Plugin <!-- omit in toc -->
 
 [![Build Status](https://microsoft.visualstudio.com/WindowsAI/_apis/build/status/TensorFlow/v2/TF2%20Plugin%20Build?branchName=main)](https://microsoft.visualstudio.com/WindowsAI/_build/latest?definitionId=76376&branchName=main)
