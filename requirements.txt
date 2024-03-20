@@ -1,4 +1,4 @@
-black==22.6.0
+black==24.3.0
 pylint==2.14.5
 tensorboard_plugin_profile==2.8.0
 tensorflow-cpu==2.12.0
