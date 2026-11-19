@@ -11,9 +11,9 @@ jobs:
     name: Check C++ Code Formatting
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2.8.0
     - name: Run clang-format style check for C/C++/Protobuf programs.
-      uses: jidicula/clang-format-action@v4.6.2
+      uses: jidicula/clang-format-action@c6b458a845552fe71b70b00b851a3ef88b1be279 # v4.6.2
       with:
         clang-format-version: '13'
         exclude-regex: ^(\./build/|\./third_party/).*$
